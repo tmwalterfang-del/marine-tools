@@ -142,7 +142,7 @@ button,input,select,textarea{font:inherit} button{color:inherit}.app-shell{displ
 
 
 /* v7.2 — calmer A-style homepage */
-.home-hero-a{position:relative;min-height:430px;display:flex;align-items:center;overflow:hidden;border:1px solid #214a62;border-radius:20px;background:linear-gradient(90deg,rgba(4,19,31,.96) 0%,rgba(4,19,31,.88) 34%,rgba(4,19,31,.54) 62%,rgba(4,19,31,.24) 100%),url("assets/hero-lantern.jpg") center center/cover no-repeat;box-shadow:0 20px 55px rgba(0,0,0,.28)}
+.home-hero-a{position:relative;min-height:420px;display:flex;align-items:center;overflow:hidden;border:1px solid #214a62;border-radius:20px;background:linear-gradient(90deg,rgba(4,19,31,.97) 0%,rgba(4,19,31,.90) 34%,rgba(4,19,31,.54) 61%,rgba(4,19,31,.20) 100%),url("assets/hero-lantern-desktop.jpg") center center/cover no-repeat;box-shadow:0 20px 55px rgba(0,0,0,.28)}
 .home-hero-a:after{content:"";position:absolute;inset:auto 0 0;height:34%;background:linear-gradient(180deg,transparent,rgba(5,21,32,.42));pointer-events:none}
 .home-hero-overlay{position:absolute;inset:0;background:radial-gradient(circle at 68% 48%,rgba(255,153,82,.10),transparent 22%),radial-gradient(circle at 82% 35%,rgba(40,196,244,.10),transparent 28%);pointer-events:none}
 .home-hero-content{position:relative;z-index:2;width:min(790px,72%);padding:48px 46px}
@@ -163,4 +163,15 @@ button,input,select,textarea{font:inherit} button{color:inherit}.app-shell{displ
 .home-dashboard-fold{margin-top:12px;border:1px solid #1b4359;border-radius:14px;background:#081e2e;overflow:hidden}.home-dashboard-fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(180deg,#0b293d,#092235)}.home-dashboard-fold>summary::-webkit-details-marker{display:none}.home-dashboard-fold>summary span{display:grid;gap:2px}.home-dashboard-fold>summary b{font-size:14px}.home-dashboard-fold>summary small{color:#7899ad}.home-dashboard-fold>summary strong{font-size:11px;color:#55c9f5;text-transform:uppercase;letter-spacing:.08em}.home-dashboard-fold[open]>summary strong{font-size:0}.home-dashboard-fold[open]>summary strong:after{content:"Close";font-size:11px}.home-dashboard-inner{padding:12px}.home-dashboard-grid{grid-template-columns:minmax(0,1.5fr) minmax(290px,.8fr)}.home-dashboard-row{margin-top:12px}.home-project-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}.home-project-links button{display:flex;justify-content:space-between;gap:8px;padding:11px;border:1px solid #1b455e;border-radius:9px;background:#0a293d;color:#d6e7ef;cursor:pointer}.home-project-links button:hover{border-color:#3f83a5;background:#0d324a}
 
 @media(max-width:1250px){.home-category-a{grid-template-columns:repeat(3,1fr)}.home-value-strip{grid-template-columns:1fr 1fr}.home-value-strip>*:nth-child(2){border-right:0}.home-value-strip>*:nth-child(-n+2){border-bottom:1px solid #183c50}.home-dashboard-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:760px){.home-hero-a{min-height:430px;background-position:72% center}.home-hero-content{width:100%;padding:34px 22px;background:linear-gradient(90deg,rgba(4,19,31,.94),rgba(4,19,31,.70),rgba(4,19,31,.35))}.home-hero-content h1{font-size:48px}.home-hero-content>p{font-size:15px}.home-section-head{align-items:flex-start;flex-direction:column}.home-section-head>span{text-align:left}.home-category-a{grid-template-columns:1fr 1fr}.home-category-a button{min-height:126px;padding:14px}.home-value-strip{grid-template-columns:1fr}.home-value-strip>*{border-right:0!important;border-bottom:1px solid #183c50!important}.home-value-strip>*:last-child{border-bottom:0!important}.home-dashboard-grid,.home-dashboard-row{grid-template-columns:1fr}.home-project-links{grid-template-columns:1fr}.home-dashboard-inner{padding:8px}}
+
+@media(max-width:1100px){
+  .home-hero-a{
+    min-height:440px;
+    background:
+      linear-gradient(90deg,rgba(4,19,31,.97) 0%,rgba(4,19,31,.90) 40%,rgba(4,19,31,.53) 68%,rgba(4,19,31,.22) 100%),
+      url("assets/hero-lantern-tablet.jpg") 62% center/cover no-repeat;
+  }
+  .home-hero-content{width:min(720px,82%);padding:42px 34px}
+}
+
+@media(max-width:760px){.home-hero-a{min-height:500px;background:linear-gradient(180deg,rgba(4,19,31,.76) 0%,rgba(4,19,31,.52) 35%,rgba(4,19,31,.82) 100%),url("assets/hero-lantern-mobile.jpg") 58% center/cover no-repeat}.home-hero-content{width:100%;padding:34px 22px;background:linear-gradient(180deg,rgba(4,19,31,.66),rgba(4,19,31,.78) 65%,rgba(4,19,31,.88))}.home-hero-content h1{font-size:48px}.home-hero-content>p{font-size:15px}.home-section-head{align-items:flex-start;flex-direction:column}.home-section-head>span{text-align:left}.home-category-a{grid-template-columns:1fr 1fr}.home-category-a button{min-height:126px;padding:14px}.home-value-strip{grid-template-columns:1fr}.home-value-strip>*{border-right:0!important;border-bottom:1px solid #183c50!important}.home-value-strip>*:last-child{border-bottom:0!important}.home-dashboard-grid,.home-dashboard-row{grid-template-columns:1fr}.home-project-links{grid-template-columns:1fr}.home-dashboard-inner{padding:8px}}

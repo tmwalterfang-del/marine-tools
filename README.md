@@ -82,3 +82,12 @@ The homepage uses a calmer visual-first hero, a dedicated tool search, six prima
 
 - Homepage hero updated to use a real maritime photo
 - Buy Me a Coffee widget color tuned to the Marine Tools blue palette
+
+
+## Responsive hero
+
+- Responsive hero image set:
+  - desktop: `assets/hero-lantern-desktop.jpg`
+  - tablet: `assets/hero-lantern-tablet.jpg`
+  - mobile: `assets/hero-lantern-mobile.jpg`
+- CSS automatically selects the appropriate hero crop for the screen size.
