@@ -1,0 +1,10 @@
+{
+  "name": "Marine Tools",
+  "short_name": "Marine Tools",
+  "description": "Practical planning and calculation helpers for seafarers.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#061c2f",
+  "theme_color": "#061c2f",
+  "icons": []
+}
