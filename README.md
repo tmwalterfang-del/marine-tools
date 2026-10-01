@@ -71,3 +71,14 @@ Marine Tools includes a built-in support page linking to https://buymeacoffee.co
 
 ### Homepage v7.2
 The homepage uses a calmer visual-first hero, a dedicated tool search, six primary tool categories, a compact project/support strip, and a collapsed dashboard that preserves route status, live data, recent tools, calculation history and favourites without crowding the landing view.
+
+
+## Support widget
+
+- Floating Buy Me a Coffee support widget on the live website
+
+
+## Visual update
+
+- Homepage hero updated to use a real maritime photo
+- Buy Me a Coffee widget color tuned to the Marine Tools blue palette
