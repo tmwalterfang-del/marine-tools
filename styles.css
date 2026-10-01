@@ -113,3 +113,29 @@ button,input,select,textarea{font:inherit} button{color:inherit}.app-shell{displ
 
 @media(max-width:900px){:root{--sidebar:240px}.app-shell{display:block}.sidebar{transform:translateX(-100%);transition:.2s}.sidebar.open{transform:none}.workspace{grid-column:auto}.mobile-menu{display:inline-grid;place-items:center}.top-brand{display:none}.searchbox{width:100%;margin-left:0}.top-actions .utc{display:none}.main-content{padding:12px}.hero-note{display:none}.category-grid{grid-template-columns:repeat(2,1fr)}.dashboard-grid,.grid-2,.grid-3,.tool-grid,.about-columns{grid-template-columns:1fr}.analysis-summary{grid-template-columns:repeat(2,1fr)}.metric-grid{grid-template-columns:1fr 1fr}.embed-frame{height:680px}}
 @media(max-width:560px){.hero-content{padding:26px 20px}.hero h1{font-size:42px}.category-grid{grid-template-columns:1fr}.fields,.fields.three{grid-template-columns:1fr}.analysis-summary,.metric-grid{grid-template-columns:1fr}.page-title{display:block}.topbar{padding:0 10px}.main-content{padding:9px}}
+
+
+/* v7: simplified task-focused input layouts */
+.tool-selector{margin-bottom:12px}
+.tool-selector .panel-body{display:grid;gap:6px}
+.tool-selector label{max-width:420px}
+.mini-section{display:grid;gap:8px;margin:12px 0}
+.subgroup{border:1px solid var(--border);padding:10px;margin:10px 0;background:var(--panel-2)}
+.subgroup h4{margin:0 0 8px;font-size:.9rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.dynamic-list{display:grid;gap:8px;margin:8px 0}
+.dynamic-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:8px;align-items:end;border:1px solid var(--border);padding:8px;background:var(--panel-2)}
+.dynamic-row.simple-row{grid-template-columns:minmax(0,1fr) auto}
+.dynamic-row.speed-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto}
+.dynamic-row.bunk-row,.dynamic-row.lo-row{grid-template-columns:1.1fr 1fr 1fr auto}
+.dynamic-row.nox-row{grid-template-columns:1.1fr 1fr 1fr 1fr auto}
+.dynamic-row.weather-row{grid-template-columns:1fr 1fr 1fr 1fr auto}
+.btn.small{padding:7px 10px;min-height:34px;font-size:.82rem}
+.advanced-inputs{margin:10px 0;border:1px solid var(--border);padding:8px;background:var(--panel-2)}
+.advanced-inputs summary{cursor:pointer;font-weight:700;color:var(--muted)}
+[hidden]{display:none!important}
+
+@media (max-width:760px){
+  .dynamic-row,.dynamic-row.simple-row,.dynamic-row.speed-row,.dynamic-row.bunk-row,.dynamic-row.lo-row,.dynamic-row.nox-row,.dynamic-row.weather-row{grid-template-columns:1fr 1fr}
+  .dynamic-row .remove-row{grid-column:1/-1}
+  .subgroup{padding:8px}
+}

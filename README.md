@@ -17,14 +17,13 @@ Marine Tools includes:
 - Passage speed/time/fuel scenario comparison
 - Weather-window and wave-encounter helpers
 - Fuel ROB, endurance scenarios, density, blending and tank calculations
-- Fuel / urea mass-volume conversion and bunkering overview
+- Fuel / urea conversion and row-based bunkering overview
 - Chemical dosing calculator using user-entered manufacturer rates
-- NOx period calculation helper using vessel-supplied activity data and factors
-- Lube-oil consumption trend analysis
-- Manual IAS/CSV analysis for fuel rate, tank level and running-hour data
+- NOx period reporting helper with separate engine/source fields and SCR/urea consumption tracking
+- Lube-oil consumption trend analysis with separate reading fields
 - Dynamic UKC, squat, FWA/DWA, anchor swing radius and air-draft clearance
-- Hydraulic power, pump affinity, pipe velocity, tank interpolation, flow/fill time and pressure/head
-- Three-phase power, motor current, power-factor correction, transformer, batteries and voltage drop
+- Simplified hydraulic power, pump speed change, pipe velocity, tank interpolation, flow/fill time and pressure/head tools
+- Everyday and advanced electrical tool views for three-phase power, motor current, transformer, batteries, imbalance, voltage drop and power-factor correction
 - Vessel Profile for reusable planning values
 - Unit conversions and quick technical utilities
 
@@ -62,4 +61,4 @@ The website package includes:
 
 ## License
 
-See [LICENSE](LICENSE).
+Marine Tools source code is proprietary. See [LICENSE](LICENSE) for use restrictions and [BRAND.md](BRAND.md) for name/logo/brand terms.
