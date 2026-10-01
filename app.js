@@ -1,0 +1,572 @@
+(() => {
+'use strict';
+const API='https://api.marinetools.app';
+const SURVEY_URL='https://tally.so/r/5BWVZQ';
+const SUGGEST_URL='https://tally.so/r/5BWVzN';
+const K={profile:'mt.profile',route:'mt.route',theme:'mt.theme',lastAnalysis:'mt.lastAnalysis',settings:'mt.settings',favorites:'mt.favorites',history:'mt.history',recent:'mt.recent'};
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const nf=(n,d=1)=>Number.isFinite(Number(n))?Number(n).toFixed(d):'—';
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
+const state={
+  profile:store.get(K.profile,{name:'',loa:80,draft:4,serviceSpeed:8,fuelDay:4,maxHs:3,maxWind:30,maxCurrent:2,minUKC:1,cpaAlert:1,corridor:5}),
+  route:store.get(K.route,[]),
+  theme:['dark','bridge'].includes(store.get(K.theme,'dark'))?store.get(K.theme,'dark'):'dark',
+  ais:[], forecast:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null
+};
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2800)}
+function setTheme(v){
+ state.theme=v==='bridge'?'bridge':'dark';
+ store.set(K.theme,state.theme);
+ document.documentElement.dataset.theme=state.theme==='bridge'?'bridge':'';
+ const b=$('#themeToggle');
+ if(b){b.textContent=state.theme==='bridge'?'BRG':'◐';b.title=state.theme==='bridge'?'Switch to Dark':'Switch to Bridge Dark'}
+}
+function nowUTC(){const d=new Date();return d.toISOString().slice(11,16)}
+function updateClock(){const e=$('#utcClock');if(e)e.textContent=`UTC ${nowUTC()}`}
+function page(id){$$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('#sidebar').classList.remove('open');if(id==='route-intelligence')setTimeout(initRouteMap,40);window.scrollTo({top:0,behavior:'smooth'})}
+function button(label,pageId,cls='btn primary'){return `<button class="${cls}" data-go="${pageId}">${label}</button>`}
+
+const TOOL_META={
+ 'Bearing, distance & destination':{how:'Enter two positions, then calculate distance and initial true bearing.',formula:'Spherical great-circle distance and initial bearing.',units:'Degrees, nautical miles, degrees true.',assume:'Positions use WGS-84-style latitude/longitude input.',limits:'Planning helper only; use approved navigation systems for the voyage plan.'},
+ 'Coordinate toolbox':{how:'Enter a decimal latitude and longitude to show DDM and DMS formats.',formula:'Direct angular-format conversion.',units:'Decimal degrees, DDM and DMS.',assume:'North/east positive; south/west negative.',limits:'Does not transform between chart datums.'},
+ 'Current-corrected ETA':{how:'Enter distance, speed through water and the current component along the route.',formula:'SOG = STW + along-track current; time = distance / SOG.',units:'NM, kn, hours.',assume:'Current remains constant and is already resolved along the track.',limits:'Does not model cross-current or changing tidal streams.'},
+ 'Wind component':{how:'Enter vessel course, wind-from direction and wind speed.',formula:'Wind vector resolved into longitudinal and transverse components.',units:'Degrees true and knots.',assume:'Directions are true and wind is entered as “from”.',limits:'Does not correct for vessel motion; use True / apparent wind for that.'},
+ 'Closest point on active route':{how:'Build a route first, then enter a position to calculate its shortest distance from the route.',formula:'Shortest point-to-segment distance in a local nautical-mile projection.',units:'Latitude/longitude and NM.',assume:'Suitable for local route-segment checks.',limits:'Not a cross-track-error function from approved navigation equipment.'},
+ 'Great circle vs rhumb line':{how:'Enter departure and arrival positions and compare the two sailing methods.',formula:'Haversine great-circle versus Mercator rhumb-line sailing.',units:'Degrees and NM.',assume:'Spherical Earth approximation.',limits:'Use approved route-planning methods for final navigation.'},
+ 'True / apparent wind':{how:'Enter course, vessel speed, apparent wind direction relative to the bow and apparent wind speed.',formula:'Vector addition of vessel velocity and apparent-wind velocity.',units:'Degrees and knots.',assume:'0° relative is ahead; 90° is starboard.',limits:'Ignores sensor correction, heel, leeway and vertical wind.'},
+ 'Passage scenario compare':{how:'Enter route distance and a reference fuel rate, then list the speeds you want to compare.',formula:'Time = distance/speed; simple fuel rate ∝ speed³.',units:'NM, kn, m³/day, m³.',assume:'Cubic fuel model is only a comparison model.',limits:'Replace with vessel-specific speed/consumption curves whenever available.'},
+ 'Set & drift':{how:'Enter heading and speed through water plus the current set-to direction and drift speed.',formula:'Through-water velocity vector + current vector = ground velocity vector.',units:'Degrees true and knots.',assume:'Current set is entered as the direction the water moves toward.',limits:'Constant vectors; no wind/leeway model.'},
+ 'Route fuel estimate':{how:'Create a route and Vessel Profile, then update the estimate.',formula:'Route distance / service speed × daily fuel rate.',units:'NM, hours, m³.',assume:'Constant service speed and daily fuel consumption.',limits:'Weather, manoeuvring and load changes are not modelled.'},
+ 'Fuel ROB & endurance':{how:'Enter ROB, expected daily consumption and the reserve you want to keep.',formula:'Usable ROB = ROB × (1 − reserve); endurance = usable ROB / daily rate.',units:'m³, %, days.',assume:'Constant average daily consumption.',limits:'Does not include unusable tank volume unless included in your reserve.'},
+ 'Endurance scenario compare':{how:'Enter ROB and reserve, then list several daily-consumption scenarios.',formula:'Endurance = usable ROB / scenario consumption.',units:'m³/day and days.',assume:'Constant consumption in each scenario.',limits:'Planning comparison only.'},
+ 'Fuel consumption by speed':{how:'Paste measured speed,consumption pairs and enter the target speed.',formula:'Linear interpolation between the nearest supplied points.',units:'kn and m³/day.',assume:'Input points represent comparable operating conditions.',limits:'Avoid extrapolating far outside measured points.'},
+ 'Fuel volume / density correction':{how:'Enter observed volume, density, temperature, reference temperature and expansion coefficient.',formula:'Simple thermal volume correction and mass = volume × density.',units:'m³, kg/m³, °C, tonnes.',assume:'User-supplied coefficient represents the product.',limits:'Use BDN/table-standard corrections where required.'},
+ 'Tank transfer':{how:'Enter receiving-tank capacity, current volume, transfer volume and pump rate.',formula:'Final volume = current + transfer; time = transfer / rate.',units:'m³, %, hours.',assume:'Constant transfer rate.',limits:'Does not include line contents, trim/list or tank-specific max-fill rules.'},
+ 'Fuel blending':{how:'Enter volume, density and sulphur content for both fuels.',formula:'Mass-weighted density and sulphur balance.',units:'m³, kg/m³, % m/m.',assume:'Simple complete mixing.',limits:'Does not assess fuel compatibility, stability or statutory suitability.'},
+ 'Mass ↔ volume':{how:'Enter mass and density to calculate volume.',formula:'Volume = mass / density.',units:'tonnes, kg/m³, m³.',assume:'Density applies at the relevant temperature.',limits:'No temperature correction unless done separately.'},
+ 'Dynamic UKC & squat':{how:'Enter water depth, draft, speed, block coefficient and channel factor.',formula:'Simplified squat = channel factor × Cb × speed² / 100.',units:'m, kn.',assume:'Simplified planning relation.',limits:'Vessel-specific squat data and approved UKC procedures take precedence.'},
+ 'Anchor swing radius':{how:'Enter chain paid out, water depth and vessel length.',formula:'Horizontal chain reach ≈ √(chain² − depth²); radius adds vessel length.',units:'m.',assume:'Simple geometric estimate.',limits:'Catenary, tide, yaw, seabed and antenna position are not fully modelled.'},
+ 'Draft / tide UKC':{how:'Enter chart depth, water-level correction, draft and chosen safety allowance.',formula:'UKC = depth + tide − draft − allowance.',units:'m.',assume:'All vertical references are compatible.',limits:'Datum errors, squat and dynamic motion must be handled separately.'},
+ 'FWA / DWA':{how:'Enter displacement, TPC and dock-water density.',formula:'FWA ≈ displacement/(4×TPC); DWA scales FWA by density difference.',units:'tonnes, t/cm, t/m³, mm.',assume:'Standard approximate relation.',limits:'Use approved hydrostatic data for vessel-specific work.'},
+ 'Air draft / bridge clearance':{how:'Enter published vertical clearance, actual water level above its reference, vessel air draft and your safety margin.',formula:'Remaining clearance = published clearance − water-level increase − air draft − margin.',units:'m.',assume:'Published clearance and water level use compatible vertical references.',limits:'Always verify bridge datum, tide/water level, vessel squat/heel and official restrictions.'},
+ 'Hydraulic power':{how:'Enter pressure, flow and estimated efficiency.',formula:'Hydraulic kW = bar × L/min / 600; input power = hydraulic power / efficiency.',units:'bar, L/min, %, kW.',assume:'Steady flow and pressure.',limits:'Losses outside the entered efficiency are not separately modelled.'},
+ 'Pump affinity laws':{how:'Enter original duty values and the new RPM.',formula:'Q∝N, H∝N², P∝N³.',units:'RPM, m³/h, m, kW.',assume:'Same pump, fluid and broadly similar efficiency.',limits:'Actual system curve and pump efficiency can change the result.'},
+ 'Pipe velocity':{how:'Enter volumetric flow and internal pipe diameter.',formula:'Velocity = flow / cross-sectional area.',units:'m³/h, mm, m/s.',assume:'Full circular pipe.',limits:'Does not calculate friction loss or cavitation margin.'},
+ 'Generator load margin':{how:'Enter available generator capacity and present load.',formula:'Load % = load/capacity; margin = capacity − load.',units:'kW and %.',assume:'Available capacity is correctly defined for the operating condition.',limits:'Manufacturer limits, transient response and redundancy philosophy are not modelled.'},
+ 'Tank table interpolation':{how:'Paste sounding/ullage,volume rows, then enter the measured sounding or ullage.',formula:'Linear interpolation between the two surrounding table rows.',units:'User-defined length and m³.',assume:'Table values are ordered and from the correct tank/trim condition.',limits:'Use vessel-approved tank tables and corrections where required.'},
+ 'Flow / fill time':{how:'Enter volume to transfer and the expected flow rate.',formula:'Time = volume / flow.',units:'m³, m³/h, hours.',assume:'Constant flow rate.',limits:'Does not include ramp-up, valve changes or line losses.'},
+ 'Pressure ↔ head':{how:'Enter pressure or head and the fluid density, then choose the conversion direction.',formula:'Head = pressure/(ρg).',units:'bar, metres, kg/m³.',assume:'Static fluid column and standard gravity.',limits:'Dynamic pressure losses are not included.'},
+ 'Three-phase power':{how:'Enter line voltage, line current, power factor and efficiency.',formula:'kVA = √3VI/1000; kW = kVA×PF×efficiency.',units:'V, A, kVA, kW.',assume:'Balanced three-phase system.',limits:'Harmonics and unbalance are not included.'},
+ 'Voltage drop':{how:'Enter current, one-way cable length, conductor resistance and system voltage.',formula:'Simplified 3-phase ΔV = √3 × I × R × length.',units:'A, m, Ω/km, V, %.',assume:'Resistive balanced circuit.',limits:'Reactance, temperature, installation method and regulations are not fully modelled.'},
+ 'Battery runtime':{how:'Enter nominal energy, current/minimum SOC, load and usable efficiency.',formula:'Usable energy = capacity × SOC window × efficiency; runtime = usable energy/load.',units:'kWh, %, kW, hours.',assume:'Constant load and efficiency.',limits:'BMS limits, temperature, C-rate and degradation can change actual runtime.'},
+ 'Current imbalance':{how:'Enter the three phase currents.',formula:'Maximum deviation from phase average / average.',units:'A and %.',assume:'Simultaneous representative readings.',limits:'Does not diagnose the cause of imbalance.'},
+ 'Motor current':{how:'Enter motor output power, voltage, power factor and efficiency.',formula:'I = Pout /(√3 × V × PF × efficiency).',units:'kW, V, A.',assume:'Balanced three-phase motor at steady load.',limits:'Starting current, harmonics and nameplate/service-factor details are not modelled.'},
+ 'Power factor correction':{how:'Enter active power, present power factor and target power factor.',formula:'Required kVAr = P × (tan φ1 − tan φ2).',units:'kW, PF, kVAr.',assume:'Steady load and valid PF values between 0 and 1.',limits:'Capacitor steps, harmonics and resonance require engineering review.'},
+ 'Transformer calculator':{how:'Enter transformer kVA and primary/secondary line voltages.',formula:'3-phase line current = kVA×1000 /(√3×V).',units:'kVA, V, A.',assume:'Three-phase apparent-power rating.',limits:'Losses, vector group and inrush are not included.'},
+ 'Speed · distance · time':{how:'Enter distance and speed to calculate passage time.',formula:'Time = distance / speed.',units:'NM, kn, hours.',assume:'Constant speed.',limits:'Does not include manoeuvring or current.'},
+ 'Beaufort converter':{how:'Enter wind speed in knots to show the approximate Beaufort force.',formula:'Lookup against standard approximate knot ranges.',units:'kn and Beaufort force.',assume:'Wind speed is representative.',limits:'Sea state depends on fetch, duration and local conditions.'},
+ 'Unit converter':{how:'Enter a value and select the conversion.',formula:'Direct unit conversion.',units:'Depends on the selected conversion.',assume:'Input unit matches the selected conversion.',limits:'Reference conversion only.'},
+ 'Compass / gyro correction':{how:'Enter observed course and signed corrections; east is positive and west negative.',formula:'True = observed + variation + deviation/error.',units:'Degrees.',assume:'The selected sign convention matches your procedure.',limits:'Always verify the convention and instrument-specific correction method.'},
+ 'Wave encounter period':{how:'Enter vessel course/speed plus wave-from direction and wave period.',formula:'Deep-water encounter frequency using relative motion between vessel and wave propagation.',units:'Degrees, kn, seconds.',assume:'Deep water, regular waves and steady course/speed.',limits:'Real seas are multi-directional and vessel response is not predicted.'},
+ 'Weather window finder':{how:'Paste hourly time,Hs,wind,current rows and enter your chosen thresholds.',formula:'Finds consecutive supplied rows within all thresholds.',units:'m, kn and user-supplied time labels.',assume:'Each row represents the intended planning interval.',limits:'Manual planning aid; verify official forecasts and operating limits.'}
+};
+function toolMeta(title){return TOOL_META[title]||{how:'Enter the requested values, calculate, then check the result and assumptions before use.',formula:'See the result description and supplied inputs.',units:'Shown beside each input and result.',assume:'Inputs represent the condition being assessed.',limits:'Planning/calculation aid only; verify against vessel-specific documentation.'}}
+function toolUsage(title){const m=toolMeta(title);return `<div class="tool-how"><b>How to use</b><span>${m.how}</span></div>`}
+function toolInformation(title,desc){const m=toolMeta(title);return `<details class="tool-info"><summary>Tool information</summary><dl><dt>Purpose</dt><dd>${desc}</dd><dt>Formula</dt><dd>${m.formula}</dd><dt>Assumptions</dt><dd>${m.assume}</dd><dt>Units</dt><dd>${m.units}</dd><dt>Last updated</dt><dd>01 Oct 2026</dd><dt>Limitations</dt><dd>${m.limits}</dd></dl></details>`}
+
+function card(title,desc,body,id=''){return `<article class="panel tool-card" ${id?`id="${id}"`:''} data-tool-title="${title}"><button class="fav-toggle" type="button" data-fav-title="${title}" title="Add to My Tools" aria-label="Add ${title} to My Tools">☆</button><h3>${title}</h3><p>${desc}</p>${toolUsage(title)}${body}${toolInformation(title,desc)}</article>`}
+
+function formulaBox(){return ''}
+
+function calcButton(id,label='Calculate'){return `<div class="actions"><button class="btn primary calc-action" id="${id}">${label}</button><button class="btn copy-result" type="button">Copy result</button><button class="btn share-result" type="button">Share result</button></div>`}
+function result(id,text='Enter values to calculate.'){return `<div class="result" id="${id}"><small>${text}</small></div>`}
+function hav(a,b){const R=3440.065,p1=rad(a.lat),p2=rad(b.lat),dp=rad(b.lat-a.lat),dl=rad(b.lon-a.lon);const q=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
+function bearing(a,b){const y=Math.sin(rad(b.lon-a.lon))*Math.cos(rad(b.lat)),x=Math.cos(rad(a.lat))*Math.sin(rad(b.lat))-Math.sin(rad(a.lat))*Math.cos(rad(b.lat))*Math.cos(rad(b.lon-a.lon));return (deg(Math.atan2(y,x))+360)%360}
+
+function rhumb(a,b){
+ const R=3440.065,p1=rad(a.lat),p2=rad(b.lat),dp=p2-p1;
+ let dl=rad(b.lon-a.lon);if(Math.abs(dl)>Math.PI)dl=dl>0?-(2*Math.PI-dl):(2*Math.PI+dl);
+ const dpsi=Math.log(Math.tan(Math.PI/4+p2/2)/Math.tan(Math.PI/4+p1/2));
+ const q=Math.abs(dpsi)>1e-12?dp/dpsi:Math.cos(p1);
+ const dist=Math.sqrt(dp*dp+q*q*dl*dl)*R;
+ const brg=(deg(Math.atan2(dl,dpsi))+360)%360;
+ return{distance:dist,bearing:brg}
+}
+
+function destination(a,brg,nm){const R=3440.065,d=nm/R,p1=rad(a.lat),l1=rad(a.lon),t=rad(brg);const p2=Math.asin(Math.sin(p1)*Math.cos(d)+Math.cos(p1)*Math.sin(d)*Math.cos(t));const l2=l1+Math.atan2(Math.sin(t)*Math.sin(d)*Math.cos(p1),Math.cos(d)-Math.sin(p1)*Math.sin(p2));return{lat:deg(p2),lon:((deg(l2)+540)%360)-180}}
+function routeDistance(r=state.route){let n=0;for(let i=1;i<r.length;i++)n+=hav(r[i-1],r[i]);return n}
+function routeBBox(r=state.route,padNm=8){if(!r.length)return null;const lats=r.map(p=>p.lat),lons=r.map(p=>p.lon),mid=lats.reduce((a,b)=>a+b,0)/lats.length;const dLat=padNm/60,dLon=padNm/(60*Math.max(.25,Math.cos(rad(mid))));return{minLat:Math.min(...lats)-dLat,maxLat:Math.max(...lats)+dLat,minLon:Math.min(...lons)-dLon,maxLon:Math.max(...lons)+dLon}}
+function nmPointLine(p,a,b){const lat0=rad((a.lat+b.lat+p.lat)/3),sx=60*Math.cos(lat0),sy=60;const ax=a.lon*sx,ay=a.lat*sy,bx=b.lon*sx,by=b.lat*sy,px=p.lon*sx,py=p.lat*sy,dx=bx-ax,dy=by-ay;const t=clamp(((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy||1),0,1);return Math.hypot(px-(ax+t*dx),py-(ay+t*dy))}
+function distToRoute(p,r=state.route){if(r.length<2)return Infinity;let d=Infinity;for(let i=1;i<r.length;i++)d=Math.min(d,nmPointLine(p,r[i-1],r[i]));return d}
+function mpsToKn(x){return x*1.943844}
+function vectorFrom(sog,cog){return{x:sog*Math.sin(rad(cog)),y:sog*Math.cos(rad(cog))}}
+function cpaTcpa(own,target){const lat0=rad((own.lat+target.lat)/2),rx=(target.lon-own.lon)*60*Math.cos(lat0),ry=(target.lat-own.lat)*60;const vo=vectorFrom(own.sog,own.cog),vt=vectorFrom(target.sog,target.cog),vx=vt.x-vo.x,vy=vt.y-vo.y;const vv=vx*vx+vy*vy;let t=vv?-(rx*vx+ry*vy)/vv:0;t=Math.max(0,t);const cx=rx+vx*t,cy=ry+vy*t;return{cpa:Math.hypot(cx,cy),tcpa:t*60}}
+function riskFor(f,p=state.profile){let score=0,reasons=[];if(Number.isFinite(f.hs)){const q=f.hs/p.maxHs;if(q>1){score=2;reasons.push(`Hs ${nf(f.hs)} m > ${p.maxHs} m`)}else if(q>.8){score=Math.max(score,1);reasons.push(`Hs near limit`)}}if(Number.isFinite(f.windKn)){const q=f.windKn/p.maxWind;if(q>1){score=2;reasons.push(`Wind ${nf(f.windKn,0)} kn > ${p.maxWind} kn`)}else if(q>.8){score=Math.max(score,1);reasons.push('Wind near limit')}}if(Number.isFinite(f.currentKn)){const q=f.currentKn/p.maxCurrent;if(q>1){score=2;reasons.push(`Current ${nf(f.currentKn)} kn > ${p.maxCurrent} kn`)}else if(q>.8){score=Math.max(score,1);reasons.push('Current near limit')}}return{score,label:['Normal','Caution','Alert'][score],reasons}}
+function sourceStatus(id,status,text){const e=$(id);if(!e)return;e.className=`chip ${status}`;e.textContent=text}
+
+const tools=[
+ ['Route Intelligence','route-intelligence','◉'],['Navigation calculations','navigation','△'],['Weather tools','weather','☁'],['Fuel & bunkering','fuel','◧'],['Vessel calculations','vessel-calcs','⚓'],['Engineering tools','engineering','⚙'],['Electrical tools','electrical','ϟ'],['Quick tools','quick','▦'],['Vessel profile','profile','⚓'],['Survey','survey','▥'],['Suggestions','suggestions','✧'],['About this project','about','ⓘ']
+];
+
+
+
+function recentTools(){return store.get(K.recent,[])||[]}
+function calcHistory(){return store.get(K.history,[])||[]}
+function toolPage(card){return card?.closest('.page')?.id||'home'}
+function collectInputs(card){
+ return [...card.querySelectorAll('label')].map(l=>{
+   const el=l.querySelector('input,select,textarea'); if(!el)return null;
+   const label=[...l.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent).join(' ').trim()||l.textContent.split('\n')[0].trim();
+   return `${label}: ${el.value}`;
+ }).filter(Boolean)
+}
+function recordToolUse(card){
+ if(!card)return;
+ const title=card.dataset.toolTitle||card.querySelector('h3')?.textContent||'Tool';
+ const pageId=toolPage(card);
+ let recent=recentTools().filter(x=>x.title!==title);
+ recent.unshift({title,page:pageId,time:new Date().toISOString()});
+ store.set(K.recent,recent.slice(0,8));
+ const res=card.querySelector('.result');
+ if(res&&res.innerText.trim()){
+   let h=calcHistory();
+   h.unshift({title,page:pageId,time:new Date().toISOString(),inputs:collectInputs(card),result:res.innerText.trim()});
+   store.set(K.history,h.slice(0,20));
+ }
+ renderRecentHome();renderHistoryHome();
+}
+function buildShareText(card){
+ const title=card.dataset.toolTitle||'Marine Tools calculation';
+ const inputs=collectInputs(card);
+ const resultText=card.querySelector('.result')?.innerText.trim()||'No result';
+ return [`Marine Tools — ${title}`,`Time: ${new Date().toISOString()}`,inputs.length?'Inputs:':'',...inputs,`Result: ${resultText}`,'Planning/calculation aid only — verify inputs and result against vessel-specific documentation and approved sources.'].filter(Boolean).join('\n');
+}
+async function shareResult(btn){
+ const card=btn.closest('.tool-card');if(!card)return;
+ const text=buildShareText(card);
+ try{
+   if(navigator.share)await navigator.share({title:`Marine Tools — ${card.dataset.toolTitle}`,text});
+   else{await navigator.clipboard.writeText(text);toast('Share text copied.')}
+ }catch(e){if(e?.name!=='AbortError')toast('Share unavailable.')}
+}
+function renderRecentHome(){
+ const box=$('#recentToolsHome');if(!box)return;
+ const r=recentTools();
+ box.innerHTML=r.length?r.map(x=>`<button class="tool-link" data-go="${x.page}"><span>↻</span>${esc(x.title)}<small>${timeAgo(x.time)}</small></button>`).join(''):'<p class="helper">Tools you calculate with will appear here.</p>';
+}
+function renderHistoryHome(){
+ const box=$('#historyHome');if(!box)return;
+ const h=calcHistory().slice(0,6);
+ box.innerHTML=h.length?h.map((x,i)=>`<div class="history-row"><div><b>${esc(x.title)}</b><small>${timeAgo(x.time)} · ${esc(x.result.split('\n')[0])}</small></div><button class="btn mini" data-history-copy="${i}">Copy</button></div>`).join(''):'<p class="helper">Your recent calculations are stored locally in this browser.</p>';
+}
+function timeAgo(iso){
+ const ms=Date.now()-new Date(iso).getTime(); if(!Number.isFinite(ms))return '—';
+ const min=Math.max(0,Math.floor(ms/60000)); if(min<1)return 'just now'; if(min<60)return `${min} min ago`;
+ const h=Math.floor(min/60); if(h<24)return `${h} h ago`; return `${Math.floor(h/24)} d ago`
+}
+function copyHistoryIndex(i){
+ const h=calcHistory().slice(0,6)[i];if(!h)return;
+ const text=[`Marine Tools — ${h.title}`,`Time: ${h.time}`,'Inputs:',...(h.inputs||[]),`Result: ${h.result}`].join('\n');
+ navigator.clipboard?.writeText(text).then(()=>toast('Calculation copied.'));
+}
+function clearHistory(){store.set(K.history,[]);store.set(K.recent,[]);renderHistoryHome();renderRecentHome();toast('Local calculation history cleared.')}
+function sanityCheckInput(input){
+ if(input.type!=='number')return;
+ const raw=input.value;if(raw===''){input.classList.remove('sanity-bad');return}
+ const v=Number(raw),label=(input.closest('label')?.textContent||'').toLowerCase();
+ let bad=!Number.isFinite(v),why='';
+ if(!bad && /(speed|distance|volume|density|capacity|flow|pressure|head|draft|depth|length|load|current a|voltage|power|rpm|kwh|tpc|displacement|chain|diameter|rate)/.test(label) && v<0){bad=true;why='Negative value is unusual for this input.'}
+ if(!bad && /%/.test(label) && (v<0||v>100)){bad=true;why='Percentage is normally between 0 and 100.'}
+ if(!bad && /power factor/.test(label) && (v<=0||v>1)){bad=true;why='Power factor should normally be above 0 and at most 1.'}
+ if(!bad && /(course|direction|wind from|set)/.test(label) && (v<0||v>360)){bad=true;why='Direction is normally entered from 0° to 360°.'}
+ input.classList.toggle('sanity-bad',bad);input.title=bad?why:'';
+ const card=input.closest('.tool-card');if(card){
+   let note=card.querySelector('.sanity-note');
+   if(bad&&!note){note=document.createElement('div');note.className='sanity-note';note.textContent='Check highlighted input — the value is outside a typical range.';card.insertBefore(note,card.querySelector('.tool-info'))}
+   if(note&&!card.querySelector('.sanity-bad'))note.remove()
+ }
+}
+
+function copyResult(el){
+ const r=el.closest('.tool-card')?.querySelector('.result');if(!r)return;
+ const text=r.innerText.trim();if(!text)return;
+ navigator.clipboard?.writeText(text).then(()=>toast('Result copied.')).catch(()=>toast('Copy unavailable.'));
+}
+
+function favorites(){return store.get(K.favorites,[])||[]}
+function isFavorite(title){return favorites().some(x=>x.title===title)}
+function toggleFavorite(title,pageId){
+ let f=favorites(),i=f.findIndex(x=>x.title===title);
+ if(i>=0){f.splice(i,1);toast(`${title} removed from My Tools.`)}
+ else{f.push({title,page:pageId});toast(`${title} added to My Tools.`)}
+ store.set(K.favorites,f);syncFavoriteButtons();renderFavoriteHome();
+}
+function syncFavoriteButtons(){
+ $$('.fav-toggle').forEach(b=>{
+   const on=isFavorite(b.dataset.favTitle);
+   b.textContent=on?'★':'☆';b.classList.toggle('on',on);
+   b.title=on?'Remove from My Tools':'Add to My Tools';
+ });
+}
+function renderFavoriteHome(){
+ const box=$('#favoriteHome'); if(!box)return;
+ const f=favorites();
+ const fallback=[
+  {title:'Fuel consumption by speed',page:'fuel'},
+  {title:'Dynamic UKC & squat',page:'vessel-calcs'},
+  {title:'Coordinate toolbox',page:'navigation'},
+  {title:'Generator load margin',page:'engineering'}
+ ];
+ const items=f.length?f:fallback;
+ box.innerHTML=items.slice(0,8).map(x=>`<button class="tool-link" data-go="${x.page}"><span>${f.length?'★':'☆'}</span> ${x.title}</button>`).join('');
+ const sub=$('#favoriteSub');if(sub)sub.textContent=f.length?'Your starred tools':'Star any calculation card to build your own quick list';
+}
+
+function bindGlobal(){
+ document.addEventListener('click',e=>{
+ const copy=e.target.closest('.copy-result');if(copy){copyResult(copy);return}
+ const share=e.target.closest('.share-result');if(share){shareResult(share);return}
+ const hc=e.target.closest('[data-history-copy]');if(hc){copyHistoryIndex(+hc.dataset.historyCopy);return}
+ const calc=e.target.closest('.calc-action');if(calc){const c=calc.closest('.tool-card');setTimeout(()=>recordToolUse(c),0)}
+ const fav=e.target.closest('.fav-toggle');
+ if(fav){e.preventDefault();e.stopPropagation();const pg=fav.closest('.page')?.id||'home';toggleFavorite(fav.dataset.favTitle,pg);return}
+ const g=e.target.closest('[data-go]');if(g)page(g.dataset.go);
+ const n=e.target.closest('.nav-btn[data-page]');if(n)page(n.dataset.page)
+});
+ $('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open'); $('#themeToggle').onclick=()=>setTheme(state.theme==='bridge'?'dark':'bridge');
+ $('#globalSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const hits=tools.filter(x=>x[0].toLowerCase().includes(q));box.innerHTML=hits.map(x=>`<button data-go="${x[1]}">${x[2]} ${x[0]}</button>`).join('')||'<button>No matching tool</button>';box.hidden=false});
+ document.addEventListener('click',e=>{if(!e.target.closest('.searchbox'))$('#searchResults').hidden=true});
+ document.addEventListener('input',e=>{if(e.target.matches('input[type="number"]'))sanityCheckInput(e.target)});
+ window.addEventListener('online',()=>{updateConnectivity();checkApi()});window.addEventListener('offline',updateConnectivity);
+ setInterval(()=>{updateClock();updateLiveAgeIndicators()},1000);updateClock();updateConnectivity();setTheme(state.theme);syncFavoriteButtons();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});checkApi();
+}
+
+function updateConnectivity(){
+ const b=$('#offlineBanner');if(b)b.hidden=navigator.onLine;
+ if(!navigator.onLine){const t=$('#apiText');if(t)t.textContent='Offline · local tools available'}
+}
+function liveAge(){
+ if(!state.lastRefreshAt)return null;return Math.max(0,Date.now()-new Date(state.lastRefreshAt).getTime())
+}
+function liveAgeText(){
+ const ms=liveAge();if(ms==null)return 'Not loaded';
+ const min=Math.floor(ms/60000);if(min<1)return 'just now';if(min<60)return `${min} min ago`;return `${Math.floor(min/60)} h ago`
+}
+function liveFreshness(){
+ const ms=liveAge();if(ms==null)return 'neutral';return ms>30*60000?'bad':ms>15*60000?'warn':'ok'
+}
+function updateLiveAgeIndicators(){
+ const txt=liveAgeText(),fresh=liveFreshness();
+ const ri=$('#riDataAge');if(ri&&state.lastRefreshAt){ri.className=`chip ${fresh}`;ri.textContent=`AIS + forecast · ${txt}${fresh==='bad'?' · STALE':''}`}
+ const hu=$('#homeUpdated');if(hu&&state.lastRefreshAt)hu.textContent=`AIS + BarentsWatch · ${txt}${fresh==='bad'?' · STALE':''}`;
+ const ws=$('#wxStatus');if(ws&&state.lastRefreshAt)ws.innerHTML=`<span class="chip ${fresh}">BarentsWatch route forecast · fetched ${txt}${fresh==='bad'?' · STALE':''}</span>`;
+}
+
+async function checkApi(){try{const r=await fetch(`${API}/api/auth/status`);const j=await r.json();const ok=j.ais?.authenticated&&j.api?.authenticated;$('#apiDot').className=ok?'ok':'';$('#apiText').textContent=ok?'Live data ready':'Live data limited'}catch{$('#apiText').textContent='Offline / API unavailable'}}
+
+function renderHome(){
+ $('#home').innerHTML=`
+ <div class="hero"><div class="hero-content"><h1>Practical tools<br>for <em>seafarers</em></h1><p>A free collection of practical calculation and planning helpers for everyday use at sea. Built independently for seafarers.</p><div class="hero-actions">${button('Explore tools →','navigation')}${button('Learn more','about','btn ghost')}</div></div><div class="hero-note">“Simple tools.<br>Real value at sea.”</div></div>
+ <div class="category-grid">
+  ${cat('◉','Route Intelligence','Plan and review route context with live AIS and forecast data.','route-intelligence','')}
+  ${cat('△','Navigation','Distances, bearings, coordinates and route calculations.','navigation','nav')}
+  ${cat('☁','Weather','Forecast context, route limits and weather-window tools.','weather','weather')}
+  ${cat('◧','Fuel & Bunkering','Consumption, endurance, density and tank calculations.','fuel','fuel')}
+  ${cat('⚓','Vessel Calculations','Draft, trim, UKC, squat and anchoring helpers.','vessel-calcs','nav')}
+  ${cat('⚙','Engineering','Pumps, hydraulics and machinery calculations.','engineering','')}
+  ${cat('ϟ','Electrical','Power, load, batteries and electrical calculations.','electrical','electrical')}
+  ${cat('▦','Quick Tools','Unit converters and handy everyday tools.','quick','')}
+ </div>
+ <div class="dashboard-grid">
+  <article class="panel route-panel"><div class="panel-head"><h2>◉ Route Intelligence</h2><button class="btn ghost" data-go="route-intelligence">Open →</button></div><div class="panel-body"><div class="status-list" id="homeRouteStatus"></div><div class="route-strip" id="homeRiskStrip"></div><div class="metric-grid" style="margin-top:12px"><div class="metric"><small>Total distance</small><strong id="homeDistance">—</strong></div><div class="metric"><small>Estimated passage</small><strong id="homePassage">—</strong></div><div class="metric"><small>Estimated fuel</small><strong id="homeFuel">—</strong></div></div></div></article>
+  <article class="panel"><div class="panel-head"><h2>Live conditions</h2><small id="homeUpdated">Not loaded</small></div><div class="panel-body"><div class="status-list" id="homeConditions"></div><div class="actions"><button class="btn primary" id="homeRefresh">Refresh live data</button></div></div></article>
+  <div class="right-stack">
+   <article class="panel cta-card"><h3>▥ Help shape Marine Tools</h3><p>Marine Tools is independently developed and maintained by one person. Your feedback helps guide future improvements.</p>${button('Take the survey →','survey')}</article>
+   <article class="panel cta-card"><h3>✧ Have an idea or found a bug?</h3><p>Suggest a tool, improvement or report a bug directly.</p>${button('Send a suggestion →','suggestions','btn ghost')}</article>
+   <article class="panel cta-card"><h3>ⓘ About this project</h3><p>Why Marine Tools exists, what it is — and what it deliberately is not.</p>${button('Read more →','about','btn ghost')}</article>
+  </div>
+ </div>
+ <div class="grid-2" style="margin-top:12px"><article class="panel"><div class="panel-head"><div><h3>↻ Recent tools</h3><small>Stored only on this device</small></div></div><div class="panel-body recent-tools" id="recentToolsHome"></div></article><article class="panel"><div class="panel-head"><div><h3>Calculation history</h3><small>Last 20 calculations · local only</small></div><button class="btn mini" id="clearHistoryHome">Clear</button></div><div class="panel-body history-list" id="historyHome"></div></article></div>
+ <div class="grid-2" style="margin-top:12px"><article class="panel"><div class="panel-head"><div><h3>★ My Tools</h3><small id="favoriteSub">Your starred tools</small></div></div><div class="panel-body popular-grid" id="favoriteHome"></div></article><article class="panel"><div class="panel-head"><h3>Recent updates</h3></div><div class="panel-body update-list"><div class="update"><span class="tag new">NEW</span><div><b>Route risk context</b><small>Visual route segments against vessel limits</small></div><small>Current</small></div><div class="update"><span class="tag improved">IMPROVED</span><div><b>Live AIS integration</b><small>Bounding-box traffic view and CPA context</small></div><small>Current</small></div><div class="update"><span class="tag new">NEW</span><div><b>Survey & suggestions</b><small>Direct feedback channels for Marine Tools</small></div><small>Current</small></div></div></article></div>`;
+ $('#homeRefresh').onclick=async()=>{await runAnalysis(false);updateHome()};$('#clearHistoryHome').onclick=clearHistory;updateHome();renderFavoriteHome();renderRecentHome();renderHistoryHome();
+}
+function cat(icon,title,desc,p,cls){return `<button class="category-card ${cls}" data-go="${p}"><span class="ico">${icon}</span><h3>${title}</h3><p>${desc}</p><b>→</b></button>`}
+function updateHome(){const d=routeDistance(),h=d/(state.profile.serviceSpeed||8),fuel=h/24*(state.profile.fuelDay||0);$('#homeDistance').textContent=d?`${nf(d,0)} NM`:'No route';$('#homePassage').textContent=d?`${Math.floor(h)} h ${Math.round(h%1*60)} m`:'—';$('#homeFuel').textContent=d?`${nf(fuel,1)} m³`:'—';const f=state.forecast||[],risks=f.map(x=>riskFor(x));$('#homeRiskStrip').innerHTML=risks.length?risks.map(r=>`<i class="${r.score===2?'alert':r.score===1?'caution':''}"></i>`).join(''):'<i></i>';
+ const maxHs=Math.max(...f.map(x=>Number(x.hs)||0),0),maxW=Math.max(...f.map(x=>Number(x.windKn)||0),0),maxC=Math.max(...f.map(x=>Number(x.currentKn)||0),0);$('#homeConditions').innerHTML=`${srow('Wind',maxW?`${nf(maxW,0)} kn`:'Not loaded')}${srow('Waves (Hs)',maxHs?`${nf(maxHs)} m`:'Not loaded')}${srow('Current',maxC?`${nf(maxC)} kn`:'Not loaded')}${srow('AIS traffic',state.ais.length?`${state.ais.length} loaded`:'Not loaded')}`;$('#homeUpdated').textContent=state.lastRefreshAt?`AIS + BarentsWatch · ${liveAgeText()}`:'Not loaded';$('#homeRouteStatus').innerHTML=`${srow('Route',state.route.length>1?'Ready':'Create a route')}${srow('Operational envelope',f.length?overallRisk(risks):'Not analysed')}${srow('AIS targets in corridor',state.ais.length?String(corridorTargets().length):'Not loaded')}`}
+function srow(label,value,cls=''){return `<div class="status-row ${cls}"><i></i><span>${label}</span><span class="value">${value}</span></div>`}
+function overallRisk(r){return r.some(x=>x.score===2)?'Alert':r.some(x=>x.score===1)?'Caution':'Normal'}
+
+function renderRouteIntelligence(){
+ $('#route-intelligence').innerHTML=`<div class="page-title"><div><div class="eyebrow">LIVE ROUTE CONTEXT</div><h1>Route Intelligence</h1><p>Combines your active route, vessel limits, BarentsWatch forecast data and live AIS into a planning view. It is not approved navigation information.</p></div><div class="actions"><button class="btn primary" id="runAnalysis">Run analysis</button><button class="btn" id="clearRoute">Clear route</button></div></div>
+ <div class="analysis-summary"><div class="metric"><small>Route distance</small><strong id="riDistance">—</strong></div><div class="metric"><small>AIS in corridor</small><strong id="riAis">—</strong></div><div class="metric"><small>CPA alerts</small><strong id="riCpa">—</strong></div><div class="metric"><small>Max Hs</small><strong id="riHs">—</strong></div><div class="metric"><small>Max wind</small><strong id="riWind">—</strong></div></div>
+ <div class="grid-2"><article class="panel"><div class="panel-head"><h2>Route situation</h2><div class="legend"><span>Normal</span><span class="caution">Caution</span><span class="alert">Alert</span></div></div><div class="panel-body"><div class="map-toolbar"><button class="btn" id="fitRoute">Fit route</button><button class="btn" id="undoWp">Undo waypoint</button><span class="chip" id="riDataAge">NOT LOADED</span></div><div id="riMap" class="map"></div><p class="helper">Click the map to add waypoints. Dragging is intentionally not used here to reduce accidental edits. Route and vessel profile are stored only in this browser.</p></div></article>
+ <div class="right-stack"><article class="panel"><div class="panel-head"><h3>Operational envelope</h3></div><div class="panel-body" id="envelopeBox"></div></article><article class="panel"><div class="panel-head"><h3>What changed?</h3><small>Since previous analysis</small></div><div class="panel-body change-list" id="changeBox"><span class="helper">Run an analysis twice to compare.</span></div></article><article class="panel"><div class="panel-head"><h3>Relevant AIS targets</h3></div><div class="panel-body" style="max-height:280px;overflow:auto"><table class="table"><thead><tr><th>Vessel</th><th>SOG</th><th>CPA</th><th>TCPA</th></tr></thead><tbody id="aisTable"></tbody></table></div></article></div></div>`;
+ $('#runAnalysis').onclick=()=>runAnalysis(true);$('#clearRoute').onclick=()=>{state.route=[];store.set(K.route,[]);drawRoute();updateRiSummary();toast('Route cleared')};$('#fitRoute').onclick=fitRoute;$('#undoWp').onclick=()=>{state.route.pop();store.set(K.route,state.route);drawRoute();updateRiSummary()};renderEnvelope();updateRiSummary();
+}
+function initRouteMap(){if(state.map)return;const el=$('#riMap');if(!el)return;state.map=L.map(el,{zoomControl:true}).setView([59.2,10.5],7);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(state.map);L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenSeaMap'}).addTo(state.map);state.routeLayer=L.layerGroup().addTo(state.map);state.riskLayer=L.layerGroup().addTo(state.map);state.aisLayer=L.layerGroup().addTo(state.map);state.map.on('click',e=>{state.route.push({lat:+e.latlng.lat.toFixed(5),lon:+e.latlng.lng.toFixed(5),name:`WP${state.route.length+1}`});store.set(K.route,state.route);drawRoute();updateRiSummary()});drawRoute();fitRoute()}
+function drawRoute(){if(!state.routeLayer)return;state.routeLayer.clearLayers();state.riskLayer.clearLayers();if(state.route.length){state.route.forEach((p,i)=>L.circleMarker([p.lat,p.lon],{radius:5,color:'#75ddff',fillColor:'#092a3c',fillOpacity:1,weight:2}).bindTooltip(p.name||`WP${i+1}`).addTo(state.routeLayer));if(state.route.length>1)L.polyline(state.route.map(p=>[p.lat,p.lon]),{color:'#39c5f3',weight:3,dashArray:'8 7'}).addTo(state.routeLayer)}drawRiskSegments()}
+function fitRoute(){if(state.map&&state.route.length)state.map.fitBounds(L.latLngBounds(state.route.map(p=>[p.lat,p.lon])).pad(.18));}
+function renderEnvelope(){const p=state.profile;$('#envelopeBox').innerHTML=`<div class="source-box"><div class="source-item"><span>Max Hs</span><b>${p.maxHs} m</b></div><div class="source-item"><span>Max wind</span><b>${p.maxWind} kn</b></div><div class="source-item"><span>Max current</span><b>${p.maxCurrent} kn</b></div><div class="source-item"><span>Min UKC</span><b>${p.minUKC} m</b></div><div class="source-item"><span>CPA alert</span><b>${p.cpaAlert} NM</b></div><div class="source-item"><span>AIS corridor</span><b>${p.corridor} NM</b></div></div><div class="actions">${button('Edit vessel profile','profile','btn')}</div>`}
+function updateRiSummary(){const d=routeDistance(),corr=corridorTargets(),cpa=cpaTargets().filter(x=>x.cpa<state.profile.cpaAlert);const maxHs=Math.max(...state.forecast.map(x=>Number(x.hs)||0),0),maxW=Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0);$('#riDistance')&&($('#riDistance').textContent=d?`${nf(d,1)} NM`:'—');$('#riAis')&&($('#riAis').textContent=state.ais.length?corr.length:'—');$('#riCpa')&&($('#riCpa').textContent=state.ais.length?cpa.length:'—');$('#riHs')&&($('#riHs').textContent=maxHs?`${nf(maxHs)} m`:'—');$('#riWind')&&($('#riWind').textContent=maxW?`${nf(maxW,0)} kn`:'—');renderAisTable();drawRiskSegments();}
+function corridorTargets(){return state.ais.filter(v=>{const lat=Number(v.latitude??v.lat),lon=Number(v.longitude??v.lon);return Number.isFinite(lat)&&Number.isFinite(lon)&&distToRoute({lat,lon})<=state.profile.corridor})}
+function cpaTargets(){if(state.route.length<2)return[];const own={lat:state.route[0].lat,lon:state.route[0].lon,sog:state.profile.serviceSpeed,cog:bearing(state.route[0],state.route[1])};return corridorTargets().map(v=>{const t={lat:Number(v.latitude??v.lat),lon:Number(v.longitude??v.lon),sog:Number(v.speedOverGround??v.sog)||0,cog:Number(v.courseOverGround??v.cog)||0};return{v,...cpaTcpa(own,t)}}).sort((a,b)=>a.cpa-b.cpa)}
+function renderAisTable(){const tb=$('#aisTable');if(!tb)return;tb.innerHTML=cpaTargets().slice(0,20).map(x=>`<tr><td>${esc(x.v.name||x.v.shipName||String(x.v.mmsi||'Unknown'))}</td><td>${nf(x.v.speedOverGround??x.v.sog,1)}</td><td class="${x.cpa<state.profile.cpaAlert?'delta up':''}">${nf(x.cpa,2)}</td><td>${nf(x.tcpa,0)} min</td></tr>`).join('')||'<tr><td colspan="4" class="helper">No AIS targets loaded.</td></tr>'}
+function drawAis(){if(!state.aisLayer)return;state.aisLayer.clearLayers();corridorTargets().forEach(v=>{const lat=Number(v.latitude??v.lat),lon=Number(v.longitude??v.lon),cog=Number(v.courseOverGround??v.cog)||0,sog=Number(v.speedOverGround??v.sog)||0;const cpa=cpaTargets().find(x=>x.v===v);const col=cpa&&cpa.cpa<state.profile.cpaAlert?'#ff625d':'#60d6ff';L.circleMarker([lat,lon],{radius:4,color:col,fillColor:col,fillOpacity:.75,weight:1}).bindPopup(`<b>${esc(v.name||v.shipName||'AIS target')}</b><br>MMSI ${esc(String(v.mmsi||'—'))}<br>SOG ${nf(sog)} kn · COG ${nf(cog,0)}°${cpa?`<br>CPA ${nf(cpa.cpa,2)} NM · TCPA ${nf(cpa.tcpa,0)} min`:''}`).addTo(state.aisLayer)})}
+function drawRiskSegments(){if(!state.riskLayer||state.route.length<2||!state.forecast.length)return;state.riskLayer.clearLayers();for(let i=1;i<state.route.length;i++){const f=state.forecast[Math.round((i-1)*(state.forecast.length-1)/Math.max(1,state.route.length-2))]||{};const r=riskFor(f),col=r.score===2?'#ff625d':r.score===1?'#f2bf49':'#32d48a';L.polyline([[state.route[i-1].lat,state.route[i-1].lon],[state.route[i].lat,state.route[i].lon]],{color:col,weight:7,opacity:.72}).bindTooltip(`${r.label}${r.reasons.length?`: ${r.reasons.join(', ')}`:''}`).addTo(state.riskLayer)}}
+async function runAnalysis(showToast=true){if(state.route.length<2){if(showToast)toast('Add at least two route waypoints first.');return}const box=routeBBox(state.route,Math.max(8,state.profile.corridor+2));try{sourceStatus('#riDataAge','warn','LOADING');const [aisR,wxR]=await Promise.all([fetch(`${API}/api/ais/latest?minLat=${box.minLat}&maxLat=${box.maxLat}&minLon=${box.minLon}&maxLon=${box.maxLon}`),fetch(`${API}/api/forecast?route=${encodeURIComponent(JSON.stringify(state.route))}`)]);if(aisR.ok){const a=await aisR.json();state.ais=Array.isArray(a)?a:[]}if(wxR.ok){const w=await wxR.json();state.forecast=Array.isArray(w)?w:[]}state.lastRefresh=nowUTC();state.lastRefreshAt=new Date().toISOString();sourceStatus('#riDataAge','ok',`AIS + forecast · just now`);drawAis();updateRiSummary();compareAnalysis();updateHome();renderWxTable();updateLiveAgeIndicators();if(showToast)toast('Route analysis updated.')}catch(e){sourceStatus('#riDataAge','bad','LIVE DATA ERROR');if(showToast)toast('Could not load live route data.')}}
+function snapshot(){const cpa=cpaTargets().filter(x=>x.cpa<state.profile.cpaAlert).length;return{time:new Date().toISOString(),ais:corridorTargets().length,cpa,maxHs:Math.max(...state.forecast.map(x=>Number(x.hs)||0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
+function compareAnalysis(){const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');if(box){if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{const d=b-a,cls=d>0?'up':d<0?'down':'same';return `<div class="change-row"><span>${n}</span><b>${nf(a,n.includes('AIS')||n.includes('CPA')?0:1)} → ${nf(b,n.includes('AIS')||n.includes('CPA')?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`}).join('')}store.set(K.lastAnalysis,cur)}
+
+function renderNavigation(){
+ $('#navigation').innerHTML=pageTitle('Navigation','Everyday navigation calculations and route helpers. These tools supplement — never replace — approved navigation equipment.')+`<div class="tool-grid">
+ ${card('Bearing, distance & destination','Great-circle distance, initial bearing and destination point.',`<div class="fields"><label>Lat A<input id="navLat1" type="number" step="any" value="59.42"></label><label>Lon A<input id="navLon1" type="number" step="any" value="10.48"></label><label>Lat B<input id="navLat2" type="number" step="any" value="58.97"></label><label>Lon B<input id="navLon2" type="number" step="any" value="5.73"></label></div>${calcButton('calcBearing')}${result('resBearing')}`)}
+ ${card('Coordinate toolbox','Convert decimal degrees to degrees and decimal minutes (DDM) and DMS.',`<div class="fields"><label>Latitude<input id="coordLat" type="number" step="any" value="59.4213"></label><label>Longitude<input id="coordLon" type="number" step="any" value="10.4832"></label></div>${calcButton('calcCoords')}${result('resCoords')}`)}
+ ${card('Current-corrected ETA','Estimate speed over ground and ETA using a current component along the course.',`<div class="fields"><label>Distance NM<input id="etaDist" type="number" value="120"></label><label>Speed through water kn<input id="etaStw" type="number" value="8"></label><label>Current component kn<input id="etaCur" type="number" step=".1" value="0.5"></label></div>${calcButton('calcEta')}${result('resEta')}`)}
+ ${card('Wind component','Resolve wind into head/tailwind and crosswind relative to vessel course.',`<div class="fields"><label>Course °T<input id="windCourse" type="number" value="90"></label><label>Wind from °T<input id="windDir" type="number" value="230"></label><label>Wind speed kn<input id="windSpeed" type="number" value="20"></label></div>${calcButton('calcWindComp')}${result('resWindComp')}`)}
+ ${card('Closest point on active route','Check how far a coordinate lies from the active route.',`<div class="fields"><label>Latitude<input id="nearLat" type="number" step="any"></label><label>Longitude<input id="nearLon" type="number" step="any"></label></div>${calcButton('calcNearest')}${result('resNearest')}`)}
+
+
+ ${card('Set & drift','Combine through-water motion and current to estimate COG and SOG.',`<div class="fields"><label>Heading / course through water °T<input id="sdCourse" type="number" value="90"></label><label>Speed through water kn<input id="sdStw" type="number" step=".1" value="8"></label><label>Current set to °T<input id="sdSet" type="number" value="30"></label><label>Current drift kn<input id="sdDrift" type="number" step=".1" value="1.2"></label></div>${calcButton('calcSetDrift')}${result('resSetDrift')}`)}
+
+ ${card('Great circle vs rhumb line','Compare great-circle and rhumb-line distance and initial course.',`<div class="fields"><label>Lat A<input id="gcLat1" type="number" step="any" value="59.42"></label><label>Lon A<input id="gcLon1" type="number" step="any" value="10.48"></label><label>Lat B<input id="gcLat2" type="number" step="any" value="58.97"></label><label>Lon B<input id="gcLon2" type="number" step="any" value="5.73"></label></div>${calcButton('calcGcRhumb','Compare')}${result('resGcRhumb')}${formulaBox('Formula & assumptions','Great-circle uses a spherical Earth haversine distance and initial bearing. Rhumb line uses Mercator sailing with constant course. For official passage planning, use approved chart/ECDIS methods and vessel procedures.')}`)}
+ ${card('True / apparent wind','Convert apparent wind at the vessel into estimated true wind.',`<div class="fields"><label>Vessel course °T<input id="twCourse" type="number" value="90"></label><label>Vessel speed kn<input id="twShip" type="number" step=".1" value="8"></label><label>Apparent wind from ° relative<input id="twRel" type="number" value="30"></label><label>Apparent wind speed kn<input id="twAws" type="number" step=".1" value="20"></label></div>${calcButton('calcTrueWind')}${result('resTrueWind')}${formulaBox('Formula & assumptions','Relative direction is entered clockwise from the bow: 0° = ahead, 90° = starboard, 180° = astern. The calculation vector-adds vessel velocity to apparent-wind velocity. It assumes steady speed/course and ignores sensor corrections, heel, leeway and vertical wind components.')}`)}
+ ${card('Passage scenario compare','Compare time and fuel at several planned speeds.',`<div class="fields"><label>Distance NM<input id="scDist" type="number" step=".1" value="120"></label><label>Fuel at reference speed m³/day<input id="scFuel" type="number" step=".1" value="4"></label><label>Reference speed kn<input id="scRef" type="number" step=".1" value="8"></label><label>Speeds to compare<input id="scSpeeds" value="6, 8, 10, 12"></label></div>${calcButton('calcScenarios','Compare scenarios')}${result('resScenarios')}${formulaBox('Formula & assumptions','Passage time = distance ÷ speed. Fuel model uses the simple propulsive approximation Fuel/day = reference fuel × (speed/reference speed)³. This is a scenario tool only; replace with vessel-specific performance data whenever available.')}`)}
+
+ ${card('Route fuel estimate','Estimate passage time and fuel from the active route and vessel profile.',`${result('resRouteFuel','Create a route in Route Intelligence and a vessel profile.')}${calcButton('calcRouteFuel','Update estimate')}`)}
+ </div>`;
+ bindNavigation();
+}
+function bindNavigation(){
+ $('#calcBearing').onclick=()=>{const a={lat:+$('#navLat1').value,lon:+$('#navLon1').value},b={lat:+$('#navLat2').value,lon:+$('#navLon2').value},d=hav(a,b),br=bearing(a,b),dest=destination(a,br,d);setRes('resBearing',`${nf(d,2)} NM · ${nf(br,1)}°T`,`Destination check: ${nf(dest.lat,5)}, ${nf(dest.lon,5)}`)};
+ $('#calcCoords').onclick=()=>{const la=+$('#coordLat').value,lo=+$('#coordLon').value;setRes('resCoords',`${toDDM(la,true)} · ${toDDM(lo,false)}`,`${toDMS(la,true)} · ${toDMS(lo,false)}`)};
+ $('#calcEta').onclick=()=>{const d=+$('#etaDist').value,s=+$('#etaStw').value,c=+$('#etaCur').value,sog=s+c,h=d/Math.max(.01,sog);setRes('resEta',`${nf(sog,2)} kn SOG · ${formatHours(h)}`,`Assumes constant current component over ${d} NM.`)};
+ $('#calcWindComp').onclick=()=>{const c=rad(+$('#windCourse').value),from=rad(+$('#windDir').value),s=+$('#windSpeed').value;const rel=from-c,head=-s*Math.cos(rel),cross=s*Math.sin(rel);setRes('resWindComp',`${head>=0?'Headwind':'Tailwind'} ${nf(Math.abs(head),1)} kn`,`Crosswind ${nf(Math.abs(cross),1)} kn from ${cross>0?'starboard':'port'}.`)};
+ $('#calcNearest').onclick=()=>{if(state.route.length<2)return setRes('resNearest','No active route','Add at least two route waypoints first.','caution');const p={lat:+$('#nearLat').value,lon:+$('#nearLon').value},d=distToRoute(p);setRes('resNearest',`${nf(d,2)} NM from route`,d<=state.profile.corridor?'Inside configured AIS corridor.':'Outside configured AIS corridor.');};
+
+
+ $('#calcSetDrift').onclick=()=>{const c=rad(+$('#sdCourse').value),stw=+$('#sdStw').value,set=rad(+$('#sdSet').value),dr=+$('#sdDrift').value;if(stw<0||dr<0)return setRes('resSetDrift','Check speed inputs.','','caution');const x=stw*Math.sin(c)+dr*Math.sin(set),y=stw*Math.cos(c)+dr*Math.cos(set),sog=Math.hypot(x,y),cog=(deg(Math.atan2(x,y))+360)%360;setRes('resSetDrift',`${nf(cog,1)}°T COG · ${nf(sog,2)} kn SOG`,`Current ${nf(dr,1)} kn set to ${nf(+$('#sdSet').value,0)}°T.`)};
+
+ $('#calcGcRhumb').onclick=()=>{const a={lat:+$('#gcLat1').value,lon:+$('#gcLon1').value},b={lat:+$('#gcLat2').value,lon:+$('#gcLon2').value},gc=hav(a,b),gb=bearing(a,b),rh=rhumb(a,b),diff=rh.distance-gc;setRes('resGcRhumb',`GC ${nf(gc,2)} NM · ${nf(gb,1)}°T`,`Rhumb ${nf(rh.distance,2)} NM · ${nf(rh.bearing,1)}°T · distance difference ${nf(diff,2)} NM.`)};
+ $('#calcTrueWind').onclick=()=>{const c=rad(+$('#twCourse').value),vs=+$('#twShip').value,rel=rad(+$('#twRel').value),aws=+$('#twAws').value;const appFrom=c+rel,appTo=appFrom+Math.PI;const ax=aws*Math.sin(appTo),ay=aws*Math.cos(appTo),vx=vs*Math.sin(c),vy=vs*Math.cos(c),tx=ax+vx,ty=ay+vy,tws=Math.hypot(tx,ty),to=Math.atan2(tx,ty),from=(deg(to+Math.PI)+360)%360;setRes('resTrueWind',`${nf(tws,1)} kn from ${nf(from,0)}°T`,`Calculated from apparent wind ${nf(aws,1)} kn at ${nf(+$('#twRel').value,0)}° relative and vessel ${nf(vs,1)} kn / ${nf(+$('#twCourse').value,0)}°T.`)};
+ $('#calcScenarios').onclick=()=>{const d=+$('#scDist').value,base=+$('#scFuel').value,ref=+$('#scRef').value,speeds=$('#scSpeeds').value.split(/[,; ]+/).map(Number).filter(x=>x>0&&Number.isFinite(x)).slice(0,6);if(!speeds.length)return setRes('resScenarios','Enter one or more speeds.','','caution');const rows=speeds.map(s=>{const h=d/s,day=base*Math.pow(s/ref,3),fuel=day*h/24;return `<tr><td>${nf(s,1)} kn</td><td>${formatHours(h)}</td><td>${nf(day,2)} m³/day</td><td>${nf(fuel,2)} m³</td></tr>`}).join('');$('#resScenarios').className='result';$('#resScenarios').innerHTML=`<strong>Scenario comparison</strong><div class="table-wrap"><table class="table compact"><thead><tr><th>Speed</th><th>Time</th><th>Modelled rate</th><th>Fuel</th></tr></thead><tbody>${rows}</tbody></table></div><small>Simple cubic speed/fuel model for comparison only.</small>`};
+
+ $('#calcRouteFuel').onclick=()=>updateRouteFuel();updateRouteFuel();
+}
+function updateRouteFuel(){const d=routeDistance(),s=state.profile.serviceSpeed||0,h=d/Math.max(.01,s),f=h/24*(state.profile.fuelDay||0);setRes('resRouteFuel',d?`${nf(d,1)} NM · ${formatHours(h)} · ${nf(f,2)} m³`:'No active route',d?'Uses service speed and daily fuel consumption from Vessel Profile.':'Create a route in Route Intelligence.');}
+function toDDM(v,lat){const h=lat?(v>=0?'N':'S'):(v>=0?'E':'W'),a=Math.abs(v),d=Math.floor(a),m=(a-d)*60;return `${d}° ${m.toFixed(3)}' ${h}`}
+function toDMS(v,lat){const h=lat?(v>=0?'N':'S'):(v>=0?'E':'W'),a=Math.abs(v),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;return `${d}° ${m}' ${s.toFixed(1)}\" ${h}`}
+function formatHours(h){if(!Number.isFinite(h))return'—';return `${Math.floor(h)} h ${Math.round((h%1)*60)} min`}
+
+function renderWeather(){
+ $('#weather').innerHTML=pageTitle('Weather','Route forecast context, operational-limit checks and weather-related planning helpers.')+`<div class="grid-2"><article class="panel"><div class="panel-head"><h2>Active route forecast</h2><button class="btn primary" id="refreshWx">Refresh</button></div><div class="panel-body"><div id="wxStatus" class="source-status"></div><p class="tool-how"><b>How to use</b><span>Create a route in Route Intelligence, then refresh to load route-based wave, wind and current context.</span></p><div class="table-wrap"><table class="table"><thead><tr><th>Point</th><th>Hs</th><th>Wind</th><th>Current</th><th>Status</th><th>Source</th></tr></thead><tbody id="wxTable"></tbody></table></div><div class="notice mini-notice">Live values are supporting context only. Always check source age and official forecasts.</div></div></article>
+ <article class="panel tool-card" data-tool-title="Weather window finder"><button class="fav-toggle" type="button" data-fav-title="Weather window finder">☆</button><h3>Weather window finder</h3><p>Find consecutive manual forecast rows that stay inside your chosen limits.</p>${toolUsage('Weather window finder')}<p class="helper">Paste hourly rows as <span class="mono">time, Hs(m), wind(kn), current(kn)</span>.</p><textarea id="windowData">08:00,1.2,18,0.6\n09:00,1.4,20,0.7\n10:00,2.2,25,0.8\n11:00,2.8,29,1.0\n12:00,3.2,32,1.1</textarea><div class="fields three"><label>Max Hs<input id="wwHs" type="number" step=".1" value="2.5"></label><label>Max wind<input id="wwWind" type="number" value="28"></label><label>Max current<input id="wwCur" type="number" step=".1" value="1.5"></label></div>${calcButton('findWindow','Find windows')}${result('wwResult')}${toolInformation('Weather window finder','Find consecutive manual forecast rows that stay inside your chosen limits.')}</article></div>
+ <div class="tool-grid" style="margin-top:12px">
+ ${card('Wave encounter period','Estimate the wave period experienced by a moving vessel in deep water.',`<div class="fields"><label>Vessel course °T<input id="weCourse" type="number" value="90"></label><label>Vessel speed kn<input id="weSpeed" type="number" step=".1" value="8"></label><label>Wave from °T<input id="weFrom" type="number" value="270"></label><label>Wave period s<input id="wePeriod" type="number" step=".1" value="8"></label></div>${calcButton('calcEncounter')}${result('resEncounter')}`)}
+ </div>`;
+ $('#refreshWx').onclick=async()=>{await runAnalysis(false);renderWxTable()};$('#findWindow').onclick=findWeatherWindow;$('#calcEncounter').onclick=calcWaveEncounter;renderWxTable();syncFavoriteButtons();
+}
+function renderWxTable(){const tb=$('#wxTable');if(!tb)return;tb.innerHTML=state.forecast.map(f=>{const r=riskFor(f);return `<tr><td>${esc(f.name||`P${f.index+1}`)}</td><td>${f.hs==null?'—':nf(f.hs)}</td><td>${f.windKn==null?'—':nf(f.windKn,0)}</td><td>${f.currentKn==null?'—':nf(f.currentKn)}</td><td><span class="chip ${r.score===2?'bad':r.score===1?'warn':'ok'}">${r.label}</span></td><td><small>${esc(f.source||'BarentsWatch')}<br>${state.lastRefreshAt?`fetched ${liveAgeText()}`:'not loaded'}</small></td></tr>`}).join('')||'<tr><td colspan="6" class="helper">No forecast loaded. Create a route, then refresh.</td></tr>';updateLiveAgeIndicators()}
+function findWeatherWindow(){const rows=$('#windowData').value.split(/\n+/).map(s=>s.split(',').map(x=>x.trim())).filter(x=>x.length>=4).map(x=>({t:x[0],hs:+x[1],w:+x[2],c:+x[3]}));const lim={hs:+$('#wwHs').value,w:+$('#wwWind').value,c:+$('#wwCur').value};let groups=[],cur=[];for(const r of rows){if(r.hs<=lim.hs&&r.w<=lim.w&&r.c<=lim.c)cur.push(r);else if(cur.length){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);const txt=groups.length?groups.map(g=>`${g[0].t} → ${g[g.length-1].t} (${g.length} consecutive row${g.length>1?'s':''})`).join('<br>'):'No matching window in the supplied rows.';setRes('wwResult',txt,'Manual planning aid — verify against official forecasts.')}
+
+
+function calcWaveEncounter(){
+ const course=rad(+$('#weCourse').value),speed=+$('#weSpeed').value*0.514444,from=+$('#weFrom').value,period=+$('#wePeriod').value;
+ if(!(period>0&&speed>=0))return setRes('resEncounter','Check period and speed.','','caution');
+ const g=9.80665,w=2*Math.PI/period,k=w*w/g,waveTo=rad((from+180)%360),rel=course-waveTo;
+ const we=w-k*speed*Math.cos(rel),te=2*Math.PI/Math.max(.00001,Math.abs(we));
+ const note=Math.abs(we)<0.08?'Encounter frequency is close to zero; small input changes can cause a very large period.':'Deep-water regular-wave estimate.';
+ setRes('resEncounter',`${nf(te,2)} s encounter period`,note,Math.abs(we)<0.08?'caution':'');
+}
+
+function renderFuel(){
+ $('#fuel').innerHTML=pageTitle('Fuel & Bunkering','Practical fuel, endurance and volume helpers. No checklist or logbook functionality.')+`<div class="tool-grid">
+ ${card('Fuel ROB & endurance','Estimate usable ROB and endurance after reserve.',`<div class="fields"><label>ROB m³<input id="rob" type="number" step=".1" value="38"></label><label>Consumption m³/day<input id="robDay" type="number" step=".1" value="4.2"></label><label>Reserve %<input id="robRes" type="number" value="20"></label></div>${calcButton('calcRob')}${result('resRob')}`)}
+
+ ${card('Endurance scenario compare','Compare endurance at several possible daily consumption rates.',`<div class="fields"><label>ROB m³<input id="endRob" type="number" step=".1" value="38"></label><label>Reserve %<input id="endReserve" type="number" value="20"></label><label>Consumption scenarios m³/day<input id="endRates" value="3.5, 4.2, 5.0, 6.0"></label></div>${calcButton('calcEndCompare','Compare endurance')}${result('resEndCompare')}`)}
+
+ ${card('Fuel consumption by speed','Interpolate between measured speed/consumption points.',`<textarea id="speedFuel">6,2.1\n8,3.4\n10,5.8\n12,9.2</textarea><label>Target speed kn<input id="targetSpeed" type="number" step=".1" value="9"></label>${calcButton('calcSpeedFuel')}${result('resSpeedFuel')}`)}
+ ${card('Fuel volume / density correction','Convert mass and volume using density and optional thermal coefficient.',`<div class="fields"><label>Volume at observed temp m³<input id="fuelVol" type="number" step=".01" value="30"></label><label>Density kg/m³<input id="fuelDensity" type="number" step=".1" value="839.3"></label><label>Observed temp °C<input id="fuelTemp" type="number" value="20"></label><label>Reference temp °C<input id="fuelRef" type="number" value="15"></label><label>Expansion coefficient /°C<input id="fuelAlpha" type="number" step=".00001" value="0.00083"></label></div>${calcButton('calcFuelDensity')}${result('resFuelDensity')}`)}
+ ${card('Tank transfer','Estimate final volume, fill percentage and pump time.',`<div class="fields"><label>Receiving tank capacity m³<input id="tankCap" type="number" value="20"></label><label>Current volume m³<input id="tankNow" type="number" value="8"></label><label>Transfer m³<input id="tankMove" type="number" value="6"></label><label>Pump rate m³/h<input id="tankRate" type="number" value="12"></label></div>${calcButton('calcTransfer')}${result('resTransfer')}`)}
+
+ ${card('Fuel blending','Blend two fuels by volume and estimate resulting density and sulphur content.',`<div class="fields"><label>Fuel A volume m³<input id="blendVA" type="number" step=".1" value="20"></label><label>Fuel A density kg/m³<input id="blendDA" type="number" step=".1" value="840"></label><label>Fuel A sulphur % m/m<input id="blendSA" type="number" step=".001" value="0.10"></label><label>Fuel B volume m³<input id="blendVB" type="number" step=".1" value="10"></label><label>Fuel B density kg/m³<input id="blendDB" type="number" step=".1" value="890"></label><label>Fuel B sulphur % m/m<input id="blendSB" type="number" step=".001" value="0.50"></label></div>${calcButton('calcBlend')}${result('resBlend')}${formulaBox('Formula & assumptions','Mass = volume × density. Blended density = total mass ÷ total volume. Sulphur is mass-weighted: (mA×SA + mB×SB) ÷ total mass. Assumes compatible fuels and simple complete mixing; it does not assess stability or compatibility.')}`)}
+
+ ${card('Mass ↔ volume','Quick conversion for fuel or other liquids.',`<div class="fields"><label>Mass tonnes<input id="massT" type="number" step=".01" value="25"></label><label>Density kg/m³<input id="massDens" type="number" step=".1" value="839.3"></label></div>${calcButton('calcMassVol')}${result('resMassVol')}`)}
+ ${card('Route fuel estimate','Use active route and vessel profile.',`${result('fuelRouteRes')}${calcButton('fuelRouteBtn','Update')}`)}
+ </div>`;bindFuel();
+}
+function bindFuel(){
+ $('#calcRob').onclick=()=>{const r=+$('#rob').value,d=+$('#robDay').value,res=+$('#robRes').value,usable=r*(1-res/100),days=usable/Math.max(.0001,d);setRes('resRob',`${nf(usable,1)} m³ usable · ${nf(days,1)} days`,`${nf(r-usable,1)} m³ held as reserve.`)};
+
+ $('#calcEndCompare').onclick=()=>{const rob=+$('#endRob').value,res=+$('#endReserve').value,usable=rob*(1-res/100),rates=$('#endRates').value.split(/[,; ]+/).map(Number).filter(x=>x>0&&Number.isFinite(x)).slice(0,8);if(!(rob>=0&&res>=0&&res<100&&rates.length))return setRes('resEndCompare','Check ROB, reserve and consumption scenarios.','','caution');const rows=rates.map(r=>`<tr><td>${nf(r,2)} m³/day</td><td>${nf(usable/r,2)} days</td><td>${formatHours(usable/r*24)}</td></tr>`).join('');$('#resEndCompare').className='result';$('#resEndCompare').innerHTML=`<strong>${nf(usable,1)} m³ usable after reserve</strong><div class="table-wrap"><table class="table compact"><thead><tr><th>Consumption</th><th>Endurance</th><th>Time</th></tr></thead><tbody>${rows}</tbody></table></div>`};
+
+ $('#calcSpeedFuel').onclick=()=>{const pts=$('#speedFuel').value.split(/\n+/).map(r=>r.split(',').map(Number)).filter(x=>x.length>=2&&x.every(Number.isFinite)).sort((a,b)=>a[0]-b[0]),s=+$('#targetSpeed').value;if(pts.length<2)return setRes('resSpeedFuel','Need at least two points.','','caution');let a=pts[0],b=pts[1];for(let i=1;i<pts.length;i++){if(s<=pts[i][0]){a=pts[i-1];b=pts[i];break}a=pts[i-1];b=pts[i]}const f=a[1]+(s-a[0])/(b[0]-a[0]||1)*(b[1]-a[1]);setRes('resSpeedFuel',`${nf(f,2)} m³/day at ${nf(s,1)} kn`,`Linear interpolation between ${a[0]} kn / ${a[1]} and ${b[0]} kn / ${b[1]}.`)};
+ $('#calcFuelDensity').onclick=()=>{const v=+$('#fuelVol').value,rho=+$('#fuelDensity').value,t=+$('#fuelTemp').value,tr=+$('#fuelRef').value,a=+$('#fuelAlpha').value,vr=v/(1+a*(t-tr)),mass=v*rho/1000;setRes('resFuelDensity',`${nf(vr,3)} m³ @ ${tr}°C · ${nf(mass,3)} t`,`Simple thermal-volume correction using user-supplied coefficient.`)};
+ $('#calcTransfer').onclick=()=>{const cap=+$('#tankCap').value,n=+$('#tankNow').value,m=+$('#tankMove').value,r=+$('#tankRate').value,final=n+m,pct=final/cap*100,time=m/r;setRes('resTransfer',`${nf(final,2)} m³ · ${nf(pct,1)}% · ${formatHours(time)}`,pct>90?'Receiving tank exceeds 90% fill.':'Check tank-specific maximum fill and procedures.',pct>100?'alert':pct>90?'caution':'ok')};
+ $('#calcBlend').onclick=()=>{const va=+$('#blendVA').value,da=+$('#blendDA').value,sa=+$('#blendSA').value,vb=+$('#blendVB').value,db=+$('#blendDB').value,sb=+$('#blendSB').value;if(!(va>=0&&vb>=0&&da>0&&db>0&&va+vb>0))return setRes('resBlend','Check blend inputs.','','caution');const ma=va*da,mb=vb*db,mt=ma+mb,vt=va+vb,rho=mt/vt,s=(ma*sa+mb*sb)/mt;setRes('resBlend',`${nf(vt,2)} m³ · ${nf(rho,1)} kg/m³ · ${nf(s,3)}% S`,`Mass basis: Fuel A ${nf(ma/1000,2)} t + Fuel B ${nf(mb/1000,2)} t. Compatibility/stability is not evaluated.`)};
+ $('#calcMassVol').onclick=()=>{const m=+$('#massT').value,d=+$('#massDens').value,v=m*1000/d;setRes('resMassVol',`${nf(v,3)} m³`,`At ${nf(d,1)} kg/m³.`)};
+ $('#fuelRouteBtn').onclick=()=>{const d=routeDistance(),h=d/Math.max(.01,state.profile.serviceSpeed),f=h/24*state.profile.fuelDay;setRes('fuelRouteRes',d?`${nf(f,2)} m³ for ${nf(d,1)} NM`:'No active route',d?`${formatHours(h)} at ${state.profile.serviceSpeed} kn.`:'Build a route in Route Intelligence.')};$('#fuelRouteBtn').click();
+}
+
+function renderVessel(){
+ $('#vessel-calcs').innerHTML=pageTitle('Vessel Calculations','Draft, under-keel clearance, squat and anchoring helpers.')+`<div class="tool-grid">
+ ${card('Dynamic UKC & squat','Estimate squat and resulting UKC from depth, draft and speed.',`<div class="fields"><label>Charted / actual depth m<input id="ukcDepth" type="number" step=".1" value="8"></label><label>Draft m<input id="ukcDraft" type="number" step=".1" value="4"></label><label>Speed kn<input id="ukcSpeed" type="number" step=".1" value="8"></label><label>Block coefficient Cb<input id="ukcCb" type="number" step=".01" value="0.65"></label><label>Channel factor<input id="ukcCh" type="number" step=".1" value="1"></label></div>${calcButton('calcUkc')}${result('resUkc')}`)}
+ ${card('Anchor swing radius','Estimate maximum horizontal swing radius from chain length, water depth and vessel length.',`<div class="fields"><label>Chain paid out m<input id="anchorChain" type="number" value="120"></label><label>Water depth m<input id="anchorDepth" type="number" value="20"></label><label>Bow to stern / LOA m<input id="anchorLoa" type="number" value="80"></label></div>${calcButton('calcAnchor')}${result('resAnchor')}`)}
+ ${card('Draft / tide UKC','Simple static UKC including tide or water-level correction.',`<div class="fields"><label>Chart depth m<input id="staticDepth" type="number" step=".1" value="6"></label><label>Tide / water level m<input id="staticTide" type="number" step=".1" value="0.8"></label><label>Draft m<input id="staticDraft" type="number" step=".1" value="4"></label><label>Safety allowance m<input id="staticAllow" type="number" step=".1" value="0.5"></label></div>${calcButton('calcStaticUkc')}${result('resStaticUkc')}`)}
+ ${card('FWA / DWA','Estimate Fresh Water Allowance and Dock Water Allowance.',`<div class="fields"><label>Displacement t<input id="fwaDisp" type="number" step="1" value="5000"></label><label>TPC t/cm<input id="fwaTpc" type="number" step=".1" value="12"></label><label>Dock-water density t/m³<input id="fwaDensity" type="number" step=".001" value="1.010"></label></div>${calcButton('calcFwa')}${result('resFwa')}${formulaBox('Formula & assumptions','Approximate FWA(mm) = displacement ÷ (4 × TPC). DWA = FWA × (1.025 − dock-water density) ÷ 0.025. Use vessel hydrostatic data where available; this calculator is a quick planning approximation.')}`)}
+
+ ${card('Air draft / bridge clearance','Estimate remaining vertical clearance using compatible reference levels.',`<div class="fields"><label>Published clearance m<input id="airPublished" type="number" step=".01" value="25"></label><label>Water level above clearance reference m<input id="airWater" type="number" step=".01" value="0.8"></label><label>Vessel air draft m<input id="airDraft" type="number" step=".01" value="20"></label><label>Safety margin m<input id="airMargin" type="number" step=".01" value="1"></label></div>${calcButton('calcAirDraft')}${result('resAirDraft')}`)}
+
+ </div>`;bindVessel();
+}
+function bindVessel(){
+ $('#calcUkc').onclick=()=>{const dep=+$('#ukcDepth').value,dr=+$('#ukcDraft').value,s=+$('#ukcSpeed').value,cb=+$('#ukcCb').value,ch=+$('#ukcCh').value;const squat=ch*cb*s*s/100,ukc=dep-dr-squat,set=state.profile.minUKC||0;setRes('resUkc',`Squat ${nf(squat,2)} m · Dynamic UKC ${nf(ukc,2)} m`,`Simplified planning formula Cb × V² / 100 × channel factor. Vessel-specific squat data takes precedence.`,ukc<set?'alert':ukc<set*1.25?'caution':'ok')};
+ $('#calcAnchor').onclick=()=>{const c=+$('#anchorChain').value,d=+$('#anchorDepth').value,l=+$('#anchorLoa').value,h=Math.sqrt(Math.max(0,c*c-d*d)),r=h+l;setRes('resAnchor',`${nf(r,0)} m maximum approximate swing radius`,`Geometric estimate only; add safety margin for catenary, tide, yaw, GPS antenna position and local requirements.`)};
+ $('#calcStaticUkc').onclick=()=>{const u=+$('#staticDepth').value+ +$('#staticTide').value- +$('#staticDraft').value- +$('#staticAllow').value;setRes('resStaticUkc',`${nf(u,2)} m remaining UKC`,`After user-entered safety allowance.`,u<state.profile.minUKC?'alert':u<state.profile.minUKC*1.25?'caution':'ok')};
+
+ $('#calcAirDraft').onclick=()=>{const pc=+$('#airPublished').value,wl=+$('#airWater').value,ad=+$('#airDraft').value,m=+$('#airMargin').value,remain=pc-wl-ad-m;setRes('resAirDraft',`${nf(remain,2)} m remaining clearance`,`Published ${nf(pc,2)} − water level ${nf(wl,2)} − air draft ${nf(ad,2)} − margin ${nf(m,2)}.`,remain<0?'alert':remain<1?'caution':'ok')};
+
+ $('#calcFwa').onclick=()=>{const disp=+$('#fwaDisp').value,tpc=+$('#fwaTpc').value,rho=+$('#fwaDensity').value;if(!(disp>0&&tpc>0&&rho>0))return setRes('resFwa','Check inputs.','','caution');const fwa=disp/(4*tpc),ratio=(1.025-rho)/.025,dwa=fwa*ratio;setRes('resFwa',`FWA ${nf(fwa,1)} mm · DWA ${nf(dwa,1)} mm`,`Dock-water density ${nf(rho,3)} t/m³ · DWA is ${nf(ratio*100,0)}% of FWA.`)};
+}
+
+function renderEngineering(){
+ $('#engineering').innerHTML=pageTitle('Engineering','Compact engineering calculators for everyday technical work.')+`<div class="tool-grid">
+ ${card('Hydraulic power','Calculate hydraulic power from pressure and flow.',`<div class="fields"><label>Pressure bar<input id="hydP" type="number" value="180"></label><label>Flow L/min<input id="hydQ" type="number" value="80"></label><label>Efficiency %<input id="hydEff" type="number" value="85"></label></div>${calcButton('calcHyd')}${result('resHyd')}`)}
+ ${card('Pump affinity laws','Estimate flow, head and power at a new RPM.',`<div class="fields"><label>Original RPM<input id="pumpN1" type="number" value="1500"></label><label>New RPM<input id="pumpN2" type="number" value="1200"></label><label>Original flow m³/h<input id="pumpQ1" type="number" value="50"></label><label>Original head m<input id="pumpH1" type="number" value="30"></label><label>Original power kW<input id="pumpW1" type="number" value="8"></label></div>${calcButton('calcAffinity')}${result('resAffinity')}`)}
+ ${card('Pipe velocity','Calculate fluid velocity from flow and internal diameter.',`<div class="fields"><label>Flow m³/h<input id="pipeQ" type="number" value="30"></label><label>Internal diameter mm<input id="pipeD" type="number" value="100"></label></div>${calcButton('calcPipe')}${result('resPipe')}`)}
+
+ ${card('Tank table interpolation','Interpolate volume between two surrounding rows in a vessel tank table.',`<textarea id="tankTable">0.00,0.00\n0.50,4.80\n1.00,9.90\n1.50,15.20\n2.00,20.70</textarea><label>Measured sounding / ullage<input id="tankMeasure" type="number" step=".001" value="1.20"></label>${calcButton('calcTankInterp')}${result('resTankInterp')}`)}
+ ${card('Flow / fill time','Estimate transfer time from volume and expected flow.',`<div class="fields"><label>Volume to transfer m³<input id="flowVol" type="number" step=".01" value="18"></label><label>Flow rate m³/h<input id="flowRate" type="number" step=".01" value="12"></label></div>${calcButton('calcFlowTime')}${result('resFlowTime')}`)}
+ ${card('Pressure ↔ head','Convert static fluid pressure and head using fluid density.',`<div class="fields"><label>Value<input id="phValue" type="number" step=".001" value="2"></label><label>Conversion<select id="phMode"><option value="bar-head">bar → m head</option><option value="head-bar">m head → bar</option></select></label><label>Fluid density kg/m³<input id="phDensity" type="number" step=".1" value="1000"></label></div>${calcButton('calcPressureHead')}${result('resPressureHead')}`)}
+
+ ${card('Generator load margin','Calculate remaining generator capacity and loading.',`<div class="fields"><label>Available generator capacity kW<input id="genCap" type="number" value="500"></label><label>Current load kW<input id="genLoad" type="number" value="320"></label></div>${calcButton('calcGenMargin')}${result('resGenMargin')}`)}
+ </div>`;bindEngineering();
+}
+function bindEngineering(){
+ $('#calcHyd').onclick=()=>{const p=+$('#hydP').value,q=+$('#hydQ').value,e=+$('#hydEff').value/100,hyd=p*q/600,shaft=hyd/Math.max(.01,e);setRes('resHyd',`${nf(hyd,2)} kW hydraulic · ${nf(shaft,2)} kW input`,`Based on P(kW)=bar×L/min÷600.`)};
+ $('#calcAffinity').onclick=()=>{const n1=+$('#pumpN1').value,n2=+$('#pumpN2').value,r=n2/n1,q=+$('#pumpQ1').value*r,h=+$('#pumpH1').value*r*r,w=+$('#pumpW1').value*r*r*r;setRes('resAffinity',`${nf(q,1)} m³/h · ${nf(h,1)} m head · ${nf(w,2)} kW`,`Ideal affinity-law estimate; system curve and efficiency can change actual results.`)};
+ $('#calcPipe').onclick=()=>{const q=+$('#pipeQ').value/3600,d=+$('#pipeD').value/1000,a=Math.PI*d*d/4,v=q/a;setRes('resPipe',`${nf(v,2)} m/s`,`Cross-sectional area ${nf(a,4)} m².`)};
+
+ $('#calcTankInterp').onclick=()=>{const pts=$('#tankTable').value.split(/\n+/).map(r=>r.split(',').map(Number)).filter(x=>x.length>=2&&x.every(Number.isFinite)).sort((a,b)=>a[0]-b[0]),x=+$('#tankMeasure').value;if(pts.length<2)return setRes('resTankInterp','Need at least two valid table rows.','','caution');if(x<pts[0][0]||x>pts.at(-1)[0])return setRes('resTankInterp','Measurement is outside the supplied table range.','Add surrounding approved table rows before interpolating.','caution');let a=pts[0],b=pts[1];for(let i=1;i<pts.length;i++)if(x<=pts[i][0]){a=pts[i-1];b=pts[i];break}const v=a[1]+(x-a[0])/(b[0]-a[0]||1)*(b[1]-a[1]);setRes('resTankInterp',`${nf(v,3)} m³`,`Interpolated between ${a[0]} → ${a[1]} m³ and ${b[0]} → ${b[1]} m³.`)};
+ $('#calcFlowTime').onclick=()=>{const v=+$('#flowVol').value,q=+$('#flowRate').value;if(!(v>=0&&q>0))return setRes('resFlowTime','Check volume and flow.','','caution');setRes('resFlowTime',`${formatHours(v/q)}`,`${nf(v,2)} m³ at ${nf(q,2)} m³/h.`)};
+ $('#calcPressureHead').onclick=()=>{const v=+$('#phValue').value,rho=+$('#phDensity').value,mode=$('#phMode').value,g=9.80665;if(!(rho>0&&v>=0))return setRes('resPressureHead','Check value and density.','','caution');if(mode==='bar-head'){const h=v*100000/(rho*g);setRes('resPressureHead',`${nf(h,2)} m head`,`${nf(v,3)} bar at ${nf(rho,1)} kg/m³.`)}else{const bar=v*rho*g/100000;setRes('resPressureHead',`${nf(bar,3)} bar`,`${nf(v,2)} m head at ${nf(rho,1)} kg/m³.`)}};
+
+ $('#calcGenMargin').onclick=()=>{const c=+$('#genCap').value,l=+$('#genLoad').value,p=l/c*100,m=c-l;setRes('resGenMargin',`${nf(p,1)}% load · ${nf(m,0)} kW margin`,p>95?'Very little remaining margin.':p<30?'Low loading — check engine-specific operating guidance.':'Within a typical planning band.',p>95?'alert':p<30?'caution':'ok')};
+}
+
+function renderElectrical(){
+ $('#electrical').innerHTML=pageTitle('Electrical','Power, load, voltage-drop and battery helpers.')+`<div class="tool-grid">
+ ${card('Three-phase power','Calculate kW and kVA from voltage, current and power factor.',`<div class="fields"><label>Line voltage V<input id="elV" type="number" value="400"></label><label>Current A<input id="elA" type="number" value="143"></label><label>Power factor<input id="elPf" type="number" step=".01" value="0.85"></label><label>Efficiency %<input id="elEff" type="number" value="95"></label></div>${calcButton('calc3p')}${result('res3p')}`)}
+ ${card('Voltage drop','Estimate 3-phase voltage drop from current, length and conductor resistance.',`<div class="fields"><label>Current A<input id="vdA" type="number" value="80"></label><label>One-way length m<input id="vdL" type="number" value="50"></label><label>Resistance Ω/km<input id="vdR" type="number" step=".001" value="0.727"></label><label>System voltage V<input id="vdV" type="number" value="400"></label></div>${calcButton('calcVD')}${result('resVD')}`)}
+ ${card('Battery runtime','Estimate runtime from nominal energy, SOC range and load.',`<div class="fields"><label>Battery capacity kWh<input id="batKwh" type="number" value="500"></label><label>Current SOC %<input id="batSoc" type="number" value="80"></label><label>Minimum SOC %<input id="batMin" type="number" value="20"></label><label>Load kW<input id="batLoad" type="number" value="100"></label><label>Usable efficiency %<input id="batEff" type="number" value="92"></label></div>${calcButton('calcBat')}${result('resBat')}`)}
+
+ ${card('Motor current','Estimate three-phase running current from motor output power.',`<div class="fields"><label>Motor output kW<input id="motKw" type="number" step=".1" value="75"></label><label>Line voltage V<input id="motV" type="number" value="400"></label><label>Power factor<input id="motPf" type="number" step=".01" value="0.85"></label><label>Efficiency %<input id="motEff" type="number" value="92"></label></div>${calcButton('calcMotor')}${result('resMotor')}`)}
+ ${card('Power factor correction','Estimate capacitor reactive power required to improve power factor.',`<div class="fields"><label>Active power kW<input id="pfKw" type="number" step=".1" value="300"></label><label>Present power factor<input id="pfNow" type="number" step=".01" value="0.75"></label><label>Target power factor<input id="pfTarget" type="number" step=".01" value="0.95"></label></div>${calcButton('calcPfCorr')}${result('resPfCorr')}`)}
+ ${card('Transformer calculator','Calculate nominal primary and secondary line currents for a three-phase transformer.',`<div class="fields"><label>Transformer rating kVA<input id="trKva" type="number" step=".1" value="500"></label><label>Primary voltage V<input id="trV1" type="number" value="690"></label><label>Secondary voltage V<input id="trV2" type="number" value="400"></label></div>${calcButton('calcTransformer')}${result('resTransformer')}`)}
+
+ ${card('Current imbalance','Calculate phase-current imbalance.',`<div class="fields three"><label>L1 A<input id="l1" type="number" value="141"></label><label>L2 A<input id="l2" type="number" value="148"></label><label>L3 A<input id="l3" type="number" value="137"></label></div>${calcButton('calcImbalance')}${result('resImbalance')}`)}
+ </div>`;bindElectrical();
+}
+function bindElectrical(){
+ $('#calc3p').onclick=()=>{const v=+$('#elV').value,a=+$('#elA').value,pf=+$('#elPf').value,e=+$('#elEff').value/100,kva=Math.sqrt(3)*v*a/1000,kw=kva*pf*e;setRes('res3p',`${nf(kw,1)} kW · ${nf(kva,1)} kVA`,`Input power factor ${pf}; efficiency ${nf(e*100,0)}%.`)};
+ $('#calcVD').onclick=()=>{const a=+$('#vdA').value,l=+$('#vdL').value,r=+$('#vdR').value,v=+$('#vdV').value,drop=Math.sqrt(3)*a*r*(l/1000),pct=drop/v*100;setRes('resVD',`${nf(drop,2)} V · ${nf(pct,2)}%`,`Simplified resistive 3-phase estimate; reactance, temperature and installation method are not included.`,pct>5?'caution':'ok')};
+ $('#calcBat').onclick=()=>{const k=+$('#batKwh').value,s=+$('#batSoc').value,m=+$('#batMin').value,l=+$('#batLoad').value,e=+$('#batEff').value/100,usable=k*Math.max(0,s-m)/100*e,h=usable/l;setRes('resBat',`${nf(usable,1)} kWh usable · ${formatHours(h)}`,`From ${s}% to ${m}% SOC at constant ${l} kW load.`)};
+
+ $('#calcMotor').onclick=()=>{const p=+$('#motKw').value,v=+$('#motV').value,pf=+$('#motPf').value,eff=+$('#motEff').value/100;if(!(p>=0&&v>0&&pf>0&&pf<=1&&eff>0&&eff<=1))return setRes('resMotor','Check voltage, power factor and efficiency.','','caution');const a=p*1000/(Math.sqrt(3)*v*pf*eff);setRes('resMotor',`${nf(a,1)} A estimated running current`,`For ${nf(p,1)} kW output at PF ${nf(pf,2)} and ${nf(eff*100,0)}% efficiency.`)};
+ $('#calcPfCorr').onclick=()=>{const p=+$('#pfKw').value,p1=+$('#pfNow').value,p2=+$('#pfTarget').value;if(!(p>=0&&p1>0&&p1<=1&&p2>0&&p2<=1&&p2>p1))return setRes('resPfCorr','Target PF must be greater than present PF and both ≤ 1.','','caution');const q=p*(Math.tan(Math.acos(p1))-Math.tan(Math.acos(p2)));setRes('resPfCorr',`${nf(q,1)} kVAr correction`,`Approximate capacitor reactive power from PF ${nf(p1,2)} to ${nf(p2,2)}.`)};
+ $('#calcTransformer').onclick=()=>{const kva=+$('#trKva').value,v1=+$('#trV1').value,v2=+$('#trV2').value;if(!(kva>0&&v1>0&&v2>0))return setRes('resTransformer','Check kVA and voltages.','','caution');const i1=kva*1000/(Math.sqrt(3)*v1),i2=kva*1000/(Math.sqrt(3)*v2);setRes('resTransformer',`Primary ${nf(i1,1)} A · Secondary ${nf(i2,1)} A`,`Nominal 3-phase currents at ${nf(kva,1)} kVA.`)};
+
+ $('#calcImbalance').onclick=()=>{const a=[+$('#l1').value,+$('#l2').value,+$('#l3').value],avg=a.reduce((x,y)=>x+y,0)/3,max=Math.max(...a.map(x=>Math.abs(x-avg))),pct=max/avg*100;setRes('resImbalance',`${nf(avg,1)} A average · ${nf(pct,2)}% max imbalance`,`Calculated as maximum deviation from average / average.`)};
+}
+
+function renderQuick(){
+ $('#quick').innerHTML=pageTitle('Quick Tools','Fast everyday conversions and reference helpers.')+`<div class="tool-grid">
+ ${card('Speed · distance · time','Calculate any simple passage-time relationship.',`<div class="fields"><label>Distance NM<input id="qDist" type="number" value="80"></label><label>Speed kn<input id="qSpeed" type="number" value="8"></label></div>${calcButton('calcDST')}${result('resDST')}`)}
+ ${card('Beaufort converter','Approximate Beaufort force from wind speed.',`<label>Wind speed kn<input id="bfKn" type="number" value="22"></label>${calcButton('calcBf')}${result('resBf')}`)}
+ ${card('Unit converter','Common nautical and engineering units.',`<div class="fields"><label>Value<input id="unitVal" type="number" value="10"></label><label>Conversion<select id="unitType"><option value="nm-km">NM → km</option><option value="km-nm">km → NM</option><option value="kn-ms">kn → m/s</option><option value="ms-kn">m/s → kn</option><option value="bar-kpa">bar → kPa</option><option value="kw-hp">kW → hp</option><option value="c-f">°C → °F</option></select></label></div>${calcButton('calcUnit')}${result('resUnit')}`)}
+ ${card('Compass / gyro correction','Apply variation and deviation / gyro error using signed east-positive convention.',`<div class="fields"><label>Observed / compass course °<input id="compC" type="number" value="90"></label><label>Variation ° (+E / −W)<input id="compVar" type="number" value="2"></label><label>Deviation or gyro error ° (+E / −W)<input id="compDev" type="number" value="-1"></label></div>${calcButton('calcCompass')}${result('resCompass')}`)}
+ </div>`;bindQuick();
+}
+function bindQuick(){
+ $('#calcDST').onclick=()=>{const d=+$('#qDist').value,s=+$('#qSpeed').value,h=d/s;setRes('resDST',`${formatHours(h)}`,`${nf(d,1)} NM at ${nf(s,1)} kn.`)};
+ $('#calcBf').onclick=()=>{const k=+$('#bfKn').value,b=beaufort(k);setRes('resBf',`Beaufort ${b.force} · ${b.desc}`,`${b.range} kn approximate range.`)};
+ $('#calcUnit').onclick=()=>{const v=+$('#unitVal').value,t=$('#unitType').value,fn={"nm-km":x=>[x*1.852,'km'],"km-nm":x=>[x/1.852,'NM'],"kn-ms":x=>[x/1.943844,'m/s'],"ms-kn":x=>[x*1.943844,'kn'],"bar-kpa":x=>[x*100,'kPa'],"kw-hp":x=>[x*1.34102,'hp'],"c-f":x=>[x*9/5+32,'°F']}[t],r=fn(v);setRes('resUnit',`${nf(r[0],3)} ${r[1]}`,'')};
+ $('#calcCompass').onclick=()=>{const c=+$('#compC').value,v=+$('#compVar').value,d=+$('#compDev').value,t=(c+v+d+360)%360;setRes('resCompass',`${nf(t,1)}° true`,`Uses signed east-positive corrections. Confirm convention against your vessel procedures.`)};
+}
+function beaufort(k){const rows=[[1,'Calm','0–1'],[3,'Light air','1–3'],[6,'Light breeze','4–6'],[10,'Gentle breeze','7–10'],[16,'Moderate breeze','11–16'],[21,'Fresh breeze','17–21'],[27,'Strong breeze','22–27'],[33,'Near gale','28–33'],[40,'Gale','34–40'],[47,'Strong gale','41–47'],[55,'Storm','48–55'],[63,'Violent storm','56–63'],[999,'Hurricane','64+']];for(let i=0;i<rows.length;i++)if(k<=rows[i][0])return{force:i,desc:rows[i][1],range:rows[i][2]}}
+
+function renderProfile(){const p=state.profile;$('#profile').innerHTML=pageTitle('Vessel Profile','Shared vessel values are used by route, fuel and operational-envelope calculations.')+`<article class="panel"><div class="panel-body"><div class="fields three"><label>Vessel name<input id="pName" value="${esc(p.name)}"></label><label>LOA m<input id="pLoa" type="number" step=".1" value="${p.loa}"></label><label>Draft m<input id="pDraft" type="number" step=".1" value="${p.draft}"></label><label>Service speed kn<input id="pSpeed" type="number" step=".1" value="${p.serviceSpeed}"></label><label>Fuel consumption m³/day<input id="pFuel" type="number" step=".1" value="${p.fuelDay}"></label><label>Max Hs m<input id="pHs" type="number" step=".1" value="${p.maxHs}"></label><label>Max wind kn<input id="pWind" type="number" value="${p.maxWind}"></label><label>Max current kn<input id="pCur" type="number" step=".1" value="${p.maxCurrent}"></label><label>Minimum UKC m<input id="pUkc" type="number" step=".1" value="${p.minUKC}"></label><label>CPA alert NM<input id="pCpa" type="number" step=".1" value="${p.cpaAlert}"></label><label>AIS route corridor NM<input id="pCorr" type="number" step=".1" value="${p.corridor}"></label></div><div class="actions"><button class="btn primary" id="saveProfile">Save profile</button></div><p class="helper">Operational limits are user-defined planning values. Marine Tools does not determine safe limits for your vessel.</p></div></article>`;$('#saveProfile').onclick=saveProfile}
+function saveProfile(){state.profile={name:$('#pName').value.trim(),loa:+$('#pLoa').value,draft:+$('#pDraft').value,serviceSpeed:+$('#pSpeed').value,fuelDay:+$('#pFuel').value,maxHs:+$('#pHs').value,maxWind:+$('#pWind').value,maxCurrent:+$('#pCur').value,minUKC:+$('#pUkc').value,cpaAlert:+$('#pCpa').value,corridor:+$('#pCorr').value};store.set(K.profile,state.profile);toast('Vessel profile saved.');renderEnvelope();updateHome()}
+
+function renderSettings(){$('#settings').innerHTML=pageTitle('Settings','Local-only application preferences and data controls.')+`<div class="grid-2"><article class="panel"><div class="panel-body"><h3>Appearance</h3><label>Theme<select id="setTheme"><option value="dark">Dark maritime</option><option value="bridge">Bridge Dark</option></select></label><div class="actions"><button class="btn primary" id="saveSet">Save</button></div></div></article><article class="panel"><div class="panel-body"><h3>Local data</h3><p class="helper">Profile, route and comparison snapshot are stored in this browser. They are not automatically synced to a user account or project database.</p><div class="actions"><button class="btn" id="exportData">Export JSON</button><button class="btn" id="clearData">Clear local data</button><button class="btn" id="clearHistorySet">Clear calculation history</button>${button('Privacy & data','privacy','btn')}</div></div></article></div><article class="panel" style="margin-top:12px"><div class="panel-body"><h3>Data principle</h3><p class="helper">Marine Tools is designed to keep entered operational data local where possible. A live-data feature only sends the minimum route or position context needed to return the requested live result.</p></div></article>`;$('#setTheme').value=state.theme;$('#saveSet').onclick=()=>{setTheme($('#setTheme').value);toast('Settings saved.')};$('#exportData').onclick=exportData;$('#clearHistorySet').onclick=clearHistory;$('#clearData').onclick=()=>{if(confirm('Clear Marine Tools local data in this browser?')){Object.values(K).forEach(k=>localStorage.removeItem(k));location.reload()}}}
+function exportData(){const data={profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),favorites:favorites(),recent:recentTools(),history:calcHistory(),exported:new Date().toISOString()};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='marine-tools-data.json';a.click();URL.revokeObjectURL(a.href)}
+
+function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/marine-tools-shield.png" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
+function renderSuggestions(){$('#suggestions').innerHTML=pageTitle('Suggestions','Suggest a new tool, improvement or report a problem.')+`<article class="panel survey-card"><div style="font-size:54px">✧</div><h2>Suggest something</h2><p>Ideas are welcome for practical calculations, planning aids, live maritime context and quick technical utilities. Marine Tools deliberately stays focused on helper tools rather than PMS, logbooks, checklist/SMS systems or certified navigation products.</p><a class="btn primary" href="${SUGGEST_URL}" target="_blank" rel="noopener">Send a suggestion →</a></article>`}
+function renderAbout(){
+ $('#about').innerHTML=`<div class="about-hero"><div class="eyebrow">ABOUT THIS PROJECT</div><h1>Why Marine Tools exists</h1><p>Marine Tools is an independent maritime helper-tool project created to make common calculations, planning tasks and technical lookups easier to access in one place.</p></div>
+ <div class="about-columns">
+   <article class="panel bullet-box"><h3>What it is</h3><ul>
+     <li>Calculation tools for navigation, engineering, electrical work, fuel and vessel operations</li>
+     <li>Planning aids that combine user-entered vessel limits with live maritime context</li>
+     <li>Quick converters and technical utilities designed for PC, tablet and mobile use</li>
+     <li>A free project shaped by practical feedback from seafarers</li>
+   </ul></article>
+   <article class="panel bullet-box"><h3>What it is not</h3><ul>
+     <li>Not ECDIS or approved navigation equipment</li>
+     <li>Not a PMS, electronic logbook or checklist/SMS system</li>
+     <li>Not a certified decision-support system</li>
+     <li>Not a replacement for vessel procedures, official publications or professional judgement</li>
+   </ul></article>
+ </div>
+ <article class="panel" style="margin-top:12px"><div class="panel-body">
+   <h2>Independent and focused</h2>
+   <p>Marine Tools is currently designed, developed and maintained by <b>one person</b>. The scope is intentionally focused on practical helper tools that can save time or make routine calculations easier to verify.</p>
+   <p>Features such as watch handover, maintenance management, checklists and electronic records are outside the intended purpose. The focus is simple: <b>useful tools for seafarers</b>.</p>
+   <div class="notice"><b>Safety boundary:</b> All outputs are planning or calculation aids. Users remain responsible for checking data, assumptions, units and results against approved systems, official sources, vessel-specific documentation and applicable procedures.</div>
+   <div class="actions" style="margin-top:16px">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}</div>
+ </div></article>
+ <div class="grid-2" style="margin-top:12px">
+   <article class="panel bullet-box"><h3>Live data</h3><p>Where available, live AIS and forecast data are presented as supporting context. Source, data age and limitations should always be considered before relying on a result.</p></article>
+   <article class="panel bullet-box"><h3>Privacy by design</h3><p>Vessel Profile, route and local settings are stored in this browser. Live-data requests send only the context needed to obtain the requested result. Marine Tools does not use operational data for advertising, profiling or unrelated purposes.</p><div class="actions" style="margin-top:12px">${button("Read Privacy & data","privacy","btn")}</div></article>
+ </div>`;
+}
+function renderPrivacy(){
+ $('#privacy').innerHTML=`<div class="about-hero"><div class="eyebrow">PRIVACY & DATA</div><h1>Local-first by design</h1><p>Marine Tools uses only the data needed to perform the calculation, save your local setup or return the live-data request you choose to make.</p></div>
+ <div class="about-columns">
+   <article class="panel bullet-box"><h3>Stored on your device</h3><ul>
+     <li>Vessel Profile values</li>
+     <li>Route waypoints created in Route Intelligence</li>
+     <li>Theme and local application settings</li>
+     <li>The previous route-analysis snapshot used for “What changed?”</li>
+   </ul><p class="helper">These values are stored in your browser on the device you are using. They are not automatically synced to a Marine Tools account or central project database.</p></article>
+   <article class="panel bullet-box"><h3>Not used for unrelated purposes</h3><ul>
+     <li>No advertising or behavioural profiling</li>
+     <li>No sale of vessel, route or calculation data</li>
+     <li>No use of entered operational data to train AI models</li>
+     <li>No intentional use for employment, disciplinary, enforcement or commercial assessment</li>
+   </ul><p class="helper">Marine Tools has no user-account database and no function that lets another Marine Tools user retrieve your locally stored operational data.</p></article>
+ </div>
+ <article class="panel" style="margin-top:12px"><div class="panel-body">
+   <h2>When live data is requested</h2>
+   <p>Some tools require internet access. Only the route or position context needed to return the requested live result is sent to the Marine Tools API. Marine Tools does not intentionally store those requests in an application database for later unrelated use.</p>
+   <div class="notice"><b>External infrastructure:</b> Internet requests necessarily pass through hosting, maritime-data, map and network providers. Those providers may process or retain technical request logs according to their own systems and policies.</div>
+ </div></article>
+ <div class="grid-2" style="margin-top:12px">
+   <article class="panel bullet-box"><h3>Maps & live-data sources</h3><p>Map tiles and live maritime data are requested from external services when the relevant feature is used. Those services receive the technical information necessary to return the requested content.</p></article>
+   <article class="panel bullet-box"><h3>Survey & suggestions</h3><p>Survey and suggestion submissions are handled through an external form service and are separate from locally stored Marine Tools operational data. Avoid submitting confidential vessel, company or personal information unless it is necessary.</p></article>
+ </div>
+ <article class="panel" style="margin-top:12px"><div class="panel-body">
+   <h2>Your control</h2>
+   <p>You can export your local Marine Tools data as JSON or erase it from this browser under <b>Settings → Local data</b>. Clearing browser site data will also remove locally stored Marine Tools data.</p>
+   <p><b>Data principle:</b> collect as little as possible, keep user-entered operational data local where possible, and send only what is necessary when a live-data feature explicitly requires a network request.</p>
+ </div></article>`;
+}
+function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow">MARINE TOOLS</div><h1>${h}</h1><p>${p}</p></div></div>`}
+function setRes(id,main,sub='',cls=''){const e=$('#'+id);if(!e)return;e.className=`result ${cls}`;e.innerHTML=`<strong>${main}</strong>${sub?`<small>${sub}</small>`:''}`}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function init(){renderHome();renderRouteIntelligence();renderNavigation();renderWeather();renderFuel();renderVessel();renderEngineering();renderElectrical();renderQuick();renderProfile();renderSettings();renderSurvey();renderSuggestions();renderAbout();renderPrivacy();bindGlobal();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
+document.addEventListener('DOMContentLoaded',init);
+})();

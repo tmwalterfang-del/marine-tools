@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#061c2f">
+  <meta name="description" content="Marine Tools — practical planning and calculation helpers for seafarers.">
+  <title>Marine Tools — Practical tools for seafarers</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <meta property="og:title" content="Marine Tools — Practical tools for seafarers">
+  <meta property="og:description" content="Practical planning and calculation tools for seafarers.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css?v=20261001-fullscale-5">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <button class="brand nav-btn active" data-page="home" aria-label="Marine Tools home">
+      <img src="assets/marine-tools-shield.png" alt="Marine Tools logo">
+      <div><strong>MARINE TOOLS</strong><small>Practical tools for seafarers</small></div>
+    </button>
+
+    <nav class="nav-list" aria-label="Main navigation">
+      <button class="nav-btn active" data-page="home"><span>⌂</span>Home</button>
+      <button class="nav-btn" data-page="route-intelligence"><span>◉</span>Route Intelligence</button>
+      <button class="nav-btn" data-page="navigation"><span>△</span>Navigation</button>
+      <button class="nav-btn" data-page="weather"><span>☁</span>Weather</button>
+      <button class="nav-btn" data-page="fuel"><span>◧</span>Fuel & Bunkering</button>
+      <button class="nav-btn" data-page="vessel-calcs"><span>⚓</span>Vessel Calculations</button>
+      <button class="nav-btn" data-page="engineering"><span>⚙</span>Engineering</button>
+      <button class="nav-btn" data-page="electrical"><span>ϟ</span>Electrical</button>
+      <button class="nav-btn" data-page="quick"><span>▦</span>Quick Tools</button>
+
+      <div class="nav-divider"></div>
+      <button class="nav-btn" data-page="profile"><span>⚓</span>Vessel Profile</button>
+      <button class="nav-btn" data-page="settings"><span>☷</span>Settings</button>
+
+      <p class="nav-label">COMMUNITY</p>
+      <button class="nav-btn" data-page="survey"><span>▥</span>Survey</button>
+      <button class="nav-btn" data-page="suggestions"><span>✧</span>Suggestions</button>
+      <button class="nav-btn" data-page="about"><span>ⓘ</span>About this project</button>
+      <button class="nav-btn" data-page="privacy"><span>◈</span>Privacy & data</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="source-dot"><i id="apiDot"></i><span id="apiText">Checking live data</span></div>
+      <small>Planning and calculation aid only.</small>
+    </div>
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
+      <div class="top-brand">Practical tools for seafarers</div>
+      <label class="searchbox"><span>⌕</span><input id="globalSearch" placeholder="Search tools, calculations, units…" autocomplete="off"><div id="searchResults" class="search-results" hidden></div></label>
+      <div class="top-actions">
+        <span id="utcClock" class="utc">UTC --:--</span>
+        <button id="themeToggle" class="icon-button" title="Switch display mode">◐</button>
+      </div>
+    </header>
+    <div class="offline-banner" id="offlineBanner" hidden>
+      <b>OFFLINE</b>
+      <span>Local calculators, Vessel Profile and saved route remain available. Live AIS and forecast data require a connection.</span>
+    </div>
+
+    <main class="main-content">
+      <section id="home" class="page active"></section>
+      <section id="route-intelligence" class="page"></section>
+      <section id="navigation" class="page"></section>
+      <section id="weather" class="page"></section>
+      <section id="fuel" class="page"></section>
+      <section id="vessel-calcs" class="page"></section>
+      <section id="engineering" class="page"></section>
+      <section id="electrical" class="page"></section>
+      <section id="quick" class="page"></section>
+      <section id="profile" class="page"></section>
+      <section id="settings" class="page"></section>
+      <section id="survey" class="page"></section>
+      <section id="suggestions" class="page"></section>
+      <section id="about" class="page"></section>
+      <section id="privacy" class="page"></section>
+    </main>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js?v=20261001-fullscale-5"></script>
+</body>
+</html>
