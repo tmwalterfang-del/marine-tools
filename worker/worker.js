@@ -9,6 +9,7 @@
  *
  * Never expose these values to the browser or commit them to GitHub.
  */
+// CI redeploy trigger: 2026-10-01
 const TOKEN_URL = "https://id.barentswatch.no/connect/token";
 const AIS_LATEST_URL = "https://live.ais.barentswatch.no/v1/latest/combined";
 const BW_API_ROOT = "https://www.barentswatch.no/bwapi/";
