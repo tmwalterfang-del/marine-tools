@@ -67,3 +67,7 @@ Marine Tools source code is proprietary. See [LICENSE](LICENSE) for use restrict
 ## Support
 
 Marine Tools includes a built-in support page linking to https://buymeacoffee.com/marinetools.
+
+
+### Homepage v7.2
+The homepage uses a calmer visual-first hero, a dedicated tool search, six primary tool categories, a compact project/support strip, and a collapsed dashboard that preserves route status, live data, recent tools, calculation history and favourites without crowding the landing view.

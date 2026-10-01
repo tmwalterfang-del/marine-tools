@@ -275,30 +275,63 @@ async function checkApi(){try{const r=await fetch(`${API}/api/auth/status`);cons
 
 function renderHome(){
  $('#home').innerHTML=`
- <div class="hero"><div class="hero-content"><h1>Practical tools<br>for <em>seafarers</em></h1><p>A free collection of practical calculation and planning helpers for everyday use at sea. Built independently for seafarers.</p><div class="hero-actions">${button('Explore tools →','navigation')}${button('Learn more','about','btn ghost')}</div></div><div class="hero-note">“Simple tools.<br>Real value at sea.”</div></div>
- <div class="category-grid">
-  ${cat('◉','Route Intelligence','Plan and review route context with live AIS and forecast data.','route-intelligence','')}
-  ${cat('△','Navigation','Distances, bearings, coordinates and route calculations.','navigation','nav')}
-  ${cat('☁','Weather','Forecast context, route limits and weather-window tools.','weather','weather')}
-  ${cat('◧','Fuel & Bunkering','Consumption, endurance, density and tank calculations.','fuel','fuel')}
-  ${cat('⚓','Vessel Calculations','Draft, trim, UKC, squat and anchoring helpers.','vessel-calcs','nav')}
-  ${cat('⚙','Engineering','Pumps, hydraulics and machinery calculations.','engineering','')}
-  ${cat('ϟ','Electrical','Power, load, batteries and electrical calculations.','electrical','electrical')}
-  ${cat('▦','Quick Tools','Unit converters and handy everyday tools.','quick','')}
+ <section class="home-hero-a">
+   <div class="home-hero-overlay"></div>
+   <div class="home-hero-content">
+     <div class="eyebrow">PRACTICAL TOOLS FOR SEAFARERS</div>
+     <h1>Marine Tools</h1>
+     <p>Practical maritime calculators and planning tools for everyday work at sea — simple to understand, quick to use and free to access.</p>
+     <div class="home-tool-search">
+       <span class="search-icon">⌕</span>
+       <input id="homeToolSearch" autocomplete="off" placeholder="Search for a tool…" aria-label="Search Marine Tools">
+       <button type="button" id="homeSearchGo" aria-label="Open first matching tool">→</button>
+       <div id="homeToolResults" class="home-tool-results" hidden></div>
+     </div>
+     <div class="home-hero-actions"><button class="btn primary" id="homeBrowse">Browse tools ↓</button>${button('Route Intelligence','route-intelligence','btn ghost')}</div>
+   </div>
+ </section>
+
+ <section class="home-primary-section" id="homePrimaryTools">
+   <div class="home-section-head"><div><span class="eyebrow">START HERE</span><h2>Choose an area</h2></div><span>Everything else is still available from the menu or search.</span></div>
+   <div class="home-category-a">
+     <button data-go="fuel"><span class="home-cat-icon">◧</span><b>Fuel & Bunkering</b><small>Fuel, endurance, bunkering and tank helpers</small></button>
+     <button data-go="engineering"><span class="home-cat-icon">⚙</span><b>Engineering</b><small>Pumps, machinery, NOx and consumables</small></button>
+     <button data-go="electrical"><span class="home-cat-icon">ϟ</span><b>Electrical</b><small>Power, motors, batteries and load</small></button>
+     <button data-go="vessel-calcs"><span class="home-cat-icon">⚓</span><b>Vessel Calculations</b><small>UKC, squat, draft and anchoring</small></button>
+     <button data-go="quick"><span class="home-cat-icon">⇄</span><b>Quick Tools</b><small>Units, speed, time and everyday conversions</small></button>
+     <button data-go="navigation"><span class="home-cat-icon">△</span><b>Navigation</b><small>Distance, bearing, coordinates and route maths</small></button>
+   </div>
+ </section>
+
+ <div class="home-value-strip">
+   <div><span>ϟ</span><p><b>Fast and easy to use</b><small>Practical inputs. Clear results.</small></p></div>
+   <div><span>⚙</span><p><b>Built for real operations</b><small>Designed around everyday maritime work.</small></p></div>
+   <div><span>◎</span><p><b>Free to use</b><small>Public Marine Tools stays freely accessible.</small></p></div>
+   <button data-go="support"><span>☕</span><p><b>Support Marine Tools</b><small>Help cover running costs and future development.</small></p><strong>→</strong></button>
  </div>
- <div class="dashboard-grid">
-  <article class="panel route-panel"><div class="panel-head"><h2>◉ Route Intelligence</h2><button class="btn ghost" data-go="route-intelligence">Open →</button></div><div class="panel-body"><div class="status-list" id="homeRouteStatus"></div><div class="route-strip" id="homeRiskStrip"></div><div class="metric-grid" style="margin-top:12px"><div class="metric"><small>Total distance</small><strong id="homeDistance">—</strong></div><div class="metric"><small>Estimated passage</small><strong id="homePassage">—</strong></div><div class="metric"><small>Estimated fuel</small><strong id="homeFuel">—</strong></div></div></div></article>
-  <article class="panel"><div class="panel-head"><h2>Live conditions</h2><small id="homeUpdated">Not loaded</small></div><div class="panel-body"><div class="status-list" id="homeConditions"></div><div class="actions"><button class="btn primary" id="homeRefresh">Refresh live data</button></div></div></article>
-  <div class="right-stack">
-   <article class="panel cta-card"><h3>▥ Help shape Marine Tools</h3><p>Marine Tools is independently developed and maintained by one person. Your feedback helps guide future improvements.</p>${button('Take the survey →','survey')}</article>
-   <article class="panel cta-card"><h3>✧ Have an idea or found a bug?</h3><p>Suggest a tool, improvement or report a bug directly.</p>${button('Send a suggestion →','suggestions','btn ghost')}</article>
-   <article class="panel cta-card"><h3>☕ Support Marine Tools</h3><p>If Marine Tools is useful to you, voluntary support helps cover running costs and continued development.</p>${button('Support the project →','support','btn ghost')}</article>
-   <article class="panel cta-card"><h3>ⓘ About this project</h3><p>Why Marine Tools exists, what it is — and what it deliberately is not.</p>${button('Read more →','about','btn ghost')}</article>
-  </div>
- </div>
- <div class="grid-2" style="margin-top:12px"><article class="panel"><div class="panel-head"><div><h3>↻ Recent tools</h3><small>Stored only on this device</small></div></div><div class="panel-body recent-tools" id="recentToolsHome"></div></article><article class="panel"><div class="panel-head"><div><h3>Calculation history</h3><small>Last 20 calculations · local only</small></div><button class="btn mini" id="clearHistoryHome">Clear</button></div><div class="panel-body history-list" id="historyHome"></div></article></div>
- <div class="grid-2" style="margin-top:12px"><article class="panel"><div class="panel-head"><div><h3>★ My Tools</h3><small id="favoriteSub">Your starred tools</small></div></div><div class="panel-body popular-grid" id="favoriteHome"></div></article><article class="panel"><div class="panel-head"><h3>Recent updates</h3></div><div class="panel-body update-list"><div class="update"><span class="tag new">NEW</span><div><b>Route risk context</b><small>Visual route segments against vessel limits</small></div><small>Current</small></div><div class="update"><span class="tag improved">IMPROVED</span><div><b>Live AIS integration</b><small>Bounding-box traffic view and CPA context</small></div><small>Current</small></div><div class="update"><span class="tag new">NEW</span><div><b>Survey & suggestions</b><small>Direct feedback channels for Marine Tools</small></div><small>Current</small></div></div></article></div>`;
- $('#homeRefresh').onclick=async()=>{await runAnalysis(false);updateHome()};$('#clearHistoryHome').onclick=clearHistory;updateHome();renderFavoriteHome();renderRecentHome();renderHistoryHome();
+
+ <details class="home-dashboard-fold">
+   <summary><span><b>Your dashboard</b><small>Route status, live conditions, recent tools, history and favourites</small></span><strong>Open</strong></summary>
+   <div class="home-dashboard-inner">
+     <div class="dashboard-grid home-dashboard-grid">
+       <article class="panel route-panel"><div class="panel-head"><h2>◉ Route Intelligence</h2><button class="btn ghost" data-go="route-intelligence">Open →</button></div><div class="panel-body"><div class="status-list" id="homeRouteStatus"></div><div class="route-strip" id="homeRiskStrip"></div><div class="metric-grid" style="margin-top:12px"><div class="metric"><small>Total distance</small><strong id="homeDistance">—</strong></div><div class="metric"><small>Estimated passage</small><strong id="homePassage">—</strong></div><div class="metric"><small>Estimated fuel</small><strong id="homeFuel">—</strong></div></div></div></article>
+       <article class="panel"><div class="panel-head"><h2>Live conditions</h2><small id="homeUpdated">Not loaded</small></div><div class="panel-body"><div class="status-list" id="homeConditions"></div><div class="actions"><button class="btn primary" id="homeRefresh">Refresh live data</button></div></div></article>
+     </div>
+     <div class="grid-2 home-dashboard-row"><article class="panel"><div class="panel-head"><div><h3>↻ Recent tools</h3><small>Stored only on this device</small></div></div><div class="panel-body recent-tools" id="recentToolsHome"></div></article><article class="panel"><div class="panel-head"><div><h3>Calculation history</h3><small>Last 20 calculations · local only</small></div><button class="btn mini" id="clearHistoryHome">Clear</button></div><div class="panel-body history-list" id="historyHome"></div></article></div>
+     <div class="grid-2 home-dashboard-row"><article class="panel"><div class="panel-head"><div><h3>★ My Tools</h3><small id="favoriteSub">Your starred tools</small></div></div><div class="panel-body popular-grid" id="favoriteHome"></div></article><article class="panel"><div class="panel-head"><h3>Community & project</h3></div><div class="panel-body home-project-links"><button data-go="survey">▥ Survey <span>→</span></button><button data-go="suggestions">✧ Suggestions <span>→</span></button><button data-go="support">☕ Support <span>→</span></button><button data-go="about">ⓘ About the project <span>→</span></button></div></article></div>
+   </div>
+ </details>`;
+
+ const homeSearch=$('#homeToolSearch'),results=$('#homeToolResults');
+ const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=tools.filter(x=>x[0].toLowerCase().includes(q)).slice(0,8);results.innerHTML=hits.length?hits.map(x=>`<button type="button" data-go="${x[1]}"><span>${x[2]}</span><b>${esc(x[0])}</b><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
+ homeSearch.addEventListener('input',showHomeSearch);
+ homeSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const hits=showHomeSearch();if(hits[0])page(hits[0][1])}});
+ $('#homeSearchGo').onclick=()=>{const hits=showHomeSearch();if(hits[0])page(hits[0][1]);else homeSearch.focus()};
+ $('#homeBrowse').onclick=()=>$('#homePrimaryTools').scrollIntoView({behavior:'smooth',block:'start'});
+ $('#homeRefresh').onclick=async()=>{await runAnalysis(false);updateHome()};
+ $('#clearHistoryHome').onclick=clearHistory;
+ document.addEventListener('click',function closeHomeSearch(e){if(!e.target.closest('.home-tool-search')&&results)results.hidden=true},{once:false});
+ updateHome();renderFavoriteHome();renderRecentHome();renderHistoryHome();
 }
 function cat(icon,title,desc,p,cls){return `<button class="category-card ${cls}" data-go="${p}"><span class="ico">${icon}</span><h3>${title}</h3><p>${desc}</p><b>→</b></button>`}
 function updateHome(){const d=routeDistance(),h=d/(state.profile.serviceSpeed||8),fuel=h/24*(state.profile.fuelDay||0);$('#homeDistance').textContent=d?`${nf(d,0)} NM`:'No route';$('#homePassage').textContent=d?`${Math.floor(h)} h ${Math.round(h%1*60)} m`:'—';$('#homeFuel').textContent=d?`${nf(fuel,1)} m³`:'—';const f=state.forecast||[],risks=f.map(x=>riskFor(x));$('#homeRiskStrip').innerHTML=risks.length?risks.map(r=>`<i class="${r.score===2?'alert':r.score===1?'caution':''}"></i>`).join(''):'<i></i>';
