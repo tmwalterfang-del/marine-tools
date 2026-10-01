@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 520" role="img" aria-labelledby="title desc">
+<title id="title">Vessel at sea</title>
+<desc id="desc">Stylised maritime sunrise scene for Marine Tools</desc>
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#07192a"/>
+    <stop offset=".48" stop-color="#153c55"/>
+    <stop offset=".72" stop-color="#d28755"/>
+    <stop offset="1" stop-color="#15445c"/>
+  </linearGradient>
+  <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#173f59"/>
+    <stop offset=".34" stop-color="#0c2d43"/>
+    <stop offset="1" stop-color="#051724"/>
+  </linearGradient>
+  <radialGradient id="sunGlow" cx=".72" cy=".43" r=".24">
+    <stop offset="0" stop-color="#ffd998" stop-opacity=".95"/>
+    <stop offset=".2" stop-color="#f7aa65" stop-opacity=".5"/>
+    <stop offset="1" stop-color="#f7aa65" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="deck" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#17394c"/>
+    <stop offset="1" stop-color="#06131d"/>
+  </linearGradient>
+</defs>
+<rect width="1600" height="520" fill="url(#sky)"/>
+<rect width="1600" height="520" fill="url(#sunGlow)"/>
+<circle cx="1165" cy="224" r="14" fill="#ffdba5"/>
+<g fill="#071726" opacity=".86">
+  <path d="M0 90c110-48 245-42 356 7 88 39 165 38 247 4 117-48 225-44 338 5 79 34 160 34 244 0 143-58 275-50 415 4v-110H0z"/>
+  <path d="M0 157c105-35 205-31 302 7 95 38 194 36 293-5 105-44 212-43 316 0 99 41 198 40 296 3 137-52 267-42 393 15v-72c-132-52-256-55-383-8-103 39-205 40-306 0-108-43-217-43-326 1-98 40-195 40-292 3C197 65 98 64 0 99z" opacity=".55"/>
+</g>
+<path d="M0 265c141-12 242 10 362 2 148-10 263-6 404 2 151 8 282-18 420-7 167 14 261-8 414-4v262H0z" fill="url(#sea)"/>
+<g fill="none" stroke-linecap="round">
+  <path d="M0 302c115-18 213 19 330 0 135-22 246 13 375-2 155-18 290 17 447-2 174-21 296 10 448-4" stroke="#4d91ad" stroke-width="3" opacity=".4"/>
+  <path d="M0 343c133-18 233 13 347-1 143-18 267 18 404-1 157-21 281 11 432-3 160-15 267 12 417-4" stroke="#2c708c" stroke-width="3" opacity=".44"/>
+  <path d="M0 389c114-20 222 11 337-2 149-17 273 15 409-2 152-19 283 15 430-1 158-18 279 11 424-5" stroke="#1b5b76" stroke-width="3" opacity=".5"/>
+  <path d="M828 278c107 20 205 15 310-3" stroke="#f4af74" stroke-width="5" opacity=".35"/>
+</g>
+<!-- vessel / deck silhouette -->
+<g>
+  <path d="M905 520L1040 327h235l190 193z" fill="url(#deck)"/>
+  <path d="M1068 520l58-193h58l10 193z" fill="#071521"/>
+  <path d="M1128 344h62v-94h-12v-76h-11v76h-39z" fill="#081723"/>
+  <rect x="1142" y="199" width="35" height="66" rx="3" fill="#102c3e"/>
+  <rect x="1128" y="248" width="63" height="12" fill="#16374a"/>
+  <rect x="1105" y="263" width="109" height="10" fill="#0a1b28"/>
+  <path d="M1160 174v-55" stroke="#08131c" stroke-width="6"/>
+  <path d="M1131 138h57M1139 124h41" stroke="#102c3e" stroke-width="6"/>
+  <circle cx="1160" cy="116" r="5" fill="#55cffa"/>
+  <g stroke="#1c4d66" stroke-width="5">
+    <path d="M1046 351L927 509M1271 349l182 160"/>
+    <path d="M1064 369h199M1037 402h260M1010 443h330"/>
+  </g>
+  <g stroke="#31667c" stroke-width="3">
+    <path d="M1026 342L913 479M1291 340l158 138"/>
+    <path d="M1041 356v68M1085 342v133M1251 342v122M1301 363v86"/>
+  </g>
+</g>
+<!-- dark readability overlay -->
+<rect width="1600" height="520" fill="url(#fade)"/>
+<defs>
+  <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#031322" stop-opacity=".97"/>
+    <stop offset=".45" stop-color="#031322" stop-opacity=".72"/>
+    <stop offset=".74" stop-color="#031322" stop-opacity=".10"/>
+    <stop offset="1" stop-color="#031322" stop-opacity=".35"/>
+  </linearGradient>
+</defs>
+</svg>
