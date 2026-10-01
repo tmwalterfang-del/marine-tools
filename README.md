@@ -17,6 +17,11 @@ Marine Tools includes:
 - Passage speed/time/fuel scenario comparison
 - Weather-window and wave-encounter helpers
 - Fuel ROB, endurance scenarios, density, blending and tank calculations
+- Fuel / urea mass-volume conversion and bunkering overview
+- Chemical dosing calculator using user-entered manufacturer rates
+- NOx period calculation helper using vessel-supplied activity data and factors
+- Lube-oil consumption trend analysis
+- Manual IAS/CSV analysis for fuel rate, tank level and running-hour data
 - Dynamic UKC, squat, FWA/DWA, anchor swing radius and air-draft clearance
 - Hydraulic power, pump affinity, pipe velocity, tank interpolation, flow/fill time and pressure/head
 - Three-phase power, motor current, power-factor correction, transformer, batteries and voltage drop
@@ -46,6 +51,14 @@ Marine Tools is a **planning and calculation aid**. It is not ECDIS, approved na
 Marine Tools follows a local-first approach. Vessel Profile values, route waypoints, favourites, recent tools and calculation history are stored in the user's browser. Marine Tools does not use entered operational data for advertising, behavioural profiling, sale to third parties, AI-model training or unrelated employment, disciplinary, enforcement or commercial assessment.
 
 Live-data tools send only the route or position context needed to return the requested result. Internet requests may pass through hosting, maritime-data, map and network providers that have their own technical logging and data-processing practices.
+
+## Branding assets
+
+The website package includes:
+
+- `assets/marine-tools-shield.png` — main Marine Tools logo
+- `assets/marine-tools-tally-header.png` — wide header artwork suitable for forms/social presentation
+- `assets/icon-192.png` and `assets/icon-512.png` — PWA/app icons
 
 ## License
 
