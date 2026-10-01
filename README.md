@@ -120,3 +120,13 @@ The homepage uses a calmer visual-first hero, a dedicated tool search, six prima
 - Weather combines wind/air forecast with wave/current data and no longer labels empty rows as “Normal”.
 - Experimental route forecast also uses the MET Norway point forecast stack; AIS remains BarentsWatch-based.
 - MET Norway requests include a dedicated Marine Tools User-Agent as required by api.met.no.
+
+- v8.2: calculator-first design refresh across Home, sidebar, Weather, tool cards, results and mobile layouts.
+- v8.2: guidance and technical details collapse below each calculator so inputs/results stay primary.
+- v8.2: Weather has Wind/Waves/Current summary cards and a mobile card-style forecast layout.
+- v8.2: Live & Experimental is visually separated from core tools and remains secondary in navigation.
+- v8.2 performance: only Home renders on initial load; other pages render on demand.
+- v8.2 performance: Leaflet loads only when Experimental Route Intelligence is opened.
+- v8.2 performance: Buy Me a Coffee loads during browser idle time instead of blocking initial rendering.
+- v8.2 performance: responsive hero images are WebP-preloaded by viewport with JPEG fallback.
+- v8.2 search: a static complete tool index preserves search while pages render lazily.

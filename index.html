@@ -11,8 +11,10 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <meta property="og:title" content="Marine Tools — Practical tools for seafarers">
   <meta property="og:description" content="Practical planning and calculation tools for seafarers.">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=20261001-fullscale-8-1">
+  <link rel="preload" as="image" href="assets/hero-lantern-desktop.webp" media="(min-width:1101px)" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/hero-lantern-tablet.webp" media="(min-width:761px) and (max-width:1100px)" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/hero-lantern-mobile.webp" media="(max-width:760px)" fetchpriority="high">
+  <link rel="stylesheet" href="styles.css?v=20261001-fullscale-8-2">
 </head>
 <body>
 <div class="app-shell">
@@ -35,16 +37,20 @@
       <p class="nav-label">MORE</p>
       <button class="nav-btn" data-page="weather"><span>☁</span>Weather</button>
       <button class="nav-btn" data-page="navigation"><span>△</span>Navigation</button>
-      <button class="nav-btn experimental-nav" data-page="live-experimental"><span>◉</span>Live & Experimental</button>
+      <button class="nav-btn experimental-nav" data-page="live-experimental"><span>◉</span><span class="nav-exp-copy">Live & Experimental<small>Experimental</small></span></button>
 
-      <p class="nav-label">MARINE TOOLS</p>
-      <button class="nav-btn" data-page="survey"><span>▥</span>Help shape Marine Tools</button>
-      <button class="nav-btn" data-page="suggestions"><span>✧</span>Suggest something</button>
-      <a class="nav-btn nav-mail" href="mailto:contact@marinetools.app?subject=Custom%20Marine%20Tools%20request"><span>＋</span>Custom Tool</a>
-      <button class="nav-btn" data-page="support"><span>☕</span>Support</button>
-      <button class="nav-btn" data-page="contact"><span>✉</span>Business & contact</button>
-      <button class="nav-btn" data-page="about"><span>ⓘ</span>About</button>
-      <button class="nav-btn" data-page="privacy"><span>◈</span>Privacy & data</button>
+      <details class="nav-project">
+        <summary><span>MARINE TOOLS</span><strong>Project & contact</strong></summary>
+        <div class="nav-project-items">
+          <button class="nav-btn" data-page="survey"><span>▥</span>Help shape Marine Tools</button>
+          <button class="nav-btn" data-page="suggestions"><span>✧</span>Suggest something</button>
+          <a class="nav-btn nav-mail" href="mailto:contact@marinetools.app?subject=Custom%20Marine%20Tools%20request"><span>＋</span>Custom Tool</a>
+          <button class="nav-btn" data-page="support"><span>☕</span>Support</button>
+          <button class="nav-btn" data-page="contact"><span>✉</span>Business & contact</button>
+          <button class="nav-btn" data-page="about"><span>ⓘ</span>About</button>
+          <button class="nav-btn" data-page="privacy"><span>◈</span>Privacy & data</button>
+        </div>
+      </details>
     </nav>
 
     <div class="sidebar-bottom">
@@ -99,8 +105,6 @@
 </div>
 
 <div id="toast" class="toast" hidden></div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="app.js?v=20261001-fullscale-8-1"></script>
-  <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="marinetools" data-description="Support Marine Tools on Buy Me a Coffee" data-message="Enjoying Marine Tools? Support continued development and help keep the tools free." data-color="#159fe4" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+<script defer src="app.js?v=20261001-fullscale-8-2"></script>
 </body>
 </html>
