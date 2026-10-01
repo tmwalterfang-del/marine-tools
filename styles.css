@@ -204,3 +204,54 @@ button,input,select,textarea{font:inherit} button{color:inherit}.app-shell{displ
 @media(max-width:760px){
   .site-footer{justify-content:flex-start;margin:0 10px;padding:14px 4px 20px}
 }
+
+
+/* v8.0 — search-first core tools, live data moved out of the main workflow */
+.nav-mail{text-decoration:none}
+.experimental-nav{border:1px solid transparent}
+.experimental-nav span{color:#f2bf49}
+.top-actions .icon-button[data-go]{font-size:15px}
+.tool-focus{outline:2px solid rgba(40,196,244,.75);box-shadow:0 0 0 6px rgba(40,196,244,.08),var(--shadow);transition:.2s}
+.home-hero-v8{min-height:390px}
+.home-hero-v8 .home-hero-content{max-width:760px}
+.home-category-v8{grid-template-columns:repeat(5,minmax(145px,1fr))}
+.home-popular-section{padding:19px 2px 4px}
+.home-popular-grid{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:9px}
+.home-popular-grid button,.home-more-links button{border:1px solid #1e4860;background:#092638;border-radius:12px;padding:14px;text-align:left;color:#e6f2f8;cursor:pointer;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:start}
+.home-popular-grid button:hover,.home-more-links button:hover{border-color:#3d85aa;background:#0c3047}
+.home-popular-grid button>span{grid-row:1/3;color:#43c5f2;font-size:20px;padding-top:1px}
+.home-popular-grid button>b{font-size:13px}
+.home-popular-grid button>small{color:#7899ad;font-size:11px;margin-top:3px;line-height:1.35}
+.home-more-section{padding:12px 2px 2px}
+.home-more-links{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.home-more-links button{grid-template-columns:auto 1fr auto}
+.home-more-links button>span{grid-row:1/3;color:#8dc8e3;font-size:20px}
+.home-more-links button>small{grid-column:2;color:#7899ad;font-size:11px;margin-top:3px}
+.home-more-links button>strong{grid-column:3;grid-row:1/3;align-self:center;color:#62cdf5}
+.home-local-fold{margin-top:18px}
+.home-local-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.experimental-card{min-height:230px}
+.experimental-card h2{margin:10px 0 7px}
+.experimental-card p{color:#93afbf}
+.experimental-badge{display:inline-flex;border:1px solid #745d24;background:#251d0e;color:#f3cd68;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800;letter-spacing:.1em}
+.weather-live-panel{min-width:0}
+.weather-forecast-table td,.weather-forecast-table th{white-space:nowrap}
+.source-status{display:flex;align-items:center}
+[data-theme="bridge"] .experimental-badge{border-color:#6f4728;background:#24150b;color:#dba066}
+[data-theme="bridge"] .home-popular-grid button,[data-theme="bridge"] .home-more-links button{background:#160f09;border-color:#432d1c}
+
+@media(max-width:1250px){
+  .home-category-v8{grid-template-columns:repeat(3,1fr)}
+  .home-local-grid{grid-template-columns:1fr 1fr}
+  .home-local-grid>*:last-child{grid-column:1/-1}
+}
+@media(max-width:900px){
+  .home-popular-grid{grid-template-columns:1fr 1fr}
+  .home-more-links{grid-template-columns:1fr}
+  .home-local-grid{grid-template-columns:1fr}
+  .home-local-grid>*:last-child{grid-column:auto}
+}
+@media(max-width:560px){
+  .home-category-v8,.home-popular-grid{grid-template-columns:1fr}
+  .home-hero-v8{min-height:470px}
+}

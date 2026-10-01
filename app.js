@@ -16,7 +16,7 @@ const state={
   profile:store.get(K.profile,{name:'',loa:80,draft:4,serviceSpeed:8,fuelDay:4,maxHs:3,maxWind:30,maxCurrent:2,minUKC:1,cpaAlert:1,corridor:5}),
   route:store.get(K.route,[]),
   theme:['dark','bridge'].includes(store.get(K.theme,'dark'))?store.get(K.theme,'dark'):'dark',
-  ais:[], forecast:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null
+  ais:[], forecast:[], weather:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, weatherFetchedAt:null
 };
 function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2800)}
 function setTheme(v){
@@ -29,6 +29,7 @@ function setTheme(v){
 function nowUTC(){const d=new Date();return d.toISOString().slice(11,16)}
 function updateClock(){const e=$('#utcClock');if(e)e.textContent=`UTC ${nowUTC()}`}
 function page(id){$$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('#sidebar').classList.remove('open');if(id==='route-intelligence')setTimeout(initRouteMap,40);window.scrollTo({top:0,behavior:'smooth'})}
+function openTool(pageId,title=''){page(pageId);if(title)setTimeout(()=>{const card=$$('.tool-card').find(x=>x.dataset.toolTitle===title);if(card){card.scrollIntoView({behavior:'smooth',block:'start'});card.classList.add('tool-focus');setTimeout(()=>card.classList.remove('tool-focus'),1600)}},80)}
 function button(label,pageId,cls='btn primary'){return `<button class="${cls}" data-go="${pageId}">${label}</button>`}
 
 const TOOL_META={
@@ -36,7 +37,7 @@ const TOOL_META={
  'Coordinate toolbox':{how:'Enter a decimal latitude and longitude to show DDM and DMS formats.',formula:'Direct angular-format conversion.',units:'Decimal degrees, DDM and DMS.',assume:'North/east positive; south/west negative.',limits:'Does not transform between chart datums.'},
  'Current-corrected ETA':{how:'Enter distance, speed through water and the current component along the route.',formula:'SOG = STW + along-track current; time = distance / SOG.',units:'NM, kn, hours.',assume:'Current remains constant and is already resolved along the track.',limits:'Does not model cross-current or changing tidal streams.'},
  'Wind component':{how:'Enter vessel course, wind-from direction and wind speed.',formula:'Wind vector resolved into longitudinal and transverse components.',units:'Degrees true and knots.',assume:'Directions are true and wind is entered as “from”.',limits:'Does not correct for vessel motion; use True / apparent wind for that.'},
- 'Closest point on active route':{how:'Build a route first, then enter a position to calculate its shortest distance from the route.',formula:'Shortest point-to-segment distance in a local nautical-mile projection.',units:'Latitude/longitude and NM.',assume:'Suitable for local route-segment checks.',limits:'Not a cross-track-error function from approved navigation equipment.'},
+ 'Closest point on active route':{how:'If you use the experimental route feature, enter a position to calculate its shortest distance from that saved route.',formula:'Shortest point-to-segment distance in a local nautical-mile projection.',units:'Latitude/longitude and NM.',assume:'Suitable for local route-segment checks.',limits:'Not a cross-track-error function from approved navigation equipment.'},
  'Great circle vs rhumb line':{how:'Enter departure and arrival positions and compare the two sailing methods.',formula:'Haversine great-circle versus Mercator rhumb-line sailing.',units:'Degrees and NM.',assume:'Spherical Earth approximation.',limits:'Use approved route-planning methods for final navigation.'},
  'True / apparent wind':{how:'Enter course, vessel speed, apparent wind direction relative to the bow and apparent wind speed.',formula:'Vector addition of vessel velocity and apparent-wind velocity.',units:'Degrees and knots.',assume:'0° relative is ahead; 90° is starboard.',limits:'Ignores sensor correction, heel, leeway and vertical wind.'},
  'Passage scenario compare':{how:'Enter route distance and a reference fuel rate, then list the speeds you want to compare.',formula:'Time = distance/speed; simple fuel rate ∝ speed³.',units:'NM, kn, m³/day, m³.',assume:'Cubic fuel model is only a comparison model.',limits:'Replace with vessel-specific speed/consumption curves whenever available.'},
@@ -139,8 +140,15 @@ function riskFor(f,p=state.profile){let score=0,reasons=[];if(Number.isFinite(f.
 function sourceStatus(id,status,text){const e=$(id);if(!e)return;e.className=`chip ${status}`;e.textContent=text}
 
 const tools=[
- ['Route Intelligence','route-intelligence','◉'],['Navigation calculations','navigation','△'],['Weather tools','weather','☁'],['Fuel & bunkering','fuel','◧'],['Vessel calculations','vessel-calcs','⚓'],['Engineering tools','engineering','⚙'],['Electrical tools','electrical','ϟ'],['Quick tools','quick','▦'],['Vessel profile','profile','⚓'],['Survey','survey','▥'],['Suggestions','suggestions','✧'],['Support Marine Tools','support','☕'],['Business & contact','contact','✉'],['About this project','about','ⓘ']
+ ['Fuel & bunkering','fuel','◧'],['Engineering','engineering','⚙'],['Electrical','electrical','ϟ'],['Vessel calculations','vessel-calcs','⚓'],['Quick tools','quick','▦'],
+ ['Weather','weather','☁'],['Navigation','navigation','△'],['Live & Experimental','live-experimental','◉'],['Route Intelligence (experimental)','route-intelligence','◉'],
+ ['Vessel profile','profile','⚓'],['Settings','settings','☷'],['Help shape Marine Tools','survey','▥'],['Suggestions','suggestions','✧'],['Support Marine Tools','support','☕'],['Business & contact','contact','✉'],['About this project','about','ⓘ'],['Privacy & data','privacy','◈']
 ];
+function toolSearchIndex(){
+ const found=tools.map(x=>({title:x[0],page:x[1],icon:x[2],tool:''}));
+ $$('.tool-card[data-tool-title]').forEach(card=>{const title=card.dataset.toolTitle,pageId=card.closest('.page')?.id;if(title&&pageId&&!found.some(x=>x.title===title))found.push({title,page:pageId,icon:'→',tool:title})});
+ return found;
+}
 
 
 
@@ -186,7 +194,7 @@ async function shareResult(btn){
 function renderRecentHome(){
  const box=$('#recentToolsHome');if(!box)return;
  const r=recentTools();
- box.innerHTML=r.length?r.map(x=>`<button class="tool-link" data-go="${x.page}"><span>↻</span>${esc(x.title)}<small>${timeAgo(x.time)}</small></button>`).join(''):'<p class="helper">Tools you calculate with will appear here.</p>';
+ box.innerHTML=r.length?r.map(x=>`<button class="tool-link" data-go="${x.page}" data-tool-target="${esc(x.title)}"><span>↻</span>${esc(x.title)}<small>${timeAgo(x.time)}</small></button>`).join(''):'<p class="helper">Tools you calculate with will appear here.</p>';
 }
 function renderHistoryHome(){
  const box=$('#historyHome');if(!box)return;
@@ -252,7 +260,7 @@ function renderFavoriteHome(){
   {title:'Generator load margin',page:'engineering'}
  ];
  const items=f.length?f:fallback;
- box.innerHTML=items.slice(0,8).map(x=>`<button class="tool-link" data-go="${x.page}"><span>${f.length?'★':'☆'}</span> ${x.title}</button>`).join('');
+ box.innerHTML=items.slice(0,8).map(x=>`<button class="tool-link" data-go="${x.page}" data-tool-target="${esc(x.title)}"><span>${f.length?'★':'☆'}</span> ${esc(x.title)}</button>`).join('');
  const sub=$('#favoriteSub');if(sub)sub.textContent=f.length?'Your starred tools':'Star any calculation card to build your own quick list';
 }
 
@@ -264,11 +272,11 @@ function bindGlobal(){
  const calc=e.target.closest('.calc-action');if(calc){const c=calc.closest('.tool-card');setTimeout(()=>recordToolUse(c),0)}
  const fav=e.target.closest('.fav-toggle');
  if(fav){e.preventDefault();e.stopPropagation();const pg=fav.closest('.page')?.id||'home';toggleFavorite(fav.dataset.favTitle,pg);return}
- const g=e.target.closest('[data-go]');if(g)page(g.dataset.go);
+ const g=e.target.closest('[data-go]');if(g){openTool(g.dataset.go,g.dataset.toolTarget||'');return}
  const n=e.target.closest('.nav-btn[data-page]');if(n)page(n.dataset.page)
 });
  $('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open'); $('#themeToggle').onclick=()=>setTheme(state.theme==='bridge'?'dark':'bridge');
- $('#globalSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const hits=tools.filter(x=>x[0].toLowerCase().includes(q));box.innerHTML=hits.map(x=>`<button data-go="${x[1]}">${x[2]} ${x[0]}</button>`).join('')||'<button>No matching tool</button>';box.hidden=false});
+ $('#globalSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const hits=toolSearchIndex().filter(x=>x.title.toLowerCase().includes(q)).slice(0,12);box.innerHTML=hits.map(x=>`<button data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span> ${esc(x.title)}</button>`).join('')||'<button>No matching tool</button>';box.hidden=false});
  document.addEventListener('click',e=>{if(!e.target.closest('.searchbox'))$('#searchResults').hidden=true});
  document.addEventListener('input',e=>{if(e.target.matches('input[type="number"]'))sanityCheckInput(e.target)});
  window.addEventListener('online',()=>{updateConnectivity();checkApi()});window.addEventListener('offline',updateConnectivity);
@@ -291,81 +299,99 @@ function liveFreshness(){
 }
 function updateLiveAgeIndicators(){
  const txt=liveAgeText(),fresh=liveFreshness();
- const ri=$('#riDataAge');if(ri&&state.lastRefreshAt){ri.className=`chip ${fresh}`;ri.textContent=`AIS + forecast · ${txt}${fresh==='bad'?' · STALE':''}`}
- const hu=$('#homeUpdated');if(hu&&state.lastRefreshAt)hu.textContent=`AIS + BarentsWatch · ${txt}${fresh==='bad'?' · STALE':''}`;
- const ws=$('#wxStatus');if(ws&&state.lastRefreshAt)ws.innerHTML=`<span class="chip ${fresh}">BarentsWatch route forecast · fetched ${txt}${fresh==='bad'?' · STALE':''}</span>`;
+ const ri=$('#riDataAge');if(ri&&state.lastRefreshAt){ri.className=`chip ${fresh}`;ri.textContent=`AIS + route forecast · ${txt}${fresh==='bad'?' · STALE':''}`}
+ const ws=$('#wxStatus');if(ws&&state.weatherFetchedAt){const ms=Math.max(0,Date.now()-new Date(state.weatherFetchedAt).getTime()),min=Math.floor(ms/60000),age=min<1?'just now':min<60?`${min} min ago`:`${Math.floor(min/60)} h ago`,cls=min>30?'bad':min>15?'warn':'ok';ws.innerHTML=`<span class="chip ${cls}">BarentsWatch point forecast · fetched ${age}${cls==='bad'?' · STALE':''}</span>`}
 }
 
-async function checkApi(){try{const r=await fetch(`${API}/api/auth/status`);const j=await r.json();const ok=j.ais?.authenticated&&j.api?.authenticated;$('#apiDot').className=ok?'ok':'';$('#apiText').textContent=ok?'Live data ready':'Live data limited'}catch{$('#apiText').textContent='Offline / API unavailable'}}
+async function checkApi(){try{const r=await fetch(`${API}/api/auth/status`,{cache:'no-store'});const j=await r.json();const wx=Boolean(j.api?.authenticated),ais=Boolean(j.ais?.authenticated);$('#apiDot').className=wx?'ok':'';$('#apiText').textContent=wx&&ais?'Weather + experimental live ready':wx?'Weather ready · AIS limited':'Live data limited'}catch{$('#apiText').textContent='Offline / API unavailable'}}
 
 function renderHome(){
  $('#home').innerHTML=`
- <section class="home-hero-a">
+ <section class="home-hero-a home-hero-v8">
    <div class="home-hero-overlay"></div>
    <div class="home-hero-content">
      <div class="eyebrow">PRACTICAL TOOLS FOR SEAFARERS</div>
      <h1>Marine Tools</h1>
-     <p>Practical maritime calculators and planning tools for everyday work at sea — simple to understand, quick to use and free to access.</p>
+     <p>Quick maritime calculators and technical helpers for everyday work at sea.</p>
      <div class="home-tool-search">
        <span class="search-icon">⌕</span>
        <input id="homeToolSearch" autocomplete="off" placeholder="Search for a tool…" aria-label="Search Marine Tools">
        <button type="button" id="homeSearchGo" aria-label="Open first matching tool">→</button>
        <div id="homeToolResults" class="home-tool-results" hidden></div>
      </div>
-     <div class="home-hero-actions"><button class="btn primary" id="homeBrowse">Browse tools ↓</button>${button('Route Intelligence','route-intelligence','btn ghost')}</div><div class="home-custom-link"><span>Need something specific?</span><a href="${CUSTOM_TOOL_URL}">Request a custom tool →</a></div>
+     <div class="home-hero-actions"><button class="btn primary" id="homeBrowse">Browse tools ↓</button></div>
+     <div class="home-custom-link"><span>Need something specific?</span><a href="${CUSTOM_TOOL_URL}">Request a custom tool →</a></div>
    </div>
  </section>
 
  <section class="home-primary-section" id="homePrimaryTools">
-   <div class="home-section-head"><div><span class="eyebrow">START HERE</span><h2>Choose an area</h2></div><span>Everything else is still available from the menu or search.</span></div>
-   <div class="home-category-a">
+   <div class="home-section-head"><div><span class="eyebrow">CORE TOOLS</span><h2>Choose an area</h2></div><span>Fast access to the tools most useful in everyday maritime work.</span></div>
+   <div class="home-category-a home-category-v8">
      <button data-go="fuel"><span class="home-cat-icon">◧</span><b>Fuel & Bunkering</b><small>Fuel, endurance, bunkering and tank helpers</small></button>
      <button data-go="engineering"><span class="home-cat-icon">⚙</span><b>Engineering</b><small>Pumps, machinery, NOx and consumables</small></button>
      <button data-go="electrical"><span class="home-cat-icon">ϟ</span><b>Electrical</b><small>Power, motors, batteries and load</small></button>
      <button data-go="vessel-calcs"><span class="home-cat-icon">⚓</span><b>Vessel Calculations</b><small>UKC, squat, draft and anchoring</small></button>
      <button data-go="quick"><span class="home-cat-icon">⇄</span><b>Quick Tools</b><small>Units, speed, time and everyday conversions</small></button>
-     <button data-go="navigation"><span class="home-cat-icon">△</span><b>Navigation</b><small>Distance, bearing, coordinates and route maths</small></button>
    </div>
  </section>
 
- <div class="home-value-strip">
-   <div><span>ϟ</span><p><b>Fast and easy to use</b><small>Practical inputs. Clear results.</small></p></div>
-   <div><span>⚙</span><p><b>Built for real operations</b><small>Designed around everyday maritime work.</small></p></div>
-   <div><span>◎</span><p><b>Free to use</b><small>Public Marine Tools stays freely accessible.</small></p></div>
-   <button data-go="support"><span>☕</span><p><b>Support Marine Tools</b><small>Help cover running costs and future development.</small></p><strong>→</strong></button>
- </div>
+ <section class="home-popular-section">
+   <div class="home-section-head"><div><span class="eyebrow">POPULAR</span><h2>Common jobs</h2></div></div>
+   <div class="home-popular-grid">
+     <button data-go="fuel" data-tool-target="Fuel ROB & endurance"><span>◧</span><b>Fuel & endurance</b><small>ROB, reserve and endurance</small></button>
+     <button data-go="fuel" data-tool-target="Bunkering overview"><span>◧</span><b>Bunkering overview</b><small>Volume, density and delivery summary</small></button>
+     <button data-go="engineering" data-tool-target="Generator load margin"><span>⚙</span><b>Generator load</b><small>Load and available margin</small></button>
+     <button data-go="engineering" data-tool-target="Pump speed change"><span>⚙</span><b>Pump speed change</b><small>Flow, head and power after RPM change</small></button>
+     <button data-go="electrical" data-tool-target="Three-phase power"><span>ϟ</span><b>Three-phase power</b><small>Voltage, current and power factor</small></button>
+     <button data-go="vessel-calcs" data-tool-target="Dynamic UKC & squat"><span>⚓</span><b>Dynamic UKC</b><small>Draft, squat and remaining clearance</small></button>
+   </div>
+ </section>
 
- <details class="home-dashboard-fold">
-   <summary><span><b>Your dashboard</b><small>Route status, live conditions, recent tools, history and favourites</small></span><strong>Open</strong></summary>
+ <section class="home-more-section">
+   <div class="home-more-links">
+     <button data-go="weather"><span>☁</span><b>Weather</b><small>BarentsWatch point forecast and weather helpers</small><strong>→</strong></button>
+     <button data-go="navigation"><span>△</span><b>Navigation</b><small>Distance, bearing, coordinates and passage maths</small><strong>→</strong></button>
+     <button data-go="live-experimental"><span>◉</span><b>Live & Experimental</b><small>AIS and route-context features kept separate from the core tools</small><strong>→</strong></button>
+   </div>
+ </section>
+
+ <details class="home-dashboard-fold home-local-fold">
+   <summary><span><b>Your tools & history</b><small>Favourites, recent tools and calculations stored on this device</small></span><strong>Open</strong></summary>
    <div class="home-dashboard-inner">
-     <div class="dashboard-grid home-dashboard-grid">
-       <article class="panel route-panel"><div class="panel-head"><h2>◉ Route Intelligence</h2><button class="btn ghost" data-go="route-intelligence">Open →</button></div><div class="panel-body"><div class="status-list" id="homeRouteStatus"></div><div class="route-strip" id="homeRiskStrip"></div><div class="metric-grid" style="margin-top:12px"><div class="metric"><small>Total distance</small><strong id="homeDistance">—</strong></div><div class="metric"><small>Estimated passage</small><strong id="homePassage">—</strong></div><div class="metric"><small>Estimated fuel</small><strong id="homeFuel">—</strong></div></div></div></article>
-       <article class="panel"><div class="panel-head"><h2>Live conditions</h2><small id="homeUpdated">Not loaded</small></div><div class="panel-body"><div class="status-list" id="homeConditions"></div><div class="actions"><button class="btn primary" id="homeRefresh">Refresh live data</button></div></div></article>
+     <div class="grid-3 home-local-grid">
+       <article class="panel"><div class="panel-head"><div><h3>★ My Tools</h3><small id="favoriteSub">Your starred tools</small></div></div><div class="panel-body popular-grid" id="favoriteHome"></div></article>
+       <article class="panel"><div class="panel-head"><div><h3>↻ Recent tools</h3><small>Stored only on this device</small></div></div><div class="panel-body recent-tools" id="recentToolsHome"></div></article>
+       <article class="panel"><div class="panel-head"><div><h3>Calculation history</h3><small>Last 20 calculations · local only</small></div><button class="btn mini" id="clearHistoryHome">Clear</button></div><div class="panel-body history-list" id="historyHome"></div></article>
      </div>
-     <div class="grid-2 home-dashboard-row"><article class="panel"><div class="panel-head"><div><h3>↻ Recent tools</h3><small>Stored only on this device</small></div></div><div class="panel-body recent-tools" id="recentToolsHome"></div></article><article class="panel"><div class="panel-head"><div><h3>Calculation history</h3><small>Last 20 calculations · local only</small></div><button class="btn mini" id="clearHistoryHome">Clear</button></div><div class="panel-body history-list" id="historyHome"></div></article></div>
-     <div class="grid-2 home-dashboard-row"><article class="panel"><div class="panel-head"><div><h3>★ My Tools</h3><small id="favoriteSub">Your starred tools</small></div></div><div class="panel-body popular-grid" id="favoriteHome"></div></article><article class="panel"><div class="panel-head"><h3>Community & project</h3></div><div class="panel-body home-project-links"><button data-go="survey">▥ Survey <span>→</span></button><button data-go="suggestions">✧ Suggestions <span>→</span></button><button data-go="contact">✉ Business & contact <span>→</span></button><button data-go="support">☕ Support <span>→</span></button><button data-go="about">ⓘ About the project <span>→</span></button></div></article></div>
    </div>
  </details>`;
 
  const homeSearch=$('#homeToolSearch'),results=$('#homeToolResults');
- const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=tools.filter(x=>x[0].toLowerCase().includes(q)).slice(0,8);results.innerHTML=hits.length?hits.map(x=>`<button type="button" data-go="${x[1]}"><span>${x[2]}</span><b>${esc(x[0])}</b><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
+ const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=toolSearchIndex().filter(x=>x.title.toLowerCase().includes(q)).slice(0,10);results.innerHTML=hits.length?hits.map(x=>`<button type="button" data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><b>${esc(x.title)}</b><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
  homeSearch.addEventListener('input',showHomeSearch);
- homeSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const hits=showHomeSearch();if(hits[0])page(hits[0][1])}});
- $('#homeSearchGo').onclick=()=>{const hits=showHomeSearch();if(hits[0])page(hits[0][1]);else homeSearch.focus()};
+ homeSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const hits=showHomeSearch();if(hits[0])openTool(hits[0].page,hits[0].tool)}});
+ $('#homeSearchGo').onclick=()=>{const hits=showHomeSearch();if(hits[0])openTool(hits[0].page,hits[0].tool);else homeSearch.focus()};
  $('#homeBrowse').onclick=()=>$('#homePrimaryTools').scrollIntoView({behavior:'smooth',block:'start'});
- $('#homeRefresh').onclick=async()=>{await runAnalysis(false);updateHome()};
  $('#clearHistoryHome').onclick=clearHistory;
- document.addEventListener('click',function closeHomeSearch(e){if(!e.target.closest('.home-tool-search')&&results)results.hidden=true},{once:false});
+ document.addEventListener('click',e=>{if(!e.target.closest('.home-tool-search')&&results)results.hidden=true});
  updateHome();renderFavoriteHome();renderRecentHome();renderHistoryHome();
 }
+function updateHome(){renderFavoriteHome();renderRecentHome();renderHistoryHome()}
 function cat(icon,title,desc,p,cls){return `<button class="category-card ${cls}" data-go="${p}"><span class="ico">${icon}</span><h3>${title}</h3><p>${desc}</p><b>→</b></button>`}
-function updateHome(){const d=routeDistance(),h=d/(state.profile.serviceSpeed||8),fuel=h/24*(state.profile.fuelDay||0);$('#homeDistance').textContent=d?`${nf(d,0)} NM`:'No route';$('#homePassage').textContent=d?`${Math.floor(h)} h ${Math.round(h%1*60)} m`:'—';$('#homeFuel').textContent=d?`${nf(fuel,1)} m³`:'—';const f=state.forecast||[],risks=f.map(x=>riskFor(x));$('#homeRiskStrip').innerHTML=risks.length?risks.map(r=>`<i class="${r.score===2?'alert':r.score===1?'caution':''}"></i>`).join(''):'<i></i>';
- const maxHs=Math.max(...f.map(x=>Number(x.hs)||0),0),maxW=Math.max(...f.map(x=>Number(x.windKn)||0),0),maxC=Math.max(...f.map(x=>Number(x.currentKn)||0),0);$('#homeConditions').innerHTML=`${srow('Wind',maxW?`${nf(maxW,0)} kn`:'Not loaded')}${srow('Waves (Hs)',maxHs?`${nf(maxHs)} m`:'Not loaded')}${srow('Current',maxC?`${nf(maxC)} kn`:'Not loaded')}${srow('AIS traffic',state.ais.length?`${state.ais.length} loaded`:'Not loaded')}`;$('#homeUpdated').textContent=state.lastRefreshAt?`AIS + BarentsWatch · ${liveAgeText()}`:'Not loaded';$('#homeRouteStatus').innerHTML=`${srow('Route',state.route.length>1?'Ready':'Create a route')}${srow('Operational envelope',f.length?overallRisk(risks):'Not analysed')}${srow('AIS targets in corridor',state.ais.length?String(corridorTargets().length):'Not loaded')}`}
 function srow(label,value,cls=''){return `<div class="status-row ${cls}"><i></i><span>${label}</span><span class="value">${value}</span></div>`}
 function overallRisk(r){return r.some(x=>x.score===2)?'Alert':r.some(x=>x.score===1)?'Caution':'Normal'}
 
+function renderLiveExperimental(){
+ $('#live-experimental').innerHTML=`<div class="page-title"><div><div class="eyebrow">MORE · EXPERIMENTAL</div><h1>Live & Experimental</h1><p>Live-data features are kept separate from the core calculators while they are tested and refined.</p></div></div>
+ <div class="grid-2">
+   <article class="panel experimental-card"><div class="panel-body"><span class="experimental-badge">EXPERIMENTAL</span><h2>Route Intelligence</h2><p>Route context using user-entered vessel limits, BarentsWatch forecast data and AIS. This is a planning experiment, not approved navigation equipment or decision support.</p><div class="actions">${button('Open Route Intelligence','route-intelligence','btn primary')}</div></div></article>
+   <article class="panel experimental-card"><div class="panel-body"><span class="experimental-badge">LIVE DATA</span><h2>AIS context</h2><p>AIS is currently used only inside Route Intelligence. It is intentionally not part of the main Marine Tools workflow.</p><div class="source-box"><div class="source-item"><span>Source</span><strong>BarentsWatch AIS</strong></div><div class="source-item"><span>Use</span><strong>Supporting context only</strong></div></div></div></article>
+ </div>
+ <article class="panel" style="margin-top:12px"><div class="panel-body"><h3>Why is this separate?</h3><p class="helper">Marine Tools is primarily a fast calculator and technical-helper collection. Live AIS and route analysis add more dependencies, data-age questions and operational interpretation, so they stay available without defining the main product.</p></div></article>`;
+}
+
 function renderRouteIntelligence(){
- $('#route-intelligence').innerHTML=`<div class="page-title"><div><div class="eyebrow">LIVE ROUTE CONTEXT</div><h1>Route Intelligence</h1><p>Combines your active route, vessel limits, BarentsWatch forecast data and live AIS into a planning view. It is not approved navigation information.</p><a class="page-feedback-link" href="${reportIssueUrl('Route Intelligence')}">Report a problem →</a></div><div class="actions"><button class="btn primary" id="runAnalysis">Run analysis</button><button class="btn" id="clearRoute">Clear route</button></div></div>
+ $('#route-intelligence').innerHTML=`<div class="page-title"><div><div class="eyebrow">EXPERIMENTAL · LIVE ROUTE CONTEXT</div><h1>Route Intelligence</h1><p>Experimental planning context combining your active route, vessel limits, BarentsWatch forecast data and live AIS. It is not approved navigation information.</p><div class="notice mini-notice">This feature is intentionally separated from the core Marine Tools calculators while it is tested and refined.</div><a class="page-feedback-link" href="${reportIssueUrl('Route Intelligence')}">Report a problem →</a></div><div class="actions"><button class="btn primary" id="runAnalysis">Run analysis</button><button class="btn" id="clearRoute">Clear route</button></div></div>
  <div class="analysis-summary"><div class="metric"><small>Route distance</small><strong id="riDistance">—</strong></div><div class="metric"><small>AIS in corridor</small><strong id="riAis">—</strong></div><div class="metric"><small>CPA alerts</small><strong id="riCpa">—</strong></div><div class="metric"><small>Max Hs</small><strong id="riHs">—</strong></div><div class="metric"><small>Max wind</small><strong id="riWind">—</strong></div></div>
  <div class="grid-2"><article class="panel"><div class="panel-head"><h2>Route situation</h2><div class="legend"><span>Normal</span><span class="caution">Caution</span><span class="alert">Alert</span></div></div><div class="panel-body"><div class="map-toolbar"><button class="btn" id="fitRoute">Fit route</button><button class="btn" id="undoWp">Undo waypoint</button><span class="chip" id="riDataAge">NOT LOADED</span></div><div id="riMap" class="map"></div><p class="helper">Click the map to add waypoints. Dragging is intentionally not used here to reduce accidental edits. Route and vessel profile are stored only in this browser.</p></div></article>
  <div class="right-stack"><article class="panel"><div class="panel-head"><h3>Operational envelope</h3></div><div class="panel-body" id="envelopeBox"></div></article><article class="panel"><div class="panel-head"><h3>What changed?</h3><small>Since previous analysis</small></div><div class="panel-body change-list" id="changeBox"><span class="helper">Run an analysis twice to compare.</span></div></article><article class="panel"><div class="panel-head"><h3>Relevant AIS targets</h3></div><div class="panel-body" style="max-height:280px;overflow:auto"><table class="table"><thead><tr><th>Vessel</th><th>SOG</th><th>CPA</th><th>TCPA</th></tr></thead><tbody id="aisTable"></tbody></table></div></article></div></div>`;
@@ -381,7 +407,23 @@ function cpaTargets(){if(state.route.length<2)return[];const own={lat:state.rout
 function renderAisTable(){const tb=$('#aisTable');if(!tb)return;tb.innerHTML=cpaTargets().slice(0,20).map(x=>`<tr><td>${esc(x.v.name||x.v.shipName||String(x.v.mmsi||'Unknown'))}</td><td>${nf(x.v.speedOverGround??x.v.sog,1)}</td><td class="${x.cpa<state.profile.cpaAlert?'delta up':''}">${nf(x.cpa,2)}</td><td>${nf(x.tcpa,0)} min</td></tr>`).join('')||'<tr><td colspan="4" class="helper">No AIS targets loaded.</td></tr>'}
 function drawAis(){if(!state.aisLayer)return;state.aisLayer.clearLayers();corridorTargets().forEach(v=>{const lat=Number(v.latitude??v.lat),lon=Number(v.longitude??v.lon),cog=Number(v.courseOverGround??v.cog)||0,sog=Number(v.speedOverGround??v.sog)||0;const cpa=cpaTargets().find(x=>x.v===v);const col=cpa&&cpa.cpa<state.profile.cpaAlert?'#ff625d':'#60d6ff';L.circleMarker([lat,lon],{radius:4,color:col,fillColor:col,fillOpacity:.75,weight:1}).bindPopup(`<b>${esc(v.name||v.shipName||'AIS target')}</b><br>MMSI ${esc(String(v.mmsi||'—'))}<br>SOG ${nf(sog)} kn · COG ${nf(cog,0)}°${cpa?`<br>CPA ${nf(cpa.cpa,2)} NM · TCPA ${nf(cpa.tcpa,0)} min`:''}`).addTo(state.aisLayer)})}
 function drawRiskSegments(){if(!state.riskLayer||state.route.length<2||!state.forecast.length)return;state.riskLayer.clearLayers();for(let i=1;i<state.route.length;i++){const f=state.forecast[Math.round((i-1)*(state.forecast.length-1)/Math.max(1,state.route.length-2))]||{};const r=riskFor(f),col=r.score===2?'#ff625d':r.score===1?'#f2bf49':'#32d48a';L.polyline([[state.route[i-1].lat,state.route[i-1].lon],[state.route[i].lat,state.route[i].lon]],{color:col,weight:7,opacity:.72}).bindTooltip(`${r.label}${r.reasons.length?`: ${r.reasons.join(', ')}`:''}`).addTo(state.riskLayer)}}
-async function runAnalysis(showToast=true){if(state.route.length<2){if(showToast)toast('Add at least two route waypoints first.');return}const box=routeBBox(state.route,Math.max(8,state.profile.corridor+2));try{sourceStatus('#riDataAge','warn','LOADING');const [aisR,wxR]=await Promise.all([fetch(`${API}/api/ais/latest?minLat=${box.minLat}&maxLat=${box.maxLat}&minLon=${box.minLon}&maxLon=${box.maxLon}`),fetch(`${API}/api/forecast?route=${encodeURIComponent(JSON.stringify(state.route))}`)]);if(aisR.ok){const a=await aisR.json();state.ais=Array.isArray(a)?a:[]}if(wxR.ok){const w=await wxR.json();state.forecast=Array.isArray(w)?w:[]}state.lastRefresh=nowUTC();state.lastRefreshAt=new Date().toISOString();sourceStatus('#riDataAge','ok',`AIS + forecast · just now`);drawAis();updateRiSummary();compareAnalysis();updateHome();renderWxTable();updateLiveAgeIndicators();if(showToast)toast('Route analysis updated.')}catch(e){sourceStatus('#riDataAge','bad','LIVE DATA ERROR');if(showToast)toast('Could not load live route data.')}}
+async function runAnalysis(showToast=true){
+ if(state.route.length<2){if(showToast)toast('Add at least two route waypoints first.');return}
+ const box=routeBBox(state.route,Math.max(8,state.profile.corridor+2));
+ sourceStatus('#riDataAge','warn','LOADING');
+ const jobs=await Promise.allSettled([
+   fetch(`${API}/api/ais/latest?minLat=${box.minLat}&maxLat=${box.maxLat}&minLon=${box.minLon}&maxLon=${box.maxLon}`,{cache:'no-store'}),
+   fetch(`${API}/api/forecast?route=${encodeURIComponent(JSON.stringify(state.route))}`,{cache:'no-store'})
+ ]);
+ let aisOk=false,wxOk=false;
+ try{if(jobs[0].status==='fulfilled'&&jobs[0].value.ok){const a=await jobs[0].value.json();state.ais=Array.isArray(a)?a:[];aisOk=true}}catch{}
+ try{if(jobs[1].status==='fulfilled'&&jobs[1].value.ok){const w=await jobs[1].value.json();state.forecast=Array.isArray(w)?w:[];wxOk=true}}catch{}
+ if(!aisOk&&!wxOk){sourceStatus('#riDataAge','bad','LIVE DATA ERROR');if(showToast)toast('Could not load experimental live data.');return}
+ state.lastRefresh=nowUTC();state.lastRefreshAt=new Date().toISOString();
+ sourceStatus('#riDataAge',aisOk&&wxOk?'ok':'warn',aisOk&&wxOk?'AIS + route forecast · just now':aisOk?'AIS loaded · forecast unavailable':'Forecast loaded · AIS unavailable');
+ drawAis();updateRiSummary();compareAnalysis();updateLiveAgeIndicators();
+ if(showToast)toast(aisOk&&wxOk?'Experimental route context updated.':'Partial live data loaded.');
+}
 function snapshot(){const cpa=cpaTargets().filter(x=>x.cpa<state.profile.cpaAlert).length;return{time:new Date().toISOString(),ais:corridorTargets().length,cpa,maxHs:Math.max(...state.forecast.map(x=>Number(x.hs)||0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
 function compareAnalysis(){const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');if(box){if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{const d=b-a,cls=d>0?'up':d<0?'down':'same';return `<div class="change-row"><span>${n}</span><b>${nf(a,n.includes('AIS')||n.includes('CPA')?0:1)} → ${nf(b,n.includes('AIS')||n.includes('CPA')?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`}).join('')}store.set(K.lastAnalysis,cur)}
 
@@ -400,7 +442,7 @@ function renderNavigation(){
  ${card('True / apparent wind','Convert apparent wind at the vessel into estimated true wind.',`<div class="fields"><label>Vessel course °T<input id="twCourse" type="number" value="90"></label><label>Vessel speed kn<input id="twShip" type="number" step=".1" value="8"></label><label>Apparent wind from ° relative<input id="twRel" type="number" value="30"></label><label>Apparent wind speed kn<input id="twAws" type="number" step=".1" value="20"></label></div>${calcButton('calcTrueWind')}${result('resTrueWind')}${formulaBox('Formula & assumptions','Relative direction is entered clockwise from the bow: 0° = ahead, 90° = starboard, 180° = astern. The calculation vector-adds vessel velocity to apparent-wind velocity. It assumes steady speed/course and ignores sensor corrections, heel, leeway and vertical wind components.')}`)}
  ${card('Passage scenario compare','Compare time and fuel at several planned speeds.',`<div class="fields three"><label>Distance NM<input id="scDist" type="number" step=".1" value="120"></label><label>Fuel at reference speed m³/day<input id="scFuel" type="number" step=".1" value="4"></label><label>Reference speed kn<input id="scRef" type="number" step=".1" value="8"></label></div><div class="mini-section"><b>Speeds to compare</b><div id="scSpeedRows" class="dynamic-list"><div class="dynamic-row simple-row"><label>Speed kn<input class="sc-speed" type="number" step=".1" value="6"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row simple-row"><label>Speed kn<input class="sc-speed" type="number" step=".1" value="8"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row simple-row"><label>Speed kn<input class="sc-speed" type="number" step=".1" value="10"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addScSpeed">+ Add speed</button></div>${calcButton('calcScenarios','Compare scenarios')}${result('resScenarios')}`)}
 
- ${card('Route fuel estimate','Estimate passage time and fuel from the active route and vessel profile.',`${result('resRouteFuel','Create a route in Route Intelligence and a vessel profile.')}${calcButton('calcRouteFuel','Update estimate')}`)}
+ ${card('Route fuel estimate','Estimate passage time and fuel from the active route and vessel profile.',`${result('resRouteFuel','Optional: create a route under Live & Experimental and a vessel profile.')}${calcButton('calcRouteFuel','Update estimate')}`)}
  </div>`;
  bindNavigation();
 }
@@ -423,24 +465,55 @@ function bindNavigation(){
 
  $('#calcRouteFuel').onclick=()=>updateRouteFuel();updateRouteFuel();
 }
-function updateRouteFuel(){const d=routeDistance(),s=state.profile.serviceSpeed||0,h=d/Math.max(.01,s),f=h/24*(state.profile.fuelDay||0);setRes('resRouteFuel',d?`${nf(d,1)} NM · ${formatHours(h)} · ${nf(f,2)} m³`:'No active route',d?'Uses service speed and daily fuel consumption from Vessel Profile.':'Create a route in Route Intelligence.');}
+function updateRouteFuel(){const d=routeDistance(),s=state.profile.serviceSpeed||0,h=d/Math.max(.01,s),f=h/24*(state.profile.fuelDay||0);setRes('resRouteFuel',d?`${nf(d,1)} NM · ${formatHours(h)} · ${nf(f,2)} m³`:'No active route',d?'Uses service speed and daily fuel consumption from Vessel Profile.':'Create an experimental route under Live & Experimental.');}
 function toDDM(v,lat){const h=lat?(v>=0?'N':'S'):(v>=0?'E':'W'),a=Math.abs(v),d=Math.floor(a),m=(a-d)*60;return `${d}° ${m.toFixed(3)}' ${h}`}
 function toDMS(v,lat){const h=lat?(v>=0?'N':'S'):(v>=0?'E':'W'),a=Math.abs(v),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;return `${d}° ${m}' ${s.toFixed(1)}\" ${h}`}
 function formatHours(h){if(!Number.isFinite(h))return'—';return `${Math.floor(h)} h ${Math.round((h%1)*60)} min`}
 
 function renderWeather(){
- $('#weather').innerHTML=pageTitle('Weather','Route forecast context, operational-limit checks and weather-related planning helpers.')+`<div class="grid-2"><article class="panel"><div class="panel-head"><h2>Active route forecast</h2><button class="btn primary" id="refreshWx">Refresh</button></div><div class="panel-body"><div id="wxStatus" class="source-status"></div><p class="tool-how"><b>How to use</b><span>Create a route in Route Intelligence, then refresh to load route-based wave, wind and current context.</span></p><div class="table-wrap"><table class="table"><thead><tr><th>Point</th><th>Hs</th><th>Wind</th><th>Current</th><th>Status</th><th>Source</th></tr></thead><tbody id="wxTable"></tbody></table></div><div class="notice mini-notice">Live values are supporting context only. Always check source age and official forecasts.</div></div></article>
- <article class="panel tool-card" data-tool-title="Weather window finder"><button class="fav-toggle" type="button" data-fav-title="Weather window finder">☆</button><h3>Weather window finder</h3><p>Find consecutive manual forecast rows that stay inside your chosen limits.</p>${toolUsage('Weather window finder')}<div id="windowRows" class="dynamic-list"><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="08:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="18"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".6"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="09:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.4"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="20"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".7"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="10:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="2.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="25"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".8"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addWindowRow">+ Add forecast row</button><div class="fields three"><label>Max Hs<input id="wwHs" type="number" step=".1" value="2.5"></label><label>Max wind<input id="wwWind" type="number" value="28"></label><label>Max current<input id="wwCur" type="number" step=".1" value="1.5"></label></div>${calcButton('findWindow','Find windows')}${result('wwResult')}${toolInformation('Weather window finder','Find consecutive manual forecast rows that stay inside your chosen limits.')}${reportIssueLink('Weather window finder')}</article></div>
+ $('#weather').innerHTML=pageTitle('Weather','Simple point forecast from BarentsWatch, plus manual weather-planning helpers.')+`
+ <div class="grid-2">
+  <article class="panel weather-live-panel"><div class="panel-head"><div><h2>Point forecast</h2><small>BarentsWatch Waveforecast API</small></div><div id="wxStatus" class="source-status"><span class="chip">Not loaded</span></div></div><div class="panel-body">
+   <p class="tool-how"><b>How to use</b><span>Enter a latitude and longitude, then load the next available forecast periods. This no longer requires Route Intelligence.</span></p>
+   <div class="fields"><label>Latitude<input id="wxLat" type="number" step="any" value="59.42"></label><label>Longitude<input id="wxLon" type="number" step="any" value="10.48"></label></div>
+   <div class="actions"><button class="btn primary" id="loadPointWx">Load forecast</button><button class="btn" id="useRouteWx">Use route start</button></div>
+   <div class="table-wrap"><table class="table weather-forecast-table"><thead><tr><th>Time</th><th>Hs</th><th>Wind</th><th>Current</th><th>Status</th></tr></thead><tbody id="wxPointTable"><tr><td colspan="5" class="helper">Enter a position and load the forecast.</td></tr></tbody></table></div>
+   <div id="wxDiagnostics" class="helper" style="margin-top:8px"></div>
+   <div class="notice mini-notice">Forecast data is supporting context only. Check source time, official forecasts and vessel-specific limits before operational use.</div>
+  </div></article>
+  <article class="panel tool-card" data-tool-title="Weather window finder"><button class="fav-toggle" type="button" data-fav-title="Weather window finder">☆</button><h3>Weather window finder</h3><p>Find consecutive manual forecast rows that stay inside your chosen limits.</p>${toolUsage('Weather window finder')}<div id="windowRows" class="dynamic-list"><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="08:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="18"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".6"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="09:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.4"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="20"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".7"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="10:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="2.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="25"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".8"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addWindowRow">+ Add forecast row</button><div class="fields three"><label>Max Hs<input id="wwHs" type="number" step=".1" value="2.5"></label><label>Max wind<input id="wwWind" type="number" value="28"></label><label>Max current<input id="wwCur" type="number" step=".1" value="1.5"></label></div>${calcButton('findWindow','Find windows')}${result('wwResult')}${toolInformation('Weather window finder','Find consecutive manual forecast rows that stay inside your chosen limits.')}${reportIssueLink('Weather window finder')}</article>
+ </div>
  <div class="tool-grid" style="margin-top:12px">
  ${card('Wave encounter period','Estimate the wave period experienced by a moving vessel in deep water.',`<div class="fields"><label>Vessel course °T<input id="weCourse" type="number" value="90"></label><label>Vessel speed kn<input id="weSpeed" type="number" step=".1" value="8"></label><label>Wave from °T<input id="weFrom" type="number" value="270"></label><label>Wave period s<input id="wePeriod" type="number" step=".1" value="8"></label></div>${calcButton('calcEncounter')}${result('resEncounter')}`)}
  </div>`;
- $('#refreshWx').onclick=async()=>{await runAnalysis(false);renderWxTable()};
+ $('#loadPointWx').onclick=loadPointWeather;
+ $('#useRouteWx').onclick=()=>{if(!state.route.length)return toast('No experimental route saved on this device.');$('#wxLat').value=state.route[0].lat;$('#wxLon').value=state.route[0].lon;loadPointWeather()};
  const windowRows=$('#windowRows');
  $('#addWindowRow').onclick=()=>windowRows.insertAdjacentHTML('beforeend','<div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time"></label><label>Hs m<input class="ww-hs" type="number" step=".1"></label><label>Wind kn<input class="ww-wind" type="number" step=".1"></label><label>Current kn<input class="ww-current" type="number" step=".1"></label><button type="button" class="btn small remove-row">Remove</button></div>');
  windowRows.addEventListener('click',e=>{if(e.target.matches('.remove-row')&&$$('.weather-row',windowRows).length>2)e.target.closest('.weather-row').remove()});
- $('#findWindow').onclick=findWeatherWindow;$('#calcEncounter').onclick=calcWaveEncounter;renderWxTable();syncFavoriteButtons();
+ $('#findWindow').onclick=findWeatherWindow;$('#calcEncounter').onclick=calcWaveEncounter;renderPointWeather();syncFavoriteButtons();
 }
-function renderWxTable(){const tb=$('#wxTable');if(!tb)return;tb.innerHTML=state.forecast.map(f=>{const r=riskFor(f);return `<tr><td>${esc(f.name||`P${f.index+1}`)}</td><td>${f.hs==null?'—':nf(f.hs)}</td><td>${f.windKn==null?'—':nf(f.windKn,0)}</td><td>${f.currentKn==null?'—':nf(f.currentKn)}</td><td><span class="chip ${r.score===2?'bad':r.score===1?'warn':'ok'}">${r.label}</span></td><td><small>${esc(f.source||'BarentsWatch')}<br>${state.lastRefreshAt?`fetched ${liveAgeText()}`:'not loaded'}</small></td></tr>`}).join('')||'<tr><td colspan="6" class="helper">No forecast loaded. Create a route, then refresh.</td></tr>';updateLiveAgeIndicators()}
+function forecastTimeLabel(v){if(!v)return'—';const d=new Date(v);if(!Number.isFinite(d.getTime()))return esc(v);return `${d.toISOString().slice(5,16).replace('T',' ')} UTC`}
+function renderPointWeather(){
+ const tb=$('#wxPointTable');if(!tb)return;
+ const rows=Array.isArray(state.weather)?state.weather:[];
+ tb.innerHTML=rows.length?rows.map(f=>{const r=riskFor(f);return `<tr><td>${forecastTimeLabel(f.forecastTime||f.time)}</td><td>${f.hs==null?'—':nf(f.hs,1)+' m'}</td><td>${f.windKn==null?'—':nf(f.windKn,0)+' kn'}</td><td>${f.currentKn==null?'—':nf(f.currentKn,1)+' kn'}</td><td><span class="chip ${r.score===2?'bad':r.score===1?'warn':'ok'}">${r.label}</span></td></tr>`}).join(''):'<tr><td colspan="5" class="helper">Enter a position and load the forecast.</td></tr>';
+ updateLiveAgeIndicators();
+}
+async function loadPointWeather(){
+ const lat=+$('#wxLat').value,lon=+$('#wxLon').value,tb=$('#wxPointTable'),diag=$('#wxDiagnostics');
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){sourceStatus('#wxStatus','bad','CHECK POSITION');return}
+ sourceStatus('#wxStatus','warn','LOADING');tb.innerHTML='<tr><td colspan="5" class="helper">Loading BarentsWatch forecast…</td></tr>';diag.textContent='';
+ try{
+   const r=await fetch(`${API}/api/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=12`,{cache:'no-store'}),text=await r.text();
+   let j;try{j=JSON.parse(text)}catch{j={error:text||`HTTP ${r.status}`}}
+   if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
+   state.weather=Array.isArray(j.forecast)?j.forecast:[];state.weatherFetchedAt=new Date().toISOString();
+   const d=j.diagnostics||{},parts=['wave','wind','current'].map(k=>`${k}: ${d[k]?.ok?'ok':d[k]?.status||'unavailable'}`);
+   diag.textContent=`Source: BarentsWatch · ${parts.join(' · ')}`;
+   if(state.weather.length){sourceStatus('#wxStatus','ok','FORECAST LOADED');renderPointWeather()}else{sourceStatus('#wxStatus','warn','NO USABLE DATA');tb.innerHTML='<tr><td colspan="5" class="helper">BarentsWatch returned no usable forecast rows for this position.</td></tr>'}
+ }catch(e){state.weather=[];sourceStatus('#wxStatus','bad','FORECAST ERROR');tb.innerHTML=`<tr><td colspan="5" class="helper">Could not load forecast: ${esc(e.message)}</td></tr>`;diag.textContent='Check the live API status or try another position.'}
+}
 function findWeatherWindow(){const rows=$$('.weather-row',$('#windowRows')).map(r=>({t:$('.ww-time',r).value,hs:+$('.ww-hs',r).value,w:+$('.ww-wind',r).value,c:+$('.ww-current',r).value})).filter(x=>x.t&&[x.hs,x.w,x.c].every(Number.isFinite));const lim={hs:+$('#wwHs').value,w:+$('#wwWind').value,c:+$('#wwCur').value};let groups=[],cur=[];for(const r of rows){if(r.hs<=lim.hs&&r.w<=lim.w&&r.c<=lim.c)cur.push(r);else if(cur.length){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);const txt=groups.length?groups.map(g=>`${g[0].t} → ${g[g.length-1].t} (${g.length} consecutive row${g.length>1?'s':''})`).join('<br>'):'No matching window in the supplied rows.';setRes('wwResult',txt,'Manual planning aid — verify against official forecasts.')}
 
 
@@ -505,7 +578,7 @@ function bindFuel(){
  bunkRows.addEventListener('click',e=>{if(e.target.matches('.remove-row')&&$$('.bunk-row',bunkRows).length>1)e.target.closest('.bunk-row').remove()});
  $('#calcBunkOverview').onclick=()=>{const rows=$$('.bunk-row',bunkRows).map(r=>({date:new Date($('.bunk-date',r).value),vol:+$('.bunk-vol',r).value,dens:+$('.bunk-dens',r).value})).filter(x=>!Number.isNaN(x.date.getTime())&&x.vol>=0&&x.dens>0).sort((a,b)=>a.date-b.date);if(!rows.length)return setRes('resBunkOverview','No valid bunkering rows found.','','caution');const totalV=rows.reduce((s,r)=>s+r.vol,0),totalKg=rows.reduce((s,r)=>s+r.vol*r.dens,0),totalT=totalKg/1000,weighted=totalV?totalKg/totalV:0,avgParcel=totalV/rows.length,days=rows.length>1?(rows.at(-1).date-rows[0].date)/86400000/(rows.length-1):0;$('#resBunkOverview').className='result';$('#resBunkOverview').innerHTML=`<strong>${rows.length} bunkering${rows.length===1?'':'s'} · ${nf(totalV,2)} m³ · ${nf(totalT,2)} t</strong><div class="table-wrap"><table class="table compact"><tbody><tr><th>Weighted density</th><td>${nf(weighted,1)} kg/m³</td></tr><tr><th>Average delivery</th><td>${nf(avgParcel,2)} m³</td></tr><tr><th>Average interval</th><td>${rows.length>1?`${nf(days,1)} days`:'—'}</td></tr><tr><th>Period</th><td>${rows[0].date.toISOString().slice(0,10)} → ${rows.at(-1).date.toISOString().slice(0,10)}</td></tr></tbody></table></div><small>Analysis summary only — not a statutory bunkering record.</small>`};
 
- $('#fuelRouteBtn').onclick=()=>{const d=routeDistance(),h=d/Math.max(.01,state.profile.serviceSpeed),f=h/24*state.profile.fuelDay;setRes('fuelRouteRes',d?`${nf(f,2)} m³ for ${nf(d,1)} NM`:'No active route',d?`${formatHours(h)} at ${state.profile.serviceSpeed} kn.`:'Build a route in Route Intelligence.')};$('#fuelRouteBtn').click();
+ $('#fuelRouteBtn').onclick=()=>{const d=routeDistance(),h=d/Math.max(.01,state.profile.serviceSpeed),f=h/24*state.profile.fuelDay;setRes('fuelRouteRes',d?`${nf(f,2)} m³ for ${nf(d,1)} NM`:'No active route',d?`${formatHours(h)} at ${state.profile.serviceSpeed} kn.`:'Create an experimental route under Live & Experimental.')};$('#fuelRouteBtn').click();
 }
 
 function renderVessel(){
@@ -728,7 +801,7 @@ function renderAbout(){
  <div class="about-columns">
    <article class="panel bullet-box"><h3>What it is</h3><ul>
      <li>Calculation tools for navigation, engineering, electrical work, fuel and vessel operations</li>
-     <li>Planning aids that combine user-entered vessel limits with live maritime context</li>
+     <li>Optional experimental live-data features kept separate from the core calculators</li>
      <li>Quick converters and technical utilities designed for PC, tablet and mobile use</li>
      <li>A free project shaped by practical feedback from seafarers</li>
    </ul></article>
@@ -747,7 +820,7 @@ function renderAbout(){
    <div class="actions" style="margin-top:16px">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}${button('Support Marine Tools','support','btn')}${button('Business & contact','contact','btn')}</div>
  </div></article>
  <div class="grid-2" style="margin-top:12px">
-   <article class="panel bullet-box"><h3>Live data</h3><p>Where available, live AIS and forecast data are presented as supporting context. Source, data age and limitations should always be considered before relying on a result.</p></article>
+   <article class="panel bullet-box"><h3>Live data</h3><p>Weather point forecasts are provided as supporting context. AIS and route-context functions are explicitly marked experimental and kept separate from the core calculators. Source, data age and limitations must always be considered.</p></article>
    <article class="panel bullet-box"><h3>Privacy by design</h3><p>Vessel Profile, route and local settings are stored in this browser. Live-data requests send only the context needed to obtain the requested result. Marine Tools does not use operational data for advertising, profiling or unrelated purposes.</p><div class="actions" style="margin-top:12px">${button("Read Privacy & data","privacy","btn")}</div></article>
  </div>`;
 }
@@ -756,7 +829,7 @@ function renderPrivacy(){
  <div class="about-columns">
    <article class="panel bullet-box"><h3>Stored on your device</h3><ul>
      <li>Vessel Profile values</li>
-     <li>Route waypoints created in Route Intelligence</li>
+     <li>Route waypoints created in the optional experimental Route Intelligence feature</li>
      <li>Theme and local application settings</li>
      <li>The previous route-analysis snapshot used for “What changed?”</li>
    </ul><p class="helper">These values are stored in your browser on the device you are using. They are not automatically synced to a Marine Tools account or central project database.</p></article>
@@ -786,6 +859,6 @@ function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow
 function setRes(id,main,sub='',cls=''){const e=$('#'+id);if(!e)return;e.className=`result ${cls}`;e.innerHTML=`<strong>${main}</strong>${sub?`<small>${sub}</small>`:''}`}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-function init(){renderHome();renderRouteIntelligence();renderNavigation();renderWeather();renderFuel();renderVessel();renderEngineering();renderElectrical();renderQuick();renderProfile();renderSettings();renderSurvey();renderSuggestions();renderSupport();renderContact();renderAbout();renderPrivacy();bindGlobal();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
+function init(){renderHome();renderLiveExperimental();renderRouteIntelligence();renderNavigation();renderWeather();renderFuel();renderVessel();renderEngineering();renderElectrical();renderQuick();renderProfile();renderSettings();renderSurvey();renderSuggestions();renderSupport();renderContact();renderAbout();renderPrivacy();bindGlobal();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
 document.addEventListener('DOMContentLoaded',init);
 })();

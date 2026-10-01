@@ -105,3 +105,13 @@ The homepage uses a calmer visual-first hero, a dedicated tool search, six prima
 - Custom development wording states that scope and price are agreed before paid work begins and out-of-scope work is quoted separately.
 - Every calculator/tool card has a prepared “Report a problem” email link with the tool name included automatically.
 - Business & Contact clarifies that invoices and paid custom development are provided by Walterfang Design.
+
+
+## v8.0 product direction
+- Main navigation now prioritises Fuel & Bunkering, Engineering, Electrical, Vessel Calculations and Quick Tools.
+- Weather and Navigation are under More; AIS/Route Intelligence are under Live & Experimental.
+- Vessel Profile and Settings moved to top-bar shortcuts.
+- Home is search-first and searches individual calculator cards, not just categories.
+- Weather no longer depends on Route Intelligence: it loads a BarentsWatch point forecast from latitude/longitude.
+- Worker adds `/api/weather` and more defensive point-forecast parsing, including future-time selection and partial-source diagnostics.
+- Route Intelligence now tolerates AIS or forecast failure independently instead of treating one source failure as a total failure.
