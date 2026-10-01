@@ -62,3 +62,8 @@ The website package includes:
 ## License
 
 Marine Tools source code is proprietary. See [LICENSE](LICENSE) for use restrictions and [BRAND.md](BRAND.md) for name/logo/brand terms.
+
+
+## Support
+
+Marine Tools includes a built-in support page linking to https://buymeacoffee.com/marinetools.

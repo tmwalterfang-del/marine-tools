@@ -3,6 +3,7 @@
 const API='https://api.marinetools.app';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='https://tally.so/r/5BWVzN';
+const SUPPORT_URL='https://buymeacoffee.com/marinetools';
 const K={profile:'mt.profile',route:'mt.route',theme:'mt.theme',lastAnalysis:'mt.lastAnalysis',settings:'mt.settings',favorites:'mt.favorites',history:'mt.history',recent:'mt.recent'};
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const nf=(n,d=1)=>Number.isFinite(Number(n))?Number(n).toFixed(d):'—';
@@ -113,7 +114,7 @@ function riskFor(f,p=state.profile){let score=0,reasons=[];if(Number.isFinite(f.
 function sourceStatus(id,status,text){const e=$(id);if(!e)return;e.className=`chip ${status}`;e.textContent=text}
 
 const tools=[
- ['Route Intelligence','route-intelligence','◉'],['Navigation calculations','navigation','△'],['Weather tools','weather','☁'],['Fuel & bunkering','fuel','◧'],['Vessel calculations','vessel-calcs','⚓'],['Engineering tools','engineering','⚙'],['Electrical tools','electrical','ϟ'],['Quick tools','quick','▦'],['Vessel profile','profile','⚓'],['Survey','survey','▥'],['Suggestions','suggestions','✧'],['About this project','about','ⓘ']
+ ['Route Intelligence','route-intelligence','◉'],['Navigation calculations','navigation','△'],['Weather tools','weather','☁'],['Fuel & bunkering','fuel','◧'],['Vessel calculations','vessel-calcs','⚓'],['Engineering tools','engineering','⚙'],['Electrical tools','electrical','ϟ'],['Quick tools','quick','▦'],['Vessel profile','profile','⚓'],['Survey','survey','▥'],['Suggestions','suggestions','✧'],['Support Marine Tools','support','☕'],['About this project','about','ⓘ']
 ];
 
 
@@ -291,6 +292,7 @@ function renderHome(){
   <div class="right-stack">
    <article class="panel cta-card"><h3>▥ Help shape Marine Tools</h3><p>Marine Tools is independently developed and maintained by one person. Your feedback helps guide future improvements.</p>${button('Take the survey →','survey')}</article>
    <article class="panel cta-card"><h3>✧ Have an idea or found a bug?</h3><p>Suggest a tool, improvement or report a bug directly.</p>${button('Send a suggestion →','suggestions','btn ghost')}</article>
+   <article class="panel cta-card"><h3>☕ Support Marine Tools</h3><p>If Marine Tools is useful to you, voluntary support helps cover running costs and continued development.</p>${button('Support the project →','support','btn ghost')}</article>
    <article class="panel cta-card"><h3>ⓘ About this project</h3><p>Why Marine Tools exists, what it is — and what it deliberately is not.</p>${button('Read more →','about','btn ghost')}</article>
   </div>
  </div>
@@ -617,6 +619,17 @@ function exportData(){const data={profile:state.profile,route:state.route,lastAn
 
 function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/marine-tools-shield.png" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
 function renderSuggestions(){$('#suggestions').innerHTML=pageTitle('Suggestions','Suggest a new tool, improvement or report a problem.')+`<article class="panel survey-card"><div style="font-size:54px">✧</div><h2>Suggest something</h2><p>Ideas are welcome for practical calculations, planning aids, live maritime context and quick technical utilities. Marine Tools deliberately stays focused on helper tools rather than PMS, logbooks, checklist/SMS systems or certified navigation products.</p><a class="btn primary" href="${SUGGEST_URL}" target="_blank" rel="noopener">Send a suggestion →</a></article>`}
+function renderSupport(){
+ $('#support').innerHTML=pageTitle('Support Marine Tools','Voluntary support for an independently developed maritime toolbox.')+`
+ <article class="panel survey-card">
+   <div style="font-size:54px">☕</div>
+   <h2>Support continued development</h2>
+   <p>Marine Tools is independently developed and maintained. If the tools are useful to you, you can support continued development and help cover hosting, services and future improvements.</p>
+   <div class="notice" style="text-align:left;max-width:720px;margin:14px auto"><b>Marine Tools remains free to use.</b> Support is voluntary and does not unlock different calculation results, priority access or safety-related functionality.</div>
+   <a class="btn primary" href="${SUPPORT_URL}" target="_blank" rel="noopener noreferrer">Support Marine Tools →</a>
+   <p class="helper" style="margin-top:12px">Support is handled securely through Buy Me a Coffee.</p>
+ </article>`;
+}
 function renderAbout(){
  $('#about').innerHTML=`<div class="about-hero"><div class="eyebrow">ABOUT THIS PROJECT</div><h1>Why Marine Tools exists</h1><p>Marine Tools is an independent maritime helper-tool project created to make common calculations, planning tasks and technical lookups easier to access in one place.</p></div>
  <div class="about-columns">
@@ -638,7 +651,7 @@ function renderAbout(){
    <p>Marine Tools is currently designed, developed and maintained by <b>one person</b>. The scope is intentionally focused on practical helper tools that can save time or make routine calculations easier to verify.</p>
    <p>Features such as watch handover, maintenance management, checklists and electronic records are outside the intended purpose. The focus is simple: <b>useful tools for seafarers</b>.</p>
    <div class="notice"><b>Safety boundary:</b> All outputs are planning or calculation aids. Users remain responsible for checking data, assumptions, units and results against approved systems, official sources, vessel-specific documentation and applicable procedures.</div>
-   <div class="actions" style="margin-top:16px">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}</div>
+   <div class="actions" style="margin-top:16px">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}${button('Support Marine Tools','support','btn')}</div>
  </div></article>
  <div class="grid-2" style="margin-top:12px">
    <article class="panel bullet-box"><h3>Live data</h3><p>Where available, live AIS and forecast data are presented as supporting context. Source, data age and limitations should always be considered before relying on a result.</p></article>
@@ -680,6 +693,6 @@ function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow
 function setRes(id,main,sub='',cls=''){const e=$('#'+id);if(!e)return;e.className=`result ${cls}`;e.innerHTML=`<strong>${main}</strong>${sub?`<small>${sub}</small>`:''}`}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-function init(){renderHome();renderRouteIntelligence();renderNavigation();renderWeather();renderFuel();renderVessel();renderEngineering();renderElectrical();renderQuick();renderProfile();renderSettings();renderSurvey();renderSuggestions();renderAbout();renderPrivacy();bindGlobal();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
+function init(){renderHome();renderRouteIntelligence();renderNavigation();renderWeather();renderFuel();renderVessel();renderEngineering();renderElectrical();renderQuick();renderProfile();renderSettings();renderSurvey();renderSuggestions();renderSupport();renderAbout();renderPrivacy();bindGlobal();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
 document.addEventListener('DOMContentLoaded',init);
 })();
