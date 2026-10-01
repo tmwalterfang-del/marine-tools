@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 620">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#08243A"/><stop offset=".58" stop-color="#25506D"/><stop offset=".82" stop-color="#E58B4F"/><stop offset="1" stop-color="#F7C27B"/></linearGradient>
+ <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#164A6B"/><stop offset=".55" stop-color="#0A314B"/><stop offset="1" stop-color="#061B2B"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#FFE5A0" stop-opacity=".9"/><stop offset="1" stop-color="#FFE5A0" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1800" height="620" fill="url(#sky)"/>
+<ellipse cx="1450" cy="300" rx="330" ry="130" fill="url(#sun)" opacity=".45"/>
+<g fill="#17354B"><path d="M0 345L130 250l98 70 126-111 130 116 110-73 128 81 144-92 119 94 157-78 135 86 160-71 183 82 100-35v65H0z"/><path opacity=".62" d="M0 371l220-76 141 58 177-73 165 82 168-70 174 73 186-69 167 66 184-81 288 73v55H0z"/></g>
+<rect y="390" width="1800" height="230" fill="url(#sea)"/>
+<g fill="none" stroke="#8BC9E7" stroke-opacity=".16" stroke-width="2"><path d="M0 438c240-33 410 26 640-5s414-16 610 10 390 20 550-9"/><path d="M0 500c210-27 408 29 650-1s440-11 630 10 360 14 520-7"/><path d="M0 555c246-30 450 24 700-5s420-7 636 9 328 13 464-4"/></g>
+<g transform="translate(1140 230)">
+ <path d="M0 190h430l-45 54H80l-64-26z" fill="#061522"/>
+ <path d="M64 122h278l44 68H34z" fill="#0B2A40"/>
+ <rect x="196" y="36" width="118" height="91" rx="5" fill="#EEF3F5"/>
+ <rect x="214" y="5" width="85" height="39" rx="4" fill="#D8E3E8"/>
+ <rect x="252" y="-67" width="8" height="73" fill="#081720"/>
+ <path d="M256-63l-38 31m38-20 47 26m-45-11-54 16m52-5 63 15" stroke="#0A1922" stroke-width="5"/>
+ <rect x="229" y="-79" width="58" height="8" rx="4" fill="#0A1922"/>
+ <g fill="#254B61"><rect x="218" y="57" width="21" height="15" rx="2"/><rect x="249" y="57" width="21" height="15" rx="2"/><rect x="280" y="57" width="21" height="15" rx="2"/></g>
+ <path d="M91 119l37-66h14l-28 66" fill="none" stroke="#D88B35" stroke-width="10"/>
+ <g fill="#FFD37B"><circle cx="208" cy="102" r="4"/><circle cx="240" cy="102" r="4"/><circle cx="272" cy="102" r="4"/><circle cx="304" cy="102" r="4"/></g>
+</g>
+</svg>

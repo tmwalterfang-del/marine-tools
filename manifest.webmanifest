@@ -1,0 +1,21 @@
+{
+  "name": "M/OPS \u2014 Marine Operations Workspace",
+  "short_name": "M/OPS",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#061c2f",
+  "theme_color": "#061c2f",
+  "description": "Marine voyage planning, operational calculations, bunkering and engineering tools.",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
