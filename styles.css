@@ -175,3 +175,32 @@ button,input,select,textarea{font:inherit} button{color:inherit}.app-shell{displ
 }
 
 @media(max-width:760px){.home-hero-a{min-height:500px;background:linear-gradient(180deg,rgba(4,19,31,.76) 0%,rgba(4,19,31,.52) 35%,rgba(4,19,31,.82) 100%),url("assets/hero-lantern-mobile.jpg") 58% center/cover no-repeat}.home-hero-content{width:100%;padding:34px 22px;background:linear-gradient(180deg,rgba(4,19,31,.66),rgba(4,19,31,.78) 65%,rgba(4,19,31,.88))}.home-hero-content h1{font-size:48px}.home-hero-content>p{font-size:15px}.home-section-head{align-items:flex-start;flex-direction:column}.home-section-head>span{text-align:left}.home-category-a{grid-template-columns:1fr 1fr}.home-category-a button{min-height:126px;padding:14px}.home-value-strip{grid-template-columns:1fr}.home-value-strip>*{border-right:0!important;border-bottom:1px solid #183c50!important}.home-value-strip>*:last-child{border-bottom:0!important}.home-dashboard-grid,.home-dashboard-row{grid-template-columns:1fr}.home-project-links{grid-template-columns:1fr}.home-dashboard-inner{padding:8px}}
+
+
+/* v7.9 business/contact finishing touches */
+.home-custom-link{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;
+  color:#a9c3d1;font-size:12px
+}
+.home-custom-link a{color:#7dd8fb;font-weight:700;text-decoration:none}
+.home-custom-link a:hover{text-decoration:underline}
+
+.tool-feedback{
+  margin-top:12px;padding-top:10px;border-top:1px solid #183d54;
+  font-size:11px
+}
+.tool-feedback a,.page-feedback-link{color:#78bfdc;text-decoration:none}
+.tool-feedback a:hover,.page-feedback-link:hover{color:#a9e8ff;text-decoration:underline}
+.page-feedback-link{display:inline-block;margin-top:8px;font-size:12px}
+
+.site-footer{
+  display:flex;align-items:center;justify-content:center;gap:10px 18px;flex-wrap:wrap;
+  padding:14px 22px 20px;margin:0 18px 6px;border-top:1px solid #173a4e;
+  color:#718fa1;font-size:11px
+}
+.site-footer a{color:#85bdd5;text-decoration:none}
+.site-footer a:hover{color:#b6e8fb;text-decoration:underline}
+
+@media(max-width:760px){
+  .site-footer{justify-content:flex-start;margin:0 10px;padding:14px 4px 20px}
+}

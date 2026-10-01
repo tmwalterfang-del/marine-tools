@@ -2,8 +2,10 @@
 'use strict';
 const API='https://api.marinetools.app';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
-const SUGGEST_URL='https://tally.so/r/5BWVzN';
+const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
 const SUPPORT_URL='https://buymeacoffee.com/marinetools';
+const CONTACT_EMAIL='contact@marinetools.app';
+const CUSTOM_TOOL_URL='mailto:contact@marinetools.app?subject=Custom%20Marine%20Tools%20request&body=Hi%2C%0A%0AI%20would%20like%20to%20discuss%20a%20custom%20Marine%20Tools%20tool.%0A%0ACompany%20/%20vessel%3A%0AYour%20role%3A%0AArea%3A%0AWhat%20do%20you%20need%20the%20tool%20to%20do%3A%0AHow%20do%20you%20handle%20this%20today%3A%0APreferred%20output%20/%20result%3A%0AShould%20this%20be%20private%20for%20one%20vessel/company%2C%20or%20could%20it%20become%20part%20of%20public%20Marine%20Tools%3F%3A%0AWould%20you%20like%20a%20price%20estimate%3F%3A%0A%0AYou%20can%20attach%20screenshots%2C%20spreadsheets%20or%20example%20calculations%20to%20this%20email.%0A%0ARegards%2C%0A';
 const K={profile:'mt.profile',route:'mt.route',theme:'mt.theme',lastAnalysis:'mt.lastAnalysis',settings:'mt.settings',favorites:'mt.favorites',history:'mt.history',recent:'mt.recent'};
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const nf=(n,d=1)=>Number.isFinite(Number(n))?Number(n).toFixed(d):'—';
@@ -78,10 +80,33 @@ const TOOL_META={
  'Weather window finder':{how:'Add forecast rows using separate time, wave, wind and current fields, then enter your chosen limits.',formula:'Finds consecutive supplied rows within all thresholds.',units:'m, kn and user-supplied time labels.',assume:'Each row represents the intended planning interval.',limits:'Manual planning aid; verify official forecasts and operating limits.'}
 };
 function toolMeta(title){return TOOL_META[title]||{how:'Enter the requested values, calculate, then check the result and assumptions before use.',formula:'See the result description and supplied inputs.',units:'Shown beside each input and result.',assume:'Inputs represent the condition being assessed.',limits:'Planning/calculation aid only; verify against vessel-specific documentation.'}}
+
+function reportIssueUrl(title){
+ const subject=`Marine Tools problem — ${title}`;
+ const body=`Hi,
+
+I found a problem or something unclear in Marine Tools.
+
+Tool: ${title}
+What happened:
+What did you expect:
+Inputs used:
+Device / browser (optional):
+
+Please do not include passwords, API keys or other sensitive information.
+
+Regards,
+`;
+ return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+function reportIssueLink(title){
+ return `<div class="tool-feedback"><a href="${reportIssueUrl(title)}">Report a problem with this tool →</a></div>`;
+}
+
 function toolUsage(title){const m=toolMeta(title);return `<div class="tool-how"><b>How to use</b><span>${m.how}</span></div>`}
 function toolInformation(title,desc){const m=toolMeta(title);return `<details class="tool-info"><summary>Tool information</summary><dl><dt>Purpose</dt><dd>${desc}</dd><dt>Formula</dt><dd>${m.formula}</dd><dt>Assumptions</dt><dd>${m.assume}</dd><dt>Units</dt><dd>${m.units}</dd><dt>Last updated</dt><dd>01 Oct 2026</dd><dt>Limitations</dt><dd>${m.limits}</dd></dl></details>`}
 
-function card(title,desc,body,id=''){return `<article class="panel tool-card" ${id?`id="${id}"`:''} data-tool-title="${title}"><button class="fav-toggle" type="button" data-fav-title="${title}" title="Add to My Tools" aria-label="Add ${title} to My Tools">☆</button><h3>${title}</h3><p>${desc}</p>${toolUsage(title)}${body}${toolInformation(title,desc)}</article>`}
+function card(title,desc,body,id=''){return `<article class="panel tool-card" ${id?`id="${id}"`:''} data-tool-title="${title}"><button class="fav-toggle" type="button" data-fav-title="${title}" title="Add to My Tools" aria-label="Add ${title} to My Tools">☆</button><h3>${title}</h3><p>${desc}</p>${toolUsage(title)}${body}${toolInformation(title,desc)}${reportIssueLink(title)}</article>`}
 function groupedCard(group,title,desc,body,id=''){return card(title,desc,body,id).replace('class="panel tool-card"',`class="panel tool-card" data-tool-group="${group}"`)}
 
 
@@ -114,7 +139,7 @@ function riskFor(f,p=state.profile){let score=0,reasons=[];if(Number.isFinite(f.
 function sourceStatus(id,status,text){const e=$(id);if(!e)return;e.className=`chip ${status}`;e.textContent=text}
 
 const tools=[
- ['Route Intelligence','route-intelligence','◉'],['Navigation calculations','navigation','△'],['Weather tools','weather','☁'],['Fuel & bunkering','fuel','◧'],['Vessel calculations','vessel-calcs','⚓'],['Engineering tools','engineering','⚙'],['Electrical tools','electrical','ϟ'],['Quick tools','quick','▦'],['Vessel profile','profile','⚓'],['Survey','survey','▥'],['Suggestions','suggestions','✧'],['Support Marine Tools','support','☕'],['About this project','about','ⓘ']
+ ['Route Intelligence','route-intelligence','◉'],['Navigation calculations','navigation','△'],['Weather tools','weather','☁'],['Fuel & bunkering','fuel','◧'],['Vessel calculations','vessel-calcs','⚓'],['Engineering tools','engineering','⚙'],['Electrical tools','electrical','ϟ'],['Quick tools','quick','▦'],['Vessel profile','profile','⚓'],['Survey','survey','▥'],['Suggestions','suggestions','✧'],['Support Marine Tools','support','☕'],['Business & contact','contact','✉'],['About this project','about','ⓘ']
 ];
 
 
@@ -287,7 +312,7 @@ function renderHome(){
        <button type="button" id="homeSearchGo" aria-label="Open first matching tool">→</button>
        <div id="homeToolResults" class="home-tool-results" hidden></div>
      </div>
-     <div class="home-hero-actions"><button class="btn primary" id="homeBrowse">Browse tools ↓</button>${button('Route Intelligence','route-intelligence','btn ghost')}</div>
+     <div class="home-hero-actions"><button class="btn primary" id="homeBrowse">Browse tools ↓</button>${button('Route Intelligence','route-intelligence','btn ghost')}</div><div class="home-custom-link"><span>Need something specific?</span><a href="${CUSTOM_TOOL_URL}">Request a custom tool →</a></div>
    </div>
  </section>
 
@@ -318,7 +343,7 @@ function renderHome(){
        <article class="panel"><div class="panel-head"><h2>Live conditions</h2><small id="homeUpdated">Not loaded</small></div><div class="panel-body"><div class="status-list" id="homeConditions"></div><div class="actions"><button class="btn primary" id="homeRefresh">Refresh live data</button></div></div></article>
      </div>
      <div class="grid-2 home-dashboard-row"><article class="panel"><div class="panel-head"><div><h3>↻ Recent tools</h3><small>Stored only on this device</small></div></div><div class="panel-body recent-tools" id="recentToolsHome"></div></article><article class="panel"><div class="panel-head"><div><h3>Calculation history</h3><small>Last 20 calculations · local only</small></div><button class="btn mini" id="clearHistoryHome">Clear</button></div><div class="panel-body history-list" id="historyHome"></div></article></div>
-     <div class="grid-2 home-dashboard-row"><article class="panel"><div class="panel-head"><div><h3>★ My Tools</h3><small id="favoriteSub">Your starred tools</small></div></div><div class="panel-body popular-grid" id="favoriteHome"></div></article><article class="panel"><div class="panel-head"><h3>Community & project</h3></div><div class="panel-body home-project-links"><button data-go="survey">▥ Survey <span>→</span></button><button data-go="suggestions">✧ Suggestions <span>→</span></button><button data-go="support">☕ Support <span>→</span></button><button data-go="about">ⓘ About the project <span>→</span></button></div></article></div>
+     <div class="grid-2 home-dashboard-row"><article class="panel"><div class="panel-head"><div><h3>★ My Tools</h3><small id="favoriteSub">Your starred tools</small></div></div><div class="panel-body popular-grid" id="favoriteHome"></div></article><article class="panel"><div class="panel-head"><h3>Community & project</h3></div><div class="panel-body home-project-links"><button data-go="survey">▥ Survey <span>→</span></button><button data-go="suggestions">✧ Suggestions <span>→</span></button><button data-go="contact">✉ Business & contact <span>→</span></button><button data-go="support">☕ Support <span>→</span></button><button data-go="about">ⓘ About the project <span>→</span></button></div></article></div>
    </div>
  </details>`;
 
@@ -340,7 +365,7 @@ function srow(label,value,cls=''){return `<div class="status-row ${cls}"><i></i>
 function overallRisk(r){return r.some(x=>x.score===2)?'Alert':r.some(x=>x.score===1)?'Caution':'Normal'}
 
 function renderRouteIntelligence(){
- $('#route-intelligence').innerHTML=`<div class="page-title"><div><div class="eyebrow">LIVE ROUTE CONTEXT</div><h1>Route Intelligence</h1><p>Combines your active route, vessel limits, BarentsWatch forecast data and live AIS into a planning view. It is not approved navigation information.</p></div><div class="actions"><button class="btn primary" id="runAnalysis">Run analysis</button><button class="btn" id="clearRoute">Clear route</button></div></div>
+ $('#route-intelligence').innerHTML=`<div class="page-title"><div><div class="eyebrow">LIVE ROUTE CONTEXT</div><h1>Route Intelligence</h1><p>Combines your active route, vessel limits, BarentsWatch forecast data and live AIS into a planning view. It is not approved navigation information.</p><a class="page-feedback-link" href="${reportIssueUrl('Route Intelligence')}">Report a problem →</a></div><div class="actions"><button class="btn primary" id="runAnalysis">Run analysis</button><button class="btn" id="clearRoute">Clear route</button></div></div>
  <div class="analysis-summary"><div class="metric"><small>Route distance</small><strong id="riDistance">—</strong></div><div class="metric"><small>AIS in corridor</small><strong id="riAis">—</strong></div><div class="metric"><small>CPA alerts</small><strong id="riCpa">—</strong></div><div class="metric"><small>Max Hs</small><strong id="riHs">—</strong></div><div class="metric"><small>Max wind</small><strong id="riWind">—</strong></div></div>
  <div class="grid-2"><article class="panel"><div class="panel-head"><h2>Route situation</h2><div class="legend"><span>Normal</span><span class="caution">Caution</span><span class="alert">Alert</span></div></div><div class="panel-body"><div class="map-toolbar"><button class="btn" id="fitRoute">Fit route</button><button class="btn" id="undoWp">Undo waypoint</button><span class="chip" id="riDataAge">NOT LOADED</span></div><div id="riMap" class="map"></div><p class="helper">Click the map to add waypoints. Dragging is intentionally not used here to reduce accidental edits. Route and vessel profile are stored only in this browser.</p></div></article>
  <div class="right-stack"><article class="panel"><div class="panel-head"><h3>Operational envelope</h3></div><div class="panel-body" id="envelopeBox"></div></article><article class="panel"><div class="panel-head"><h3>What changed?</h3><small>Since previous analysis</small></div><div class="panel-body change-list" id="changeBox"><span class="helper">Run an analysis twice to compare.</span></div></article><article class="panel"><div class="panel-head"><h3>Relevant AIS targets</h3></div><div class="panel-body" style="max-height:280px;overflow:auto"><table class="table"><thead><tr><th>Vessel</th><th>SOG</th><th>CPA</th><th>TCPA</th></tr></thead><tbody id="aisTable"></tbody></table></div></article></div></div>`;
@@ -405,7 +430,7 @@ function formatHours(h){if(!Number.isFinite(h))return'—';return `${Math.floor(
 
 function renderWeather(){
  $('#weather').innerHTML=pageTitle('Weather','Route forecast context, operational-limit checks and weather-related planning helpers.')+`<div class="grid-2"><article class="panel"><div class="panel-head"><h2>Active route forecast</h2><button class="btn primary" id="refreshWx">Refresh</button></div><div class="panel-body"><div id="wxStatus" class="source-status"></div><p class="tool-how"><b>How to use</b><span>Create a route in Route Intelligence, then refresh to load route-based wave, wind and current context.</span></p><div class="table-wrap"><table class="table"><thead><tr><th>Point</th><th>Hs</th><th>Wind</th><th>Current</th><th>Status</th><th>Source</th></tr></thead><tbody id="wxTable"></tbody></table></div><div class="notice mini-notice">Live values are supporting context only. Always check source age and official forecasts.</div></div></article>
- <article class="panel tool-card" data-tool-title="Weather window finder"><button class="fav-toggle" type="button" data-fav-title="Weather window finder">☆</button><h3>Weather window finder</h3><p>Find consecutive manual forecast rows that stay inside your chosen limits.</p>${toolUsage('Weather window finder')}<div id="windowRows" class="dynamic-list"><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="08:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="18"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".6"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="09:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.4"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="20"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".7"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="10:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="2.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="25"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".8"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addWindowRow">+ Add forecast row</button><div class="fields three"><label>Max Hs<input id="wwHs" type="number" step=".1" value="2.5"></label><label>Max wind<input id="wwWind" type="number" value="28"></label><label>Max current<input id="wwCur" type="number" step=".1" value="1.5"></label></div>${calcButton('findWindow','Find windows')}${result('wwResult')}${toolInformation('Weather window finder','Find consecutive manual forecast rows that stay inside your chosen limits.')}</article></div>
+ <article class="panel tool-card" data-tool-title="Weather window finder"><button class="fav-toggle" type="button" data-fav-title="Weather window finder">☆</button><h3>Weather window finder</h3><p>Find consecutive manual forecast rows that stay inside your chosen limits.</p>${toolUsage('Weather window finder')}<div id="windowRows" class="dynamic-list"><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="08:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="18"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".6"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="09:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.4"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="20"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".7"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="10:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="2.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="25"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".8"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addWindowRow">+ Add forecast row</button><div class="fields three"><label>Max Hs<input id="wwHs" type="number" step=".1" value="2.5"></label><label>Max wind<input id="wwWind" type="number" value="28"></label><label>Max current<input id="wwCur" type="number" step=".1" value="1.5"></label></div>${calcButton('findWindow','Find windows')}${result('wwResult')}${toolInformation('Weather window finder','Find consecutive manual forecast rows that stay inside your chosen limits.')}${reportIssueLink('Weather window finder')}</article></div>
  <div class="tool-grid" style="margin-top:12px">
  ${card('Wave encounter period','Estimate the wave period experienced by a moving vessel in deep water.',`<div class="fields"><label>Vessel course °T<input id="weCourse" type="number" value="90"></label><label>Vessel speed kn<input id="weSpeed" type="number" step=".1" value="8"></label><label>Wave from °T<input id="weFrom" type="number" value="270"></label><label>Wave period s<input id="wePeriod" type="number" step=".1" value="8"></label></div>${calcButton('calcEncounter')}${result('resEncounter')}`)}
  </div>`;
@@ -651,7 +676,7 @@ function renderSettings(){$('#settings').innerHTML=pageTitle('Settings','Local-o
 function exportData(){const data={profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),favorites:favorites(),recent:recentTools(),history:calcHistory(),exported:new Date().toISOString()};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='marine-tools-data.json';a.click();URL.revokeObjectURL(a.href)}
 
 function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/marine-tools-shield.png" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
-function renderSuggestions(){$('#suggestions').innerHTML=pageTitle('Suggestions','Suggest a new tool, improvement or report a problem.')+`<article class="panel survey-card"><div style="font-size:54px">✧</div><h2>Suggest something</h2><p>Ideas are welcome for practical calculations, planning aids, live maritime context and quick technical utilities. Marine Tools deliberately stays focused on helper tools rather than PMS, logbooks, checklist/SMS systems or certified navigation products.</p><a class="btn primary" href="${SUGGEST_URL}" target="_blank" rel="noopener">Send a suggestion →</a></article>`}
+function renderSuggestions(){$('#suggestions').innerHTML=pageTitle('Suggestions','Suggest a new tool, improvement or report a problem.')+`<article class="panel survey-card"><div style="font-size:54px">✧</div><h2>Suggest something</h2><p>Ideas are welcome for practical calculations, planning aids, live maritime context and quick technical utilities. Click below to open a prepared email to Marine Tools.</p><a class="btn primary" href="${SUGGEST_URL}">Email a suggestion →</a><p class="helper" style="margin-top:12px">${CONTACT_EMAIL}</p></article>`}
 function renderSupport(){
  $('#support').innerHTML=pageTitle('Support Marine Tools','Voluntary support for an independently developed maritime toolbox.')+`
  <article class="panel survey-card">
@@ -662,6 +687,41 @@ function renderSupport(){
    <a class="btn primary" href="${SUPPORT_URL}" target="_blank" rel="noopener noreferrer">Support Marine Tools →</a>
    <p class="helper" style="margin-top:12px">Support is handled securely through Buy Me a Coffee.</p>
  </article>`;
+}
+
+function renderContact(){
+ $('#contact').innerHTML=pageTitle('Business & contact','Business information, custom development requests and contact routes for Marine Tools.')+`
+ <div class="grid-2">
+   <article class="panel">
+     <div class="panel-body">
+       <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+         <img src="assets/marine-tools-shield.png" alt="Marine Tools" style="width:72px;height:72px;object-fit:contain">
+         <div><div class="eyebrow">MARINE TOOLS</div><h2 style="margin:2px 0 0">Business information</h2></div>
+       </div>
+       <div class="source-box">
+         <div class="source-item"><span>Legal entity</span><strong>WALTERFANG DESIGN</strong></div>
+         <div class="source-item"><span>Organisation no.</span><strong>938 606 242</strong></div>
+         
+         <div class="source-item"><span>Website</span><strong>marinetools.app</strong></div><div class="source-item"><span>Email</span><strong><a href="mailto:contact@marinetools.app">contact@marinetools.app</a></strong></div>
+       </div>
+       <p class="helper" style="margin-top:14px">Marine Tools is a brand and project operated by Walterfang Design, a Norwegian sole proprietorship.</p><p class="helper">Invoices and paid custom development are provided by Walterfang Design.</p>
+     </div>
+   </article>
+   <article class="panel">
+     <div class="panel-body">
+       <h2 style="margin-top:0">Custom maritime tools</h2>
+       <p>Need a calculator or technical helper adapted to a vessel, company or recurring task? Use the custom-tool request form to describe the workflow, inputs and output you need.</p>
+       <a class="btn primary" href="${CUSTOM_TOOL_URL}">Email a custom tool request →</a><p class="helper" style="margin-top:10px">The email opens with a short template. You can attach screenshots, spreadsheets or example calculations before sending.</p>
+       <div class="notice" style="margin-top:16px"><b>Scope and price are agreed in writing before paid work begins.</b><br>Work outside the agreed scope is quoted separately before it is started.</div>
+       <h3 style="margin-top:22px">Other enquiries</h3>
+       <p class="helper">For general product ideas or bug reports, use Suggestions or email contact@marinetools.app. For voluntary project support, use Support Marine Tools.</p>
+       <div class="actions">
+         ${button('Send a suggestion','suggestions','btn')}
+         ${button('Support Marine Tools','support','btn')}
+       </div>
+     </div>
+   </article>
+ </div>`;
 }
 function renderAbout(){
  $('#about').innerHTML=`<div class="about-hero"><div class="eyebrow">ABOUT THIS PROJECT</div><h1>Why Marine Tools exists</h1><p>Marine Tools is an independent maritime helper-tool project created to make common calculations, planning tasks and technical lookups easier to access in one place.</p></div>
@@ -684,7 +744,7 @@ function renderAbout(){
    <p>Marine Tools is currently designed, developed and maintained by <b>one person</b>. The scope is intentionally focused on practical helper tools that can save time or make routine calculations easier to verify.</p>
    <p>Features such as watch handover, maintenance management, checklists and electronic records are outside the intended purpose. The focus is simple: <b>useful tools for seafarers</b>.</p>
    <div class="notice"><b>Safety boundary:</b> All outputs are planning or calculation aids. Users remain responsible for checking data, assumptions, units and results against approved systems, official sources, vessel-specific documentation and applicable procedures.</div>
-   <div class="actions" style="margin-top:16px">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}${button('Support Marine Tools','support','btn')}</div>
+   <div class="actions" style="margin-top:16px">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}${button('Support Marine Tools','support','btn')}${button('Business & contact','contact','btn')}</div>
  </div></article>
  <div class="grid-2" style="margin-top:12px">
    <article class="panel bullet-box"><h3>Live data</h3><p>Where available, live AIS and forecast data are presented as supporting context. Source, data age and limitations should always be considered before relying on a result.</p></article>
@@ -726,6 +786,6 @@ function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow
 function setRes(id,main,sub='',cls=''){const e=$('#'+id);if(!e)return;e.className=`result ${cls}`;e.innerHTML=`<strong>${main}</strong>${sub?`<small>${sub}</small>`:''}`}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-function init(){renderHome();renderRouteIntelligence();renderNavigation();renderWeather();renderFuel();renderVessel();renderEngineering();renderElectrical();renderQuick();renderProfile();renderSettings();renderSurvey();renderSuggestions();renderSupport();renderAbout();renderPrivacy();bindGlobal();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
+function init(){renderHome();renderRouteIntelligence();renderNavigation();renderWeather();renderFuel();renderVessel();renderEngineering();renderElectrical();renderQuick();renderProfile();renderSettings();renderSurvey();renderSuggestions();renderSupport();renderContact();renderAbout();renderPrivacy();bindGlobal();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
 document.addEventListener('DOMContentLoaded',init);
 })();

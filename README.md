@@ -91,3 +91,17 @@ The homepage uses a calmer visual-first hero, a dedicated tool search, six prima
   - tablet: `assets/hero-lantern-tablet.jpg`
   - mobile: `assets/hero-lantern-mobile.jpg`
 - CSS automatically selects the appropriate hero crop for the screen size.
+
+- Business & Contact page with Walterfang Design legal information and direct Custom Tool request link
+
+- Help shape Marine Tools remains the Tally-based survey.
+- Suggestions now open a prepared email to contact@marinetools.app.
+- Custom Tool requests now open a structured email template to contact@marinetools.app.
+
+- Business & Contact page no longer publishes the business street address.
+
+- Site-wide footer with Marine Tools / Walterfang Design, organisation number and contact email.
+- Homepage includes a subtle Custom Tool email shortcut.
+- Custom development wording states that scope and price are agreed before paid work begins and out-of-scope work is quoted separately.
+- Every calculator/tool card has a prepared “Report a problem” email link with the tool name included automatically.
+- Business & Contact clarifies that invoices and paid custom development are provided by Walterfang Design.
