@@ -471,15 +471,15 @@ function toDMS(v,lat){const h=lat?(v>=0?'N':'S'):(v>=0?'E':'W'),a=Math.abs(v),d=
 function formatHours(h){if(!Number.isFinite(h))return'—';return `${Math.floor(h)} h ${Math.round((h%1)*60)} min`}
 
 function renderWeather(){
- $('#weather').innerHTML=pageTitle('Weather','Simple point forecast from BarentsWatch, plus manual weather-planning helpers.')+`
+ $('#weather').innerHTML=pageTitle('Weather','Point weather and sea forecast from MET Norway, plus manual weather-planning helpers.')+`
  <div class="grid-2">
-  <article class="panel weather-live-panel"><div class="panel-head"><div><h2>Point forecast</h2><small>BarentsWatch Waveforecast API</small></div><div id="wxStatus" class="source-status"><span class="chip">Not loaded</span></div></div><div class="panel-body">
-   <p class="tool-how"><b>How to use</b><span>Enter a latitude and longitude, then load the next available forecast periods. This no longer requires Route Intelligence.</span></p>
+  <article class="panel weather-live-panel"><div class="panel-head"><div><h2>Point forecast</h2><small>MET Norway Locationforecast + Oceanforecast</small></div><div id="wxStatus" class="source-status"><span class="chip">Not loaded</span></div></div><div class="panel-body">
+   <p class="tool-how"><b>How to use</b><span>Enter a latitude and longitude, then load the next forecast periods. Weather and sea data are fetched independently of Route Intelligence.</span></p>
    <div class="fields"><label>Latitude<input id="wxLat" type="number" step="any" value="59.42"></label><label>Longitude<input id="wxLon" type="number" step="any" value="10.48"></label></div>
    <div class="actions"><button class="btn primary" id="loadPointWx">Load forecast</button><button class="btn" id="useRouteWx">Use route start</button></div>
-   <div class="table-wrap"><table class="table weather-forecast-table"><thead><tr><th>Time</th><th>Hs</th><th>Wind</th><th>Current</th><th>Status</th></tr></thead><tbody id="wxPointTable"><tr><td colspan="5" class="helper">Enter a position and load the forecast.</td></tr></tbody></table></div>
+   <div class="table-wrap"><table class="table weather-forecast-table"><thead><tr><th>Time</th><th>Hs</th><th>Wind</th><th>Current</th><th>Air / weather</th><th>Status</th></tr></thead><tbody id="wxPointTable"><tr><td colspan="6" class="helper">Enter a position and load the forecast.</td></tr></tbody></table></div>
    <div id="wxDiagnostics" class="helper" style="margin-top:8px"></div>
-   <div class="notice mini-notice">Forecast data is supporting context only. Check source time, official forecasts and vessel-specific limits before operational use.</div>
+   <div class="notice mini-notice">Forecast data is supporting context only. Check source time, official MET Norway forecasts and vessel-specific limits before operational use.</div>
   </div></article>
   <article class="panel tool-card" data-tool-title="Weather window finder"><button class="fav-toggle" type="button" data-fav-title="Weather window finder">☆</button><h3>Weather window finder</h3><p>Find consecutive manual forecast rows that stay inside your chosen limits.</p>${toolUsage('Weather window finder')}<div id="windowRows" class="dynamic-list"><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="08:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="18"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".6"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="09:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="1.4"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="20"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".7"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time" value="10:00"></label><label>Hs m<input class="ww-hs" type="number" step=".1" value="2.2"></label><label>Wind kn<input class="ww-wind" type="number" step=".1" value="25"></label><label>Current kn<input class="ww-current" type="number" step=".1" value=".8"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addWindowRow">+ Add forecast row</button><div class="fields three"><label>Max Hs<input id="wwHs" type="number" step=".1" value="2.5"></label><label>Max wind<input id="wwWind" type="number" value="28"></label><label>Max current<input id="wwCur" type="number" step=".1" value="1.5"></label></div>${calcButton('findWindow','Find windows')}${result('wwResult')}${toolInformation('Weather window finder','Find consecutive manual forecast rows that stay inside your chosen limits.')}${reportIssueLink('Weather window finder')}</article>
  </div>
@@ -494,25 +494,47 @@ function renderWeather(){
  $('#findWindow').onclick=findWeatherWindow;$('#calcEncounter').onclick=calcWaveEncounter;renderPointWeather();syncFavoriteButtons();
 }
 function forecastTimeLabel(v){if(!v)return'—';const d=new Date(v);if(!Number.isFinite(d.getTime()))return esc(v);return `${d.toISOString().slice(5,16).replace('T',' ')} UTC`}
+function weatherLabel(code){
+ if(!code)return'—';
+ return String(code).replace(/_(day|night|polartwilight)$/,'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+}
 function renderPointWeather(){
  const tb=$('#wxPointTable');if(!tb)return;
  const rows=Array.isArray(state.weather)?state.weather:[];
- tb.innerHTML=rows.length?rows.map(f=>{const r=riskFor(f);return `<tr><td>${forecastTimeLabel(f.forecastTime||f.time)}</td><td>${f.hs==null?'—':nf(f.hs,1)+' m'}</td><td>${f.windKn==null?'—':nf(f.windKn,0)+' kn'}</td><td>${f.currentKn==null?'—':nf(f.currentKn,1)+' kn'}</td><td><span class="chip ${r.score===2?'bad':r.score===1?'warn':'ok'}">${r.label}</span></td></tr>`}).join(''):'<tr><td colspan="5" class="helper">Enter a position and load the forecast.</td></tr>';
+ tb.innerHTML=rows.length?rows.map(f=>{
+   const hasData=[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v)));
+   const r=hasData?riskFor(f):{score:1,label:'No data'};
+   const air=f.airTemp==null?'—':`${nf(f.airTemp,1)}°C`;
+   const wx=weatherLabel(f.symbolCode);
+   const precip=f.precipitation==null?'':` · ${nf(f.precipitation,1)} mm`;
+   return `<tr><td>${forecastTimeLabel(f.forecastTime||f.time)}</td><td>${f.hs==null?'—':nf(f.hs,1)+' m'}</td><td>${f.windKn==null?'—':nf(f.windKn,0)+' kn'}</td><td>${f.currentKn==null?'—':nf(f.currentKn,1)+' kn'}</td><td>${air}${wx==='—'?'':` · ${esc(wx)}`}${precip}</td><td><span class="chip ${r.score===2?'bad':r.score===1?'warn':'ok'}">${r.label}</span></td></tr>`;
+ }).join(''):'<tr><td colspan="6" class="helper">Enter a position and load the forecast.</td></tr>';
  updateLiveAgeIndicators();
 }
 async function loadPointWeather(){
  const lat=+$('#wxLat').value,lon=+$('#wxLon').value,tb=$('#wxPointTable'),diag=$('#wxDiagnostics');
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){sourceStatus('#wxStatus','bad','CHECK POSITION');return}
- sourceStatus('#wxStatus','warn','LOADING');tb.innerHTML='<tr><td colspan="5" class="helper">Loading BarentsWatch forecast…</td></tr>';diag.textContent='';
+ sourceStatus('#wxStatus','warn','LOADING');tb.innerHTML='<tr><td colspan="6" class="helper">Loading MET Norway forecast…</td></tr>';diag.textContent='';
  try{
    const r=await fetch(`${API}/api/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=12`,{cache:'no-store'}),text=await r.text();
    let j;try{j=JSON.parse(text)}catch{j={error:text||`HTTP ${r.status}`}}
    if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
    state.weather=Array.isArray(j.forecast)?j.forecast:[];state.weatherFetchedAt=new Date().toISOString();
-   const d=j.diagnostics||{},parts=['wave','wind','current'].map(k=>`${k}: ${d[k]?.ok?'ok':d[k]?.status||'unavailable'}`);
-   diag.textContent=`Source: BarentsWatch · ${parts.join(' · ')}`;
-   if(state.weather.length){sourceStatus('#wxStatus','ok','FORECAST LOADED');renderPointWeather()}else{sourceStatus('#wxStatus','warn','NO USABLE DATA');tb.innerHTML='<tr><td colspan="5" class="helper">BarentsWatch returned no usable forecast rows for this position.</td></tr>'}
- }catch(e){state.weather=[];sourceStatus('#wxStatus','bad','FORECAST ERROR');tb.innerHTML=`<tr><td colspan="5" class="helper">Could not load forecast: ${esc(e.message)}</td></tr>`;diag.textContent='Check the live API status or try another position.'}
+   const d=j.diagnostics||{};
+   const parts=[
+     `weather: ${d.location?.ok?'ok':d.location?.status||'unavailable'}`,
+     `ocean: ${d.ocean?.ok?'ok':d.ocean?.status||'unavailable'}`
+   ];
+   diag.textContent=`Source: MET Norway · ${parts.join(' · ')}`;
+   const usable=state.weather.some(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v))));
+   if(state.weather.length&&usable){sourceStatus('#wxStatus','ok','FORECAST LOADED');renderPointWeather()}
+   else if(state.weather.length){sourceStatus('#wxStatus','warn','NO VALUES');renderPointWeather()}
+   else{sourceStatus('#wxStatus','warn','NO USABLE DATA');tb.innerHTML='<tr><td colspan="6" class="helper">MET Norway returned no usable forecast rows for this position.</td></tr>'}
+ }catch(e){
+   state.weather=[];sourceStatus('#wxStatus','bad','FORECAST ERROR');
+   tb.innerHTML=`<tr><td colspan="6" class="helper">Could not load forecast: ${esc(e.message)}</td></tr>`;
+   diag.textContent='Check the live API status or try another position.';
+ }
 }
 function findWeatherWindow(){const rows=$$('.weather-row',$('#windowRows')).map(r=>({t:$('.ww-time',r).value,hs:+$('.ww-hs',r).value,w:+$('.ww-wind',r).value,c:+$('.ww-current',r).value})).filter(x=>x.t&&[x.hs,x.w,x.c].every(Number.isFinite));const lim={hs:+$('#wwHs').value,w:+$('#wwWind').value,c:+$('#wwCur').value};let groups=[],cur=[];for(const r of rows){if(r.hs<=lim.hs&&r.w<=lim.w&&r.c<=lim.c)cur.push(r);else if(cur.length){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);const txt=groups.length?groups.map(g=>`${g[0].t} → ${g[g.length-1].t} (${g.length} consecutive row${g.length>1?'s':''})`).join('<br>'):'No matching window in the supplied rows.';setRes('wwResult',txt,'Manual planning aid — verify against official forecasts.')}
 

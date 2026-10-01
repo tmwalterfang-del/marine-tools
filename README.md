@@ -115,3 +115,8 @@ The homepage uses a calmer visual-first hero, a dedicated tool search, six prima
 - Weather no longer depends on Route Intelligence: it loads a BarentsWatch point forecast from latitude/longitude.
 - Worker adds `/api/weather` and more defensive point-forecast parsing, including future-time selection and partial-source diagnostics.
 - Route Intelligence now tolerates AIS or forecast failure independently instead of treating one source failure as a total failure.
+
+- v8.1: Weather now uses MET Norway Locationforecast and Oceanforecast instead of parsing BarentsWatch point responses.
+- Weather combines wind/air forecast with wave/current data and no longer labels empty rows as “Normal”.
+- Experimental route forecast also uses the MET Norway point forecast stack; AIS remains BarentsWatch-based.
+- MET Norway requests include a dedicated Marine Tools User-Agent as required by api.met.no.
