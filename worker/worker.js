@@ -1,6 +1,11 @@
 const TOKEN_URL="https://id.barentswatch.no/connect/token";
 const AIS_LATEST_URL="https://live.ais.barentswatch.no/v1/latest/combined";
 const BW_API_ROOT="https://www.barentswatch.no/bwapi/";
+const MET_LOCATION_URL="https://api.met.no/weatherapi/locationforecast/2.0/compact";
+const MET_OCEAN_URL="https://api.met.no/weatherapi/oceanforecast/2.0/complete";
+const MET_USER_AGENT="MarineTools/8.1 contact@marinetools.app";
+let metCache=new Map();
+
 const ENDPOINTS={wave:"v1/waveforecastpoint/nearest/all",wind:"v1/windforecastpoint/nearest/all",current:"v1/seacurrent/nearest/all"};
 let tokenCache={},forecastCache=new Map(),paramStyle={};
 const cors={"access-control-allow-origin":"*","access-control-allow-methods":"GET,OPTIONS","access-control-allow-headers":"content-type"};
@@ -98,24 +103,93 @@ function nearest(series,time){
  return d<=2*60*60*1000?(best||{}):{};
 }
 function routeSamples(route,max=8){if(!Array.isArray(route)||!route.length)return[];if(route.length<=max)return route;const out=[];for(let i=0;i<max;i++)out.push(route[Math.round(i*(route.length-1)/(max-1))]);return out}
-async function pointData(lat,lon,env){
- const [wave,wind,current]=await Promise.all([bwSeries("wave",lat,lon,env),bwSeries("wind",lat,lon,env),bwSeries("current",lat,lon,env)]);
- return{wave,wind,current};
+
+async function fetchMet(url){
+ const r=await fetch(url,{headers:{"user-agent":MET_USER_AGENT,"accept":"application/json"}});
+ const text=await r.text();
+ if(!r.ok)return{ok:false,status:r.status,error:text.slice(0,300),data:null};
+ let data;try{data=JSON.parse(text)}catch{return{ok:false,status:r.status,error:"MET Norway returned invalid JSON",data:null}}
+ return{ok:true,status:r.status,data};
 }
-async function forecast(url,env){
- const raw=url.searchParams.get("route"),route=raw?JSON.parse(raw):[];if(!Array.isArray(route))return[];
- const pts=routeSamples(route,8);
- return Promise.all(pts.map(async(p,i)=>{const lat=Number(p.lat),lon=Number(p.lon);if(!Number.isFinite(lat)||!Number.isFinite(lon))return{index:i,source:"invalid-point"};const d=await pointData(lat,lon,env),w=bestNow(d.wave.series),wi=bestNow(d.wind.series),c=bestNow(d.current.series);return{index:i,name:p.name||`P${i+1}`,lat,lon,hs:w.hs??null,windKn:wi.windKn??null,windDirection:wi.windDirection??null,currentKn:c.currentKn??null,currentDirection:c.currentDirection??null,forecastTime:w.forecastTime||wi.forecastTime||c.forecastTime||null,source:"BarentsWatch point forecast",diagnostics:{wave:d.wave.ok?"ok":d.wave.status,wind:d.wind.ok?"ok":d.wind.status,current:d.current.ok?"ok":d.current.status}}}))
+function metTimeseries(data){return Array.isArray(data?.properties?.timeseries)?data.properties.timeseries:[]}
+function detail(row,key){const v=row?.data?.instant?.details?.[key];return Number.isFinite(Number(v))?Number(v):null}
+function periodDetail(row,key){
+ for(const p of ["next_1_hours","next_6_hours","next_12_hours"]){
+   const v=row?.data?.[p]?.details?.[key];if(Number.isFinite(Number(v)))return Number(v);
+ }
+ return null;
 }
-async function weather(url,env){
+function periodSummary(row,key){
+ for(const p of ["next_1_hours","next_6_hours","next_12_hours"]){
+   const v=row?.data?.[p]?.summary?.[key];if(v!=null)return v;
+ }
+ return null;
+}
+function msToKn(v){return v==null?null:v*1.943844}
+function nearestMetRow(rows,time,maxMs=90*60*1000){
+ if(!Array.isArray(rows)||!rows.length)return null;
+ const target=Date.parse(time||"");if(!Number.isFinite(target))return rows[0]||null;
+ let best=null,d=Infinity;
+ for(const row of rows){const t=Date.parse(row?.time||"");if(!Number.isFinite(t))continue;const q=Math.abs(t-target);if(q<d){d=q;best=row}}
+ return d<=maxMs?best:null;
+}
+async function metPoint(lat,lon){
+ const lat4=lat.toFixed(4),lon4=lon.toFixed(4),key=`met:${lat4}:${lon4}`,cached=metCache.get(key);
+ if(cached&&cached.expires>Date.now())return cached.data;
+ const q=`lat=${encodeURIComponent(lat4)}&lon=${encodeURIComponent(lon4)}`;
+ const [location,ocean]=await Promise.all([fetchMet(`${MET_LOCATION_URL}?${q}`),fetchMet(`${MET_OCEAN_URL}?${q}`)]);
+ const data={location,ocean,locationRows:location.ok?metTimeseries(location.data):[],oceanRows:ocean.ok?metTimeseries(ocean.data):[]};
+ metCache.set(key,{data,expires:Date.now()+10*60*1000});return data;
+}
+function metRowCombined(locationRow,oceanRow){
+ const windMs=detail(locationRow,"wind_speed"),currentMs=detail(oceanRow,"sea_water_speed");
+ return{
+   forecastTime:locationRow?.time||oceanRow?.time||null,
+   hs:detail(oceanRow,"sea_surface_wave_height"),
+   waveDirection:detail(oceanRow,"sea_surface_wave_from_direction"),
+   windKn:msToKn(windMs),
+   windDirection:detail(locationRow,"wind_from_direction"),
+   currentKn:msToKn(currentMs),
+   currentDirection:detail(oceanRow,"sea_water_to_direction"),
+   airTemp:detail(locationRow,"air_temperature"),
+   seaTemp:detail(oceanRow,"sea_water_temperature"),
+   precipitation:periodDetail(locationRow,"precipitation_amount"),
+   symbolCode:periodSummary(locationRow,"symbol_code"),
+   source:"MET Norway"
+ };
+}
+function selectFutureRows(rows,limit){
+ const now=Date.now()-45*60*1000;
+ const future=rows.filter(r=>{const t=Date.parse(r?.time||"");return Number.isFinite(t)&&t>=now});
+ return (future.length?future:rows).slice(0,limit);
+}
+async function weather(url){
  const lat=Number(url.searchParams.get("lat")),lon=Number(url.searchParams.get("lon")),limit=Math.max(1,Math.min(24,Number(url.searchParams.get("limit"))||12));
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180)return{error:"Invalid latitude/longitude"};
- const d=await pointData(lat,lon,env),sources=[d.wave.series,d.wind.series,d.current.series],base=sources.find(s=>s.some(x=>Number.isFinite(Date.parse(x.forecastTime||""))))||sources.find(s=>s.length)||[];
- const now=Date.now()-60*60*1000;let baseRows=base.filter(x=>{const t=Date.parse(x.forecastTime||"");return !Number.isFinite(t)||t>=now});if(!baseRows.length)baseRows=base;
- const seen=new Set(),forecast=[];
- for(const row of baseRows){if(forecast.length>=limit)break;const time=row.forecastTime||null,key=time||`row-${forecast.length}`;if(seen.has(key))continue;seen.add(key);const w=nearest(d.wave.series,time),wi=nearest(d.wind.series,time),c=nearest(d.current.series,time);forecast.push({forecastTime:time||w.forecastTime||wi.forecastTime||c.forecastTime||null,hs:w.hs??null,windKn:wi.windKn??null,windDirection:wi.windDirection??null,currentKn:c.currentKn??null,currentDirection:c.currentDirection??null,source:"BarentsWatch point forecast"})}
- if(!forecast.length){const w=bestNow(d.wave.series),wi=bestNow(d.wind.series),c=bestNow(d.current.series);if(w.hs!=null||wi.windKn!=null||c.currentKn!=null)forecast.push({forecastTime:w.forecastTime||wi.forecastTime||c.forecastTime||null,hs:w.hs??null,windKn:wi.windKn??null,windDirection:wi.windDirection??null,currentKn:c.currentKn??null,currentDirection:c.currentDirection??null,source:"BarentsWatch point forecast"})}
- return{lat,lon,forecast,diagnostics:{wave:{ok:d.wave.ok,status:d.wave.status||"ok",count:d.wave.series.length},wind:{ok:d.wind.ok,status:d.wind.status||"ok",count:d.wind.series.length},current:{ok:d.current.ok,status:d.current.status||"ok",count:d.current.series.length}}};
+ const d=await metPoint(lat,lon);
+ const base=d.locationRows.length?selectFutureRows(d.locationRows,limit):selectFutureRows(d.oceanRows,limit);
+ const forecast=base.map(row=>{
+   const time=row?.time||null;
+   const locationRow=d.locationRows.length?(d.locationRows.includes(row)?row:nearestMetRow(d.locationRows,time)):null;
+   const oceanRow=d.oceanRows.length?(d.oceanRows.includes(row)?row:nearestMetRow(d.oceanRows,time)):null;
+   return metRowCombined(locationRow,oceanRow);
+ });
+ return{
+   lat,lon,forecast,
+   diagnostics:{
+     location:{ok:d.location.ok,status:d.location.ok?"ok":d.location.status,count:d.locationRows.length,error:d.location.error||null},
+     ocean:{ok:d.ocean.ok,status:d.ocean.ok?"ok":d.ocean.status,count:d.oceanRows.length,error:d.ocean.error||null}
+   }
+ };
+}
+async function forecast(url){
+ const raw=url.searchParams.get("route"),route=raw?JSON.parse(raw):[];if(!Array.isArray(route))return[];
+ const pts=routeSamples(route,8);
+ return Promise.all(pts.map(async(p,i)=>{
+   const lat=Number(p.lat),lon=Number(p.lon);if(!Number.isFinite(lat)||!Number.isFinite(lon))return{index:i,source:"invalid-point"};
+   const d=await metPoint(lat,lon),l=selectFutureRows(d.locationRows,1)[0]||null,o=nearestMetRow(d.oceanRows,l?.time)||selectFutureRows(d.oceanRows,1)[0]||null,f=metRowCombined(l,o);
+   return{index:i,name:p.name||`P${i+1}`,lat,lon,...f,diagnostics:{location:d.location.ok?"ok":d.location.status,ocean:d.ocean.ok?"ok":d.ocean.status}};
+ }))
 }
 const ALLOWED={wave:ENDPOINTS.wave,wind:ENDPOINTS.wind,current:ENDPOINTS.current};
 async function probe(url,env){const kind=url.searchParams.get("endpoint"),path=ALLOWED[kind];if(!path)return{error:"Unsupported endpoint",allowed:Object.keys(ALLOWED)};const access=await getToken("api",env),qs=new URLSearchParams(url.searchParams);qs.delete("endpoint");const r=await fetch(`${BW_API_ROOT}${path}${qs.toString()?`?${qs}`:""}`,{headers:{authorization:`Bearer ${access}`,accept:"application/json"}});const text=await r.text();let body;try{body=JSON.parse(text)}catch{body=text}return{upstreamStatus:r.status,endpoint:path,data:body}}
@@ -123,11 +197,11 @@ async function probe(url,env){const kind=url.searchParams.get("endpoint"),path=A
 export default{async fetch(request,env){
  if(request.method==="OPTIONS")return new Response(null,{headers:cors});const url=new URL(request.url);
  try{
-   if(url.pathname==="/api/health")return json({status:"ok",service:"Marine Tools API",capabilities:["ais-experimental","barentswatch-point-weather","route-forecast-experimental"]});
+   if(url.pathname==="/api/health")return json({status:"ok",service:"Marine Tools API",capabilities:["ais-experimental","met-norway-point-weather","route-forecast-experimental"]});
    if(url.pathname==="/api/auth/status")return json(await authStatus(env));
    if(url.pathname==="/api/ais/latest")return json(await latestAis(url,env));
-   if(url.pathname==="/api/forecast")return json(await forecast(url,env));
-   if(url.pathname==="/api/weather")return json(await weather(url,env));
+   if(url.pathname==="/api/forecast")return json(await forecast(url));
+   if(url.pathname==="/api/weather")return json(await weather(url));
    if(url.pathname==="/api/barentswatch/probe")return json(await probe(url,env));
    return json({error:"Not found"},404);
  }catch(e){return json({error:e.message},500)}
