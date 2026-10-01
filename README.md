@@ -47,14 +47,6 @@ Marine Tools follows a local-first approach. Vessel Profile values, route waypoi
 
 Live-data tools send only the route or position context needed to return the requested result. Internet requests may pass through hosting, maritime-data, map and network providers that have their own technical logging and data-processing practices.
 
-## Branding assets
-
-The website package includes:
-
-- `assets/marine-tools-shield.png` — main Marine Tools logo
-- `assets/marine-tools-tally-header.png` — wide header artwork suitable for forms/social presentation
-- `assets/icon-192.png` and `assets/icon-512.png` — PWA/app icons
-
 ## License
 
 See [LICENSE](LICENSE).
