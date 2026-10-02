@@ -6,17 +6,18 @@ const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20sugge
 const SUPPORT_URL='https://buymeacoffee.com/marinetools';
 const CONTACT_EMAIL='contact@marinetools.app';
 const CUSTOM_TOOL_URL='mailto:contact@marinetools.app?subject=Custom%20Marine%20Tools%20request&body=Hi%2C%0A%0AI%20would%20like%20to%20discuss%20a%20custom%20Marine%20Tools%20tool.%0A%0ACompany%20/%20vessel%3A%0AYour%20role%3A%0AArea%3A%0AWhat%20do%20you%20need%20the%20tool%20to%20do%3A%0AHow%20do%20you%20handle%20this%20today%3A%0APreferred%20output%20/%20result%3A%0AShould%20this%20be%20private%20for%20one%20vessel/company%2C%20or%20could%20it%20become%20part%20of%20public%20Marine%20Tools%3F%3A%0AWould%20you%20like%20a%20price%20estimate%3F%3A%0A%0AYou%20can%20attach%20screenshots%2C%20spreadsheets%20or%20example%20calculations%20to%20this%20email.%0A%0ARegards%2C%0A';
-const K={profile:'mt.profile',route:'mt.route',theme:'mt.theme',lastAnalysis:'mt.lastAnalysis',settings:'mt.settings',favorites:'mt.favorites',history:'mt.history',recent:'mt.recent'};
+const K={profile:'mt.profile',route:'mt.route',theme:'mt.theme',lastAnalysis:'mt.lastAnalysis',settings:'mt.settings',favorites:'mt.favorites',history:'mt.history',recent:'mt.recent',consumption:'mt.consumption',bunkHistory:'mt.bunkHistory',weatherCache:'mt.weatherCache'};
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const nf=(n,d=1)=>Number.isFinite(Number(n))?Number(n).toFixed(d):'—';
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
 const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
+const cachedWeather=store.get(K.weatherCache,{forecast:[],fetchedAt:null,lat:null,lon:null,diagnostics:null});
 const state={
   profile:store.get(K.profile,{name:'',loa:80,draft:4,serviceSpeed:8,fuelDay:4,maxHs:3,maxWind:30,maxCurrent:2,minUKC:1,cpaAlert:1,corridor:5}),
   route:store.get(K.route,[]),
   theme:['dark','bridge'].includes(store.get(K.theme,'dark'))?store.get(K.theme,'dark'):'dark',
-  ais:[], forecast:[], weather:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, weatherFetchedAt:null
+  ais:[], forecast:[], weather:Array.isArray(cachedWeather.forecast)?cachedWeather.forecast:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, weatherFetchedAt:cachedWeather.fetchedAt||null
 };
 function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2800)}
 function setTheme(v){
@@ -27,6 +28,16 @@ function setTheme(v){
  if(b){b.textContent=state.theme==='bridge'?'BRG':'◐';b.title=state.theme==='bridge'?'Switch to Dark':'Switch to Bridge Dark'}
 }
 function nowUTC(){const d=new Date();return d.toISOString().slice(11,16)}
+
+function localDateISO(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
+function csvCell(v){const s=String(v??'');return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}
+function downloadCsv(filename,rows){
+ const csv=rows.map(r=>r.map(csvCell).join(',')).join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click();URL.revokeObjectURL(a.href)
+}
+function parseLocalDate(s){if(!s)return null;const d=new Date(`${s}T12:00:00`);return Number.isFinite(d.getTime())?d:null}
+function daysBetween(a,b){return Math.abs(b-a)/86400000}
+
 function updateClock(){const e=$('#utcClock');if(e)e.textContent=`UTC ${nowUTC()}`}
 let leafletPromise=null,bmcLoaded=false;
 const renderedPages=new Set();
@@ -39,10 +50,12 @@ function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)request
 const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
 function page(id){ensurePage(id);$$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('#sidebar').classList.remove('open');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();window.scrollTo({top:0,behavior:'smooth'})}
-function openTool(pageId,title=''){page(pageId);if(title)setTimeout(()=>{const card=$$('.tool-card').find(x=>x.dataset.toolTitle===title);if(card){card.scrollIntoView({behavior:'smooth',block:'start'});card.classList.add('tool-focus');setTimeout(()=>card.classList.remove('tool-focus'),1600)}},80)}
+function openTool(pageId,title=''){page(pageId);if(title)setTimeout(()=>{const card=$$('.tool-card').find(x=>x.dataset.toolTitle===title);if(card){if(card.hidden&&card.dataset.toolGroup){const sel=pageId==='fuel'?$('#fuelView'):pageId==='engineering'?$('#engView'):null;if(sel){sel.value=card.dataset.toolGroup;sel.dispatchEvent(new Event('change'))}}card.scrollIntoView({behavior:'smooth',block:'start'});card.classList.add('tool-focus');setTimeout(()=>card.classList.remove('tool-focus'),1600)}},80)}
 function button(label,pageId,cls='btn primary'){return `<button class="${cls}" data-go="${pageId}">${label}</button>`}
 
 const TOOL_META={
+ 'Daily consumption & reporting':{how:'Record fuel, urea or lube-oil consumption from a reading difference or a directly entered amount, then save it locally.',formula:'Reading mode: consumed volume = current reading − previous reading. Mass = volume × density. Specific rate = mass / running hours when hours are entered.',units:'m³ or litres, kg/m³, kg, tonnes, hours and kg/h.',assume:'The entered readings or direct amount represent consumption for the selected date/period.',limits:'Local operational helper only. It does not replace an approved engine, fuel, emissions or statutory logbook.'},
+ 'Bunkering history & export':{how:'Save each bunkering locally with date, grade, volume and density, then review totals and export the history.',formula:'Mass = volume × density. Weighted density = total mass / total volume.',units:'m³, kg/m³ and tonnes.',assume:'Entered quantities and density are taken from the relevant delivery documentation.',limits:'Local analysis history only — not a BDN, Oil Record Book or statutory bunkering record.'},
  'Bearing, distance & destination':{how:'Enter two positions, then calculate distance and initial true bearing.',formula:'Spherical great-circle distance and initial bearing.',units:'Degrees, nautical miles, degrees true.',assume:'Positions use WGS-84-style latitude/longitude input.',limits:'Planning helper only; use approved navigation systems for the voyage plan.'},
  'Coordinate toolbox':{how:'Enter a decimal latitude and longitude to show DDM and DMS formats.',formula:'Direct angular-format conversion.',units:'Decimal degrees, DDM and DMS.',assume:'North/east positive; south/west negative.',limits:'Does not transform between chart datums.'},
  'Current-corrected ETA':{how:'Enter distance, speed through water and the current component along the route.',formula:'SOG = STW + along-track current; time = distance / SOG.',units:'NM, kn, hours.',assume:'Current remains constant and is already resolved along the track.',limits:'Does not model cross-current or changing tidal streams.'},
@@ -154,7 +167,7 @@ const tools=[
  ['Weather','weather','☁'],['Navigation','navigation','△'],['Live & Experimental','live-experimental','◉'],['Route Intelligence (experimental)','route-intelligence','◉'],
  ['Vessel profile','profile','⚓'],['Settings','settings','☷'],['Help shape Marine Tools','survey','▥'],['Suggestions','suggestions','✧'],['Support Marine Tools','support','☕'],['Business & contact','contact','✉'],['About this project','about','ⓘ'],['Privacy & data','privacy','◈']
 ];
-const STATIC_TOOL_INDEX=[{"title":"Bearing, distance & destination","page":"navigation","icon":"→","tool":"Bearing, distance & destination"},{"title":"Closest point on active route","page":"navigation","icon":"→","tool":"Closest point on active route"},{"title":"Coordinate toolbox","page":"navigation","icon":"→","tool":"Coordinate toolbox"},{"title":"Current-corrected ETA","page":"navigation","icon":"→","tool":"Current-corrected ETA"},{"title":"Great circle vs rhumb line","page":"navigation","icon":"→","tool":"Great circle vs rhumb line"},{"title":"Passage scenario compare","page":"navigation","icon":"→","tool":"Passage scenario compare"},{"title":"Route fuel estimate","page":"navigation","icon":"→","tool":"Route fuel estimate"},{"title":"Set & drift","page":"navigation","icon":"→","tool":"Set & drift"},{"title":"True / apparent wind","page":"navigation","icon":"→","tool":"True / apparent wind"},{"title":"Wind component","page":"navigation","icon":"→","tool":"Wind component"},{"title":"Wave encounter period","page":"weather","icon":"→","tool":"Wave encounter period"},{"title":"Weather window finder","page":"weather","icon":"→","tool":"Weather window finder"},{"title":"Bunkering overview","page":"fuel","icon":"→","tool":"Bunkering overview"},{"title":"Endurance scenario compare","page":"fuel","icon":"→","tool":"Endurance scenario compare"},{"title":"Fuel / Urea converter","page":"fuel","icon":"→","tool":"Fuel / Urea converter"},{"title":"Fuel ROB & endurance","page":"fuel","icon":"→","tool":"Fuel ROB & endurance"},{"title":"Fuel blending","page":"fuel","icon":"→","tool":"Fuel blending"},{"title":"Fuel consumption by speed","page":"fuel","icon":"→","tool":"Fuel consumption by speed"},{"title":"Fuel temperature correction","page":"fuel","icon":"→","tool":"Fuel temperature correction"},{"title":"Route fuel estimate","page":"fuel","icon":"→","tool":"Route fuel estimate"},{"title":"Tank transfer","page":"fuel","icon":"→","tool":"Tank transfer"},{"title":"Air draft / bridge clearance","page":"vessel-calcs","icon":"→","tool":"Air draft / bridge clearance"},{"title":"Anchor swing radius","page":"vessel-calcs","icon":"→","tool":"Anchor swing radius"},{"title":"Draft / tide UKC","page":"vessel-calcs","icon":"→","tool":"Draft / tide UKC"},{"title":"Dynamic UKC & squat","page":"vessel-calcs","icon":"→","tool":"Dynamic UKC & squat"},{"title":"FWA / DWA","page":"vessel-calcs","icon":"→","tool":"FWA / DWA"},{"title":"Chemical dosing","page":"engineering","icon":"→","tool":"Chemical dosing"},{"title":"Flow / fill time","page":"engineering","icon":"→","tool":"Flow / fill time"},{"title":"Generator load margin","page":"engineering","icon":"→","tool":"Generator load margin"},{"title":"Hydraulic power","page":"engineering","icon":"→","tool":"Hydraulic power"},{"title":"Lube oil trend","page":"engineering","icon":"→","tool":"Lube oil trend"},{"title":"NOx reporting helper","page":"engineering","icon":"→","tool":"NOx reporting helper"},{"title":"Pipe velocity","page":"engineering","icon":"→","tool":"Pipe velocity"},{"title":"Pressure ↔ head","page":"engineering","icon":"→","tool":"Pressure ↔ head"},{"title":"Pump speed change","page":"engineering","icon":"→","tool":"Pump speed change"},{"title":"Tank table interpolation","page":"engineering","icon":"→","tool":"Tank table interpolation"},{"title":"Battery runtime","page":"electrical","icon":"→","tool":"Battery runtime"},{"title":"Current imbalance","page":"electrical","icon":"→","tool":"Current imbalance"},{"title":"Motor current","page":"electrical","icon":"→","tool":"Motor current"},{"title":"Power factor correction","page":"electrical","icon":"→","tool":"Power factor correction"},{"title":"Three-phase power","page":"electrical","icon":"→","tool":"Three-phase power"},{"title":"Transformer calculator","page":"electrical","icon":"→","tool":"Transformer calculator"},{"title":"Voltage drop","page":"electrical","icon":"→","tool":"Voltage drop"},{"title":"Beaufort converter","page":"quick","icon":"→","tool":"Beaufort converter"},{"title":"Compass / gyro correction","page":"quick","icon":"→","tool":"Compass / gyro correction"},{"title":"Speed · distance · time","page":"quick","icon":"→","tool":"Speed · distance · time"},{"title":"Unit converter","page":"quick","icon":"→","tool":"Unit converter"}];
+const STATIC_TOOL_INDEX=[{"title":"Bearing, distance & destination","page":"navigation","icon":"→","tool":"Bearing, distance & destination"},{"title":"Closest point on active route","page":"navigation","icon":"→","tool":"Closest point on active route"},{"title":"Coordinate toolbox","page":"navigation","icon":"→","tool":"Coordinate toolbox"},{"title":"Current-corrected ETA","page":"navigation","icon":"→","tool":"Current-corrected ETA"},{"title":"Great circle vs rhumb line","page":"navigation","icon":"→","tool":"Great circle vs rhumb line"},{"title":"Passage scenario compare","page":"navigation","icon":"→","tool":"Passage scenario compare"},{"title":"Route fuel estimate","page":"navigation","icon":"→","tool":"Route fuel estimate"},{"title":"Set & drift","page":"navigation","icon":"→","tool":"Set & drift"},{"title":"True / apparent wind","page":"navigation","icon":"→","tool":"True / apparent wind"},{"title":"Wind component","page":"navigation","icon":"→","tool":"Wind component"},{"title":"Wave encounter period","page":"weather","icon":"→","tool":"Wave encounter period"},{"title":"Weather window finder","page":"weather","icon":"→","tool":"Weather window finder"},{"title":"Bunkering overview","page":"fuel","icon":"→","tool":"Bunkering overview"},{"title":"Endurance scenario compare","page":"fuel","icon":"→","tool":"Endurance scenario compare"},{"title":"Fuel / Urea converter","page":"fuel","icon":"→","tool":"Fuel / Urea converter"},{"title":"Fuel ROB & endurance","page":"fuel","icon":"→","tool":"Fuel ROB & endurance"},{"title":"Fuel blending","page":"fuel","icon":"→","tool":"Fuel blending"},{"title":"Fuel consumption by speed","page":"fuel","icon":"→","tool":"Fuel consumption by speed"},{"title":"Fuel temperature correction","page":"fuel","icon":"→","tool":"Fuel temperature correction"},{"title":"Route fuel estimate","page":"fuel","icon":"→","tool":"Route fuel estimate"},{"title":"Tank transfer","page":"fuel","icon":"→","tool":"Tank transfer"},{"title":"Air draft / bridge clearance","page":"vessel-calcs","icon":"→","tool":"Air draft / bridge clearance"},{"title":"Anchor swing radius","page":"vessel-calcs","icon":"→","tool":"Anchor swing radius"},{"title":"Draft / tide UKC","page":"vessel-calcs","icon":"→","tool":"Draft / tide UKC"},{"title":"Dynamic UKC & squat","page":"vessel-calcs","icon":"→","tool":"Dynamic UKC & squat"},{"title":"FWA / DWA","page":"vessel-calcs","icon":"→","tool":"FWA / DWA"},{"title":"Chemical dosing","page":"engineering","icon":"→","tool":"Chemical dosing"},{"title":"Flow / fill time","page":"engineering","icon":"→","tool":"Flow / fill time"},{"title":"Generator load margin","page":"engineering","icon":"→","tool":"Generator load margin"},{"title":"Hydraulic power","page":"engineering","icon":"→","tool":"Hydraulic power"},{"title":"Lube oil trend","page":"engineering","icon":"→","tool":"Lube oil trend"},{"title":"NOx reporting helper","page":"engineering","icon":"→","tool":"NOx reporting helper"},{"title":"Pipe velocity","page":"engineering","icon":"→","tool":"Pipe velocity"},{"title":"Pressure ↔ head","page":"engineering","icon":"→","tool":"Pressure ↔ head"},{"title":"Pump speed change","page":"engineering","icon":"→","tool":"Pump speed change"},{"title":"Tank table interpolation","page":"engineering","icon":"→","tool":"Tank table interpolation"},{"title":"Battery runtime","page":"electrical","icon":"→","tool":"Battery runtime"},{"title":"Current imbalance","page":"electrical","icon":"→","tool":"Current imbalance"},{"title":"Motor current","page":"electrical","icon":"→","tool":"Motor current"},{"title":"Power factor correction","page":"electrical","icon":"→","tool":"Power factor correction"},{"title":"Three-phase power","page":"electrical","icon":"→","tool":"Three-phase power"},{"title":"Transformer calculator","page":"electrical","icon":"→","tool":"Transformer calculator"},{"title":"Voltage drop","page":"electrical","icon":"→","tool":"Voltage drop"},{"title":"Beaufort converter","page":"quick","icon":"→","tool":"Beaufort converter"},{"title":"Compass / gyro correction","page":"quick","icon":"→","tool":"Compass / gyro correction"},{"title":"Speed · distance · time","page":"quick","icon":"→","tool":"Speed · distance · time"},{"title":"Unit converter","page":"quick","icon":"→","tool":"Unit converter"},{"title":"Daily consumption & reporting","page":"fuel","icon":"→","tool":"Daily consumption & reporting"},{"title":"Bunkering history & export","page":"fuel","icon":"→","tool":"Bunkering history & export"}];
 function toolSearchIndex(){
  const found=[...tools.map(x=>({title:x[0],page:x[1],icon:x[2],tool:''})),...STATIC_TOOL_INDEX];
  return found.filter((x,i,a)=>a.findIndex(y=>y.title===x.title&&y.page===x.page)===i);
@@ -504,7 +517,14 @@ function renderWeather(){
  const windowRows=$('#windowRows');
  $('#addWindowRow').onclick=()=>windowRows.insertAdjacentHTML('beforeend','<div class="dynamic-row weather-row"><label>Time<input class="ww-time" type="time"></label><label>Hs m<input class="ww-hs" type="number" step=".1"></label><label>Wind kn<input class="ww-wind" type="number" step=".1"></label><label>Current kn<input class="ww-current" type="number" step=".1"></label><button type="button" class="btn small remove-row">Remove</button></div>');
  windowRows.addEventListener('click',e=>{if(e.target.matches('.remove-row')&&$$('.weather-row',windowRows).length>2)e.target.closest('.weather-row').remove()});
- $('#findWindow').onclick=findWeatherWindow;$('#calcEncounter').onclick=calcWaveEncounter;renderPointWeather();syncFavoriteButtons();
+ $('#findWindow').onclick=findWeatherWindow;$('#calcEncounter').onclick=calcWaveEncounter;
+ const cw=store.get(K.weatherCache,null);
+ if(cw&&Array.isArray(cw.forecast)&&cw.forecast.length){
+   if(Number.isFinite(Number(cw.lat)))$('#wxLat').value=cw.lat;
+   if(Number.isFinite(Number(cw.lon)))$('#wxLon').value=cw.lon;
+   $('#wxDiagnostics').textContent=`Cached forecast · saved ${cw.fetchedAt?forecastTimeLabel(cw.fetchedAt):'previously'} · load again when online for fresh data.`;
+ }
+ renderPointWeather();syncFavoriteButtons();
 }
 function forecastTimeLabel(v){if(!v)return'—';const d=new Date(v);if(!Number.isFinite(d.getTime()))return esc(v);return `${d.toISOString().slice(5,16).replace('T',' ')} UTC`}
 function weatherLabel(code){
@@ -521,7 +541,7 @@ async function loadPointWeather(){
    const r=await fetch(`${API}/api/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=12`,{cache:'no-store'}),text=await r.text();
    let j;try{j=JSON.parse(text)}catch{j={error:text||`HTTP ${r.status}`}}
    if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
-   state.weather=Array.isArray(j.forecast)?j.forecast:[];state.weatherFetchedAt=new Date().toISOString();
+   state.weather=Array.isArray(j.forecast)?j.forecast:[];state.weatherFetchedAt=new Date().toISOString();store.set(K.weatherCache,{lat,lon,forecast:state.weather,fetchedAt:state.weatherFetchedAt,diagnostics:j.diagnostics||null});
    const d=j.diagnostics||{};
    const parts=[
      `weather: ${d.location?.ok?'ok':d.location?.status||'unavailable'}`,
@@ -533,9 +553,16 @@ async function loadPointWeather(){
    else if(state.weather.length){sourceStatus('#wxStatus','warn','NO VALUES');renderPointWeather()}
    else{sourceStatus('#wxStatus','warn','NO USABLE DATA');tb.innerHTML='<tr><td colspan="6" class="helper">MET Norway returned no usable forecast rows for this position.</td></tr>'}
  }catch(e){
-   state.weather=[];sourceStatus('#wxStatus','bad','FORECAST ERROR');
-   tb.innerHTML=`<tr><td colspan="6" class="helper">Could not load forecast: ${esc(e.message)}</td></tr>`;
-   diag.textContent='Check the live API status or try another position.';
+   const cw=store.get(K.weatherCache,null);
+   if(cw&&Array.isArray(cw.forecast)&&cw.forecast.length){
+     state.weather=cw.forecast;state.weatherFetchedAt=cw.fetchedAt||null;renderPointWeather();
+     sourceStatus('#wxStatus','warn','CACHED FORECAST');
+     diag.textContent=`Offline/live request unavailable — showing the last forecast saved on this device${cw.fetchedAt?` from ${forecastTimeLabel(cw.fetchedAt)}`:''}.`;
+   }else{
+     state.weather=[];sourceStatus('#wxStatus','bad','FORECAST ERROR');
+     tb.innerHTML=`<tr><td colspan="6" class="helper">Could not load forecast: ${esc(e.message)}</td></tr>`;
+     diag.textContent='Check the live API status or try another position.';
+   }
  }
 }
 function findWeatherWindow(){const rows=$$('.weather-row',$('#windowRows')).map(r=>({t:$('.ww-time',r).value,hs:+$('.ww-hs',r).value,w:+$('.ww-wind',r).value,c:+$('.ww-current',r).value})).filter(x=>x.t&&[x.hs,x.w,x.c].every(Number.isFinite));const lim={hs:+$('#wwHs').value,w:+$('#wwWind').value,c:+$('#wwCur').value};let groups=[],cur=[];for(const r of rows){if(r.hs<=lim.hs&&r.w<=lim.w&&r.c<=lim.c)cur.push(r);else if(cur.length){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);const txt=groups.length?groups.map(g=>`${g[0].t} → ${g[g.length-1].t} (${g.length} consecutive row${g.length>1?'s':''})`).join('<br>'):'No matching window in the supplied rows.';setRes('wwResult',txt,'Manual planning aid — verify against official forecasts.')}
@@ -553,8 +580,38 @@ function calcWaveEncounter(){
 
 function renderFuel(){
  $('#fuel').innerHTML=pageTitle('Fuel & Bunkering','Practical fuel, endurance and bunkering helpers with straightforward inputs.')+`
- <article class="panel tool-selector"><div class="panel-body"><label>Show tools<select id="fuelView"><option value="everyday">Everyday fuel & bunkering</option><option value="planning">Performance & planning</option><option value="advanced">Advanced fuel calculations</option><option value="all">Show all</option></select></label><p class="helper">Start with the everyday tools. More specialised calculations are still available from the dropdown.</p></div></article>
+ <article class="panel tool-selector"><div class="panel-body"><label>Show tools<select id="fuelView"><option value="everyday">Everyday fuel & bunkering</option><option value="reporting">Consumption & reporting</option><option value="planning">Performance & planning</option><option value="advanced">Advanced fuel calculations</option><option value="all">Show all</option></select></label><p class="helper">Start with the everyday tools. More specialised calculations are still available from the dropdown.</p></div></article>
  <div class="tool-grid">
+ ${card('Daily consumption & reporting','Track fuel, urea or lube-oil consumption locally, compare recent averages and export a clean CSV.',`
+  <div class="consumption-local-note"><span>LOCAL-FIRST</span><small>Saved only in this browser unless you export it.</small></div>
+  <div class="fields three">
+   <label>Product<select id="consProduct"><option value="Fuel">Fuel</option><option value="Urea">Urea solution</option><option value="Lube oil">Lube oil</option></select></label>
+   <label>Date<input id="consDate" type="date"></label>
+   <label>Entry mode<select id="consMode"><option value="difference">Reading difference</option><option value="direct">Direct consumed / added amount</option></select></label>
+  </div>
+  <div id="consDifferenceWrap" class="fields">
+   <label>Previous reading<input id="consPrevious" type="number" step=".001" placeholder="e.g. 1245.6"></label>
+   <label>Current reading<input id="consCurrent" type="number" step=".001" placeholder="e.g. 1252.9"></label>
+  </div>
+  <div id="consDirectWrap" hidden><label>Consumed / added amount<input id="consDirect" type="number" step=".001" placeholder="e.g. 7.3"></label></div>
+  <div class="fields three">
+   <label>Reading / amount unit<select id="consUnit"><option value="m3">m³</option><option value="L">litres</option></select></label>
+   <label>Density kg/m³<input id="consDensity" type="number" step=".1" value="840"></label>
+   <label>Running hours in period <span class="optional">optional</span><input id="consHours" type="number" step=".1" placeholder="e.g. 22.4"></label>
+  </div>
+  <div class="actions consumption-actions">
+   <button class="btn primary" id="calcConsumption">Calculate</button>
+   <button class="btn" id="saveConsumption">Save entry</button>
+   <button class="btn" id="copyConsumption">Copy summary</button>
+   <button class="btn" id="exportConsumption">Export CSV</button>
+  </div>
+  ${result('resConsumption')}
+  <div class="consumption-history">
+   <div class="history-toolbar"><div><b>Saved consumption</b><small>Local history for trend and reporting support.</small></div><label>Show<select id="consHistoryFilter"><option>Fuel</option><option>Urea solution</option><option>Lube oil</option><option value="all">All products</option></select></label></div>
+   <div id="consSummary" class="history-summary"></div>
+   <div class="table-wrap"><table class="table compact data-history-table"><thead><tr><th>Date</th><th>Product</th><th>Volume</th><th>Mass</th><th>Hours</th><th>Rate</th><th></th></tr></thead><tbody id="consHistoryRows"></tbody></table></div>
+  </div>
+ `)}
  ${groupedCard('everyday','Fuel ROB & endurance','Estimate usable ROB and endurance after reserve.',`<div class="fields"><label>ROB m³<input id="rob" type="number" step=".1" value="38"></label><label>Consumption m³/day<input id="robDay" type="number" step=".1" value="4.2"></label><label>Reserve %<input id="robRes" type="number" value="20"></label></div>${calcButton('calcRob')}${result('resRob')}`)}
 
  ${groupedCard('planning','Endurance scenario compare','Compare endurance at several possible daily consumption rates.',`<div class="fields"><label>ROB m³<input id="endRob" type="number" step=".1" value="38"></label><label>Reserve %<input id="endReserve" type="number" value="20"></label></div><div class="mini-section"><b>Consumption scenarios</b><div id="endScenarioRows" class="dynamic-list"><div class="dynamic-row simple-row end-row"><label>Consumption m³/day<input class="end-rate" type="number" step=".1" value="3.5"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row simple-row end-row"><label>Consumption m³/day<input class="end-rate" type="number" step=".1" value="4.2"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row simple-row end-row"><label>Consumption m³/day<input class="end-rate" type="number" step=".1" value="5.0"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addEndRate">+ Add scenario</button></div>${calcButton('calcEndCompare','Compare endurance')}${result('resEndCompare')}`)}
@@ -569,14 +626,126 @@ function renderFuel(){
 
  ${groupedCard('everyday','Fuel / Urea converter','Convert fuel, urea solution or another liquid between volume and mass.',`<div class="fields"><label>Product<select id="fuProduct"><option>Fuel</option><option>Urea solution</option><option>Other liquid</option></select></label><label>I have<select id="fuMode"><option value="v2m">Volume</option><option value="m2v">Mass</option></select></label><label><span id="fuAmountText">Volume m³</span><input id="fuAmount" type="number" step=".001" value="10"></label><label>Product density kg/m³<input id="fuDensity" type="number" step=".1" value="840"></label></div><p class="helper">Use density from the BDN, SDS or product documentation at the relevant temperature.</p>${calcButton('calcFuelUrea')}${result('resFuelUrea')}`)}
 
+ ${groupedCard('reporting','Bunkering history & export','Keep a simple local history of bunkerings and export it to CSV when needed.',`
+   <div class="fields three"><label>Date<input id="bhDate" type="date"></label><label>Grade / product<input id="bhGrade" type="text" placeholder="e.g. EN590 / MDO"></label><label>Volume m³<input id="bhVolume" type="number" step=".01"></label><label>Density kg/m³<input id="bhDensity" type="number" step=".1"></label></div>
+   <div class="actions"><button class="btn primary" id="saveBunkHistory">Save bunkering</button><button class="btn" id="exportBunkHistory">Export CSV</button></div>
+   <div id="bunkHistorySummary" class="history-summary"></div>
+   <div class="table-wrap"><table class="table compact data-history-table"><thead><tr><th>Date</th><th>Grade</th><th>Volume</th><th>Density</th><th>Mass</th><th></th></tr></thead><tbody id="bunkHistoryRows"></tbody></table></div>
+ `)}
+
  ${groupedCard('everyday','Bunkering overview','Summarise previous bunkerings with total volume/mass, weighted density and average interval.',`<div id="bunkRows" class="dynamic-list"><div class="dynamic-row bunk-row"><label>Date<input class="bunk-date" type="date" value="2026-07-01"></label><label>Volume m³<input class="bunk-vol" type="number" step=".01" value="25"></label><label>Density kg/m³<input class="bunk-dens" type="number" step=".1" value="839"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row bunk-row"><label>Date<input class="bunk-date" type="date" value="2026-08-03"></label><label>Volume m³<input class="bunk-vol" type="number" step=".01" value="31.5"></label><label>Density kg/m³<input class="bunk-dens" type="number" step=".1" value="841.2"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row bunk-row"><label>Date<input class="bunk-date" type="date" value="2026-09-10"></label><label>Volume m³<input class="bunk-vol" type="number" step=".01" value="28"></label><label>Density kg/m³<input class="bunk-dens" type="number" step=".1" value="840.1"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addBunkRow">+ Add bunkering</button>${calcButton('calcBunkOverview','Analyse bunkerings')}${result('resBunkOverview')}`)}
 
  ${groupedCard('everyday','Route fuel estimate','Use active route and vessel profile.',`${result('fuelRouteRes')}${calcButton('fuelRouteBtn','Update')}`)}
  </div>`;bindFuel();
 }
+function consumptionHistory(){return store.get(K.consumption,[])||[]}
+function bunkeringHistory(){return store.get(K.bunkHistory,[])||[]}
+let consumptionDraft=null;
+
+function consumptionDefaults(product){
+ return product==='Urea solution'?{density:1090,unit:'m3'}:product==='Lube oil'?{density:880,unit:'L'}:{density:840,unit:'m3'}
+}
+function calculateConsumptionDraft(showResult=true){
+ const product=$('#consProduct')?.value||'Fuel',date=$('#consDate')?.value,mode=$('#consMode')?.value||'difference',unit=$('#consUnit')?.value||'m3';
+ const density=+$('#consDensity')?.value,hours=+$('#consHours')?.value||0;
+ let amount;
+ if(mode==='difference'){
+   const prev=+$('#consPrevious')?.value,cur=+$('#consCurrent')?.value;
+   if(!Number.isFinite(prev)||!Number.isFinite(cur)||cur<prev){if(showResult)setRes('resConsumption','Check previous and current readings.','Current reading must be equal to or above the previous reading.','caution');return null}
+   amount=cur-prev;
+ }else{
+   amount=+$('#consDirect')?.value;
+   if(!Number.isFinite(amount)||amount<0){if(showResult)setRes('resConsumption','Check consumed / added amount.','','caution');return null}
+ }
+ if(!date||!(density>0)){if(showResult)setRes('resConsumption','Add a date and valid density.','','caution');return null}
+ const liters=unit==='L'?amount:amount*1000,m3=liters/1000,massKg=m3*density,massT=massKg/1000,kgH=hours>0?massKg/hours:null;
+ consumptionDraft={id:`c${Date.now()}`,date,product,mode,unit,amount,liters,m3,density,massKg,massT,hours,kgH,createdAt:new Date().toISOString()};
+ if(showResult){
+   const primary=product==='Lube oil'?`${nf(liters,1)} L · ${nf(massKg,1)} kg`:`${nf(m3,3)} m³ · ${nf(massT,3)} t`;
+   const rate=kgH==null?'Running hours not entered.':`${nf(kgH,1)} kg/h over ${nf(hours,1)} h.`;
+   setRes('resConsumption',primary,`${product} consumption for ${date}. ${rate}`,'ok')
+ }
+ return consumptionDraft
+}
+function periodStats(entries,days,offset=0){
+ const end=new Date();end.setHours(23,59,59,999);end.setDate(end.getDate()-offset);
+ const start=new Date(end);start.setHours(0,0,0,0);start.setDate(start.getDate()-(days-1));
+ const rows=entries.filter(x=>{const d=parseLocalDate(x.date);return d&&d>=start&&d<=end});
+ const uniqueDays=new Set(rows.map(x=>x.date)).size,totalKg=rows.reduce((s,x)=>s+(+x.massKg||0),0),totalL=rows.reduce((s,x)=>s+(+x.liters||0),0);
+ return{rows,uniqueDays,totalKg,totalL,avgKg:uniqueDays?totalKg/uniqueDays:0,avgL:uniqueDays?totalL/uniqueDays:0}
+}
+function renderConsumptionHistory(){
+ const tb=$('#consHistoryRows'),sum=$('#consSummary');if(!tb||!sum)return;
+ const all=consumptionHistory().slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.createdAt).localeCompare(String(a.createdAt)));
+ const filter=$('#consHistoryFilter')?.value||'Fuel',rows=filter==='all'?all:all.filter(x=>x.product===filter);
+ const s7=periodStats(rows,7),s30=periodStats(rows,30),prev7=periodStats(rows,7,7);
+ const trend=prev7.avgKg>0?((s7.avgKg-prev7.avgKg)/prev7.avgKg*100):null;
+ const formatAvg=s=>s.uniqueDays?`${nf(s.avgKg/1000,3)} t/day · ${nf(s.avgL,0)} L/day`:'—';
+ sum.innerHTML=`<div><span>7-day avg</span><strong>${formatAvg(s7)}</strong><small>${s7.uniqueDays} recorded day${s7.uniqueDays===1?'':'s'}</small></div><div><span>30-day avg</span><strong>${formatAvg(s30)}</strong><small>${s30.uniqueDays} recorded day${s30.uniqueDays===1?'':'s'}</small></div><div><span>7-day trend</span><strong>${trend==null?'—':`${trend>=0?'+':''}${nf(trend,1)}%`}</strong><small>vs previous 7 recorded-day average</small></div>`;
+ tb.innerHTML=rows.length?rows.slice(0,20).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.product)}</td><td>${nf(x.liters,1)} L</td><td>${nf(x.massKg/1000,3)} t</td><td>${x.hours>0?nf(x.hours,1):'—'}</td><td>${x.kgH!=null?nf(x.kgH,1)+' kg/h':'—'}</td><td><button class="btn mini" data-cons-delete="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="7" class="helper">No saved consumption entries for this filter yet.</td></tr>'
+}
+function saveConsumptionEntry(){
+ const x=calculateConsumptionDraft(false);if(!x)return setRes('resConsumption','Nothing saved.','Check the consumption inputs first.','caution');
+ const h=consumptionHistory();h.push(x);store.set(K.consumption,h.slice(-1000));renderConsumptionHistory();toast('Consumption entry saved locally.');calculateConsumptionDraft(true)
+}
+function copyConsumptionSummary(){
+ const x=consumptionDraft||calculateConsumptionDraft(false);if(!x)return toast('Calculate a valid consumption entry first.');
+ const text=[`Marine Tools — Daily consumption`,`Date: ${x.date}`,`Product: ${x.product}`,`Consumed: ${nf(x.liters,1)} L (${nf(x.m3,3)} m³)`,`Mass: ${nf(x.massKg,1)} kg (${nf(x.massT,3)} t)`,`Density: ${nf(x.density,1)} kg/m³`,x.hours>0?`Running hours: ${nf(x.hours,1)} h`:null,x.kgH!=null?`Average: ${nf(x.kgH,1)} kg/h`:null,'Planning/reporting helper only — verify against vessel records and approved reporting requirements.'].filter(Boolean).join('\n');
+ navigator.clipboard?.writeText(text).then(()=>toast('Consumption summary copied.')).catch(()=>toast('Copy unavailable.'))
+}
+function exportConsumptionCsv(){
+ const h=consumptionHistory().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+ if(!h.length)return toast('No consumption history to export.');
+ downloadCsv('marine-tools-consumption-history.csv',[
+   ['Date','Product','Mode','Entered unit','Entered amount','Volume L','Volume m3','Density kg/m3','Mass kg','Mass t','Running hours','kg per hour'],
+   ...h.map(x=>[x.date,x.product,x.mode,x.unit,x.amount,x.liters,x.m3,x.density,x.massKg,x.massT,x.hours||'',x.kgH??''])
+ ]);toast('Consumption CSV exported.')
+}
+function renderBunkeringHistory(){
+ const tb=$('#bunkHistoryRows'),sum=$('#bunkHistorySummary');if(!tb||!sum)return;
+ const rows=bunkeringHistory().slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.createdAt).localeCompare(String(a.createdAt)));
+ const totalV=rows.reduce((s,x)=>s+(+x.volume||0),0),totalKg=rows.reduce((s,x)=>s+(+x.massKg||0),0),weighted=totalV?totalKg/totalV:0,avg=rows.length?totalV/rows.length:0;
+ const asc=rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))),interval=asc.length>1?daysBetween(parseLocalDate(asc[0].date),parseLocalDate(asc.at(-1).date))/(asc.length-1):null;
+ sum.innerHTML=`<div><span>Total volume</span><strong>${rows.length?nf(totalV,2)+' m³':'—'}</strong><small>${rows.length} saved bunkering${rows.length===1?'':'s'}</small></div><div><span>Total mass</span><strong>${rows.length?nf(totalKg/1000,2)+' t':'—'}</strong><small>Weighted density ${rows.length?nf(weighted,1)+' kg/m³':'—'}</small></div><div><span>Average delivery</span><strong>${rows.length?nf(avg,2)+' m³':'—'}</strong><small>${interval==null?'Average interval —':`Average interval ${nf(interval,1)} days`}</small></div>`;
+ tb.innerHTML=rows.length?rows.slice(0,20).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.grade||'—')}</td><td>${nf(x.volume,2)} m³</td><td>${nf(x.density,1)} kg/m³</td><td>${nf(x.massKg/1000,2)} t</td><td><button class="btn mini" data-bunk-delete="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="6" class="helper">No saved bunkerings yet.</td></tr>'
+}
+function saveBunkeringEntry(){
+ const date=$('#bhDate')?.value,grade=$('#bhGrade')?.value.trim(),volume=+$('#bhVolume')?.value,density=+$('#bhDensity')?.value;
+ if(!date||!grade||!(volume>0)||!(density>0))return toast('Add date, grade, volume and density.');
+ const h=bunkeringHistory();h.push({id:`b${Date.now()}`,date,grade,volume,density,massKg:volume*density,createdAt:new Date().toISOString()});store.set(K.bunkHistory,h.slice(-1000));renderBunkeringHistory();toast('Bunkering saved locally.')
+}
+function exportBunkeringCsv(){
+ const h=bunkeringHistory().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+ if(!h.length)return toast('No bunkering history to export.');
+ downloadCsv('marine-tools-bunkering-history.csv',[
+   ['Date','Grade / product','Volume m3','Density kg/m3','Mass kg','Mass t'],
+   ...h.map(x=>[x.date,x.grade,x.volume,x.density,x.massKg,x.massKg/1000])
+ ]);toast('Bunkering CSV exported.')
+}
+
 function bindFuel(){
  const applyFuelView=()=>{const v=$('#fuelView').value;$$('#fuel .tool-card[data-tool-group]').forEach(c=>c.hidden=v!=='all'&&c.dataset.toolGroup!==v)};
  $('#fuelView').onchange=applyFuelView;applyFuelView();
+
+ // Daily consumption & reporting
+ $('#consDate').value=localDateISO();
+ $('#bhDate').value=localDateISO();
+ const applyConsMode=()=>{$('#consDifferenceWrap').hidden=$('#consMode').value!=='difference';$('#consDirectWrap').hidden=$('#consMode').value!=='direct'};
+ $('#consMode').onchange=applyConsMode;applyConsMode();
+ $('#consProduct').onchange=()=>{const d=consumptionDefaults($('#consProduct').value);$('#consDensity').value=d.density;$('#consUnit').value=d.unit;$('#consHistoryFilter').value=$('#consProduct').value;consumptionDraft=null;renderConsumptionHistory()};
+ $('#calcConsumption').onclick=()=>calculateConsumptionDraft(true);
+ $('#saveConsumption').onclick=saveConsumptionEntry;
+ $('#copyConsumption').onclick=copyConsumptionSummary;
+ $('#exportConsumption').onclick=exportConsumptionCsv;
+ $('#consHistoryFilter').onchange=renderConsumptionHistory;
+ $('#consHistoryRows').addEventListener('click',e=>{const id=e.target.dataset.consDelete;if(!id)return;store.set(K.consumption,consumptionHistory().filter(x=>x.id!==id));renderConsumptionHistory();toast('Consumption entry deleted.')});
+ renderConsumptionHistory();
+
+ // Persistent bunkering history
+ $('#saveBunkHistory').onclick=saveBunkeringEntry;
+ $('#exportBunkHistory').onclick=exportBunkeringCsv;
+ $('#bunkHistoryRows').addEventListener('click',e=>{const id=e.target.dataset.bunkDelete;if(!id)return;store.set(K.bunkHistory,bunkeringHistory().filter(x=>x.id!==id));renderBunkeringHistory();toast('Bunkering entry deleted.')});
+ renderBunkeringHistory();
 
  $('#calcRob').onclick=()=>{const r=+$('#rob').value,d=+$('#robDay').value,res=+$('#robRes').value,usable=r*(1-res/100),days=usable/Math.max(.0001,d);setRes('resRob',`${nf(usable,1)} m³ usable · ${nf(days,1)} days`,`${nf(r-usable,1)} m³ held as reserve.`)};
 
@@ -770,7 +939,7 @@ function renderProfile(){const p=state.profile;$('#profile').innerHTML=pageTitle
 function saveProfile(){state.profile={name:$('#pName').value.trim(),loa:+$('#pLoa').value,draft:+$('#pDraft').value,serviceSpeed:+$('#pSpeed').value,fuelDay:+$('#pFuel').value,maxHs:+$('#pHs').value,maxWind:+$('#pWind').value,maxCurrent:+$('#pCur').value,minUKC:+$('#pUkc').value,cpaAlert:+$('#pCpa').value,corridor:+$('#pCorr').value};store.set(K.profile,state.profile);toast('Vessel profile saved.');renderEnvelope();updateHome()}
 
 function renderSettings(){$('#settings').innerHTML=pageTitle('Settings','Local-only application preferences and data controls.')+`<div class="grid-2"><article class="panel"><div class="panel-body"><h3>Appearance</h3><label>Theme<select id="setTheme"><option value="dark">Dark maritime</option><option value="bridge">Bridge Dark</option></select></label><div class="actions"><button class="btn primary" id="saveSet">Save</button></div></div></article><article class="panel"><div class="panel-body"><h3>Local data</h3><p class="helper">Profile, route and comparison snapshot are stored in this browser. They are not automatically synced to a user account or project database.</p><div class="actions"><button class="btn" id="exportData">Export JSON</button><button class="btn" id="clearData">Clear local data</button><button class="btn" id="clearHistorySet">Clear calculation history</button>${button('Privacy & data','privacy','btn')}</div></div></article></div><article class="panel" style="margin-top:12px"><div class="panel-body"><h3>Data principle</h3><p class="helper">Marine Tools is designed to keep entered operational data local where possible. A live-data feature only sends the minimum route or position context needed to return the requested live result.</p></div></article>`;$('#setTheme').value=state.theme;$('#saveSet').onclick=()=>{setTheme($('#setTheme').value);toast('Settings saved.')};$('#exportData').onclick=exportData;$('#clearHistorySet').onclick=clearHistory;$('#clearData').onclick=()=>{if(confirm('Clear Marine Tools local data in this browser?')){Object.values(K).forEach(k=>localStorage.removeItem(k));location.reload()}}}
-function exportData(){const data={profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),favorites:favorites(),recent:recentTools(),history:calcHistory(),exported:new Date().toISOString()};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='marine-tools-data.json';a.click();URL.revokeObjectURL(a.href)}
+function exportData(){const data={profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),exported:new Date().toISOString()};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='marine-tools-data.json';a.click();URL.revokeObjectURL(a.href)}
 
 function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/marine-tools-shield.png" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
 function renderSuggestions(){$('#suggestions').innerHTML=pageTitle('Suggestions','Suggest a new tool, improvement or report a problem.')+`<article class="panel survey-card"><div style="font-size:54px">✧</div><h2>Suggest something</h2><p>Ideas are welcome for practical calculations, planning aids, live maritime context and quick technical utilities. Click below to open a prepared email to Marine Tools.</p><a class="btn primary" href="${SUGGEST_URL}">Email a suggestion →</a><p class="helper" style="margin-top:12px">${CONTACT_EMAIL}</p></article>`}
@@ -855,7 +1024,7 @@ function renderPrivacy(){
      <li>Vessel Profile values</li>
      <li>Route waypoints created in the optional experimental Route Intelligence feature</li>
      <li>Theme and local application settings</li>
-     <li>The previous route-analysis snapshot used for “What changed?”</li>
+     <li>The previous route-analysis snapshot used for “What changed?”</li><li>Saved fuel, urea and lube-oil consumption history</li><li>Saved bunkering history</li><li>The last successful weather forecast for offline reference</li>
    </ul><p class="helper">These values are stored in your browser on the device you are using. They are not automatically synced to a Marine Tools account or central project database.</p></article>
    <article class="panel bullet-box"><h3>Not used for unrelated purposes</h3><ul>
      <li>No advertising or behavioural profiling</li>

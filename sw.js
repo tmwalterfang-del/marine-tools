@@ -1,7 +1,8 @@
-const CACHE='marine-tools-fullscale-20261001-v8-2';
+const CACHE='marine-tools-fullscale-20261002-v8-3';
 const SHELL=[
   './','./index.html','./styles.css','./app.js','./manifest.webmanifest',
   './assets/marine-tools-shield.png','./assets/marine-tools-tally-header.png','./assets/hero-sea.svg',
+  './assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp',
   './assets/icon-192.png','./assets/icon-512.png'
 ];
 self.addEventListener('install',e=>e.waitUntil(

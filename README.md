@@ -130,3 +130,10 @@ The homepage uses a calmer visual-first hero, a dedicated tool search, six prima
 - v8.2 performance: Buy Me a Coffee loads during browser idle time instead of blocking initial rendering.
 - v8.2 performance: responsive hero images are WebP-preloaded by viewport with JPEG fallback.
 - v8.2 search: a static complete tool index preserves search while pages render lazily.
+
+- v8.3: Daily Consumption & Reporting for fuel, urea solution and lube oil with local history, running-hour rate, 7/30-day averages, trend, copy summary and CSV export.
+- v8.3: Persistent local Bunkering History & Export with mass calculation, weighted density, average delivery and interval.
+- v8.3: Weather keeps the last successful MET Norway forecast locally so it can still be viewed when the live request is unavailable.
+- v8.3: Offline shell explicitly caches responsive hero assets; local calculators and saved reporting history remain available offline.
+- v8.3: Local-data JSON export and Privacy & Data now include consumption history, bunkering history and cached weather.
+- Marine Tools remains a calculation/reporting helper and does not become an electronic or statutory logbook.
