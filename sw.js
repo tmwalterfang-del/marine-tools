@@ -1,9 +1,8 @@
-const CACHE='marine-tools-fullscale-20261002-v8-4';
+const CACHE='marine-tools-fullscale-20261002-v8-4-1';
 const SHELL=[
   './','./index.html','./styles.css','./app.js','./manifest.webmanifest',
-  './assets/marine-tools-shield.png','./assets/marine-tools-tally-header.png','./assets/hero-sea.svg',
-  './assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp',
-  './assets/icon-192.png','./assets/icon-512.png'
+  './assets/icon-192.png',
+  './assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp'
 ];
 self.addEventListener('install',e=>e.waitUntil(
   caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())
@@ -16,11 +15,40 @@ self.addEventListener('fetch',e=>{
   if(e.request.method!=='GET') return;
   const u=new URL(e.request.url);
   if(u.origin!==location.origin) return;
+
+  const isNavigation=e.request.mode==='navigate';
+  const isStatic=u.pathname.startsWith('/assets/') ||
+    /\.(?:css|js|webmanifest|png|jpg|jpeg|webp|svg|ico)$/i.test(u.pathname);
+
+  if(isNavigation){
+    e.respondWith(
+      fetch(e.request).then(r=>{
+        const copy=r.clone();
+        caches.open(CACHE).then(c=>c.put('./index.html',copy));
+        return r;
+      }).catch(()=>caches.match('./index.html'))
+    );
+    return;
+  }
+
+  if(isStatic){
+    e.respondWith(
+      caches.match(e.request,{ignoreSearch:true}).then(cached=>{
+        const update=fetch(e.request).then(r=>{
+          if(r&&r.ok){
+            const copy=r.clone();
+            caches.open(CACHE).then(c=>c.put(e.request,copy));
+          }
+          return r;
+        }).catch(()=>null);
+        if(cached){e.waitUntil(update);return cached}
+        return update.then(r=>r||caches.match(e.request,{ignoreSearch:true}));
+      })
+    );
+    return;
+  }
+
   e.respondWith(
-    fetch(e.request).then(r=>{
-      const copy=r.clone();
-      caches.open(CACHE).then(c=>c.put(e.request,copy));
-      return r;
-    }).catch(()=>caches.match(e.request))
+    fetch(e.request).catch(()=>caches.match(e.request,{ignoreSearch:true}))
   );
 });

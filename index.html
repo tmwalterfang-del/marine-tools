@@ -9,18 +9,19 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://api.marinetools.app" crossorigin>
   <meta property="og:title" content="Marine Tools — Practical tools for seafarers">
   <meta property="og:description" content="Practical planning and calculation tools for seafarers.">
   <link rel="preload" as="image" href="assets/hero-lantern-desktop.webp" media="(min-width:1101px)" fetchpriority="high">
   <link rel="preload" as="image" href="assets/hero-lantern-tablet.webp" media="(min-width:761px) and (max-width:1100px)" fetchpriority="high">
   <link rel="preload" as="image" href="assets/hero-lantern-mobile.webp" media="(max-width:760px)" fetchpriority="high">
-  <link rel="stylesheet" href="styles.css?v=20261002-fullscale-8-4">
+  <link rel="stylesheet" href="styles.css?v=20261002-fullscale-8-4-1">
 </head>
 <body>
 <div class="app-shell">
   <aside class="sidebar" id="sidebar">
     <button class="brand nav-btn active" data-page="home" aria-label="Marine Tools home">
-      <img src="assets/marine-tools-shield.png" alt="Marine Tools logo">
+      <img src="assets/icon-192.png" alt="Marine Tools logo" width="46" height="46" decoding="async">
       <div><strong>MARINE TOOLS</strong><small>Practical tools for seafarers</small></div>
     </button>
 
@@ -78,7 +79,29 @@
     </div>
 
     <main class="main-content">
-      <section id="home" class="page active"></section>
+      <section id="home" class="page active">
+        <section class="home-hero-a home-hero-v8">
+          <picture class="home-hero-media" aria-hidden="true">
+            <source media="(max-width:760px)" srcset="assets/hero-lantern-mobile.webp" type="image/webp">
+            <source media="(max-width:1100px)" srcset="assets/hero-lantern-tablet.webp" type="image/webp">
+            <img src="assets/hero-lantern-desktop.webp" alt="" width="1920" height="720" loading="eager" fetchpriority="high" decoding="async">
+          </picture>
+          <div class="home-hero-overlay"></div>
+          <div class="home-hero-content">
+            <div class="eyebrow">PRACTICAL TOOLS FOR SEAFARERS</div>
+            <h1>Marine Tools</h1>
+            <p>Quick maritime calculators and technical helpers for everyday work at sea.</p>
+            <div class="home-tool-search">
+              <span class="search-icon">⌕</span>
+              <input id="homeToolSearch" autocomplete="off" placeholder="Search for a tool…" aria-label="Search Marine Tools">
+              <button type="button" id="homeSearchGo" aria-label="Open first matching tool">→</button>
+              <div id="homeToolResults" class="home-tool-results" hidden></div>
+            </div>
+            <div class="home-hero-actions"><button class="btn primary" id="homeBrowse">Browse tools ↓</button></div>
+            <div class="home-custom-link"><span>Need something specific?</span><a href="mailto:contact@marinetools.app?subject=Custom%20Marine%20Tools%20request">Request a custom tool →</a></div>
+          </div>
+        </section>
+      </section>
       <section id="live-experimental" class="page"></section>
       <section id="route-intelligence" class="page"></section>
       <section id="navigation" class="page"></section>
@@ -106,6 +129,6 @@
 </div>
 
 <div id="toast" class="toast" hidden></div>
-<script defer src="app.js?v=20261002-fullscale-8-4"></script>
+<script defer src="app.js?v=20261002-fullscale-8-4-1"></script>
 </body>
 </html>

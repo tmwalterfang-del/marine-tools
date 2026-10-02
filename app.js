@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const API='https://api.marinetools.app';
-const APP_VERSION='8.4';
+const APP_VERSION='8.4.1';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
 const SUPPORT_URL='https://buymeacoffee.com/marinetools';
@@ -25,7 +25,6 @@ function sendAnalyticsEvent(event,{page=analyticsCurrentPage,tool='',duration=0,
  const payload={event:String(event||'').slice(0,40),page:String(page||'').slice(0,80),tool:String(tool||'').slice(0,120),device:deviceClass(),version:APP_VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0))};
  const body=JSON.stringify(payload),url=`${API}/api/analytics/event`;
  try{
-  if(beacon&&navigator.sendBeacon){navigator.sendBeacon(url,new Blob([body],{type:'text/plain;charset=UTF-8'}));return}
   fetch(url,{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},body,keepalive:true,cache:'no-store'}).catch(()=>{})
  }catch{}
 }
@@ -401,8 +400,14 @@ function updateLiveAgeIndicators(){
 async function checkApi(){try{const [h,a]=await Promise.allSettled([fetch(`${API}/api/health`,{cache:'no-store'}).then(r=>r.json()),fetch(`${API}/api/auth/status`,{cache:'no-store'}).then(r=>r.json())]);const health=h.status==='fulfilled'&&h.value?.status==='ok',ais=a.status==='fulfilled'&&Boolean(a.value?.ais?.authenticated);$('#apiDot').className=health?'ok':'';$('#apiText').textContent=health?(ais?'Weather ready · AIS experimental':'Weather ready · AIS unavailable'):'Live data unavailable'}catch{$('#apiText').textContent='Offline / API unavailable'}}
 
 function renderHome(){
- $('#home').innerHTML=`
+ const home=$('#home');
+ if(!home.querySelector('.home-hero-v8'))home.insertAdjacentHTML('beforeend',`
  <section class="home-hero-a home-hero-v8">
+   <picture class="home-hero-media" aria-hidden="true">
+     <source media="(max-width:760px)" srcset="assets/hero-lantern-mobile.webp" type="image/webp">
+     <source media="(max-width:1100px)" srcset="assets/hero-lantern-tablet.webp" type="image/webp">
+     <img src="assets/hero-lantern-desktop.webp" alt="" width="1920" height="720" loading="eager" fetchpriority="high" decoding="async">
+   </picture>
    <div class="home-hero-overlay"></div>
    <div class="home-hero-content">
      <div class="eyebrow">PRACTICAL TOOLS FOR SEAFARERS</div>
@@ -417,8 +422,8 @@ function renderHome(){
      <div class="home-hero-actions"><button class="btn primary" id="homeBrowse">Browse tools ↓</button></div>
      <div class="home-custom-link"><span>Need something specific?</span><a href="${CUSTOM_TOOL_URL}">Request a custom tool →</a></div>
    </div>
- </section>
-
+ </section>`);
+ home.insertAdjacentHTML('beforeend',`
  <section class="home-primary-section" id="homePrimaryTools">
    <div class="home-section-head"><div><span class="eyebrow">CORE TOOLS</span><h2>Choose an area</h2></div><span>Fast access to the tools most useful in everyday maritime work.</span></div>
    <div class="home-category-a home-category-v8">
@@ -459,10 +464,11 @@ function renderHome(){
        <article class="panel"><div class="panel-head"><div><h3>Calculation history</h3><small>Last 20 calculations · local only</small></div><button class="btn mini" id="clearHistoryHome">Clear</button></div><div class="panel-body history-list" id="historyHome"></div></article>
      </div>
    </div>
- </details>`;
+ </details>`);
+ const homeCustom=$('.home-custom-link a');if(homeCustom)homeCustom.href=CUSTOM_TOOL_URL;
 
  const homeSearch=$('#homeToolSearch'),results=$('#homeToolResults');
- const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>(a.title.toLowerCase().startsWith(q)?-1:0)-(b.title.toLowerCase().startsWith(q)?-1:0)).slice(0,10);results.innerHTML=hits.length?hits.map(x=>`<button type="button" data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span class="home-search-copy"><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}${TOOL_META[x.title]?.how?` · ${esc(TOOL_META[x.title].how)}`:''}</small></span><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
+ const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,10);results.innerHTML=hits.length?hits.map(x=>`<button type="button" data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span class="home-search-copy"><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}${TOOL_META[x.title]?.how?` · ${esc(TOOL_META[x.title].how)}`:''}</small></span><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
  homeSearch.addEventListener('input',showHomeSearch);
  homeSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const hits=showHomeSearch();if(hits[0])openTool(hits[0].page,hits[0].tool)}});
  $('#homeSearchGo').onclick=()=>{const hits=showHomeSearch();if(hits[0])openTool(hits[0].page,hits[0].tool);else homeSearch.focus()};
@@ -1096,7 +1102,7 @@ async function importDataBackup(file){
  }catch{toast('Could not restore backup JSON.')}
 }
 
-function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/marine-tools-shield.png" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
+function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/icon-192.png" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
 function renderSuggestions(){$('#suggestions').innerHTML=pageTitle('Suggestions','Suggest a new tool, improvement or report a problem.')+`<article class="panel survey-card"><div style="font-size:54px">✧</div><h2>Suggest something</h2><p>Ideas are welcome for practical calculations, planning aids, live maritime context and quick technical utilities. Click below to open a prepared email to Marine Tools.</p><a class="btn primary" href="${SUGGEST_URL}">Email a suggestion →</a><p class="helper" style="margin-top:12px">${CONTACT_EMAIL}</p></article>`}
 function renderSupport(){
  $('#support').innerHTML=pageTitle('Support Marine Tools','Voluntary support for an independently developed maritime toolbox.')+`
@@ -1116,7 +1122,7 @@ function renderContact(){
    <article class="panel">
      <div class="panel-body">
        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-         <img src="assets/marine-tools-shield.png" alt="Marine Tools" style="width:72px;height:72px;object-fit:contain">
+         <img src="assets/icon-192.png" alt="Marine Tools" style="width:72px;height:72px;object-fit:contain">
          <div><div class="eyebrow">MARINE TOOLS</div><h2 style="margin:2px 0 0">Business information</h2></div>
        </div>
        <div class="source-box">

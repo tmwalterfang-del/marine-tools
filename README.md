@@ -148,3 +148,11 @@ The homepage uses a calmer visual-first hero, a dedicated tool search, six prima
 - v8.4: Weather clearly distinguishes global Locationforecast weather data from regional Oceanforecast marine data.
 - v8.4: Added a compact online/offline/cached-weather status in the top bar.
 - v8.4: Search ranking prioritises Daily Consumption and Bunkering History for relevant queries.
+
+- v8.4.1: Performance and analytics reliability maintenance release.
+- v8.4.1: Home hero is now present in the initial HTML and uses a responsive `<picture>` image with high fetch priority, so the LCP image no longer waits for app.js to render the homepage.
+- v8.4.1: The 1.1 MB sidebar/survey shield source is no longer loaded during normal use; the existing 192 px app icon is used instead.
+- v8.4.1: Service Worker precache no longer downloads the unused ~1.6 MB Tally header or the large shield image, and static assets use a stale-while-revalidate style cache for faster repeat loads.
+- v8.4.1: Analytics page-hide events now use `fetch(..., keepalive:true)` instead of `sendBeacon`, avoiding the Firefox beacon network error seen during testing.
+- v8.4.1: Below-the-fold home sections use `content-visibility:auto` to reduce initial rendering work.
+- v8.4.1: Home search now uses the same relevance scoring as the global search.
