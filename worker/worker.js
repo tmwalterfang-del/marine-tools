@@ -3,12 +3,12 @@ const AIS_LATEST_URL="https://live.ais.barentswatch.no/v1/latest/combined";
 const BW_API_ROOT="https://www.barentswatch.no/bwapi/";
 const MET_LOCATION_URL="https://api.met.no/weatherapi/locationforecast/2.0/compact";
 const MET_OCEAN_URL="https://api.met.no/weatherapi/oceanforecast/2.0/complete";
-const MET_USER_AGENT="MarineTools/8.1 contact@marinetools.app";
+const MET_USER_AGENT="MarineTools/8.4 contact@marinetools.app";
 let metCache=new Map();
 
 const ENDPOINTS={wave:"v1/waveforecastpoint/nearest/all",wind:"v1/windforecastpoint/nearest/all",current:"v1/seacurrent/nearest/all"};
 let tokenCache={},forecastCache=new Map(),paramStyle={};
-const cors={"access-control-allow-origin":"*","access-control-allow-methods":"GET,OPTIONS","access-control-allow-headers":"content-type"};
+const cors={"access-control-allow-origin":"*","access-control-allow-methods":"GET,POST,OPTIONS","access-control-allow-headers":"content-type"};
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{...cors,"content-type":"application/json;charset=utf-8","cache-control":"no-store"}});
 
 async function getToken(scope,env){
@@ -194,14 +194,35 @@ async function forecast(url){
 const ALLOWED={wave:ENDPOINTS.wave,wind:ENDPOINTS.wind,current:ENDPOINTS.current};
 async function probe(url,env){const kind=url.searchParams.get("endpoint"),path=ALLOWED[kind];if(!path)return{error:"Unsupported endpoint",allowed:Object.keys(ALLOWED)};const access=await getToken("api",env),qs=new URLSearchParams(url.searchParams);qs.delete("endpoint");const r=await fetch(`${BW_API_ROOT}${path}${qs.toString()?`?${qs}`:""}`,{headers:{authorization:`Bearer ${access}`,accept:"application/json"}});const text=await r.text();let body;try{body=JSON.parse(text)}catch{body=text}return{upstreamStatus:r.status,endpoint:path,data:body}}
 
+
+const ANALYTICS_EVENTS=new Set(["session_start","page_view","tool_use","engagement","analytics_enabled"]);
+function analyticsOriginAllowed(request){
+ const origin=request.headers.get("origin")||"";
+ return origin==="https://marinetools.app"||origin==="https://www.marinetools.app";
+}
+function cleanText(v,max){return String(v??"").replace(/[\u0000-\u001f]/g," ").trim().slice(0,max)}
+async function analyticsEvent(request,env){
+ if(request.method!=="POST")return json({error:"Method not allowed"},405);
+ if(!analyticsOriginAllowed(request))return json({error:"Origin not allowed"},403);
+ if(!env.ANALYTICS)return json({ok:false,configured:false,error:"Analytics Engine binding not configured"},503);
+ const len=Number(request.headers.get("content-length")||0);if(len>4096)return json({error:"Payload too large"},413);
+ let body;try{body=JSON.parse(await request.text())}catch{return json({error:"Invalid JSON"},400)}
+ const event=cleanText(body.event,40);if(!ANALYTICS_EVENTS.has(event))return json({error:"Unsupported event"},400);
+ const page=cleanText(body.page,80),tool=cleanText(body.tool,120),device=cleanText(body.device,20),version=cleanText(body.version,20);
+ const duration=Math.max(0,Math.min(3600,Number(body.duration)||0));
+ env.ANALYTICS.writeDataPoint({blobs:[event,page,tool,device,version],doubles:[1,duration],indexes:["marine-tools"]});
+ return json({ok:true},202)
+}
+
 export default{async fetch(request,env){
  if(request.method==="OPTIONS")return new Response(null,{headers:cors});const url=new URL(request.url);
  try{
-   if(url.pathname==="/api/health")return json({status:"ok",service:"Marine Tools API",capabilities:["ais-experimental","met-norway-point-weather","route-forecast-experimental"]});
+   if(url.pathname==="/api/health")return json({status:"ok",service:"Marine Tools API",capabilities:["ais-experimental","met-norway-point-weather","route-forecast-experimental","anonymous-usage-analytics"],analyticsConfigured:Boolean(env.ANALYTICS)});
    if(url.pathname==="/api/auth/status")return json(await authStatus(env));
    if(url.pathname==="/api/ais/latest")return json(await latestAis(url,env));
    if(url.pathname==="/api/forecast")return json(await forecast(url));
    if(url.pathname==="/api/weather")return json(await weather(url));
+   if(url.pathname==="/api/analytics/event")return analyticsEvent(request,env);
    if(url.pathname==="/api/barentswatch/probe")return json(await probe(url,env));
    return json({error:"Not found"},404);
  }catch(e){return json({error:e.message},500)}
