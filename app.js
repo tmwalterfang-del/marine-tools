@@ -1,6 +1,7 @@
 (() => {
 'use strict';
 const API='https://api.marinetools.app';
+const APP_VERSION='8.4';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
 const SUPPORT_URL='https://buymeacoffee.com/marinetools';
@@ -12,6 +13,44 @@ const nf=(n,d=1)=>Number.isFinite(Number(n))?Number(n).toFixed(d):'—';
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
 const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
+
+const DEFAULT_SETTINGS={usageAnalytics:true};
+function appSettings(){return{...DEFAULT_SETTINGS,...(store.get(K.settings,{})||{})}}
+function saveAppSettings(next){store.set(K.settings,{...appSettings(),...next})}
+function analyticsEnabled(){return appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
+let analyticsCurrentPage='home',analyticsVisibleSince=null,analyticsTimer=null;
+function sendAnalyticsEvent(event,{page=analyticsCurrentPage,tool='',duration=0,beacon=false}={}){
+ if(!analyticsEnabled()||!navigator.onLine)return;
+ const payload={event:String(event||'').slice(0,40),page:String(page||'').slice(0,80),tool:String(tool||'').slice(0,120),device:deviceClass(),version:APP_VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0))};
+ const body=JSON.stringify(payload),url=`${API}/api/analytics/event`;
+ try{
+  if(beacon&&navigator.sendBeacon){navigator.sendBeacon(url,new Blob([body],{type:'text/plain;charset=UTF-8'}));return}
+  fetch(url,{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},body,keepalive:true,cache:'no-store'}).catch(()=>{})
+ }catch{}
+}
+function flushAnalyticsEngagement(beacon=false){
+ if(analyticsVisibleSince==null||document.visibilityState!=='visible')return;
+ const sec=(performance.now()-analyticsVisibleSince)/1000;
+ analyticsVisibleSince=performance.now();
+ if(sec>=1)sendAnalyticsEvent('engagement',{duration:sec,beacon})
+}
+function analyticsPageView(id){
+ flushAnalyticsEngagement(false);analyticsCurrentPage=id||'home';analyticsVisibleSince=document.visibilityState==='visible'?performance.now():null;
+ sendAnalyticsEvent('page_view',{page:analyticsCurrentPage})
+}
+function initUsageAnalytics(){
+ if(!analyticsEnabled())return;
+ if(!sessionStorage.getItem('mt.analytics.session')){
+  sessionStorage.setItem('mt.analytics.session','1');sendAnalyticsEvent('session_start',{page:'home'})
+ }
+ analyticsCurrentPage='home';analyticsVisibleSince=document.visibilityState==='visible'?performance.now():null;
+ sendAnalyticsEvent('page_view',{page:'home'});
+ clearInterval(analyticsTimer);analyticsTimer=setInterval(()=>{if(document.visibilityState==='visible')flushAnalyticsEngagement(false)},60000);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){flushAnalyticsEngagement(true);analyticsVisibleSince=null}else analyticsVisibleSince=performance.now()});
+ window.addEventListener('pagehide',()=>flushAnalyticsEngagement(true));
+}
+
 const cachedWeather=store.get(K.weatherCache,{forecast:[],fetchedAt:null,lat:null,lon:null,diagnostics:null});
 const state={
   profile:store.get(K.profile,{name:'',loa:80,draft:4,serviceSpeed:8,fuelDay:4,maxHs:3,maxWind:30,maxCurrent:2,minUKC:1,cpaAlert:1,corridor:5}),
@@ -36,6 +75,24 @@ function downloadCsv(filename,rows){
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click();URL.revokeObjectURL(a.href)
 }
 function parseLocalDate(s){if(!s)return null;const d=new Date(`${s}T12:00:00`);return Number.isFinite(d.getTime())?d:null}
+
+function parseCsv(text){
+ const rows=[];let row=[],cell='',q=false;
+ for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];
+  if(q){if(c==='"'&&n==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}
+  else if(c==='"')q=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell=''}else cell+=c
+ }
+ if(cell.length||row.length){row.push(cell.replace(/\r$/,''));rows.push(row)}
+ return rows.filter(r=>r.some(v=>String(v).trim()!==''))
+}
+function csvObjects(text){
+ const rows=parseCsv(text);if(rows.length<2)return[];
+ const headers=rows[0].map(h=>h.trim());
+ return rows.slice(1).map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]??'').trim()])))
+}
+function csvNum(v){if(v==null||v==='')return null;const s=String(v).trim().replace(/\s/g,'').replace(',','.');const n=Number(s);return Number.isFinite(n)?n:null}
+async function readTextFile(file){return file?await file.text():''}
+
 function daysBetween(a,b){return Math.abs(b-a)/86400000}
 
 function updateClock(){const e=$('#utcClock');if(e)e.textContent=`UTC ${nowUTC()}`}
@@ -49,7 +106,7 @@ function loadSupportWidget(){if(bmcLoaded)return;bmcLoaded=true;const s=document
 function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)requestIdleCallback(fn,{timeout});else setTimeout(fn,timeout)}
 const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
-function page(id){ensurePage(id);$$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('#sidebar').classList.remove('open');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();window.scrollTo({top:0,behavior:'smooth'})}
+function page(id){ensurePage(id);$$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('#sidebar').classList.remove('open');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
 function openTool(pageId,title=''){page(pageId);if(title)setTimeout(()=>{const card=$$('.tool-card').find(x=>x.dataset.toolTitle===title);if(card){if(card.hidden&&card.dataset.toolGroup){const sel=pageId==='fuel'?$('#fuelView'):pageId==='engineering'?$('#engView'):null;if(sel){sel.value=card.dataset.toolGroup;sel.dispatchEvent(new Event('change'))}}card.scrollIntoView({behavior:'smooth',block:'start'});card.classList.add('tool-focus');setTimeout(()=>card.classList.remove('tool-focus'),1600)}},80)}
 function button(label,pageId,cls='btn primary'){return `<button class="${cls}" data-go="${pageId}">${label}</button>`}
 
@@ -128,7 +185,7 @@ function reportIssueLink(title){
 }
 
 function toolUsage(title){const m=toolMeta(title);return `<div class="tool-how"><b>How to use</b><span>${m.how}</span></div>`}
-function toolInformation(title,desc){const m=toolMeta(title);return `<details class="tool-info"><summary>Tool information</summary><dl><dt>Purpose</dt><dd>${desc}</dd><dt>Formula</dt><dd>${m.formula}</dd><dt>Assumptions</dt><dd>${m.assume}</dd><dt>Units</dt><dd>${m.units}</dd><dt>Last updated</dt><dd>01 Oct 2026</dd><dt>Limitations</dt><dd>${m.limits}</dd></dl></details>`}
+function toolInformation(title,desc){const m=toolMeta(title);return `<details class="tool-info"><summary>Tool information</summary><dl><dt>Purpose</dt><dd>${desc}</dd><dt>Formula</dt><dd>${m.formula}</dd><dt>Assumptions</dt><dd>${m.assume}</dd><dt>Units</dt><dd>${m.units}</dd><dt>Last updated</dt><dd>02 Oct 2026</dd><dt>Limitations</dt><dd>${m.limits}</dd></dl></details>`}
 
 function card(title,desc,body,id=''){return `<article class="panel tool-card" ${id?`id="${id}"`:''} data-tool-title="${title}"><div class="tool-card-head"><div><h3>${title}</h3><p>${desc}</p></div><button class="fav-toggle" type="button" data-fav-title="${title}" title="Add to My Tools" aria-label="Add ${title} to My Tools">☆</button></div><div class="tool-card-work">${body}</div><details class="tool-details"><summary>Guidance & details</summary><div class="tool-details-inner">${toolUsage(title)}${toolInformation(title,desc)}${reportIssueLink(title)}</div></details></article>`}
 function groupedCard(group,title,desc,body,id=''){return card(title,desc,body,id).replace('class="panel tool-card"',`class="panel tool-card" data-tool-group="${group}"`)}
@@ -175,6 +232,16 @@ function toolSearchIndex(){
 function pageLabel(id){return({'fuel':'Fuel & Bunkering','engineering':'Engineering','electrical':'Electrical','vessel-calcs':'Vessel Calculations','quick':'Quick Tools','weather':'Weather','navigation':'Navigation','live-experimental':'Live & Experimental','route-intelligence':'Experimental','profile':'Vessel Profile','settings':'Settings'}[id]||id.replaceAll('-',' '))}
 function toolSearchText(x){const meta=TOOL_META[x.title]||{};return `${x.title} ${pageLabel(x.page)} ${meta.how||''} ${meta.units||''}`.toLowerCase()}
 
+function toolSearchScore(x,q){
+ const title=x.title.toLowerCase(),text=toolSearchText(x);let score=0;
+ if(title===q)score+=100;if(title.startsWith(q))score+=60;if(title.includes(q))score+=35;if(text.includes(q))score+=10;
+ const reporting=/fuel|consumption|urea|oil|bunker|bunkering|report|history|export/.test(q);
+ if(reporting&&x.title==='Daily consumption & reporting')score+=55;
+ if(/bunker|bunkering|bdn|supplier/.test(q)&&x.title==='Bunkering history & export')score+=60;
+ return score
+}
+
+
 
 
 function recentTools(){return store.get(K.recent,[])||[]}
@@ -200,6 +267,7 @@ function recordToolUse(card){
    h.unshift({title,page:pageId,time:new Date().toISOString(),inputs:collectInputs(card),result:res.innerText.trim()});
    store.set(K.history,h.slice(0,20));
  }
+ sendAnalyticsEvent('tool_use',{page:pageId,tool:title});
  renderRecentHome();renderHistoryHome();
 }
 function buildShareText(card){
@@ -301,7 +369,7 @@ function bindGlobal(){
  const n=e.target.closest('.nav-btn[data-page]');if(n)page(n.dataset.page)
 });
  $('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open'); $('#themeToggle').onclick=()=>setTheme(state.theme==='bridge'?'dark':'bridge');
- $('#globalSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).slice(0,12);box.innerHTML=hits.map(x=>`<button data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}</small></span></button>`).join('')||'<button>No matching tool</button>';box.hidden=false});
+ $('#globalSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,12);box.innerHTML=hits.map(x=>`<button data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}</small></span></button>`).join('')||'<button>No matching tool</button>';box.hidden=false});
  document.addEventListener('click',e=>{if(!e.target.closest('.searchbox'))$('#searchResults').hidden=true});
  document.addEventListener('input',e=>{if(e.target.matches('input[type="number"]'))sanityCheckInput(e.target)});
  window.addEventListener('online',()=>{updateConnectivity();checkApi()});window.addEventListener('offline',updateConnectivity);
@@ -309,8 +377,10 @@ function bindGlobal(){
 }
 
 function updateConnectivity(){
- const b=$('#offlineBanner');if(b)b.hidden=navigator.onLine;
- if(!navigator.onLine){const t=$('#apiText');if(t)t.textContent='Offline · local tools available'}
+ const online=navigator.onLine,b=$('#offlineBanner'),pill=$('#connectivityPill'),cached=store.get(K.weatherCache,null);
+ if(b)b.hidden=online;
+ if(pill){pill.classList.toggle('offline',!online);pill.classList.toggle('cached',!online&&Boolean(cached?.forecast?.length));pill.querySelector('b').textContent=online?'ONLINE':cached?.forecast?.length?'OFFLINE · CACHED WX':'OFFLINE · LOCAL'}
+ if(!online){const t=$('#apiText');if(t)t.textContent='Offline · local tools available'}
 }
 function liveAge(){
  if(!state.lastRefreshAt)return null;return Math.max(0,Date.now()-new Date(state.lastRefreshAt).getTime())
@@ -499,7 +569,7 @@ function renderWeather(){
  $('#weather').innerHTML=pageTitle('Weather','Point weather and sea forecast from MET Norway, plus manual weather-planning helpers.')+`
  <div class="grid-2">
   <article class="panel weather-live-panel"><div class="panel-head"><div><h2>Point forecast</h2><small>MET Norway Locationforecast + Oceanforecast</small></div><div id="wxStatus" class="source-status"><span class="chip">Not loaded</span></div></div><div class="panel-body">
-   <p class="tool-how"><b>How to use</b><span>Enter a latitude and longitude, then load the next forecast periods. Weather and sea data are fetched independently of Route Intelligence.</span></p>
+   <p class="tool-how"><b>How to use</b><span>Enter a latitude and longitude, then load the next forecast periods. Weather and sea data are fetched independently of Route Intelligence.</span></p><div class="coverage-strip"><div><b>GLOBAL WEATHER</b><span>Wind, air temperature, precipitation and weather symbols use MET Norway Locationforecast and are available worldwide.</span></div><div><b>REGIONAL MARINE DATA</b><span>Waves, current and sea temperature use MET Norway Oceanforecast. Marine values may be unavailable outside its regional coverage, mainly Northwestern Europe.</span></div></div>
    <div class="fields"><label>Latitude<input id="wxLat" type="number" step="any" value="59.42"></label><label>Longitude<input id="wxLon" type="number" step="any" value="10.48"></label></div>
    <div class="actions"><button class="btn primary" id="loadPointWx">Load forecast</button><button class="btn" id="useRouteWx">Use route start</button></div>
    <div class="weather-summary" id="wxSummary"><div class="weather-metric"><span>Wind</span><strong>—</strong><small>Load forecast</small></div><div class="weather-metric"><span>Waves</span><strong>—</strong><small>Significant Hs</small></div><div class="weather-metric"><span>Current</span><strong>—</strong><small>Surface current</small></div></div>
@@ -547,9 +617,10 @@ async function loadPointWeather(){
      `weather: ${d.location?.ok?'ok':d.location?.status||'unavailable'}`,
      `ocean: ${d.ocean?.ok?'ok':d.ocean?.status||'unavailable'}`
    ];
-   diag.textContent=`MET Norway · ${parts.join(' · ')} · updated ${new Date().toISOString().slice(11,16)} UTC`;
+   const marineOk=Boolean(d.ocean?.ok);
+   diag.textContent=marineOk?`MET Norway · ${parts.join(' · ')} · updated ${new Date().toISOString().slice(11,16)} UTC`:`Global weather loaded · Marine wave/current data unavailable for this position · updated ${new Date().toISOString().slice(11,16)} UTC`;
    const usable=state.weather.some(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v))));
-   if(state.weather.length&&usable){sourceStatus('#wxStatus','ok','FORECAST LOADED');renderPointWeather()}
+   if(state.weather.length&&usable){sourceStatus('#wxStatus',marineOk?'ok':'warn',marineOk?'FORECAST LOADED':'WEATHER ONLY');renderPointWeather();sendAnalyticsEvent('tool_use',{page:'weather',tool:'Point weather forecast'})}
    else if(state.weather.length){sourceStatus('#wxStatus','warn','NO VALUES');renderPointWeather()}
    else{sourceStatus('#wxStatus','warn','NO USABLE DATA');tb.innerHTML='<tr><td colspan="6" class="helper">MET Norway returned no usable forecast rows for this position.</td></tr>'}
  }catch(e){
@@ -599,17 +670,21 @@ function renderFuel(){
    <label>Density kg/m³<input id="consDensity" type="number" step=".1" value="840"></label>
    <label>Running hours in period <span class="optional">optional</span><input id="consHours" type="number" step=".1" placeholder="e.g. 22.4"></label>
   </div>
+  <div class="fields">
+   <label>Activity / operation <span class="optional">optional</span><select id="consActivity"><option value="">Not specified</option><option>Transit</option><option>DP / station keeping</option><option>ROV / subsea</option><option>Port / alongside</option><option>Standby / waiting</option><option>Maintenance / test</option><option>Other</option></select></label>
+   <label>Notes <span class="optional">optional</span><input id="consNotes" type="text" maxlength="180" placeholder="Short context only — e.g. heavy weather"></label>
+  </div>
   <div class="actions consumption-actions">
-   <button class="btn primary" id="calcConsumption">Calculate</button>
+   <button class="btn primary calc-action" id="calcConsumption">Calculate</button>
    <button class="btn" id="saveConsumption">Save entry</button>
    <button class="btn" id="copyConsumption">Copy summary</button>
-   <button class="btn" id="exportConsumption">Export CSV</button>
+   <button class="btn" id="exportConsumption">Export CSV</button><button class="btn" id="importConsumption">Import CSV</button><input id="importConsumptionFile" type="file" accept=".csv,text/csv" hidden>
   </div>
   ${result('resConsumption')}
   <div class="consumption-history">
    <div class="history-toolbar"><div><b>Saved consumption</b><small>Local history for trend and reporting support.</small></div><label>Show<select id="consHistoryFilter"><option>Fuel</option><option>Urea solution</option><option>Lube oil</option><option value="all">All products</option></select></label></div>
    <div id="consSummary" class="history-summary"></div>
-   <div class="table-wrap"><table class="table compact data-history-table"><thead><tr><th>Date</th><th>Product</th><th>Volume</th><th>Mass</th><th>Hours</th><th>Rate</th><th></th></tr></thead><tbody id="consHistoryRows"></tbody></table></div>
+   <div class="table-wrap"><table class="table compact data-history-table"><thead><tr><th>Date</th><th>Product</th><th>Volume</th><th>Mass</th><th>Hours</th><th>Rate</th><th>Context</th><th></th></tr></thead><tbody id="consHistoryRows"></tbody></table></div>
   </div>
  `)}
  ${groupedCard('everyday','Fuel ROB & endurance','Estimate usable ROB and endurance after reserve.',`<div class="fields"><label>ROB m³<input id="rob" type="number" step=".1" value="38"></label><label>Consumption m³/day<input id="robDay" type="number" step=".1" value="4.2"></label><label>Reserve %<input id="robRes" type="number" value="20"></label></div>${calcButton('calcRob')}${result('resRob')}`)}
@@ -627,10 +702,10 @@ function renderFuel(){
  ${groupedCard('everyday','Fuel / Urea converter','Convert fuel, urea solution or another liquid between volume and mass.',`<div class="fields"><label>Product<select id="fuProduct"><option>Fuel</option><option>Urea solution</option><option>Other liquid</option></select></label><label>I have<select id="fuMode"><option value="v2m">Volume</option><option value="m2v">Mass</option></select></label><label><span id="fuAmountText">Volume m³</span><input id="fuAmount" type="number" step=".001" value="10"></label><label>Product density kg/m³<input id="fuDensity" type="number" step=".1" value="840"></label></div><p class="helper">Use density from the BDN, SDS or product documentation at the relevant temperature.</p>${calcButton('calcFuelUrea')}${result('resFuelUrea')}`)}
 
  ${groupedCard('reporting','Bunkering history & export','Keep a simple local history of bunkerings and export it to CSV when needed.',`
-   <div class="fields three"><label>Date<input id="bhDate" type="date"></label><label>Grade / product<input id="bhGrade" type="text" placeholder="e.g. EN590 / MDO"></label><label>Volume m³<input id="bhVolume" type="number" step=".01"></label><label>Density kg/m³<input id="bhDensity" type="number" step=".1"></label></div>
-   <div class="actions"><button class="btn primary" id="saveBunkHistory">Save bunkering</button><button class="btn" id="exportBunkHistory">Export CSV</button></div>
+   <div class="fields three"><label>Date<input id="bhDate" type="date"></label><label>Grade / product<input id="bhGrade" type="text" placeholder="e.g. EN590 / MDO"></label><label>Volume m³<input id="bhVolume" type="number" step=".01"></label><label>Density kg/m³<input id="bhDensity" type="number" step=".1"></label><label>Supplier <span class="optional">optional</span><input id="bhSupplier" type="text" maxlength="100"></label><label>BDN / reference <span class="optional">optional</span><input id="bhRef" type="text" maxlength="100"></label></div><label>Notes <span class="optional">optional</span><input id="bhNotes" type="text" maxlength="180" placeholder="Short local note"></label>
+   <div class="actions"><button class="btn primary" id="saveBunkHistory">Save bunkering</button><button class="btn" id="exportBunkHistory">Export CSV</button><button class="btn" id="importBunkHistory">Import CSV</button><input id="importBunkHistoryFile" type="file" accept=".csv,text/csv" hidden></div>
    <div id="bunkHistorySummary" class="history-summary"></div>
-   <div class="table-wrap"><table class="table compact data-history-table"><thead><tr><th>Date</th><th>Grade</th><th>Volume</th><th>Density</th><th>Mass</th><th></th></tr></thead><tbody id="bunkHistoryRows"></tbody></table></div>
+   <div class="table-wrap"><table class="table compact data-history-table"><thead><tr><th>Date</th><th>Grade</th><th>Volume</th><th>Density</th><th>Mass</th><th>Supplier / ref</th><th></th></tr></thead><tbody id="bunkHistoryRows"></tbody></table></div>
  `)}
 
  ${groupedCard('everyday','Bunkering overview','Summarise previous bunkerings with total volume/mass, weighted density and average interval.',`<div id="bunkRows" class="dynamic-list"><div class="dynamic-row bunk-row"><label>Date<input class="bunk-date" type="date" value="2026-07-01"></label><label>Volume m³<input class="bunk-vol" type="number" step=".01" value="25"></label><label>Density kg/m³<input class="bunk-dens" type="number" step=".1" value="839"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row bunk-row"><label>Date<input class="bunk-date" type="date" value="2026-08-03"></label><label>Volume m³<input class="bunk-vol" type="number" step=".01" value="31.5"></label><label>Density kg/m³<input class="bunk-dens" type="number" step=".1" value="841.2"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row bunk-row"><label>Date<input class="bunk-date" type="date" value="2026-09-10"></label><label>Volume m³<input class="bunk-vol" type="number" step=".01" value="28"></label><label>Density kg/m³<input class="bunk-dens" type="number" step=".1" value="840.1"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addBunkRow">+ Add bunkering</button>${calcButton('calcBunkOverview','Analyse bunkerings')}${result('resBunkOverview')}`)}
@@ -659,7 +734,7 @@ function calculateConsumptionDraft(showResult=true){
  }
  if(!date||!(density>0)){if(showResult)setRes('resConsumption','Add a date and valid density.','','caution');return null}
  const liters=unit==='L'?amount:amount*1000,m3=liters/1000,massKg=m3*density,massT=massKg/1000,kgH=hours>0?massKg/hours:null;
- consumptionDraft={id:`c${Date.now()}`,date,product,mode,unit,amount,liters,m3,density,massKg,massT,hours,kgH,createdAt:new Date().toISOString()};
+ const activity=$('#consActivity')?.value||'',notes=$('#consNotes')?.value.trim()||'';consumptionDraft={id:`c${Date.now()}`,date,product,mode,unit,amount,liters,m3,density,massKg,massT,hours,kgH,activity,notes,createdAt:new Date().toISOString()};
  if(showResult){
    const primary=product==='Lube oil'?`${nf(liters,1)} L · ${nf(massKg,1)} kg`:`${nf(m3,3)} m³ · ${nf(massT,3)} t`;
    const rate=kgH==null?'Running hours not entered.':`${nf(kgH,1)} kg/h over ${nf(hours,1)} h.`;
@@ -681,8 +756,10 @@ function renderConsumptionHistory(){
  const s7=periodStats(rows,7),s30=periodStats(rows,30),prev7=periodStats(rows,7,7);
  const trend=prev7.avgKg>0?((s7.avgKg-prev7.avgKg)/prev7.avgKg*100):null;
  const formatAvg=s=>s.uniqueDays?`${nf(s.avgKg/1000,3)} t/day · ${nf(s.avgL,0)} L/day`:'—';
- sum.innerHTML=`<div><span>7-day avg</span><strong>${formatAvg(s7)}</strong><small>${s7.uniqueDays} recorded day${s7.uniqueDays===1?'':'s'}</small></div><div><span>30-day avg</span><strong>${formatAvg(s30)}</strong><small>${s30.uniqueDays} recorded day${s30.uniqueDays===1?'':'s'}</small></div><div><span>7-day trend</span><strong>${trend==null?'—':`${trend>=0?'+':''}${nf(trend,1)}%`}</strong><small>vs previous 7 recorded-day average</small></div>`;
- tb.innerHTML=rows.length?rows.slice(0,20).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.product)}</td><td>${nf(x.liters,1)} L</td><td>${nf(x.massKg/1000,3)} t</td><td>${x.hours>0?nf(x.hours,1):'—'}</td><td>${x.kgH!=null?nf(x.kgH,1)+' kg/h':'—'}</td><td><button class="btn mini" data-cons-delete="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="7" class="helper">No saved consumption entries for this filter yet.</td></tr>'
+ const trendText=trend==null?'—':trend===0?'No change':`${trend<0?'↓':'↑'} ${nf(Math.abs(trend),1)}% ${trend<0?'lower':'higher'}`;
+ const trendClass=trend==null?'neutral':trend<0?'down':trend>0?'up':'neutral';
+ sum.innerHTML=`<div><span>7-day avg</span><strong>${formatAvg(s7)}</strong><small>${s7.uniqueDays} recorded day${s7.uniqueDays===1?'':'s'}</small></div><div><span>30-day avg</span><strong>${formatAvg(s30)}</strong><small>${s30.uniqueDays} recorded day${s30.uniqueDays===1?'':'s'}</small></div><div><span>7-day trend</span><strong class="trend-value ${trendClass}">${trendText}</strong><small>vs previous 7-day recorded average</small></div>`;
+ tb.innerHTML=rows.length?rows.slice(0,20).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.product)}</td><td>${nf(x.liters,1)} L</td><td>${nf(x.massKg/1000,3)} t</td><td>${x.hours>0?nf(x.hours,1):'—'}</td><td>${x.kgH!=null?nf(x.kgH,1)+' kg/h':'—'}</td><td title="${esc(x.notes||'')}">${esc(x.activity||x.notes||'—')}</td><td><button class="btn mini" data-cons-delete="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="8" class="helper">No saved consumption entries for this filter yet.</td></tr>'
 }
 function saveConsumptionEntry(){
  const x=calculateConsumptionDraft(false);if(!x)return setRes('resConsumption','Nothing saved.','Check the consumption inputs first.','caution');
@@ -690,15 +767,15 @@ function saveConsumptionEntry(){
 }
 function copyConsumptionSummary(){
  const x=consumptionDraft||calculateConsumptionDraft(false);if(!x)return toast('Calculate a valid consumption entry first.');
- const text=[`Marine Tools — Daily consumption`,`Date: ${x.date}`,`Product: ${x.product}`,`Consumed: ${nf(x.liters,1)} L (${nf(x.m3,3)} m³)`,`Mass: ${nf(x.massKg,1)} kg (${nf(x.massT,3)} t)`,`Density: ${nf(x.density,1)} kg/m³`,x.hours>0?`Running hours: ${nf(x.hours,1)} h`:null,x.kgH!=null?`Average: ${nf(x.kgH,1)} kg/h`:null,'Planning/reporting helper only — verify against vessel records and approved reporting requirements.'].filter(Boolean).join('\n');
+ const text=[`Marine Tools — Daily consumption`,`Date: ${x.date}`,`Product: ${x.product}`,x.activity?`Activity: ${x.activity}`:null,`Consumed: ${nf(x.liters,1)} L (${nf(x.m3,3)} m³)`,`Mass: ${nf(x.massKg,1)} kg (${nf(x.massT,3)} t)`,`Density: ${nf(x.density,1)} kg/m³`,x.hours>0?`Running hours: ${nf(x.hours,1)} h`:null,x.kgH!=null?`Average: ${nf(x.kgH,1)} kg/h`:null,x.notes?`Notes: ${x.notes}`:null,'Planning/reporting helper only — verify against vessel records and approved reporting requirements.'].filter(Boolean).join('\n');
  navigator.clipboard?.writeText(text).then(()=>toast('Consumption summary copied.')).catch(()=>toast('Copy unavailable.'))
 }
 function exportConsumptionCsv(){
  const h=consumptionHistory().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
  if(!h.length)return toast('No consumption history to export.');
  downloadCsv('marine-tools-consumption-history.csv',[
-   ['Date','Product','Mode','Entered unit','Entered amount','Volume L','Volume m3','Density kg/m3','Mass kg','Mass t','Running hours','kg per hour'],
-   ...h.map(x=>[x.date,x.product,x.mode,x.unit,x.amount,x.liters,x.m3,x.density,x.massKg,x.massT,x.hours||'',x.kgH??''])
+   ['Date','Product','Mode','Entered unit','Entered amount','Volume L','Volume m3','Density kg/m3','Mass kg','Mass t','Running hours','kg per hour','Activity','Notes'],
+   ...h.map(x=>[x.date,x.product,x.mode,x.unit,x.amount,x.liters,x.m3,x.density,x.massKg,x.massT,x.hours||'',x.kgH??'',x.activity||'',x.notes||''])
  ]);toast('Consumption CSV exported.')
 }
 function renderBunkeringHistory(){
@@ -707,20 +784,54 @@ function renderBunkeringHistory(){
  const totalV=rows.reduce((s,x)=>s+(+x.volume||0),0),totalKg=rows.reduce((s,x)=>s+(+x.massKg||0),0),weighted=totalV?totalKg/totalV:0,avg=rows.length?totalV/rows.length:0;
  const asc=rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))),interval=asc.length>1?daysBetween(parseLocalDate(asc[0].date),parseLocalDate(asc.at(-1).date))/(asc.length-1):null;
  sum.innerHTML=`<div><span>Total volume</span><strong>${rows.length?nf(totalV,2)+' m³':'—'}</strong><small>${rows.length} saved bunkering${rows.length===1?'':'s'}</small></div><div><span>Total mass</span><strong>${rows.length?nf(totalKg/1000,2)+' t':'—'}</strong><small>Weighted density ${rows.length?nf(weighted,1)+' kg/m³':'—'}</small></div><div><span>Average delivery</span><strong>${rows.length?nf(avg,2)+' m³':'—'}</strong><small>${interval==null?'Average interval —':`Average interval ${nf(interval,1)} days`}</small></div>`;
- tb.innerHTML=rows.length?rows.slice(0,20).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.grade||'—')}</td><td>${nf(x.volume,2)} m³</td><td>${nf(x.density,1)} kg/m³</td><td>${nf(x.massKg/1000,2)} t</td><td><button class="btn mini" data-bunk-delete="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="6" class="helper">No saved bunkerings yet.</td></tr>'
+ tb.innerHTML=rows.length?rows.slice(0,20).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.grade||'—')}</td><td>${nf(x.volume,2)} m³</td><td>${nf(x.density,1)} kg/m³</td><td>${nf(x.massKg/1000,2)} t</td><td title="${esc(x.notes||'')}">${esc([x.supplier,x.reference].filter(Boolean).join(' · ')||'—')}</td><td><button class="btn mini" data-bunk-delete="${esc(x.id)}">Delete</button></td></tr>`).join(''):'<tr><td colspan="7" class="helper">No saved bunkerings yet.</td></tr>'
 }
 function saveBunkeringEntry(){
- const date=$('#bhDate')?.value,grade=$('#bhGrade')?.value.trim(),volume=+$('#bhVolume')?.value,density=+$('#bhDensity')?.value;
+ const date=$('#bhDate')?.value,grade=$('#bhGrade')?.value.trim(),volume=+$('#bhVolume')?.value,density=+$('#bhDensity')?.value,supplier=$('#bhSupplier')?.value.trim()||'',reference=$('#bhRef')?.value.trim()||'',notes=$('#bhNotes')?.value.trim()||'';
  if(!date||!grade||!(volume>0)||!(density>0))return toast('Add date, grade, volume and density.');
- const h=bunkeringHistory();h.push({id:`b${Date.now()}`,date,grade,volume,density,massKg:volume*density,createdAt:new Date().toISOString()});store.set(K.bunkHistory,h.slice(-1000));renderBunkeringHistory();toast('Bunkering saved locally.')
+ const h=bunkeringHistory();h.push({id:`b${Date.now()}`,date,grade,volume,density,massKg:volume*density,supplier,reference,notes,createdAt:new Date().toISOString()});store.set(K.bunkHistory,h.slice(-1000));renderBunkeringHistory();sendAnalyticsEvent('tool_use',{page:'fuel',tool:'Bunkering history & export'});toast('Bunkering saved locally.')
 }
 function exportBunkeringCsv(){
  const h=bunkeringHistory().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
  if(!h.length)return toast('No bunkering history to export.');
  downloadCsv('marine-tools-bunkering-history.csv',[
-   ['Date','Grade / product','Volume m3','Density kg/m3','Mass kg','Mass t'],
-   ...h.map(x=>[x.date,x.grade,x.volume,x.density,x.massKg,x.massKg/1000])
+   ['Date','Grade / product','Volume m3','Density kg/m3','Mass kg','Mass t','Supplier','BDN / reference','Notes'],
+   ...h.map(x=>[x.date,x.grade,x.volume,x.density,x.massKg,x.massKg/1000,x.supplier||'',x.reference||'',x.notes||''])
  ]);toast('Bunkering CSV exported.')
+}
+
+
+async function importConsumptionCsv(file){
+ try{
+  const rows=csvObjects(await readTextFile(file));if(!rows.length)return toast('No CSV rows found.');
+  const incoming=[];
+  for(const r of rows){
+   const date=r['Date'],product=r['Product']||'Fuel',unit=r['Entered unit']||'m3',density=csvNum(r['Density kg/m3'])||0;
+   const liters=csvNum(r['Volume L'])??((csvNum(r['Volume m3'])||0)*1000),m3=csvNum(r['Volume m3'])??liters/1000;
+   const massKg=csvNum(r['Mass kg'])??(m3*density),hours=csvNum(r['Running hours'])||0;
+   if(!date||!(liters>=0)||!(density>0)||!(massKg>=0))continue;
+   incoming.push({id:`ci${Date.now()}${incoming.length}`,date,product,mode:r['Mode']||'direct',unit,amount:csvNum(r['Entered amount'])??(unit==='L'?liters:m3),liters,m3,density,massKg,massT:massKg/1000,hours,kgH:hours>0?massKg/hours:null,activity:r['Activity']||'',notes:r['Notes']||'',createdAt:new Date().toISOString()})
+  }
+  if(!incoming.length)return toast('No valid consumption rows found.');
+  const existing=consumptionHistory(),keys=new Set(existing.map(x=>`${x.date}|${x.product}|${Math.round((+x.liters||0)*10)}|${x.activity||''}`));
+  const fresh=incoming.filter(x=>!keys.has(`${x.date}|${x.product}|${Math.round(x.liters*10)}|${x.activity||''}`));
+  store.set(K.consumption,[...existing,...fresh].slice(-1000));renderConsumptionHistory();toast(`${fresh.length} consumption row${fresh.length===1?'':'s'} imported.`)
+ }catch{toast('Could not import consumption CSV.')}
+}
+async function importBunkeringCsv(file){
+ try{
+  const rows=csvObjects(await readTextFile(file));if(!rows.length)return toast('No CSV rows found.');
+  const incoming=[];
+  for(const r of rows){
+   const date=r['Date'],grade=r['Grade / product']||r['Grade']||'',volume=csvNum(r['Volume m3']),density=csvNum(r['Density kg/m3']);
+   if(!date||!grade||!(volume>0)||!(density>0))continue;
+   incoming.push({id:`bi${Date.now()}${incoming.length}`,date,grade,volume,density,massKg:csvNum(r['Mass kg'])??volume*density,supplier:r['Supplier']||'',reference:r['BDN / reference']||'',notes:r['Notes']||'',createdAt:new Date().toISOString()})
+  }
+  if(!incoming.length)return toast('No valid bunkering rows found.');
+  const existing=bunkeringHistory(),keys=new Set(existing.map(x=>`${x.date}|${x.grade}|${Math.round((+x.volume||0)*100)}|${x.reference||''}`));
+  const fresh=incoming.filter(x=>!keys.has(`${x.date}|${x.grade}|${Math.round(x.volume*100)}|${x.reference||''}`));
+  store.set(K.bunkHistory,[...existing,...fresh].slice(-1000));renderBunkeringHistory();toast(`${fresh.length} bunkering row${fresh.length===1?'':'s'} imported.`)
+ }catch{toast('Could not import bunkering CSV.')}
 }
 
 function bindFuel(){
@@ -737,6 +848,8 @@ function bindFuel(){
  $('#saveConsumption').onclick=saveConsumptionEntry;
  $('#copyConsumption').onclick=copyConsumptionSummary;
  $('#exportConsumption').onclick=exportConsumptionCsv;
+ $('#importConsumption').onclick=()=>$('#importConsumptionFile').click();
+ $('#importConsumptionFile').onchange=e=>{const f=e.target.files?.[0];if(f)importConsumptionCsv(f);e.target.value=''};
  $('#consHistoryFilter').onchange=renderConsumptionHistory;
  $('#consHistoryRows').addEventListener('click',e=>{const id=e.target.dataset.consDelete;if(!id)return;store.set(K.consumption,consumptionHistory().filter(x=>x.id!==id));renderConsumptionHistory();toast('Consumption entry deleted.')});
  renderConsumptionHistory();
@@ -744,6 +857,8 @@ function bindFuel(){
  // Persistent bunkering history
  $('#saveBunkHistory').onclick=saveBunkeringEntry;
  $('#exportBunkHistory').onclick=exportBunkeringCsv;
+ $('#importBunkHistory').onclick=()=>$('#importBunkHistoryFile').click();
+ $('#importBunkHistoryFile').onchange=e=>{const f=e.target.files?.[0];if(f)importBunkeringCsv(f);e.target.value=''};
  $('#bunkHistoryRows').addEventListener('click',e=>{const id=e.target.dataset.bunkDelete;if(!id)return;store.set(K.bunkHistory,bunkeringHistory().filter(x=>x.id!==id));renderBunkeringHistory();toast('Bunkering entry deleted.')});
  renderBunkeringHistory();
 
@@ -938,8 +1053,48 @@ function beaufort(k){const rows=[[1,'Calm','0–1'],[3,'Light air','1–3'],[6,'
 function renderProfile(){const p=state.profile;$('#profile').innerHTML=pageTitle('Vessel Profile','Shared vessel values are used by route, fuel and operational-envelope calculations.')+`<article class="panel"><div class="panel-body"><div class="fields three"><label>Vessel name<input id="pName" value="${esc(p.name)}"></label><label>LOA m<input id="pLoa" type="number" step=".1" value="${p.loa}"></label><label>Draft m<input id="pDraft" type="number" step=".1" value="${p.draft}"></label><label>Service speed kn<input id="pSpeed" type="number" step=".1" value="${p.serviceSpeed}"></label><label>Fuel consumption m³/day<input id="pFuel" type="number" step=".1" value="${p.fuelDay}"></label><label>Max Hs m<input id="pHs" type="number" step=".1" value="${p.maxHs}"></label><label>Max wind kn<input id="pWind" type="number" value="${p.maxWind}"></label><label>Max current kn<input id="pCur" type="number" step=".1" value="${p.maxCurrent}"></label><label>Minimum UKC m<input id="pUkc" type="number" step=".1" value="${p.minUKC}"></label><label>CPA alert NM<input id="pCpa" type="number" step=".1" value="${p.cpaAlert}"></label><label>AIS route corridor NM<input id="pCorr" type="number" step=".1" value="${p.corridor}"></label></div><div class="actions"><button class="btn primary" id="saveProfile">Save profile</button></div><p class="helper">Operational limits are user-defined planning values. Marine Tools does not determine safe limits for your vessel.</p></div></article>`;$('#saveProfile').onclick=saveProfile}
 function saveProfile(){state.profile={name:$('#pName').value.trim(),loa:+$('#pLoa').value,draft:+$('#pDraft').value,serviceSpeed:+$('#pSpeed').value,fuelDay:+$('#pFuel').value,maxHs:+$('#pHs').value,maxWind:+$('#pWind').value,maxCurrent:+$('#pCur').value,minUKC:+$('#pUkc').value,cpaAlert:+$('#pCpa').value,corridor:+$('#pCorr').value};store.set(K.profile,state.profile);toast('Vessel profile saved.');renderEnvelope();updateHome()}
 
-function renderSettings(){$('#settings').innerHTML=pageTitle('Settings','Local-only application preferences and data controls.')+`<div class="grid-2"><article class="panel"><div class="panel-body"><h3>Appearance</h3><label>Theme<select id="setTheme"><option value="dark">Dark maritime</option><option value="bridge">Bridge Dark</option></select></label><div class="actions"><button class="btn primary" id="saveSet">Save</button></div></div></article><article class="panel"><div class="panel-body"><h3>Local data</h3><p class="helper">Profile, route and comparison snapshot are stored in this browser. They are not automatically synced to a user account or project database.</p><div class="actions"><button class="btn" id="exportData">Export JSON</button><button class="btn" id="clearData">Clear local data</button><button class="btn" id="clearHistorySet">Clear calculation history</button>${button('Privacy & data','privacy','btn')}</div></div></article></div><article class="panel" style="margin-top:12px"><div class="panel-body"><h3>Data principle</h3><p class="helper">Marine Tools is designed to keep entered operational data local where possible. A live-data feature only sends the minimum route or position context needed to return the requested live result.</p></div></article>`;$('#setTheme').value=state.theme;$('#saveSet').onclick=()=>{setTheme($('#setTheme').value);toast('Settings saved.')};$('#exportData').onclick=exportData;$('#clearHistorySet').onclick=clearHistory;$('#clearData').onclick=()=>{if(confirm('Clear Marine Tools local data in this browser?')){Object.values(K).forEach(k=>localStorage.removeItem(k));location.reload()}}}
-function exportData(){const data={profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),exported:new Date().toISOString()};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='marine-tools-data.json';a.click();URL.revokeObjectURL(a.href)}
+function localDataStats(){
+ const bytes=Object.keys(localStorage).filter(k=>k.startsWith('mt.')).reduce((n,k)=>n+(localStorage.getItem(k)?.length||0),0);
+ return{consumption:consumptionHistory().length,bunkering:bunkeringHistory().length,history:calcHistory().length,favorites:favorites().length,route:state.route.length,weather:Boolean(store.get(K.weatherCache,null)?.forecast?.length),kb:bytes/1024}
+}
+function renderSettings(){
+ const s=appSettings(),st=localDataStats(),dnt=navigator.doNotTrack==='1';
+ $('#settings').innerHTML=pageTitle('Settings','Local-first preferences, backup/restore and privacy controls.')+`
+ <div class="grid-2">
+  <article class="panel"><div class="panel-body"><h3>Appearance</h3><label>Theme<select id="setTheme"><option value="dark">Dark maritime</option><option value="bridge">Bridge Dark</option></select></label><div class="actions"><button class="btn primary" id="saveSet">Save</button></div></div></article>
+  <article class="panel"><div class="panel-body"><h3>Anonymous usage analytics</h3><label class="toggle-row"><input id="setAnalytics" type="checkbox" ${s.usageAnalytics!==false&&!dnt?'checked':''} ${dnt?'disabled':''}><span><b>Help improve Marine Tools</b><small>Send anonymous page, tool-use and visible-time events. Calculation values, vessel profile, routes and weather positions are never included.</small></span></label>${dnt?'<p class="helper">Your browser has Do Not Track enabled, so Marine Tools usage analytics stays disabled.</p>':''}<div class="actions">${button('Privacy & data','privacy','btn')}</div></div></article>
+ </div>
+ <article class="panel" style="margin-top:12px"><div class="panel-body">
+  <div class="settings-head"><div><h3>Data stored on this device</h3><p class="helper">Operational entries stay in this browser unless you export or restore them yourself.</p></div><span class="storage-size">${nf(st.kb,1)} KB</span></div>
+  <div class="data-stats"><div><span>Consumption</span><strong>${st.consumption}</strong></div><div><span>Bunkerings</span><strong>${st.bunkering}</strong></div><div><span>Calculations</span><strong>${st.history}</strong></div><div><span>Favorites</span><strong>${st.favorites}</strong></div><div><span>Route points</span><strong>${st.route}</strong></div><div><span>Weather cache</span><strong>${st.weather?'Saved':'None'}</strong></div></div>
+  <div class="actions"><button class="btn primary" id="exportData">Download backup</button><button class="btn" id="importData">Restore backup</button><input id="importDataFile" type="file" accept=".json,application/json" hidden><button class="btn" id="clearHistorySet">Clear calculation history</button><button class="btn danger-soft" id="clearData">Clear all local data</button></div>
+  <p class="helper">The backup contains your locally stored Marine Tools settings and histories. It does not contain anonymous analytics already sent to the server.</p>
+ </div></article>
+ <article class="panel" style="margin-top:12px"><div class="panel-body"><h3>Data principle</h3><p class="helper">Marine Tools keeps entered operational data local where possible. Live-data requests send only the route or position context needed for that request. Anonymous product analytics records only page/tool names, device class, app version and visible-time seconds.</p></div></article>`;
+ $('#setTheme').value=state.theme;
+ $('#saveSet').onclick=()=>{setTheme($('#setTheme').value);saveAppSettings({usageAnalytics:$('#setAnalytics')?.checked!==false});toast('Settings saved.')};
+ if($('#setAnalytics'))$('#setAnalytics').onchange=e=>{saveAppSettings({usageAnalytics:e.target.checked});if(e.target.checked){sendAnalyticsEvent('analytics_enabled',{page:'settings'});analyticsVisibleSince=performance.now()}else flushAnalyticsEngagement(true);toast(e.target.checked?'Anonymous usage analytics enabled.':'Anonymous usage analytics disabled.')};
+ $('#exportData').onclick=exportData;
+ $('#importData').onclick=()=>$('#importDataFile').click();
+ $('#importDataFile').onchange=e=>{const f=e.target.files?.[0];if(f)importDataBackup(f);e.target.value=''};
+ $('#clearHistorySet').onclick=()=>{clearHistory();renderSettings()};
+ $('#clearData').onclick=()=>{if(confirm('Clear all Marine Tools local data in this browser?')){Object.values(K).forEach(k=>localStorage.removeItem(k));location.reload()}}
+}
+
+function exportData(){
+ const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),exported:new Date().toISOString()};
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=`marine-tools-backup-${localDateISO()}.json`;a.click();URL.revokeObjectURL(a.href);toast('Local backup downloaded.')
+}
+async function importDataBackup(file){
+ try{
+  const data=JSON.parse(await file.text());
+  if(!data||typeof data!=='object'||(!data.profile&&!data.consumption&&!data.bunkering&&!data.settings))return toast('This does not look like a Marine Tools backup.');
+  if(!confirm('Restore this Marine Tools backup? Existing local values may be replaced.'))return;
+  const mapping=[[K.profile,data.profile],[K.route,data.route],[K.lastAnalysis,data.lastAnalysis],[K.settings,data.settings],[K.theme,data.theme],[K.favorites,data.favorites],[K.recent,data.recent],[K.history,data.history],[K.consumption,data.consumption],[K.bunkHistory,data.bunkering],[K.weatherCache,data.weatherCache]];
+  for(const [key,value] of mapping)if(value!==undefined&&value!==null)store.set(key,value);
+  toast('Backup restored. Reloading…');setTimeout(()=>location.reload(),500)
+ }catch{toast('Could not restore backup JSON.')}
+}
 
 function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/marine-tools-shield.png" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
 function renderSuggestions(){$('#suggestions').innerHTML=pageTitle('Suggestions','Suggest a new tool, improvement or report a problem.')+`<article class="panel survey-card"><div style="font-size:54px">✧</div><h2>Suggest something</h2><p>Ideas are welcome for practical calculations, planning aids, live maritime context and quick technical utilities. Click below to open a prepared email to Marine Tools.</p><a class="btn primary" href="${SUGGEST_URL}">Email a suggestion →</a><p class="helper" style="margin-top:12px">${CONTACT_EMAIL}</p></article>`}
@@ -1014,7 +1169,7 @@ function renderAbout(){
  </div></article>
  <div class="grid-2" style="margin-top:12px">
    <article class="panel bullet-box"><h3>Live data</h3><p>Weather point forecasts are provided as supporting context. AIS and route-context functions are explicitly marked experimental and kept separate from the core calculators. Source, data age and limitations must always be considered.</p></article>
-   <article class="panel bullet-box"><h3>Privacy by design</h3><p>Vessel Profile, route and local settings are stored in this browser. Live-data requests send only the context needed to obtain the requested result. Marine Tools does not use operational data for advertising, profiling or unrelated purposes.</p><div class="actions" style="margin-top:12px">${button("Read Privacy & data","privacy","btn")}</div></article>
+   <article class="panel bullet-box"><h3>Privacy by design</h3><p>Vessel Profile, route and local settings are stored in this browser. Live-data requests send only the context needed to obtain the requested result. Marine Tools does not use operational data for advertising, profiling or unrelated purposes. Minimal anonymous product analytics can be disabled in Settings.</p><div class="actions" style="margin-top:12px">${button("Read Privacy & data","privacy","btn")}</div></article>
  </div>`;
 }
 function renderPrivacy(){
@@ -1031,7 +1186,7 @@ function renderPrivacy(){
      <li>No sale of vessel, route or calculation data</li>
      <li>No use of entered operational data to train AI models</li>
      <li>No intentional use for employment, disciplinary, enforcement or commercial assessment</li>
-   </ul><p class="helper">Marine Tools has no user-account database and no function that lets another Marine Tools user retrieve your locally stored operational data.</p></article>
+   </ul><p class="helper">Marine Tools also collects minimal anonymous product analytics: page opened, tool used, device class, app version and visible-time seconds. No calculation inputs, vessel profile values, route coordinates, weather positions, names, email addresses or persistent user IDs are included. You can disable this under Settings. </p><p class="helper">Marine Tools has no user-account database and no function that lets another Marine Tools user retrieve your locally stored operational data.</p></article>
  </div>
  <article class="panel" style="margin-top:12px"><div class="panel-body">
    <h2>When live data is requested</h2>
@@ -1044,7 +1199,7 @@ function renderPrivacy(){
  </div>
  <article class="panel" style="margin-top:12px"><div class="panel-body">
    <h2>Your control</h2>
-   <p>You can export your local Marine Tools data as JSON or erase it from this browser under <b>Settings → Local data</b>. Clearing browser site data will also remove locally stored Marine Tools data.</p>
+   <p>You can download a local backup, restore it on another device, or erase local Marine Tools data under <b>Settings → Data stored on this device</b>. Clearing browser site data will also remove locally stored Marine Tools data.</p>
    <p><b>Data principle:</b> collect as little as possible, keep user-entered operational data local where possible, and send only what is necessary when a live-data feature explicitly requires a network request.</p>
  </div></article>`;
 }
@@ -1052,6 +1207,6 @@ function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow
 function setRes(id,main,sub='',cls=''){const e=$('#'+id);if(!e)return;e.className=`result ${cls}`;e.innerHTML=`<strong>${main}</strong>${sub?`<small>${sub}</small>`:''}`}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-function init(){renderHome();renderedPages.add('home');bindGlobal();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
+function init(){renderHome();renderedPages.add('home');bindGlobal();initUsageAnalytics();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
 document.addEventListener('DOMContentLoaded',init);
 })();
