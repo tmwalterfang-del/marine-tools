@@ -137,3 +137,14 @@ The homepage uses a calmer visual-first hero, a dedicated tool search, six prima
 - v8.3: Offline shell explicitly caches responsive hero assets; local calculators and saved reporting history remain available offline.
 - v8.3: Local-data JSON export and Privacy & Data now include consumption history, bunkering history and cached weather.
 - Marine Tools remains a calculation/reporting helper and does not become an electronic or statutory logbook.
+
+- v8.4: Privacy-preserving first-party usage analytics groundwork using Cloudflare Workers Analytics Engine. Tracks anonymous session starts, in-app page opens, tool-use events and visible-time seconds only; no calculation inputs, vessel profile, route coordinates, weather positions or persistent user IDs.
+- v8.4: Analytics can be disabled in Settings and automatically stays off when the browser sends Do Not Track.
+- v8.4: Added `ANALYTICS` Workers Analytics Engine dataset binding (`marine_tools_usage`). The dataset is created automatically after Worker deployment and first event.
+- v8.4: Cloudflare Web Analytics remains the source for normal site visits/pageviews; the custom dataset is intended for future feature-usage and engagement dashboards.
+- v8.4: Settings now shows local-data counts and size, supports downloadable JSON backup and restore, and explains analytics scope.
+- v8.4: Consumption reporting adds optional activity/operation and notes, clearer period comparison, and CSV import.
+- v8.4: Bunkering history adds optional supplier, BDN/reference and notes, plus CSV import.
+- v8.4: Weather clearly distinguishes global Locationforecast weather data from regional Oceanforecast marine data.
+- v8.4: Added a compact online/offline/cached-weather status in the top bar.
+- v8.4: Search ranking prioritises Daily Consumption and Bunkering History for relevant queries.
