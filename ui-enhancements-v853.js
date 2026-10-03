@@ -1,6 +1,12 @@
 (() => {
 'use strict';
 
+const PREVIEW_ENABLED=new URLSearchParams(location.search).get('wxmap')==='1';
+if(!PREVIEW_ENABLED){
+  window.__marineToolsUiEnhancements853={enabled:false};
+  return;
+}
+
 const $=(s,r=document)=>r.querySelector(s);
 
 function injectStyles(){
@@ -94,4 +100,6 @@ window.addEventListener('pageshow',()=>{
   if($('#quick')?.classList.contains('active'))afterOpen('quick',patchBeaufort);
   if($('#weather')?.classList.contains('active'))afterOpen('weather',patchWeather);
 });
+
+window.__marineToolsUiEnhancements853={enabled:true};
 })();
