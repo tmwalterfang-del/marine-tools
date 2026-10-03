@@ -56,10 +56,11 @@ async function pelyrLatest(url,env){
     const p=vessel?.position;if(!p)continue;
     const lat=num(p.lat),lon=num(p.lon);if(lat==null||lon==null)continue;
     const pSource=sourceMap.get(String(p.license??""));
-    if(!pSource)continue;
+    const openLicence=x=>Boolean(x&&(/NLOD/i.test(String(x.license||""))||/CC[-_ ]?BY/i.test(String(x.license||""))));
+    if(!openLicence(pSource))continue; // Pelyr-owned/restricted AIS data must not be re-served through our API.
     const s=vessel?.static||null;
     const sSource=s?sourceMap.get(String(s.license??"")):null;
-    const staticAllowed=!s||Boolean(sSource);
+    const staticAllowed=!s||openLicence(sSource);
     const attrs=uniq([pSource?.attribution,staticAllowed?sSource?.attribution:null]);
     vessels.push({
       mmsi:vessel.mmsi,
@@ -73,7 +74,7 @@ async function pelyrLatest(url,env){
       navigationalStatus:num(p.nav_status),
       shipType:staticAllowed?num(s?.type):null,
       timestamp:p.ts||null,
-      source:"Pelyr",
+      source:pSource?.source||"Open AIS source",
       attributions:attrs,
       dataAgeSource:p.ts||null
     });
@@ -88,7 +89,7 @@ async function aisResponse(request,env,ctx){
   if(env.PELYR_API_KEY){
     try{
       const p=await pelyrLatest(url,env);
-      return json(p.vessels,200,{"access-control-allow-origin":request.headers.get("origin")||"https://marinetools.app","vary":"Origin","x-marine-tools-ais-provider":"Pelyr"});
+      return json(p.vessels,200,{"access-control-allow-origin":request.headers.get("origin")||"https://marinetools.app","vary":"Origin","x-marine-tools-ais-provider":"Pelyr-open-sources"});
     }catch(e){
       // Keep the existing BarentsWatch integration as an operational fallback.
     }
@@ -195,8 +196,8 @@ async function healthResponse(request,env,ctx){
   const base=await baseWorker.fetch(request,env,ctx);if(!base.ok)return base;
   let j;try{j=await base.clone().json()}catch{return base}
   const capabilities=Array.isArray(j?.capabilities)?j.capabilities:[];
-  for(const cap of ["global-wave-fallback","global-ais-pelyr"]){if(!capabilities.includes(cap))capabilities.push(cap)}
-  return json({...j,capabilities,globalWaveConfigured:true,globalAisConfigured:Boolean(env.PELYR_API_KEY),globalAisProvider:env.PELYR_API_KEY?"Pelyr HTTPS API":"BarentsWatch fallback"});
+  for(const cap of ["global-wave-fallback","global-open-ais"]){if(!capabilities.includes(cap))capabilities.push(cap)}
+  return json({...j,capabilities,globalWaveConfigured:true,globalAisConfigured:Boolean(env.PELYR_API_KEY),globalAisProvider:env.PELYR_API_KEY?"Pelyr HTTPS API (open-licence sources only)":"BarentsWatch fallback"});
 }
 
 export default{
