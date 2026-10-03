@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 
-const VERSION='8.5.4-weather-map-prod-2';
+const VERSION='8.5.5-weather-map-prod-3';
 let map=null,marker=null,leafletPromise=null,bound=false;
 const $=(s,r=document)=>r.querySelector(s);
 const finite=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
@@ -37,13 +37,13 @@ function loadLeaflet(){
   return leafletPromise;
 }
 function currentPosition(){const lat=finite($('#wxLat')?.value),lon=finite($('#wxLon')?.value);return{lat:lat==null?59.42:clamp(lat,-90,90),lon:lon==null?10.48:clamp(lon,-180,180)}}
-function setPosition(lat,lon,{pan=true,zoom=null}={}){lat=finite(lat);lon=finite(lon);if(lat==null||lon==null)return;lat=clamp(lat,-90,90);lon=clamp(lon,-180,180);const latInput=$('#wxLat'),lonInput=$('#wxLon');if(latInput)latInput.value=lat.toFixed(5);if(lonInput)lonInput.value=lon.toFixed(5);if(marker)marker.setLatLng([lat,lon]);if(map&&pan){map.panTo([lat,lon],{animate:false});if(zoom!=null)map.setZoom(zoom)}}
+function setPosition(lat,lon,{pan=true,zoom=null}={}){lat=finite(lat);lon=finite(lon);if(lat==null||lon==null)return;lat=clamp(lat,-90,90);lon=clamp(lon,-180,180);const latInput=$('#wxLat'),lonInput=$('#wxLon');if(latInput)latInput.value=lat.toFixed(7);if(lonInput)lonInput.value=lon.toFixed(7);if(marker)marker.setLatLng([lat,lon]);if(map&&pan){map.panTo([lat,lon],{animate:false});if(zoom!=null)map.setZoom(zoom)}window.dispatchEvent(new CustomEvent('mt:weather-position',{detail:{lat,lon}}))}
 function syncFromInputs(){const p=currentPosition();setPosition(p.lat,p.lon,{pan:Boolean(map)})}
 function bindControls(){if(bound)return;const lat=$('#wxLat'),lon=$('#wxLon');if(lat)lat.addEventListener('change',syncFromInputs);if(lon)lon.addEventListener('change',syncFromInputs);const route=$('#useRouteWx');if(route)route.addEventListener('click',()=>setTimeout(syncFromInputs,80));bound=true}
 async function initMap(){
   const container=$('#wxSelectMapV854');if(!container)return;
   const btn=$('#wxShowMapV854');if(btn){btn.disabled=true;btn.textContent='Loading map…'}
-  try{await loadLeaflet()}catch{if(btn){btn.disabled=false;btn.textContent='Retry map'}const note=$('#wxMapLoadNoteV854');if(note)note.textContent='Map could not be loaded. Latitude and longitude entry still works normally.';return}
+  try{await loadLeaflet()}catch{if(btn){btn.disabled=false;btn.textContent='Retry map'}const note=$('#wxMapLoadNoteV854');if(note)note.textContent='Map could not be loaded. Coordinate entry still works normally.';return}
   if(btn)btn.remove();$('#wxMapPlaceholderV854')?.remove();container.hidden=false;const p=currentPosition();
   if(map){setPosition(p.lat,p.lon,{pan:false});setTimeout(()=>map.invalidateSize(false),0);return}
   map=L.map(container,{zoomControl:true,preferCanvas:true}).setView([p.lat,p.lon],7);
