@@ -1,4 +1,4 @@
-const CACHE='marine-tools-fullscale-20261003-v8-5-1';
+const CACHE='marine-tools-fullscale-20261003-v8-5-3-hotfix1';
 const SHELL=[
   './','./index.html','./styles.css','./app.js','./manifest.webmanifest',
   './assets/icon-192.png',
@@ -17,6 +17,7 @@ self.addEventListener('fetch',e=>{
   if(u.origin!==location.origin) return;
 
   const isNavigation=e.request.mode==='navigate';
+  const isCode=/\.(?:css|js)$/i.test(u.pathname);
   const isStatic=u.pathname.startsWith('/assets/') ||
     /\.(?:css|js|webmanifest|png|jpg|jpeg|webp|svg|ico)$/i.test(u.pathname);
 
@@ -31,9 +32,27 @@ self.addEventListener('fetch',e=>{
     return;
   }
 
+  // JS/CSS must be network-first and query-string aware. Versioned requests
+  // such as weather-map-v853.js?v=... must never be satisfied by an older
+  // cached file with the same pathname.
+  if(isCode){
+    e.respondWith(
+      fetch(e.request).then(r=>{
+        if(r&&r.ok){
+          const copy=r.clone();
+          caches.open(CACHE).then(c=>c.put(e.request,copy));
+        }
+        return r;
+      }).catch(async()=>{
+        return (await caches.match(e.request)) || (await caches.match(u.pathname));
+      })
+    );
+    return;
+  }
+
   if(isStatic){
     e.respondWith(
-      caches.match(e.request,{ignoreSearch:true}).then(cached=>{
+      caches.match(e.request).then(cached=>{
         const update=fetch(e.request).then(r=>{
           if(r&&r.ok){
             const copy=r.clone();
@@ -42,13 +61,13 @@ self.addEventListener('fetch',e=>{
           return r;
         }).catch(()=>null);
         if(cached){e.waitUntil(update);return cached}
-        return update.then(r=>r||caches.match(e.request,{ignoreSearch:true}));
+        return update.then(r=>r||caches.match(e.request));
       })
     );
     return;
   }
 
   e.respondWith(
-    fetch(e.request).catch(()=>caches.match(e.request,{ignoreSearch:true}))
+    fetch(e.request).catch(()=>caches.match(e.request))
   );
 });
