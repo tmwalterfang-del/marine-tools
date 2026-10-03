@@ -1,0 +1,115 @@
+name: Tool or improvement suggestion
+description: Suggest a new calculator, workflow improvement, or product enhancement
+title: "[Suggestion] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggestions are welcome for practical maritime calculations, reporting helpers, planning aids, and usability improvements.
+
+        Please keep the request focused on the Marine Tools purpose:
+        **quick, practical helper tools for everyday work at sea.**
+
+        Do not include confidential vessel, company, personal, credential, or operational data.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Suggestion type
+      options:
+        - New calculator / tool
+        - Improvement to an existing tool
+        - Reporting / export improvement
+        - Search / navigation / usability
+        - Offline / local data
+        - Weather / navigation helper
+        - Accessibility
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Relevant area
+      options:
+        - Fuel & Bunkering
+        - Engineering
+        - Electrical
+        - Vessel Calculations
+        - Quick Tools
+        - Weather
+        - Navigation
+        - Live & Experimental
+        - General / site-wide
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem or task should this solve?
+      description: Describe the real workflow or recurring calculation rather than only the feature.
+      placeholder: What are you trying to calculate, compare, record, or verify?
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: How is this handled today?
+      description: Optional. Explain the current manual process, spreadsheet, calculator, or workaround.
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Suggested input and output
+      description: What should the user enter, and what result should Marine Tools return?
+      placeholder: |
+        Inputs:
+        - ...
+
+        Output:
+        - ...
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often would this be useful?
+      options:
+        - Daily / every watch
+        - Weekly
+        - Monthly / reporting period
+        - During specific operations
+        - Occasionally
+        - Not sure
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Intended scope
+      description: This helps separate generally useful tools from vessel/company-specific custom development.
+      options:
+        - Useful across many vessels / users
+        - Mainly vessel-specific
+        - Mainly company-specific
+        - Not sure
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References or examples
+      description: Optional. Mention standards, formulas, screenshots, or example calculations using non-sensitive data.
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      options:
+        - label: I understand that Marine Tools is a planning/calculation aid and that any implemented result must still be verified against approved sources and vessel-specific documentation.
+          required: true
+        - label: I have not included confidential vessel/company information, credentials, or unnecessary personal data.
+          required: true

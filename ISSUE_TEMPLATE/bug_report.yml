@@ -1,0 +1,110 @@
+name: Bug report
+description: Report a reproducible problem with Marine Tools
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Marine Tools.
+
+        **Do not use this form for security vulnerabilities.**
+        Security concerns should be reported privately to **contact@marinetools.app**.
+
+        Do not include confidential vessel, company, personal, credential, or operational data.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Where did the problem occur?
+      options:
+        - Home / navigation
+        - Fuel & Bunkering
+        - Engineering
+        - Electrical
+        - Vessel Calculations
+        - Quick Tools
+        - Weather
+        - Navigation
+        - Live & Experimental
+        - Vessel Profile / Settings
+        - Offline / installation / PWA
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: tool
+    attributes:
+      label: Tool or feature
+      description: Name the specific calculator or feature if applicable.
+      placeholder: e.g. Fuel ROB & endurance
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the problem clearly.
+      placeholder: Explain what you saw and why it appears incorrect.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: Describe the result or behaviour you expected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Use non-sensitive example values where possible.
+      placeholder: |
+        1. Open ...
+        2. Enter ...
+        3. Press ...
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device type
+      options:
+        - Desktop / laptop
+        - Tablet
+        - Mobile phone
+        - Other
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: e.g. Firefox, Chrome, Edge, Safari
+
+  - type: input
+    id: version
+    attributes:
+      label: Marine Tools version
+      description: Enter the version if known.
+      placeholder: e.g. 8.5.1
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add screenshots or other non-sensitive information if useful.
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have not included passwords, API keys, access tokens, confidential vessel/company information, or unnecessary personal data.
+          required: true
