@@ -1,6 +1,6 @@
-const CACHE='marine-tools-fullscale-20261003-v8-5-3-hotfix1';
+const CACHE='marine-tools-fullscale-20261003-v8-5-4';
 const SHELL=[
-  './','./index.html','./styles.css','./app.js','./manifest.webmanifest',
+  './','./index.html','./styles.css','./app.js','./ui-v854.js','./manifest.webmanifest',
   './assets/icon-192.png',
   './assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp'
 ];
@@ -32,9 +32,6 @@ self.addEventListener('fetch',e=>{
     return;
   }
 
-  // JS/CSS must be network-first and query-string aware. Versioned requests
-  // such as weather-map-v853.js?v=... must never be satisfied by an older
-  // cached file with the same pathname.
   if(isCode){
     e.respondWith(
       fetch(e.request).then(r=>{
