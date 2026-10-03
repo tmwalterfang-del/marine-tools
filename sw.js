@@ -1,6 +1,6 @@
-const CACHE='marine-tools-fullscale-20261003-v8-5-4';
+const CACHE='marine-tools-fullscale-20261003-v8-5-4-mapfix2';
 const SHELL=[
-  './','./index.html','./styles.css','./app.js','./ui-v854.js','./manifest.webmanifest',
+  './','./index.html','./styles.css','./app.js','./ui-v854.js','./weather-map-v854.js','./manifest.webmanifest',
   './assets/icon-192.png',
   './assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp'
 ];
@@ -20,6 +20,19 @@ self.addEventListener('fetch',e=>{
   const isCode=/\.(?:css|js)$/i.test(u.pathname);
   const isStatic=u.pathname.startsWith('/assets/') ||
     /\.(?:css|js|webmanifest|png|jpg|jpeg|webp|svg|ico)$/i.test(u.pathname);
+
+  // Production hotfix: older HTML still requests weather-map-v853.js.
+  // Always serve the fresh v8.5.4 map module instead.
+  if(u.pathname.endsWith('/weather-map-v853.js')){
+    const fresh=new Request(new URL('/weather-map-v854.js?v=20261003-prod-2',location.origin),{method:'GET',credentials:'same-origin'});
+    e.respondWith(
+      fetch(fresh).then(r=>{
+        if(r&&r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(fresh,copy))}
+        return r;
+      }).catch(()=>caches.match(fresh))
+    );
+    return;
+  }
 
   if(isNavigation){
     e.respondWith(
