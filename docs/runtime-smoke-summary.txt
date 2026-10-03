@@ -1,1 +1,0 @@
-GitHub verifies deploy status and frontend assets. Cloudflare scheduled runtime smoke verifies health, Weather, global waves and AIS from inside the Worker runtime.
