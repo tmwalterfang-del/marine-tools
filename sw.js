@@ -1,6 +1,6 @@
-const CACHE='marine-tools-fullscale-20261003-v8-5-5-cleanup1';
+const CACHE='marine-tools-fullscale-20261003-v8-5-6-analytics2';
 const SHELL=[
-  './','./index.html','./styles.css','./app.js','./ui-v854.js','./weather-map-v854.js','./manifest.webmanifest',
+  './','./index.html','./styles.css','./app.js','./ui-v854.js','./weather-map-v854.js','./analytics-v856.js','./manifest.webmanifest',
   './assets/icon-192.png',
   './assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp'
 ];
