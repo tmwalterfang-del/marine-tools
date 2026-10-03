@@ -1,6 +1,8 @@
 name: Production smoke test
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
@@ -9,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: marine-tools-production-smoke
+  group: marine-tools-smoke-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -37,6 +39,7 @@ jobs:
         run: node tests/navigation-smoke.mjs
 
       - name: Wait for Worker release
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -51,6 +54,7 @@ jobs:
           test "$ok" -eq 1
 
       - name: Wait for production frontend
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -65,20 +69,24 @@ jobs:
           test "$ok" -eq 1
 
       - name: API health
+        if: github.event_name != 'pull_request'
         run: |
           curl -fsS --max-time 20 https://api.marinetools.app/api/health | jq -e '.status == "ok" and .release.version == "8.5.7"'
 
       - name: Weather — inland
+        if: github.event_name != 'pull_request'
         run: |
           curl -fsS --max-time 25 'https://api.marinetools.app/api/weather?lat=59.42&lon=10.48&limit=2' \
             | jq -e '(.forecast | type == "array" and length > 0) and (.sources.weather | contains("MET Norway"))'
 
       - name: Weather — Norwegian sea area
+        if: github.event_name != 'pull_request'
         run: |
           curl -fsS --max-time 25 'https://api.marinetools.app/api/weather?lat=58.20&lon=7.00&limit=2' \
             | jq -e '.forecast | type == "array" and length > 0'
 
       - name: Weather — global wave fallback
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -94,14 +102,17 @@ jobs:
           test "$ok" -eq 1
 
       - name: AIS — Norway and global endpoints
+        if: github.event_name != 'pull_request'
         run: |
           curl -fsS --max-time 30 'https://api.marinetools.app/api/ais/latest?minLat=58&maxLat=60&minLon=8&maxLon=11' | jq -e 'type == "array" or type == "object"'
           curl -fsS --max-time 30 'https://api.marinetools.app/api/ais/latest?minLat=39&maxLat=41&minLon=-31&maxLon=-29' | jq -e 'type == "array" or type == "object"'
 
       - name: Weather map production asset
+        if: github.event_name != 'pull_request'
         run: |
           curl -fsS --max-time 20 'https://marinetools.app/weather-map-v854.js?v=20261003-v8-5-7' | grep -q 'wxShowMapV854'
 
       - name: Release UI production asset
+        if: github.event_name != 'pull_request'
         run: |
           curl -fsS --max-time 20 'https://marinetools.app/release-v857.js?v=20261003-v8-5-7' | grep -q "version:'8.5.7'"
