@@ -1,0 +1,107 @@
+name: Production smoke test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marine-tools-production-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Static JavaScript checks
+        run: |
+          node --check release-v857.js
+          node --check analytics-v856.js
+          node --check weather-map-v854.js
+          node --check ui-v854.js
+          node --check worker/worker-v857.js
+
+      - name: Navigation calculation smoke test
+        run: node tests/navigation-smoke.mjs
+
+      - name: Wait for Worker release
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in {1..30}; do
+            if curl -fsS --max-time 15 https://api.marinetools.app/api/release | jq -e '.version == "8.5.7"' >/dev/null; then
+              ok=1
+              break
+            fi
+            sleep 10
+          done
+          test "$ok" -eq 1
+
+      - name: Wait for production frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in {1..30}; do
+            if curl -fsS --max-time 15 https://marinetools.app/ | grep -q 'application-version" content="8.5.7'; then
+              ok=1
+              break
+            fi
+            sleep 10
+          done
+          test "$ok" -eq 1
+
+      - name: API health
+        run: |
+          curl -fsS --max-time 20 https://api.marinetools.app/api/health | jq -e '.status == "ok" and .release.version == "8.5.7"'
+
+      - name: Weather — inland
+        run: |
+          curl -fsS --max-time 25 'https://api.marinetools.app/api/weather?lat=59.42&lon=10.48&limit=2' \
+            | jq -e '(.forecast | type == "array" and length > 0) and (.sources.weather | contains("MET Norway"))'
+
+      - name: Weather — Norwegian sea area
+        run: |
+          curl -fsS --max-time 25 'https://api.marinetools.app/api/weather?lat=58.20&lon=7.00&limit=2' \
+            | jq -e '.forecast | type == "array" and length > 0'
+
+      - name: Weather — global wave fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in {1..4}; do
+            if curl -fsS --max-time 35 'https://api.marinetools.app/api/weather?lat=40&lon=-30&limit=2' \
+              | jq -e '(.forecast | type == "array" and length > 0) and ([.forecast[].hs != null] | any)' >/dev/null; then
+              ok=1
+              break
+            fi
+            sleep 10
+          done
+          test "$ok" -eq 1
+
+      - name: AIS — Norway and global endpoints
+        run: |
+          curl -fsS --max-time 30 'https://api.marinetools.app/api/ais/latest?minLat=58&maxLat=60&minLon=8&maxLon=11' | jq -e 'type == "array" or type == "object"'
+          curl -fsS --max-time 30 'https://api.marinetools.app/api/ais/latest?minLat=39&maxLat=41&minLon=-31&maxLon=-29' | jq -e 'type == "array" or type == "object"'
+
+      - name: Weather map production asset
+        run: |
+          curl -fsS --max-time 20 'https://marinetools.app/weather-map-v854.js?v=20261003-v8-5-7' | grep -q 'wxShowMapV854'
+
+      - name: Release UI production asset
+        run: |
+          curl -fsS --max-time 20 'https://marinetools.app/release-v857.js?v=20261003-v8-5-7' | grep -q "version:'8.5.7'"
