@@ -2,11 +2,14 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "marine-tools-api",
   "main": "worker.js",
-  "compatibility_date": "2026-10-02",
+  "compatibility_date": "2026-10-03",
   "analytics_engine_datasets": [
     {
       "binding": "ANALYTICS",
       "dataset": "marine_tools_usage"
     }
-  ]
+  ],
+  "analytics": {
+    "binding": "ANALYTICS_SQL"
+  }
 }
