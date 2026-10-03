@@ -125,7 +125,7 @@ function featureClick(target){
   const result=target.closest('[data-tool-target]');
   if(result){
     const input=result.closest('#searchResults')?document.querySelector('#globalSearch'):result.closest('#homeToolResults')?document.querySelector('#homeToolSearch'):null;
-    if(input){commitSearch(input);const meta=searchMeta(input);send('search_result_open',{tool:`${meta.surface}|${result.dataset.toolTarget||result.textContent||'tool'}`})}
+    if(input){commitSearch(input);const meta=searchMeta(input);send('search_result_open',{tool:`${meta.surface}|${result.dataset.toolTarget||'tool'}`})}
   }
 }
 
