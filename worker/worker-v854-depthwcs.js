@@ -13,15 +13,16 @@ async function timedFetch(url,timeoutMs=6000){
 }
 function coverageNames(xml){
   const out=[];
-  const re=/<(?:\w+:)?CoverageOfferingBrief\b[\s\S]*?<(?:(?:\w+):)?name>([^<]+)<\/(?:(?:\w+):)?name>/gi;
+  const add=v=>{const s=String(v||'').trim();if(s&&!out.includes(s)&&out.length<50)out.push(s)};
   let m;
-  while((m=re.exec(xml))&&out.length<50)out.push(m[1].trim());
+  const idRe=/<(?:(?:\w+):)?CoverageId\b[^>]*>([^<]+)<\/(?:(?:\w+):)?CoverageId>/gi;
+  while((m=idRe.exec(xml))&&out.length<50)add(m[1]);
   if(out.length)return out;
-  const fallback=/<(?:(?:\w+):)?name>([^<]+)<\/(?:(?:\w+):)?name>/gi;
-  while((m=fallback.exec(xml))&&out.length<50){
-    const v=m[1].trim();
-    if(v&&!out.includes(v))out.push(v);
-  }
+  const briefRe=/<(?:\w+:)?CoverageOfferingBrief\b[\s\S]*?<(?:(?:\w+):)?name>([^<]+)<\/(?:(?:\w+):)?name>/gi;
+  while((m=briefRe.exec(xml))&&out.length<50)add(m[1]);
+  if(out.length)return out;
+  const nameRe=/<(?:(?:\w+):)?name>([^<]+)<\/(?:(?:\w+):)?name>/gi;
+  while((m=nameRe.exec(xml))&&out.length<50)add(m[1]);
   return out;
 }
 async function depthWcsProbe(){
@@ -41,7 +42,7 @@ async function depthWcsProbe(){
       endpoint:KARTVERKET_DTM_WCS,
       coverages,
       sample:text.replace(/\s+/g," ").slice(0,500),
-      note:"This validates the current Kartverket WCS endpoint and discovers coverage identifiers. The next step is a tiny GetCoverage request and GeoTIFF point decode before automatic UKC."
+      note:"This validates the current Kartverket WCS endpoint and discovers WCS 2.0 CoverageId values. The next step is a tiny GetCoverage request and GeoTIFF point decode before automatic UKC."
     },r.ok&&coverages.length?200:502);
   }catch(err){
     return json({ok:false,stage:"norway-depth-wcs-probe",provider:"Kartverket Dybdedata terrengmodeller DTM WCS",planningOnly:true,error:String(err?.message||err),latencyMs:Date.now()-started},502);
