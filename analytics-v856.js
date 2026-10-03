@@ -2,7 +2,7 @@
 'use strict';
 
 const API='https://api.marinetools.app';
-const VERSION='8.5.6';
+const VERSION=window.__MARINE_TOOLS_RELEASE?.version||'8.5.7';
 const EVENT_URL=`${API}/api/analytics/event`;
 const SEARCH_IDS=new Map([
   ['globalSearch',{surface:'global',results:'#searchResults'}],
@@ -27,8 +27,8 @@ function oncePerSession(key,event,opts={}){
   try{if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1')}catch{}
   send(event,opts);
 }
-function markToolSession(){oncePerSession('mt.analytics.v856.tool-active','session_tool_active')}
-function markSearchSession(){oncePerSession('mt.analytics.v856.search-active','session_search_active')}
+function markToolSession(){oncePerSession(`mt.analytics.${VERSION}.tool-active`,'session_tool_active')}
+function markSearchSession(){oncePerSession(`mt.analytics.${VERSION}.search-active`,'session_search_active')}
 
 function normalizeSource(raw,prefix){
   const s=String(raw||'').toLowerCase();
@@ -137,6 +137,6 @@ document.addEventListener('input',e=>{
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&SEARCH_IDS.has(e.target.id))commitSearch(e.target)},true);
 document.addEventListener('focusout',e=>{if(SEARCH_IDS.has(e.target.id))setTimeout(()=>commitSearch(e.target),120)},true);
 
-oncePerSession('mt.analytics.v856.version','version_seen',{page:'home',tool:'analytics-v2'});
+oncePerSession(`mt.analytics.${VERSION}.version`,'version_seen',{page:'home',tool:'analytics-v2'});
 window.__marineToolsAnalyticsV2={version:VERSION,enabled:enabled(),send};
 })();
