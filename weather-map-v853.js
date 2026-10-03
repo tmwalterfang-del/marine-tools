@@ -1,12 +1,7 @@
 (() => {
 'use strict';
 
-const VERSION='8.5.3-weather-map-safe-3';
-const PREVIEW_ENABLED=new URLSearchParams(location.search).get('wxmap')==='1';
-if(!PREVIEW_ENABLED){
-  window.__marineToolsWeatherMapSafe={version:VERSION,enabled:false};
-  return;
-}
+const VERSION='8.5.4-weather-map-prod-1';
 
 let map=null;
 let marker=null;
@@ -151,12 +146,13 @@ function ensureWeatherMap(){
 
 function tryInitWeather(attempt=0){
   if(ensureWeatherMap()) return;
-  if(attempt<5) setTimeout(()=>tryInitWeather(attempt+1),50*(attempt+1));
+  if(attempt<8) setTimeout(()=>tryInitWeather(attempt+1),50*(attempt+1));
 }
 
 document.addEventListener('click',e=>{
   if(e.target.closest('[data-page="weather"],[data-go="weather"]')) setTimeout(()=>tryInitWeather(0),40);
 });
 window.addEventListener('pageshow',()=>{if($('#weather')?.classList.contains('active'))setTimeout(()=>tryInitWeather(0),40)});
+window.addEventListener('DOMContentLoaded',()=>{if($('#weather')?.classList.contains('active'))setTimeout(()=>tryInitWeather(0),40)});
 window.__marineToolsWeatherMapSafe={version:VERSION,enabled:true,refresh:()=>map?.invalidateSize(false)};
 })();
