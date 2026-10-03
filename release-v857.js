@@ -28,6 +28,8 @@ const realFetch=window.fetch.bind(window);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let registration=null,reloading=false,lastRemoteCheck=0;
 
+function versionParts(v){return String(v||'').split('.').map(x=>Number.parseInt(x,10)||0)}
+function isNewer(remote,local){const a=versionParts(remote),b=versionParts(local),n=Math.max(a.length,b.length);for(let i=0;i<n;i++){const x=a[i]||0,y=b[i]||0;if(x>y)return true;if(x<y)return false}return false}
 function normalizeAnalyticsBody(url,init){
   if(url.origin!==API||url.pathname!=='/api/analytics/event'||!init?.body||typeof init.body!=='string')return init;
   try{
@@ -96,7 +98,7 @@ async function initServiceWorker(){
 }
 async function checkRemoteRelease(force=false){
   if(!navigator.onLine)return;const now=Date.now();if(!force&&now-lastRemoteCheck<15*60*1000)return;lastRemoteCheck=now;
-  try{const r=await realFetch(`${API}/api/release`,{cache:'no-store'});if(!r.ok)return;const d=await r.json();if(d?.version&&d.version!==RELEASE.version)showUpdate(d.version)}catch{}
+  try{const r=await realFetch(`${API}/api/release`,{cache:'no-store'});if(!r.ok)return;const d=await r.json();if(d?.version&&isNewer(d.version,RELEASE.version))showUpdate(d.version)}catch{}
 }
 function changelogDialog(){
   let d=document.getElementById('mtChangelogDialog');if(d)return d;
