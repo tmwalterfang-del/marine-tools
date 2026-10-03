@@ -1,7 +1,13 @@
 (() => {
 'use strict';
 
-const VERSION='8.5.3-weather-map-safe-1';
+const VERSION='8.5.3-weather-map-safe-2';
+const PREVIEW_ENABLED=new URLSearchParams(location.search).get('wxmap')==='1';
+if(!PREVIEW_ENABLED){
+  window.__marineToolsWeatherMapSafe={version:VERSION,enabled:false};
+  return;
+}
+
 let map=null;
 let marker=null;
 let leafletPromise=null;
@@ -18,6 +24,7 @@ function injectStyles(){
   style.textContent=`
     .mt-wx-map-wrap{margin:12px 0 14px}
     .mt-wx-map{height:320px!important;margin-top:8px;border-radius:10px;overflow:hidden}
+    .mt-wx-map .leaflet-control-attribution{font-size:10px}
     .mt-wx-map-note{margin-top:7px}
     .mt-wx-map-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
     .mt-wx-map-toolbar .chip{margin:0}
@@ -159,9 +166,7 @@ async function initMap(){
 
   marker=L.marker([p.lat,p.lon],{draggable:true}).addTo(map);
 
-  map.on('click',e=>{
-    setPosition(e.latlng.lat,e.latlng.lng,{pan:false});
-  });
+  map.on('click',e=>setPosition(e.latlng.lat,e.latlng.lng,{pan:false}));
   marker.on('dragend',e=>{
     const p=e.target.getLatLng();
     setPosition(p.lat,p.lng,{pan:false});
@@ -216,5 +221,5 @@ window.addEventListener('pageshow',()=>{
   if($('#weather')?.classList.contains('active')) setTimeout(()=>tryInitWeather(0),50);
 });
 
-window.__marineToolsWeatherMapSafe={version:VERSION,refresh:()=>map?.invalidateSize(false)};
+window.__marineToolsWeatherMapSafe={version:VERSION,enabled:true,refresh:()=>map?.invalidateSize(false)};
 })();
