@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "marine-tools-api",
-  "main": "worker-v854-waterlevel.js",
+  "main": "worker-v854-waterlevel2.js",
   "compatibility_date": "2026-10-03",
   "workers_dev": false,
   "preview_urls": false,
