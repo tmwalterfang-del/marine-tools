@@ -4,6 +4,7 @@ const WCS_BASE="https://wms.geonorge.no/skwms1/wms.dtm2";
 const USER_AGENT="MarineTools/8.5.4 probe contact@marinetools.app";
 const cors={"access-control-allow-origin":"*","access-control-allow-methods":"GET,OPTIONS","access-control-allow-headers":"content-type"};
 const COVERAGES=new Set(["bathymetry50m","bathymetry25m","bathymetry05m"]);
+const RESOLUTION={bathymetry50m:50,bathymetry25m:25,bathymetry05m:5};
 
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{...cors,"content-type":"application/json;charset=utf-8","cache-control":"no-store"}})}
 function num(v){const n=Number(v);return Number.isFinite(n)?n:null}
@@ -70,27 +71,48 @@ function parseTiff(bytes){
   }
   return{meta,value,decodeReason};
 }
-function getCoverageUrl(coverage,x,y){
-  const p=new URLSearchParams();
-  p.set("service","WCS");p.set("version","2.0.1");p.set("request","GetCoverage");p.set("coverageId",coverage);
-  p.append("subset",`x(${(x-1).toFixed(3)},${(x+1).toFixed(3)})`);p.append("subset",`y(${(y-1).toFixed(3)},${(y+1).toFixed(3)})`);p.set("format","image/tiff");
-  return `${WCS_BASE}?${p.toString()}`;
+function getCoverageUrls(coverage,x,y){
+  const res=RESOLUTION[coverage]||50;
+  const half=res;
+  const minX=x-half,maxX=x+half,minY=y-half,maxY=y+half;
+  const p2=new URLSearchParams();
+  p2.set("service","WCS");p2.set("version","2.0.1");p2.set("request","GetCoverage");p2.set("coverageId",coverage);
+  p2.append("subset",`x(${minX.toFixed(3)},${maxX.toFixed(3)})`);p2.append("subset",`y(${minY.toFixed(3)},${maxY.toFixed(3)})`);p2.set("format","image/tiff");
+  const p1=new URLSearchParams();
+  p1.set("service","WCS");p1.set("version","1.0.0");p1.set("request","GetCoverage");p1.set("coverage",coverage);
+  p1.set("crs","EPSG:25833");p1.set("response_crs","EPSG:25833");p1.set("bbox",`${minX.toFixed(3)},${minY.toFixed(3)},${maxX.toFixed(3)},${maxY.toFixed(3)}`);
+  p1.set("width","2");p1.set("height","2");p1.set("format","GeoTIFF");
+  return[
+    {strategy:"wcs-2-native-2x2",url:`${WCS_BASE}?${p2.toString()}`},
+    {strategy:"wcs-1-explicit-2x2",url:`${WCS_BASE}?${p1.toString()}`}
+  ];
+}
+async function fetchCoverageAttempt(entry){
+  const started=Date.now();
+  try{
+    const r=await timedFetch(entry.url,9000),contentType=r.headers.get("content-type")||"",ab=await r.arrayBuffer(),bytes=new Uint8Array(ab);
+    if(!r.ok||/xml|text/i.test(contentType)){
+      const sample=new TextDecoder().decode(bytes).replace(/\s+/g," ").slice(0,700);
+      return{ok:false,strategy:entry.strategy,status:r.status,latencyMs:Date.now()-started,contentType,bytes:bytes.length,sample};
+    }
+    let parsed;
+    try{parsed=parseTiff(bytes)}catch(err){return{ok:false,strategy:entry.strategy,status:r.status,latencyMs:Date.now()-started,contentType,bytes:bytes.length,error:String(err?.message||err)}}
+    return{ok:Number.isFinite(parsed.value),strategy:entry.strategy,status:r.status,latencyMs:Date.now()-started,contentType,bytes:bytes.length,parsed};
+  }catch(err){return{ok:false,strategy:entry.strategy,latencyMs:Date.now()-started,error:String(err?.message||err)}}
 }
 async function depthPointProbe(url){
   const lat=num(url.searchParams.get("lat")),lon=num(url.searchParams.get("lon")),coverage=String(url.searchParams.get("coverage")||"bathymetry50m");
   if(lat==null||lon==null||lat<-90||lat>90||lon<-180||lon>180)return json({error:"Invalid latitude/longitude"},400);
   if(!COVERAGES.has(coverage))return json({error:"Unknown coverage",allowed:[...COVERAGES]},400);
-  const projected=etrs89Utm33(lat,lon),endpoint=getCoverageUrl(coverage,projected.x,projected.y),started=Date.now();
-  try{
-    const r=await timedFetch(endpoint,9000),contentType=r.headers.get("content-type")||"",ab=await r.arrayBuffer(),bytes=new Uint8Array(ab);
-    if(!r.ok||/xml|text/i.test(contentType)){
-      const text=new TextDecoder().decode(bytes).replace(/\s+/g," ").slice(0,1000);
-      return json({ok:false,stage:"norway-depth-point-probe",provider:"Kartverket Dybdedata terrengmodeller DTM WCS",planningOnly:true,coverage,lat,lon,projected:{crs:"EPSG:25833",easting:Number(projected.x.toFixed(3)),northing:Number(projected.y.toFixed(3))},status:r.status,latencyMs:Date.now()-started,contentType,bytes:bytes.length,sample:text},502);
+  const projected=etrs89Utm33(lat,lon),attempts=[];
+  for(const entry of getCoverageUrls(coverage,projected.x,projected.y)){
+    const a=await fetchCoverageAttempt(entry);attempts.push(a);
+    if(a.ok){
+      const parsed=a.parsed;
+      return json({ok:true,stage:"norway-depth-point-probe",provider:"Kartverket Dybdedata terrengmodeller DTM WCS",planningOnly:true,coverage,lat,lon,projected:{crs:"EPSG:25833",easting:Number(projected.x.toFixed(3)),northing:Number(projected.y.toFixed(3))},strategy:a.strategy,status:a.status,latencyMs:a.latencyMs,contentType:a.contentType,bytes:a.bytes,raster:{valueM:parsed.value,...parsed.meta},decodeReason:parsed.decodeReason,attempts:attempts.map(x=>({strategy:x.strategy,ok:x.ok,status:x.status,latencyMs:x.latencyMs,contentType:x.contentType,bytes:x.bytes,sample:x.sample,error:x.error})),note:"A numeric Kartverket raster value was decoded. Sign convention and vertical reference still need to be locked before this becomes an automatic UKC depth."});
     }
-    let parsed;try{parsed=parseTiff(bytes)}catch(err){return json({ok:false,stage:"norway-depth-point-probe",provider:"Kartverket Dybdedata terrengmodeller DTM WCS",planningOnly:true,coverage,lat,lon,projected:{crs:"EPSG:25833",easting:Number(projected.x.toFixed(3)),northing:Number(projected.y.toFixed(3))},status:r.status,latencyMs:Date.now()-started,contentType,bytes:bytes.length,error:String(err?.message||err)},502)}
-    const decoded=Number.isFinite(parsed.value);
-    return json({ok:decoded,stage:"norway-depth-point-probe",provider:"Kartverket Dybdedata terrengmodeller DTM WCS",planningOnly:true,coverage,lat,lon,projected:{crs:"EPSG:25833",easting:Number(projected.x.toFixed(3)),northing:Number(projected.y.toFixed(3))},status:r.status,latencyMs:Date.now()-started,contentType,bytes:bytes.length,raster:{valueM:decoded?parsed.value:null,...parsed.meta},decodeReason:parsed.decodeReason,note:decoded?"A numeric Kartverket raster value was decoded. Sign convention and vertical reference still need to be locked before this becomes an automatic UKC depth.":"GetCoverage succeeded, but the TIFF metadata shows what decoder support is still needed."},decoded?200:422);
-  }catch(err){return json({ok:false,stage:"norway-depth-point-probe",provider:"Kartverket Dybdedata terrengmodeller DTM WCS",planningOnly:true,coverage,lat,lon,error:String(err?.message||err),latencyMs:Date.now()-started},502)}
+  }
+  return json({ok:false,stage:"norway-depth-point-probe",provider:"Kartverket Dybdedata terrengmodeller DTM WCS",planningOnly:true,coverage,lat,lon,projected:{crs:"EPSG:25833",easting:Number(projected.x.toFixed(3)),northing:Number(projected.y.toFixed(3))},attempts:attempts.map(x=>({strategy:x.strategy,ok:x.ok,status:x.status,latencyMs:x.latencyMs,contentType:x.contentType,bytes:x.bytes,sample:x.sample,error:x.error,decodeReason:x.parsed?.decodeReason,rasterMeta:x.parsed?.meta}))},502);
 }
 
 export default{
