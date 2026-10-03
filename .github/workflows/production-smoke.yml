@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  checks: read
 
 concurrency:
   group: marine-tools-smoke-${{ github.ref }}
@@ -34,10 +35,16 @@ jobs:
           node --check weather-map-v854.js
           node --check ui-v854.js
           node --check worker/worker-v857.js
+          node --check worker/worker-v857-runtime.js
 
       - name: Navigation calculation smoke test
         run: node tests/navigation-smoke.mjs
 
-      - name: Production API and frontend smoke checks
+      - name: Production deployment and frontend checks
         if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_API_URL: ${{ github.api_url }}
         run: bash tests/production-smoke.sh
