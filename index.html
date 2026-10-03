@@ -27,10 +27,28 @@
   <meta name="twitter:title" content="Marine Tools — Practical tools for seafarers">
   <meta name="twitter:description" content="Quick maritime calculators and technical helpers for everyday work at sea.">
   <meta name="twitter:image" content="https://marinetools.app/assets/marine-tools-social-share.jpg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Marine Tools",
+    "url": "https://marinetools.app/",
+    "description": "Quick maritime calculators and technical helpers for everyday work at sea.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Marine Tools",
+      "legalName": "WALTERFANG DESIGN",
+      "url": "https://marinetools.app/",
+      "email": "contact@marinetools.app",
+      "identifier": "938 606 242",
+      "sameAs": ["https://www.linkedin.com/company/marinetools"]
+    }
+  }
+  </script>
   <link rel="preload" as="image" href="assets/hero-lantern-desktop.webp" media="(min-width:1101px)" fetchpriority="high">
   <link rel="preload" as="image" href="assets/hero-lantern-tablet.webp" media="(min-width:761px) and (max-width:1100px)" fetchpriority="high">
   <link rel="preload" as="image" href="assets/hero-lantern-mobile.webp" media="(max-width:760px)" fetchpriority="high">
-  <link rel="stylesheet" href="styles.css?v=20261002-fullscale-8-4-1">
+  <link rel="stylesheet" href="styles.css?v=20261003-v8-5-1">
 </head>
 <body>
 <div class="app-shell">
@@ -77,7 +95,7 @@
 
   <div class="workspace">
     <header class="topbar">
-      <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
+      <button class="mobile-menu" id="mobileMenu" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">☰</button>
       <div class="top-brand">Practical tools for seafarers</div>
       <label class="searchbox"><span>⌕</span><input id="globalSearch" placeholder="Search tools, calculations, units…" autocomplete="off"><div id="searchResults" class="search-results" hidden></div></label>
       <div class="top-actions">
@@ -144,6 +162,6 @@
 </div>
 
 <div id="toast" class="toast" hidden></div>
-<script defer src="app.js?v=20261002-fullscale-8-4-1"></script>
+<script defer src="app.js?v=20261003-v8-5-1"></script>
 </body>
 </html>

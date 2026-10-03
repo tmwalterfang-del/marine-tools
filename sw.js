@@ -1,4 +1,4 @@
-const CACHE='marine-tools-fullscale-20261002-v8-4-1';
+const CACHE='marine-tools-fullscale-20261003-v8-5-1';
 const SHELL=[
   './','./index.html','./styles.css','./app.js','./manifest.webmanifest',
   './assets/icon-192.png',
