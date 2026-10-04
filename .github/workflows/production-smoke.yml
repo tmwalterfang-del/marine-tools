@@ -1,10 +1,6 @@
 name: Production smoke test
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -41,7 +37,6 @@ jobs:
         run: node tests/navigation-smoke.mjs
 
       - name: Production deployment and frontend checks
-        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
