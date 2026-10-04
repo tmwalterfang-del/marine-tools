@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "marine-tools-api",
-  "main": "worker-v857-runtime.js",
+  "main": "worker-v858-dashboard.js",
   "compatibility_date": "2026-10-03",
   "workers_dev": false,
   "preview_urls": false,

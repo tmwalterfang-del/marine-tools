@@ -1,0 +1,118 @@
+/* v8.5.8 — compact, fixed-height sidebar with consistent line icons */
+:root{--sidebar:244px}
+.sidebar{
+  overflow:hidden;
+  background:linear-gradient(180deg,#071d2e 0%,#061724 52%,#05131e 100%);
+  box-shadow:12px 0 36px rgba(0,0,0,.14);
+}
+.sidebar .brand{
+  height:64px;
+  flex:0 0 64px;
+  padding:9px 13px;
+  gap:10px;
+  background:#071b2a;
+}
+.sidebar .brand img{width:40px;height:40px}
+.sidebar .brand strong{font-size:16px;letter-spacing:.025em}
+.sidebar .brand small{font-size:10px;margin-top:0}
+.nav-list{
+  position:relative;
+  flex:1 1 auto;
+  min-height:0;
+  overflow:hidden!important;
+  padding:7px 8px 62px!important;
+}
+.nav-label{
+  margin:9px 10px 4px;
+  font-size:9px;
+  line-height:1.2;
+  letter-spacing:.14em;
+}
+.nav-btn{
+  min-height:34px;
+  padding:6px 9px;
+  gap:9px;
+  border-radius:7px;
+  font-size:12.5px;
+  line-height:1.15;
+  font-weight:600;
+}
+.nav-btn>.mt-nav-icon,
+.nav-btn>span:first-child{
+  width:21px;
+  min-width:21px;
+  height:21px;
+  display:grid;
+  place-items:center;
+  color:#8fb4c9;
+}
+.nav-btn>.mt-nav-icon svg{width:17px;height:17px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn:hover,.nav-btn.active{
+  background:linear-gradient(90deg,rgba(13,91,137,.72),rgba(13,57,83,.72));
+  box-shadow:inset 2px 0 0 #45c9f4;
+}
+.nav-btn.active>.mt-nav-icon,.nav-btn:hover>.mt-nav-icon{color:#79dfff}
+.experimental-nav{margin-top:1px!important;min-height:36px;border-color:rgba(223,174,71,.12)!important}
+.experimental-nav>.mt-nav-icon{color:#e9bd57}
+.nav-exp-copy{gap:0!important;line-height:1.1}
+.nav-exp-copy small{font-size:7px;margin-top:2px}
+.nav-project{
+  margin:9px 2px 0!important;
+  padding-top:7px!important;
+  border-top:1px solid #153b51!important;
+}
+.nav-project summary{
+  padding:6px 8px!important;
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  border:1px solid transparent;
+  background:rgba(8,31,47,.66);
+}
+.nav-project summary:hover{border-color:#1c4b64;background:#09263a}
+.nav-project summary span{font-size:8px!important;letter-spacing:.12em}
+.nav-project summary strong{margin-top:0!important;font-size:11px!important;white-space:nowrap}
+.nav-project summary strong:after{margin-left:8px}
+.nav-project-items{
+  display:none;
+  position:absolute;
+  z-index:8;
+  left:8px;
+  right:8px;
+  bottom:56px;
+  padding:7px;
+  border:1px solid #24526c;
+  border-radius:10px;
+  background:linear-gradient(180deg,#0a2639,#071b2a);
+  box-shadow:0 16px 42px rgba(0,0,0,.48);
+}
+.nav-project[open] .nav-project-items{display:grid;gap:1px}
+.nav-project-items .nav-btn{min-height:31px;padding:5px 8px;font-size:11.5px;font-weight:550}
+.nav-project-items .nav-btn>.mt-nav-icon,.nav-project-items .nav-btn>span:first-child{width:19px;min-width:19px;height:19px}
+.nav-project-items .nav-btn>.mt-nav-icon svg{width:15px;height:15px}
+.sidebar-bottom{
+  height:56px;
+  padding:8px 12px;
+  display:grid;
+  align-content:center;
+  background:#05131e;
+  border-top:1px solid #14354a;
+}
+.sidebar-bottom .source-dot{font-size:10.5px;margin:0 0 2px;gap:7px}
+.sidebar-bottom>small{font-size:9px;line-height:1.2}
+.source-dot i{width:7px;height:7px}
+[data-theme="bridge"] .sidebar{background:linear-gradient(180deg,#100b07,#080705)}
+[data-theme="bridge"] .sidebar .brand,[data-theme="bridge"] .sidebar-bottom{background:#090705}
+[data-theme="bridge"] .nav-project-items{background:linear-gradient(180deg,#171008,#0d0906);border-color:#4b3421}
+@media(max-height:680px) and (min-width:901px){
+  .sidebar .brand{height:54px;flex-basis:54px;padding:6px 11px}.sidebar .brand img{width:34px;height:34px}.sidebar .brand small{display:none}
+  .nav-list{padding-top:4px!important;padding-bottom:48px!important}.nav-label{margin:5px 10px 2px}.nav-btn{min-height:29px;padding:4px 8px;font-size:11.5px}.nav-btn>.mt-nav-icon,.nav-btn>span:first-child{height:18px}.nav-btn>.mt-nav-icon svg{width:15px;height:15px}
+  .experimental-nav{min-height:31px}.nav-exp-copy small{display:none}.nav-project{margin-top:4px!important;padding-top:4px!important}.nav-project summary{min-height:29px;padding:4px 7px!important}.sidebar-bottom{height:46px;padding:5px 11px}.sidebar-bottom>small{display:none}.nav-project-items{bottom:44px}
+}
+@media(max-width:900px){
+  :root{--sidebar:244px}
+  .sidebar{height:100dvh;max-height:100dvh}
+  .nav-list{padding-bottom:62px!important}
+}
