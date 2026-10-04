@@ -25,7 +25,7 @@ window.__MARINE_TOOLS_RELEASE=RELEASE;
 
 const API='https://api.marinetools.app';
 const realFetch=window.fetch.bind(window);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const DISMISS_KEY='mt.update.dismissed.version';
 let registration=null,lastRemoteCheck=0,currentRemoteVersion='',silentActivation=false,reloading=false;
 
@@ -59,6 +59,10 @@ window.fetch=async function(input,init){
   return response;
 };
 
+function loadV858SidebarAssets(){
+  if(!document.getElementById('mtSidebar858Css')){const l=document.createElement('link');l.id='mtSidebar858Css';l.rel='stylesheet';l.href='sidebar-v858.css?v=20261004-1';document.head.appendChild(l)}
+  if(!document.getElementById('mtSidebar858Js')){const s=document.createElement('script');s.id='mtSidebar858Js';s.src='sidebar-v858.js?v=20261004-1';s.defer=true;document.head.appendChild(s)}
+}
 function injectStyles(){
   if(document.getElementById('mtRelease857Styles'))return;
   const s=document.createElement('style');s.id='mtRelease857Styles';s.textContent=`
@@ -66,7 +70,6 @@ function injectStyles(){
   .mt-update-banner[hidden]{display:none}.mt-update-banner span{flex:1}.mt-update-banner button{white-space:nowrap}
   .mt-release-badge{display:inline-flex;align-items:center;border:1px solid rgba(120,160,190,.28);border-radius:999px;padding:3px 8px;font-size:11px;color:#9fb8c8;margin-left:7px}
   .mt-freshness{margin-top:8px;padding:7px 9px;border:1px solid rgba(120,160,190,.22);border-radius:8px;color:#9fb8c8;font-size:11px;line-height:1.4}.mt-freshness strong{color:#d9edf7;font-weight:600}
-  .nav-project[open]>summary{cursor:default}.nav-project[open]>summary::marker{content:''}.nav-project[open]>summary::-webkit-details-marker{display:none}
   #mtChangelogDialog{width:min(720px,calc(100vw - 24px));max-height:82vh;border:1px solid #285871;border-radius:14px;background:#081f30;color:#eef7fb;padding:0;box-shadow:0 22px 70px rgba(0,0,0,.5)}
   #mtChangelogDialog::backdrop{background:rgba(0,10,18,.72)}.mt-change-head{position:sticky;top:0;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:16px 18px;background:#081f30;border-bottom:1px solid #173e56}.mt-change-head h2{margin:0;font-size:18px}.mt-change-body{padding:8px 18px 20px;overflow:auto}.mt-release-entry{padding:13px 0;border-bottom:1px solid #173e56}.mt-release-entry:last-child{border-bottom:0}.mt-release-entry h3{margin:0 0 4px;font-size:14px}.mt-release-entry small{color:#7898ab}.mt-release-entry ul{margin:8px 0 0;padding-left:20px;color:#bcd0dc}.mt-release-entry li{margin:3px 0}
   @media(max-width:650px){.mt-update-banner{bottom:10px;align-items:flex-start;flex-wrap:wrap}.mt-update-banner span{min-width:100%}.mt-update-banner button{flex:1}.mt-freshness{font-size:10px}}
@@ -116,15 +119,10 @@ function changelogDialog(){
   document.body.appendChild(d);d.querySelector('#mtCloseChanges').onclick=()=>d.close();d.addEventListener('click',e=>{if(e.target===d)d.close()});return d;
 }
 function openChangelog(){const d=changelogDialog();if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','')}
-function keepProjectNavOpen(){
-  const project=document.querySelector('.nav-project');if(!project)return;
-  project.open=true;
-  const summary=project.querySelector('summary');if(summary){summary.setAttribute('aria-disabled','true');summary.addEventListener('click',e=>e.preventDefault())}
-  project.addEventListener('toggle',()=>{if(!project.open)project.open=true});
-}
+function configureProjectNav(){const project=document.querySelector('.nav-project');if(project)project.open=false}
 function injectReleaseUi(){
-  injectStyles();keepProjectNavOpen();
-  const items=document.querySelector('.nav-project-items');if(items&&!document.getElementById('mtWhatsNew')){const b=document.createElement('button');b.id='mtWhatsNew';b.className='nav-btn';b.type='button';b.innerHTML='<span>↻</span>What\'s new';b.addEventListener('click',openChangelog);items.insertBefore(b,items.firstChild)}
+  injectStyles();configureProjectNav();
+  const items=document.querySelector('.nav-project-items');if(items&&!document.getElementById('mtWhatsNew')){const b=document.createElement('button');b.id='mtWhatsNew';b.className='nav-btn';b.type='button';b.innerHTML='<span class="mt-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v6h-6"/></svg></span>What\'s new';b.addEventListener('click',()=>{openChangelog();const p=document.querySelector('.nav-project');if(p)p.open=false});items.insertBefore(b,items.firstChild)}
   const footer=document.querySelector('.site-footer span:first-child');if(footer&&!footer.querySelector('.mt-release-badge')){const badge=document.createElement('span');badge.className='mt-release-badge';badge.textContent=`v${RELEASE.version}`;footer.appendChild(badge)}
 }
 function freshnessHost(area){if(area==='weather')return document.querySelector('#weather .weather-live-panel');if(area==='route')return document.querySelector('#route-intelligence .page-title')||document.querySelector('#route-intelligence');if(area==='ais')return document.querySelector('#live-experimental .page-title')||document.querySelector('#live-experimental');return null}
@@ -132,6 +130,7 @@ function renderFreshness(detail){setTimeout(()=>{const host=freshnessHost(detail
 window.addEventListener('mt:data-freshness',e=>renderFreshness(e.detail||{}));
 window.addEventListener('online',()=>checkRemoteRelease(true));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkRemoteRelease(false)});
+loadV858SidebarAssets();
 document.addEventListener('DOMContentLoaded',()=>{injectReleaseUi();initServiceWorker();checkRemoteRelease(true)});
 window.__marineToolsReleaseUi={release:RELEASE,openChangelog,checkForUpdate:()=>checkRemoteRelease(true)};
 })();
