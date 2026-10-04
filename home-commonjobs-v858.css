@@ -1,0 +1,70 @@
+/* Common jobs — align home shortcuts with the v8.5.8 line-icon system */
+.home-popular-grid button{
+  position:relative;
+  min-height:76px;
+  padding:14px 42px 14px 14px;
+  align-items:center;
+}
+.home-popular-grid button>span{
+  width:30px;
+  height:30px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(73,201,245,.20);
+  border-radius:8px;
+  background:rgba(40,196,244,.07);
+  color:#62d4fa;
+  font-size:0!important;
+}
+.home-popular-grid button>span:before{
+  content:"";
+  width:18px;
+  height:18px;
+  display:block;
+  background:currentColor;
+  -webkit-mask-repeat:no-repeat;
+  -webkit-mask-position:center;
+  -webkit-mask-size:contain;
+  mask-repeat:no-repeat;
+  mask-position:center;
+  mask-size:contain;
+}
+.home-popular-grid button[data-go="fuel"]>span:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h9v18H6z'/%3E%3Cpath d='M9 7h3'/%3E%3Cpath d='M15 7h2.5l2 2.5V17a2 2 0 0 0 2 2'/%3E%3Cpath d='M18 10h2'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h9v18H6z'/%3E%3Cpath d='M9 7h3'/%3E%3Cpath d='M15 7h2.5l2 2.5V17a2 2 0 0 0 2 2'/%3E%3Cpath d='M18 10h2'/%3E%3C/svg%3E");
+}
+.home-popular-grid button[data-go="engineering"]>span:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 8.4A3.6 3.6 0 1 0 12 15.6 3.6 3.6 0 0 0 12 8.4Zm8.3 4.8v-2.4l-2-.7a7 7 0 0 0-.6-1.5l.9-1.9-1.7-1.7-1.9.9a7 7 0 0 0-1.5-.6l-.7-2h-2.4l-.7 2a7 7 0 0 0-1.5.6l-1.9-.9-1.7 1.7.9 1.9a7 7 0 0 0-.6 1.5l-2 .7v2.4l2 .7a7 7 0 0 0 .6 1.5l-.9 1.9 1.7 1.7 1.9-.9a7 7 0 0 0 1.5.6l.7 2h2.4l.7-2a7 7 0 0 0 1.5-.6l1.9.9 1.7-1.7-.9-1.9a7 7 0 0 0 .6-1.5l2-.7Z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 8.4A3.6 3.6 0 1 0 12 15.6 3.6 3.6 0 0 0 12 8.4Zm8.3 4.8v-2.4l-2-.7a7 7 0 0 0-.6-1.5l.9-1.9-1.7-1.7-1.9.9a7 7 0 0 0-1.5-.6l-.7-2h-2.4l-.7 2a7 7 0 0 0-1.5.6l-1.9-.9-1.7 1.7.9 1.9a7 7 0 0 0-.6 1.5l-2 .7v2.4l2 .7a7 7 0 0 0 .6 1.5l-.9 1.9 1.7 1.7 1.9-.9a7 7 0 0 0 1.5.6l.7 2h2.4l.7-2a7 7 0 0 0 1.5-.6l1.9.9 1.7-1.7-.9-1.9a7 7 0 0 0 .6-1.5l2-.7Z'/%3E%3C/svg%3E");
+}
+.home-popular-grid button[data-go="electrical"]>span:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 5 14h7l-1 8 8-12h-7z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 5 14h7l-1 8 8-12h-7z'/%3E%3C/svg%3E");
+}
+.home-popular-grid button[data-go="vessel-calcs"]>span:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v14'/%3E%3Cpath d='M8 7h8'/%3E%3Cpath d='M5 13c1.2 4 3.5 6 7 6s5.8-2 7-6'/%3E%3Cpath d='M3 13h4M17 13h4'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v14'/%3E%3Cpath d='M8 7h8'/%3E%3Cpath d='M5 13c1.2 4 3.5 6 7 6s5.8-2 7-6'/%3E%3Cpath d='M3 13h4M17 13h4'/%3E%3C/svg%3E");
+}
+.home-popular-grid button:after{
+  content:"›";
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-52%);
+  color:#6d9db7;
+  font-size:25px;
+  font-weight:300;
+  line-height:1;
+  transition:transform .14s ease,color .14s ease;
+}
+.home-popular-grid button:hover:after{
+  transform:translate(2px,-52%);
+  color:#71d9fb;
+}
+.home-popular-grid button>b,.home-popular-grid button>small{padding-right:2px}
+[data-theme="bridge"] .home-popular-grid button>span{background:rgba(219,160,102,.06);border-color:rgba(219,160,102,.18);color:#dba066}
+[data-theme="bridge"] .home-popular-grid button:after{color:#a87852}
+@media(max-width:560px){
+  .home-popular-grid button{min-height:72px;padding-top:12px;padding-bottom:12px}
+}
