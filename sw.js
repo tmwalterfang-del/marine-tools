@@ -1,49 +1,6 @@
-const CACHE='marine-tools-fullscale-20261004-v8-5-8-homeicons-2';
-const SHELL=[
-  './','./index.html','./styles.css','./home-commonjobs-v858.css','./home-icons-v858.css','./release-v857.js','./app.js','./ui-v854.js','./weather-map-v854.js','./analytics-v856.js','./support-widget-v857.js','./sidebar-v858.css','./sidebar-v858.js','./manifest.webmanifest',
-  './assets/icon-192.png',
-  './assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp'
-];
-self.addEventListener('install',e=>e.waitUntil(
-  caches.open(CACHE).then(c=>c.addAll(SHELL))
-));
-self.addEventListener('message',e=>{
-  if(e.data&&e.data.type==='SKIP_WAITING')self.skipWaiting();
-});
-self.addEventListener('activate',e=>e.waitUntil(
-  caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
-    .then(()=>self.clients.claim())
-));
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET') return;
-  const u=new URL(e.request.url);
-  if(u.origin!==location.origin) return;
-
-  const isNavigation=e.request.mode==='navigate';
-  const isCode=/\.(?:css|js)$/i.test(u.pathname);
-  const isStatic=u.pathname.startsWith('/assets/') || /\.(?:css|js|webmanifest|png|jpg|jpeg|webp|svg|ico)$/i.test(u.pathname);
-
-  if(isNavigation){
-    e.respondWith(fetch(e.request).then(r=>{
-      const copy=r.clone();caches.open(CACHE).then(c=>c.put('./index.html',copy));return r;
-    }).catch(()=>caches.match('./index.html')));
-    return;
-  }
-
-  if(isCode){
-    e.respondWith(fetch(e.request).then(r=>{
-      if(r&&r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy))}return r;
-    }).catch(async()=>await caches.match(e.request)||await caches.match(u.pathname)));
-    return;
-  }
-
-  if(isStatic){
-    e.respondWith(caches.match(e.request).then(cached=>{
-      const update=fetch(e.request).then(r=>{if(r&&r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy))}return r}).catch(()=>null);
-      if(cached){e.waitUntil(update);return cached}return update.then(r=>r||caches.match(e.request));
-    }));
-    return;
-  }
-
-  e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));
-});
+const CACHE='marine-tools-fullscale-20261005-v8-6-0-energy-1';
+const SHELL=['./','./index.html','./styles.css','./home-commonjobs-v858.css','./home-icons-v858.css','./product-v860.css','./release-v860.js','./app.js','./ui-v854.js','./weather-map-v854.js','./analytics-v856.js','./product-v860.js','./support-widget-v857.js','./sidebar-v858.css','./sidebar-v858.js','./manifest.webmanifest','./assets/icon-192.png','./assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
+self.addEventListener('message',e=>{if(e.data&&e.data.type==='SKIP_WAITING')self.skipWaiting()});
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==location.origin)return;const nav=e.request.mode==='navigate',code=/\.(?:css|js)$/i.test(u.pathname),staticFile=u.pathname.startsWith('/assets/')||/\.(?:css|js|webmanifest|png|jpg|jpeg|webp|svg|ico)$/i.test(u.pathname);if(nav){e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put('./index.html',copy));return r}).catch(()=>caches.match('./index.html')));return}if(code){e.respondWith(fetch(e.request).then(r=>{if(r&&r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy))}return r}).catch(async()=>await caches.match(e.request)||await caches.match(u.pathname)));return}if(staticFile){e.respondWith(caches.match(e.request).then(cached=>{const update=fetch(e.request).then(r=>{if(r&&r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy))}return r}).catch(()=>null);if(cached){e.waitUntil(update);return cached}return update.then(r=>r||caches.match(e.request))}));return}e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});
