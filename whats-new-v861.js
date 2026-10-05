@@ -15,7 +15,7 @@ function ensureButton(){
   project.insertAdjacentElement('beforebegin',btn);
   btn.addEventListener('click',()=>openDialog(false));
  }
- const r=release(),badge=btn.querySelector('.mt-whats-new-badge');if(badge)badge.textContent='v'+r.version;
+ const r=release(),badge=btn.querySelector('.mt-whats-new-badge'),label='v'+r.version;if(badge&&badge.textContent!==label)badge.textContent=label;
  return btn;
 }
 function historyHtml(){
@@ -29,7 +29,7 @@ function ensureDialog(){
  d=document.createElement('dialog');d.id='mtReleaseDialog';d.className='mt-release-dialog';d.setAttribute('aria-labelledby','mtReleaseTitle');
  d.innerHTML='<div class="mt-release-shell"><div class="mt-release-head"><div><div class="eyebrow">MARINE TOOLS</div><h2 id="mtReleaseTitle">What\'s new</h2><p id="mtReleaseSubtitle"></p></div><button type="button" class="mt-release-close" aria-label="Close">×</button></div><div class="mt-release-body"><div id="mtReleaseContent"></div><div class="mt-release-actions"><button type="button" class="btn primary" id="mtReleaseDone">Got it</button></div></div></div>';
  document.body.appendChild(d);
- const close=()=>{if(d.open)d.close()};d.querySelector('.mt-release-close').addEventListener('click',close);d.querySelector('#mtReleaseDone').addEventListener('click',close);d.addEventListener('click',e=>{if(e.target===d)close()});
+ const close=()=>{if(d.open)d.close();else d.removeAttribute('open')};d.querySelector('.mt-release-close').addEventListener('click',close);d.querySelector('#mtReleaseDone').addEventListener('click',close);d.addEventListener('click',e=>{if(e.target===d)close()});
  return d;
 }
 function openDialog(auto){
