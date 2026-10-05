@@ -1,5 +1,5 @@
-const CACHE='marine-tools-fullscale-20261005-v8-6-0-energy-2';
-const SHELL=['./','./index.html','./styles.css','./home-commonjobs-v858.css','./home-icons-v858.css','./product-v860.css','./release-v860.js','./app.js','./ui-v854.js','./weather-map-v854.js','./analytics-v856.js','./product-v860.js','./support-widget-v857.js','./sidebar-v858.css','./sidebar-v858.js','./sidebar-active-v860.js','./manifest.webmanifest','./assets/icon-192.png','./assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp'];
+const CACHE='marine-tools-fullscale-20261005-v8-6-0-ui3';
+const SHELL=['./','./index.html','./styles.css','./home-commonjobs-v858.css','./home-icons-v858.css','./product-v860.css','./ui-v861.css','./release-v860.js','./app.js','./ui-v854.js','./weather-map-v854.js','./analytics-v856.js','./product-v860.js','./support-widget-v857.js','./sidebar-v858.css','./sidebar-v858.js','./sidebar-active-v860.js','./ui-v861.js','./whats-new-v861.js','./manifest.webmanifest','./assets/icon-192.png','./assets/hero-lantern-desktop.webp','./assets/hero-lantern-tablet.webp','./assets/hero-lantern-mobile.webp'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='SKIP_WAITING')self.skipWaiting()});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
