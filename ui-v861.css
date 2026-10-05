@@ -1,0 +1,179 @@
+/* v8.6 UI refinement — unified Bridge Dark, icon geometry and shared component states */
+:root{
+  --mt-icon-size:18px;
+  --mt-icon-box:34px;
+}
+
+/* Shared icon geometry: every line icon occupies the same box and is truly centred. */
+.mt-ui-icon,
+.mt-nav-icon{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 auto;
+  line-height:0!important;
+  text-align:center!important;
+}
+.mt-ui-icon{width:var(--mt-icon-box);height:var(--mt-icon-box)}
+.mt-nav-icon{width:22px!important;min-width:22px!important;height:22px!important}
+.mt-ui-icon svg,
+.mt-nav-icon svg{
+  display:block!important;
+  width:var(--mt-icon-size)!important;
+  height:var(--mt-icon-size)!important;
+  margin:auto!important;
+  overflow:visible;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transform-origin:center;
+}
+.icon-button.mt-icon-button{display:grid;place-items:center;padding:0;line-height:0}
+.icon-button.mt-icon-button .mt-ui-icon{width:100%;height:100%}
+.icon-button.mt-icon-button .mt-ui-icon svg{width:18px!important;height:18px!important}
+.mobile-menu.mt-icon-button{display:none;place-items:center;padding:0;line-height:0}
+.mobile-menu.mt-icon-button .mt-ui-icon{width:100%;height:100%}
+.home-category-a button.mt-icon-upgraded>.home-cat-icon,
+.home-popular-grid button.mt-icon-upgraded>span:first-child,
+.home-more-links button.mt-icon-upgraded>span:first-child{
+  display:grid!important;place-items:center!important;padding:0!important;font-size:0!important;
+}
+.home-category-a button.mt-icon-upgraded>.home-cat-icon:before,
+.home-popular-grid button.mt-icon-upgraded>span:first-child:before,
+.home-more-links button.mt-icon-upgraded>span:first-child:before{content:none!important;display:none!important}
+.home-category-a button.mt-icon-upgraded>.home-cat-icon svg,
+.home-popular-grid button.mt-icon-upgraded>span:first-child svg,
+.home-more-links button.mt-icon-upgraded>span:first-child svg{width:20px;height:20px;display:block;margin:auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* Action buttons enhanced by ui-v861.js. */
+.btn.mt-action-icon{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn.mt-action-icon>.mt-ui-icon{width:16px;height:16px}
+.btn.mt-action-icon>.mt-ui-icon svg{width:15px!important;height:15px!important}
+
+/* Fixed What's new entry lives outside Project & contact. */
+#mtWhatsNew{margin-top:4px;position:relative}
+#mtWhatsNew .mt-nav-icon{color:#76d9fa}
+#mtWhatsNew .mt-whats-new-badge{margin-left:auto;width:auto!important;min-width:0;height:auto!important;padding:2px 6px;border:1px solid rgba(75,196,239,.25);border-radius:999px;color:#77dcff;font-size:8px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase}
+
+/* What's new dialog */
+.mt-release-dialog{border:0;padding:0;background:transparent;color:inherit;max-width:min(680px,calc(100vw - 28px));width:100%}
+.mt-release-dialog::backdrop{background:rgba(0,8,13,.72);backdrop-filter:blur(5px)}
+.mt-release-shell{overflow:hidden;border:1px solid #25526b;border-radius:16px;background:linear-gradient(180deg,#0b273a,#071b29);box-shadow:0 30px 90px rgba(0,0,0,.48)}
+.mt-release-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 21px 16px;border-bottom:1px solid #173f56}
+.mt-release-head .eyebrow{margin-bottom:5px}.mt-release-head h2{margin:0;font-size:25px}.mt-release-head p{margin:4px 0 0;color:#89a8b9;font-size:12px}
+.mt-release-close{width:36px;height:36px;display:grid;place-items:center;border:1px solid #2b566e;border-radius:9px;background:#0a2638;color:#bcd1dd;cursor:pointer;font-size:20px}
+.mt-release-body{padding:18px 21px 20px;max-height:min(68vh,650px);overflow:auto}
+.mt-release-current{padding:15px;border:1px solid #24536d;border-radius:12px;background:#092336}
+.mt-release-current-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.mt-release-current h3{margin:0;font-size:17px}.mt-release-version{border:1px solid #2a607c;border-radius:999px;padding:4px 8px;color:#75d9fb;font:700 10px ui-monospace,SFMono-Regular,Consolas,monospace}
+.mt-release-list{margin:12px 0 0;padding-left:19px;color:#bdd0dc}.mt-release-list li{margin:6px 0}
+.mt-release-history{margin-top:12px;border:1px solid #1d465e;border-radius:11px;background:#081e2d;overflow:hidden}.mt-release-history summary{cursor:pointer;padding:12px 14px;font-weight:700;color:#b9cfdb;list-style:none}.mt-release-history summary::-webkit-details-marker{display:none}.mt-release-history summary:after{content:'+';float:right;color:#6ed6f8;font-size:18px}.mt-release-history[open] summary:after{content:'–'}
+.mt-release-history-inner{padding:0 14px 13px;display:grid;gap:10px}.mt-release-item{padding-top:10px;border-top:1px solid #173d52}.mt-release-item:first-child{padding-top:0;border-top:0}.mt-release-item b{display:block}.mt-release-item small{color:#7898aa}.mt-release-item ul{margin:6px 0 0;padding-left:18px;color:#99b2c0;font-size:12px}
+.mt-release-actions{display:flex;justify-content:flex-end;margin-top:14px}.mt-release-actions .btn{min-width:100px}
+
+/* Bridge Dark: one coherent palette instead of blue components on a brown shell. */
+[data-theme="bridge"]{
+  --bg:#080604;
+  --bg2:#0d0906;
+  --panel:#120d08;
+  --panel2:#171009;
+  --panel3:#1d140b;
+  --line:#4b3421;
+  --line2:#6b4929;
+  --text:#f5eee5;
+  --muted:#aa927a;
+  --soft:#d4c1aa;
+  --cyan:#e0ad4d;
+  --blue:#b9792f;
+  --blue2:#915b22;
+  --shadow:0 16px 40px rgba(0,0,0,.32);
+}
+[data-theme="bridge"] body{background:#080604;color:var(--text)}
+[data-theme="bridge"] .workspace{background:linear-gradient(180deg,#090604,#0b0805 38%,#080604)}
+[data-theme="bridge"] .topbar{background:rgba(10,7,4,.95);border-bottom-color:#3d2a1b}
+[data-theme="bridge"] .top-brand,[data-theme="bridge"] .utc{color:#9f8972}
+[data-theme="bridge"] .searchbox{background:#100b07;border-color:#513721}
+[data-theme="bridge"] .searchbox input{color:#f5eee5}
+[data-theme="bridge"] .searchbox input::placeholder{color:#826e5d}
+[data-theme="bridge"] .search-results{background:#120d08;border-color:#654524;box-shadow:var(--shadow)}
+[data-theme="bridge"] .search-results button{color:#eadfd3}
+[data-theme="bridge"] .search-results button:hover{background:#21170d}
+[data-theme="bridge"] .icon-button,[data-theme="bridge"] .mobile-menu{background:#151008;border-color:#594027;color:#d9b36e}
+[data-theme="bridge"] .icon-button:hover,[data-theme="bridge"] .mobile-menu:hover{background:#21170d;border-color:#805a31}
+[data-theme="bridge"] .connectivity-pill{background:#110c07;border-color:#5b4128;color:#d8b870}
+[data-theme="bridge"] .connectivity-pill.cached{border-color:#69502f;color:#d8b870}
+[data-theme="bridge"] .offline-banner{background:#26190a;border-color:#7a592b;color:#e7c989}
+
+[data-theme="bridge"] .page-title p,[data-theme="bridge"] .helper,[data-theme="bridge"] label{color:#ae9882}
+[data-theme="bridge"] .eyebrow{color:#e1ad4d}
+[data-theme="bridge"] .panel,[data-theme="bridge"] .tool-card{background:linear-gradient(180deg,#141009,#0e0a06);border-color:#49331f;box-shadow:0 10px 28px rgba(0,0,0,.20)}
+[data-theme="bridge"] .panel-head{border-bottom-color:#3d2a1a}
+[data-theme="bridge"] .panel-head small,[data-theme="bridge"] .tool-card-head p{color:#9f8872}
+[data-theme="bridge"] .tool-card-work{background:transparent}
+[data-theme="bridge"] .tool-details{background:rgba(24,16,9,.66);border-top-color:#3b2818}
+[data-theme="bridge"] .tool-details summary{color:#a99078}
+[data-theme="bridge"] .tool-details summary:after{color:#dca94c}
+[data-theme="bridge"] input,[data-theme="bridge"] select,[data-theme="bridge"] textarea{background:#0e0a06;border-color:#503821;color:#f6efe7}
+[data-theme="bridge"] input::placeholder,[data-theme="bridge"] textarea::placeholder{color:#796958}
+[data-theme="bridge"] input:focus,[data-theme="bridge"] select:focus,[data-theme="bridge"] textarea:focus{border-color:#c18b3d;box-shadow:0 0 0 3px rgba(193,139,61,.12)}
+[data-theme="bridge"] input:disabled,[data-theme="bridge"] select:disabled,[data-theme="bridge"] textarea:disabled{background:#0b0805;color:#6e5e50;border-color:#332419}
+[data-theme="bridge"] .btn{background:#1b130b;border-color:#654526;color:#e9ddcf}
+[data-theme="bridge"] .btn:hover{background:#25190e;border-color:#8a6032;filter:none}
+[data-theme="bridge"] .btn.primary{background:linear-gradient(180deg,#c28a3d,#8f5d25);border-color:#d9a653;color:#120c07}
+[data-theme="bridge"] .btn.ghost{background:rgba(22,14,8,.72)}
+[data-theme="bridge"] .btn.danger-soft{background:#1d0e0b;border-color:#72443d;color:#e8a29a}
+[data-theme="bridge"] .result{background:linear-gradient(180deg,#120d08,#0c0906);border-color:#4d351f}
+[data-theme="bridge"] .result.ok{background:linear-gradient(180deg,rgba(25,67,44,.28),#0d0906);border-color:#356246}
+[data-theme="bridge"] .result.caution{background:linear-gradient(180deg,rgba(110,77,21,.30),#0d0906);border-color:#7b5e29}
+[data-theme="bridge"] .result.alert{background:linear-gradient(180deg,rgba(105,40,35,.28),#0d0906);border-color:#773c35}
+[data-theme="bridge"] .result small{color:#9e8975}
+[data-theme="bridge"] .table th,[data-theme="bridge"] .table td{border-bottom-color:#3a2818}
+[data-theme="bridge"] .table th{color:#9a816b}
+[data-theme="bridge"] .chip{border-color:#5e4227;color:#c4ad96;background:#120d08}
+[data-theme="bridge"] .notice{background:#171008;border-left-color:#dba84b;color:#c8b39d}
+
+[data-theme="bridge"] .home-category-a button,[data-theme="bridge"] .home-popular-grid button,[data-theme="bridge"] .home-more-links button{background:linear-gradient(180deg,#161008,#100b07);border-color:#4a3420;color:#eee4d9}
+[data-theme="bridge"] .home-category-a button:hover,[data-theme="bridge"] .home-popular-grid button:hover,[data-theme="bridge"] .home-more-links button:hover{background:#21170d;border-color:#77542e}
+[data-theme="bridge"] .home-category-a button>.home-cat-icon,[data-theme="bridge"] .home-popular-grid button>span:first-child,[data-theme="bridge"] .home-more-links button>span:first-child{background:rgba(217,165,74,.075);border-color:rgba(217,165,74,.28);color:#dfad50}
+[data-theme="bridge"] .home-category-a small,[data-theme="bridge"] .home-popular-grid small,[data-theme="bridge"] .home-more-links small{color:#9b846e}
+[data-theme="bridge"] .home-hero-overlay{background:radial-gradient(circle at 68% 48%,rgba(229,157,71,.16),transparent 24%),linear-gradient(90deg,rgba(9,6,4,.97) 0%,rgba(9,6,4,.90) 36%,rgba(9,6,4,.60) 63%,rgba(9,6,4,.24) 100%)!important}
+[data-theme="bridge"] .home-tool-search{background:rgba(16,11,7,.93);border-color:#5a3d23}
+[data-theme="bridge"] .home-tool-results{background:#120d08;border-color:#654524}
+
+[data-theme="bridge"] .weather-metric,[data-theme="bridge"] .weather-table-wrap,[data-theme="bridge"] .coverage-strip>div,[data-theme="bridge"] .data-stats>div,[data-theme="bridge"] .toggle-row,[data-theme="bridge"] .history-summary>div{background:#100b07;border-color:#49321f}
+[data-theme="bridge"] .weather-metric span,[data-theme="bridge"] .data-stats span,[data-theme="bridge"] .history-summary span{color:#947b65}
+[data-theme="bridge"] .weather-forecast-table th{background:#151008}
+[data-theme="bridge"] .weather-forecast-table td,[data-theme="bridge"] .weather-forecast-table th{border-color:#3a2819}
+[data-theme="bridge"] .storage-size{color:#deb05c;border-color:#624628}
+[data-theme="bridge"] .toggle-row input{accent-color:#c18a3c}
+[data-theme="bridge"] .consumption-local-note{background:rgba(193,139,61,.06);border-color:#503620}
+[data-theme="bridge"] .consumption-local-note span{color:#dca84c}
+[data-theme="bridge"] .connectivity-pill i{box-shadow:0 0 0 3px rgba(54,201,143,.07)}
+
+[data-theme="bridge"] .sidebar .nav-btn:hover{background:linear-gradient(90deg,rgba(92,60,27,.74),rgba(35,23,12,.70));color:#fff4e8}
+[data-theme="bridge"] .sidebar .nav-btn>.mt-nav-icon{color:#b99a73}
+[data-theme="bridge"] .sidebar .nav-btn:hover>.mt-nav-icon,[data-theme="bridge"] .sidebar .nav-btn[aria-current="page"]>.mt-nav-icon{color:#efbd61}
+[data-theme="bridge"] #mtWhatsNew .mt-nav-icon{color:#e5b55a}
+[data-theme="bridge"] #mtWhatsNew .mt-whats-new-badge{border-color:rgba(224,173,77,.28);color:#e8b95f}
+
+[data-theme="bridge"] .mt-release-shell{background:linear-gradient(180deg,#171009,#0d0906);border-color:#5b3f25}
+[data-theme="bridge"] .mt-release-head{border-bottom-color:#3d2a1a}
+[data-theme="bridge"] .mt-release-head p,[data-theme="bridge"] .mt-release-item small{color:#9e8872}
+[data-theme="bridge"] .mt-release-close{background:#1a120a;border-color:#654526;color:#d8c1a7}
+[data-theme="bridge"] .mt-release-current{background:#130e08;border-color:#5d4126}
+[data-theme="bridge"] .mt-release-version{border-color:#76542e;color:#e4b257}
+[data-theme="bridge"] .mt-release-list{color:#cdbba7}
+[data-theme="bridge"] .mt-release-history{background:#100b07;border-color:#49321f}
+[data-theme="bridge"] .mt-release-history summary{color:#c7b39c}
+[data-theme="bridge"] .mt-release-history summary:after{color:#dfac4d}
+[data-theme="bridge"] .mt-release-item{border-top-color:#3a2818}
+[data-theme="bridge"] .mt-release-item ul{color:#a9927b}
+
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline-offset:2px}
+[data-theme="bridge"] button:focus-visible,[data-theme="bridge"] a:focus-visible,[data-theme="bridge"] input:focus-visible,[data-theme="bridge"] select:focus-visible,[data-theme="bridge"] textarea:focus-visible,[data-theme="bridge"] summary:focus-visible{outline-color:#e2af52}
+
+@media(max-width:900px){.mobile-menu.mt-icon-button{display:grid}}
+@media(max-width:760px){
+  .mt-release-head{padding:17px 16px 14px}.mt-release-body{padding:15px 16px 17px}.mt-release-head h2{font-size:22px}
+  [data-theme="bridge"] .home-hero-overlay{background:radial-gradient(circle at 70% 28%,rgba(229,157,71,.14),transparent 26%),linear-gradient(180deg,rgba(9,6,4,.80) 0%,rgba(9,6,4,.57) 36%,rgba(9,6,4,.88) 100%)!important}
+}
