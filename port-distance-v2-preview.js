@@ -1,7 +1,7 @@
 const LIB_VERSION='2.3.0';
-const MODULE_PRIMARY='https://esm.sh/searoute-ts@2.3.0?bundle';
+const MODULE_PRIMARY='https://esm.sh/searoute-ts@2.3.0?bundle&target=es2022';
 const MODULE_FALLBACK='https://cdn.jsdelivr.net/npm/searoute-ts@2.3.0/+esm';
-const NETWORK_URL='https://cdn.jsdelivr.net/npm/searoute-ts@2.3.0/dist/marnet.json';
+const NETWORK_URL='https://mayurrawte.github.io/searoute-ts/marnet.json';
 const PORTS_URL='https://cdn.jsdelivr.net/npm/searoute-ts@2.3.0/dist/ports.json';
 
 const $=s=>document.querySelector(s);
@@ -54,18 +54,30 @@ function applyProfile(showHint){
   return p;
 }
 async function initEngine(){
-  const status=$('#engineStatus');
+  const status=$('#engineStatus');let stage='routing library';
   try{
     status.textContent='Loading routing library…';
     const mod=await loadModule();
-    status.textContent='Loading 2025 sea network…';
-    const pair=await Promise.all([fetch(NETWORK_URL),fetch(PORTS_URL)]);
-    if(!pair[0].ok)throw new Error('Route network HTTP '+pair[0].status);
-    if(!pair[1].ok)throw new Error('Port data HTTP '+pair[1].status);
+    if(typeof mod.seaRoute!=='function'||typeof mod.loadNetwork!=='function')throw new Error('Required routing exports are unavailable');
     state.engine=mod;
-    state.network=await pair[0].json();
-    state.ports=normalizePorts(await pair[1].json()).sort((a,b)=>a.name.localeCompare(b.name));
+
+    stage='2025 sea network';
+    status.textContent='Loading 2025 sea network…';
+    state.network=await mod.loadNetwork(NETWORK_URL);
+
+    stage='port directory';
+    status.textContent='Loading port directory…';
+    let portData;
+    if(typeof mod.loadPorts==='function')portData=await mod.loadPorts(PORTS_URL);
+    else{
+      const portRes=await fetch(PORTS_URL);
+      if(!portRes.ok)throw new Error('Port data HTTP '+portRes.status);
+      portData=await portRes.json();
+    }
+    state.ports=normalizePorts(portData).sort((a,b)=>a.name.localeCompare(b.name));
+    if(!state.ports.length)throw new Error('Port directory returned no usable ports');
     state.byCode=new Map(state.ports.map(p=>[p.code,p]));
+
     const list=$('#portList');
     list.innerHTML=state.ports.slice(0,1800).map(p=>'<option value="'+esc(portLabel(p))+'"></option>').join('');
     status.className='engine-status ready';
@@ -74,9 +86,13 @@ async function initEngine(){
     applyProfile(false);
     setPort($('#fromPort'),'NLRTM');setPort($('#toPort'),'SGSIN');
   }catch(err){
-    console.error(err);
-    status.className='engine-status error';status.textContent='Route engine failed to load';$('#calculateRoute').disabled=true;
-    $('.warning span').textContent='The external routing preview engine could not be loaded. Check network/CORS and reload.';
+    console.error('Port Distance preview failed while loading '+stage,err);
+    const detail=String(err&&err.message||err||'unknown error').slice(0,110);
+    status.className='engine-status error';
+    status.textContent='Failed: '+stage;
+    status.title=detail;
+    $('#calculateRoute').disabled=true;
+    $('.warning span').textContent='Preview failed while loading '+stage+': '+detail;
   }
 }
 function routeOptions(mode){
