@@ -2,11 +2,12 @@ console.info('Marine Tools Port Distance preview R3 loaded');
 const LIB_VERSION='2.3.0';
 const MODULE_PRIMARY='https://esm.sh/searoute-ts@2.3.0?bundle&target=es2022';
 const MODULE_FALLBACK='https://cdn.jsdelivr.net/npm/searoute-ts@2.3.0/+esm';
-const NETWORK_URL='https://mayurrawte.github.io/searoute-ts/marnet.json';
 const PORTS_URL='https://cdn.jsdelivr.net/npm/searoute-ts@2.3.0/dist/ports.json';
+const PORTS_MODULE_PRIMARY='https://esm.sh/searoute-ts@2.3.0/ports?bundle&target=es2022';
+const PORTS_MODULE_FALLBACK='https://cdn.jsdelivr.net/npm/searoute-ts@2.3.0/ports/+esm';
 
 const $=s=>document.querySelector(s);
-const state={engine:null,network:null,ports:[],byCode:new Map(),map:null,layers:[],routes:[],selected:0};
+const state={engine:null,ports:[],byCode:new Map(),map:null,layers:[],routes:[],selected:0};
 
 function fmt(n,d=0){return Number.isFinite(Number(n))?Number(n).toLocaleString(undefined,{maximumFractionDigits:d}):'—'}
 function etaHours(route){const p=route&&route.properties||{},speed=Number($('#speedKnots').value)||12;return Number.isFinite(Number(p.durationHours))?Number(p.durationHours):(Number(p.length)||0)/speed}
@@ -54,27 +55,34 @@ function applyProfile(showHint){
   if(showHint!==false)$('#speedHint').textContent=(p.speed||p.draft||p.fuelDay)?'Loaded available values from Vessel Profile.':'No saved Vessel Profile found in this browser.';
   return p;
 }
+async function loadPortDirectory(){
+  try{
+    const res=await fetch(PORTS_URL);
+    if(!res.ok)throw new Error('Port data HTTP '+res.status);
+    return await res.json();
+  }catch(fetchErr){
+    console.warn('ports.json fetch failed, trying module fallback',fetchErr);
+    try{
+      const pm=await import(PORTS_MODULE_PRIMARY);
+      return pm.PORTS||pm.default||{};
+    }catch(e1){
+      console.warn('Primary ports module fallback failed',e1);
+      const pm=await import(PORTS_MODULE_FALLBACK);
+      return pm.PORTS||pm.default||{};
+    }
+  }
+}
 async function initEngine(){
   const status=$('#engineStatus');let stage='routing library';
   try{
     status.textContent='Loading routing library…';
     const mod=await loadModule();
-    if(typeof mod.seaRoute!=='function'||typeof mod.loadNetwork!=='function')throw new Error('Required routing exports are unavailable');
+    if(typeof mod.seaRoute!=='function')throw new Error('Required routing export is unavailable');
     state.engine=mod;
-
-    stage='2025 sea network';
-    status.textContent='Loading 2025 sea network…';
-    state.network=await mod.loadNetwork(NETWORK_URL);
 
     stage='port directory';
     status.textContent='Loading port directory…';
-    let portData;
-    if(typeof mod.loadPorts==='function')portData=await mod.loadPorts(PORTS_URL);
-    else{
-      const portRes=await fetch(PORTS_URL);
-      if(!portRes.ok)throw new Error('Port data HTTP '+portRes.status);
-      portData=await portRes.json();
-    }
+    const portData=await loadPortDirectory();
     state.ports=normalizePorts(portData).sort((a,b)=>a.name.localeCompare(b.name));
     if(!state.ports.length)throw new Error('Port directory returned no usable ports');
     state.byCode=new Map(state.ports.map(p=>[p.code,p]));
@@ -82,7 +90,7 @@ async function initEngine(){
     const list=$('#portList');
     list.innerHTML=state.ports.slice(0,1800).map(p=>'<option value="'+esc(portLabel(p))+'"></option>').join('');
     status.className='engine-status ready';
-    status.textContent='Ready · '+state.ports.length.toLocaleString()+' ports · network '+LIB_VERSION;
+    status.textContent='Ready · '+state.ports.length.toLocaleString()+' ports · bundled network '+LIB_VERSION;
     $('#calculateRoute').disabled=false;
     applyProfile(false);
     setPort($('#fromPort'),'NLRTM');setPort($('#toPort'),'SGSIN');
@@ -98,7 +106,7 @@ async function initEngine(){
 }
 function routeOptions(mode){
   const speed=Number($('#speedKnots').value)||12,draft=Number($('#draftM').value);
-  const base={units:'nauticalmiles',speedKnots:speed,returnPassages:true,antimeridian:'split',network:state.network};
+  const base={units:'nauticalmiles',speedKnots:speed,returnPassages:true,antimeridian:'split'};
   if(Number.isFinite(draft)&&draft>0)base.vesselDraftMeters=draft;
   if(mode==='suez')base.via=['suez'];
   if(mode==='panama')base.via=['panama'];
@@ -176,7 +184,7 @@ function selectRoute(from,to){
   $('#routeTitle').textContent=from.name+' → '+to.name;$('#routeSubtitle').textContent=routeName(r,state.selected);renderAlternatives(from,to);
 }
 async function calculate(){
-  if(!state.engine||!state.network)return;
+  if(!state.engine)return;
   const from=resolvePortInput($('#fromPort').value),to=resolvePortInput($('#toPort').value);
   if(!from||!to){alert('Select valid ports from the list.');return}
   if(from.code===to.code){alert('Choose two different ports.');return}
