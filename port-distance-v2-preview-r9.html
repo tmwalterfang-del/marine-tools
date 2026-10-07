@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Marine Tools — Port Distance & Sea Route V2 Preview</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="port-distance-v2-preview-r9.css?v=20261007-r9">
+</head>
+<body>
+<div class="preview-shell">
+  <aside class="preview-sidebar">
+    <div class="brand"><img src="assets/icon-192.png" alt="Marine Tools" width="38" height="38"><div><strong>MARINE TOOLS</strong><small>Practical tools for seafarers</small></div></div>
+    <nav>
+      <span class="nav-label">TOOLS</span>
+      <button>⌂ <span>Home</span></button><button>▣ <span>Fuel & Bunkering</span></button><button>▤ <span>Fuel & Energy Log</span></button><button>⌕ <span>Engineering</span></button><button>ϟ <span>Electrical</span></button><button>⚓ <span>Vessel Calculations</span></button><button>▦ <span>Quick Tools</span></button>
+      <span class="nav-label">MORE</span>
+      <button>☁ <span>Weather</span></button><button class="active">◎ <span>Navigation</span></button><button class="experimental">◉ <span>Live & Experimental</span></button>
+    </nav>
+    <div class="preview-note"><b>V2 PREVIEW · R9</b><span>Experimental planning tool only.</span></div>
+  </aside>
+  <div class="preview-workspace">
+    <header class="topbar"><div class="top-label">Practical tools for seafarers</div><div class="status"><span></span> PREVIEW</div></header>
+    <main>
+      <section class="page-head"><div><div class="eyebrow">MARINE TOOLS · NAVIGATION · EXPERIMENTAL</div><h1>Port Distance & Sea Route</h1><p>Compare realistic sea routes between ports, Norwegian offshore fields, fixed facilities and custom positions.</p></div><div class="preview-badge">V2 PREVIEW · R9</div></section>
+      <section class="warning"><b>Planning/reference only.</b><span>Routes are macro-scale network paths for distance and voyage appraisal. They are not passage plans, charted routes or navigational guidance.</span></section>
+      <section class="panel route-builder">
+        <div class="panel-title"><div><h2>Build a route</h2><p>Select maritime locations, speed and vessel draft. Marine Tools will calculate the sea route and alternatives.</p></div><span id="engineStatus" class="engine-status loading">Loading route engine…</span></div>
+        <div class="route-grid">
+          <label><span>From location</span><input id="fromPort" list="portList" autocomplete="off" placeholder="Port, field, facility or lat,lon"></label>
+          <button id="swapPorts" class="swap" type="button" title="Swap ports" aria-label="Swap ports">⇄</button>
+          <label><span>To location</span><input id="toPort" list="portList" autocomplete="off" placeholder="Port, field, facility or lat,lon"></label>
+          <datalist id="portList"></datalist>
+          <label><span>Speed kn</span><input id="speedKnots" type="number" min="1" max="40" step="0.1" value="12"><small id="speedHint">Used for ETA.</small></label>
+          <label><span>Draft m</span><input id="draftM" type="number" min="0" max="30" step="0.1" placeholder="Optional"><small>Can automatically block unsuitable canals.</small></label>
+          <label><span>Route preference</span><select id="routeMode"><option value="alternatives">Compare alternatives</option><option value="shortest">Shortest available</option><option value="suez">Force via Suez</option><option value="panama">Force via Panama</option><option value="cape">Avoid Suez / Red Sea</option><option value="no-panama">Avoid Panama</option></select></label>
+        </div>
+        <div class="quick-routes"><span>Example routes</span><button data-route="NOHOR|NOARE">Horten → Arendal</button><button data-route="NOGTD|NOHSO">Grimstad → Husøy, Karmøy</button><button data-mixed-from="NOBGO" data-mixed-type="field" data-mixed-name="TROLL">Bergen → Troll field</button><button data-mixed-from="NOSVG" data-mixed-type="field" data-mixed-name="JOHAN SVERDRUP">Stavanger → Johan Sverdrup</button><button data-route="NLRTM|SGSIN">Rotterdam → Singapore</button></div>
+        <div class="actions"><button id="calculateRoute" class="primary" disabled>Calculate route</button><button id="useProfile">Use Vessel Profile</button><button id="clearRoute">Clear</button></div>
+      </section>
+      <section id="resultArea" class="result-area" hidden>
+        <div class="summary-grid"><article><small>SEA DISTANCE</small><strong id="distanceValue">—</strong><span>nautical miles</span></article><article><small>ESTIMATED SEA TIME</small><strong id="etaValue">—</strong><span id="etaSpeed">at selected speed</span></article><article><small>ROUTE VS GREAT CIRCLE</small><strong id="detourValue">—</strong><span>network detour ratio</span></article><article><small>EST. FUEL</small><strong id="fuelValue">—</strong><span id="fuelHint">from Vessel Profile if available</span></article></div>
+        <section class="panel map-panel"><div class="panel-title compact"><div><h2 id="routeTitle">Route</h2><p id="routeSubtitle">—</p></div><div id="passageChips" class="passage-chips"></div></div><div id="routeMap" aria-label="Sea route map"></div><p class="map-note">Basemap © OpenStreetMap contributors. Route geometry is a planning/reference network, not chart data.</p></section>
+        <div class="results-lower"><section class="panel"><div class="panel-title compact"><div><h2>Route alternatives</h2><p>Distinct routes produced by canal/strait permutations.</p></div></div><div id="alternatives" class="alternatives"></div></section><section class="panel details-panel"><div class="panel-title compact"><div><h2>Voyage details</h2><p>Useful planning context from the selected route.</p></div></div><dl id="routeDetails"></dl></section></div>
+      </section>
+      <section class="panel methodology"><div class="panel-title compact"><div><h2>About this preview</h2><p>Built to test whether port-distance routing belongs in Marine Tools before production integration.</p></div></div><div class="method-grid"><div><b>Route network</b><span>Eurostat searoute v3.5 / 2025 maritime network via searoute-ts 2.3.0.</span></div><div><b>Ports</b><span>Global port directory supplemented with selected Norwegian UN/LOCODE locations such as Arendal, Grimstad, Horten and Husøy–Karmøy.</span></div><div><b>Norwegian offshore</b><span>Fields and in-place fixed surface facilities are loaded from the Norwegian Offshore Directorate. Field routes use a representative field-centre point.</span></div><div><b>Custom position</b><span>Enter latitude,longitude directly when a known position is not in the catalogue, including a reported mobile-unit position.</span></div><div><b>Safety boundary</b><span>Never use these lines for navigation, pilotage, collision avoidance or under-keel-clearance decisions.</span></div></div></section>
+    </main>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script type="module" src="port-distance-v2-preview-r9.js?v=20261007-r9"></script>
+</body></html>
