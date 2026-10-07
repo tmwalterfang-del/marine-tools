@@ -1,4 +1,4 @@
-console.info('Marine Tools Port Distance preview R7 loaded — mobile grid fixed');
+console.info('Marine Tools Port Distance preview R7 loaded — hard mobile layout reset');
 
 const LIB_VERSION='2.3.0';
 const MODULE_PRIMARY='https://esm.sh/searoute-ts@2.3.0?bundle&target=es2022';
