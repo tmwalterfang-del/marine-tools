@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Marine Tools — Port Distance & Sea Time Estimator Preview</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="port-distance-estimator-r14.css?v=20261007-r14">
+</head>
+<body>
+<div class="preview-shell">
+  <aside class="preview-sidebar">
+    <div class="brand"><img src="assets/icon-192.png" alt="Marine Tools" width="38" height="38"><div><strong>MARINE TOOLS</strong><small>Practical tools for seafarers</small></div></div>
+    <nav>
+      <span class="nav-label">TOOLS</span>
+      <button>⌂ <span>Home</span></button><button>▣ <span>Fuel & Bunkering</span></button><button>▤ <span>Fuel & Energy Log</span></button><button>⌕ <span>Engineering</span></button><button>ϟ <span>Electrical</span></button><button>⚓ <span>Vessel Calculations</span></button><button>▦ <span>Quick Tools</span></button>
+      <span class="nav-label">MORE</span>
+      <button>☁ <span>Weather</span></button><button class="active">◎ <span>Navigation</span></button><button class="experimental">◉ <span>Live & Experimental</span></button>
+    </nav>
+    <div class="preview-note"><b>ESTIMATOR PREVIEW · R14</b><span>Approximate planning tool only.</span></div>
+  </aside>
+
+  <div class="preview-workspace">
+    <header class="topbar"><div class="top-label">Practical tools for seafarers</div><div class="status"><span></span> PREVIEW</div></header>
+    <main>
+      <section class="page-head">
+        <div>
+          <div class="eyebrow">MARINE TOOLS · NAVIGATION · ESTIMATOR</div>
+          <h1>Port Distance & Sea Time</h1>
+          <p>Quick approximate voyage distance and sea-time estimates between major ports and offshore locations.</p>
+        </div>
+        <div class="preview-badge">R14 ESTIMATOR</div>
+      </section>
+
+      <section class="warning">
+        <b>Estimate only.</b>
+        <span>This is not a passage plan or navigational route. Actual sailed distance and time will vary with the vessel's passage plan, weather, traffic, restrictions, speed changes and operational requirements.</span>
+      </section>
+
+      <section class="panel route-builder">
+        <div class="panel-title">
+          <div><h2>Estimate voyage</h2><p>Select two locations and a speed. Marine Tools estimates route distance, sea time and optional fuel use.</p></div>
+          <span id="engineStatus" class="engine-status loading">Loading estimator…</span>
+        </div>
+
+        <div class="route-grid">
+          <label><span>From location</span><input id="fromPort" list="portList" autocomplete="off" placeholder="Major port, field, facility or lat,lon"></label>
+          <button id="swapPorts" class="swap" type="button" title="Swap locations" aria-label="Swap locations">⇄</button>
+          <label><span>To location</span><input id="toPort" list="portList" autocomplete="off" placeholder="Major port, field, facility or lat,lon"></label>
+          <datalist id="portList"></datalist>
+
+          <label><span>Speed kn</span><input id="speedKnots" type="number" min="1" max="40" step="0.1" value="12"><small id="speedHint">Used for estimated sea time.</small></label>
+          <label><span>Draft m</span><input id="draftM" type="number" min="0" max="30" step="0.1" placeholder="Optional"><small>Only used where the estimate engine supports passage restrictions.</small></label>
+          <label><span>Route preference</span>
+            <select id="routeMode">
+              <option value="shortest">Automatic / shortest estimate</option>
+              <option value="suez">Via Suez</option>
+              <option value="panama">Via Panama</option>
+              <option value="cape">Avoid Suez / via Cape</option>
+              <option value="no-panama">Avoid Panama</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="quick-routes">
+          <span>Examples</span>
+          <button data-route="NLRTM|SGSIN">Rotterdam → Singapore</button>
+          <button data-route="USNYC|NLRTM">New York → Rotterdam</button>
+          <button data-route="SGSIN|AEFJR">Singapore → Fujairah</button>
+          <button data-mixed-from="NOBGO" data-mixed-type="field" data-mixed-name="TROLL">Bergen → Troll field</button>
+          <button data-mixed-from="NOSVG" data-mixed-type="field" data-mixed-name="JOHAN SVERDRUP">Stavanger → Johan Sverdrup</button>
+        </div>
+
+        <div id="routeAlert" class="route-alert" hidden></div>
+        <div class="actions">
+          <button id="calculateRoute" class="primary" disabled>Calculate estimate</button>
+          <button id="useProfile">Use Vessel Profile</button>
+          <button id="clearRoute">Clear</button>
+        </div>
+      </section>
+
+      <section id="resultArea" class="result-area estimate-result" hidden>
+        <div class="summary-grid estimate-summary">
+          <article><small>ESTIMATED DISTANCE</small><strong id="distanceValue">—</strong><span>nautical miles</span></article>
+          <article><small>ESTIMATED SEA TIME</small><strong id="etaValue">—</strong><span id="etaSpeed">at selected speed</span></article>
+          <article><small>ESTIMATED FUEL</small><strong id="fuelValue">—</strong><span id="fuelHint">from Vessel Profile if available</span></article>
+          <article><small>ROUTE BASIS</small><strong id="routeBasisValue">—</strong><span id="passageValue">automatic estimate</span></article>
+        </div>
+
+        <section class="panel estimate-panel">
+          <div class="panel-title compact">
+            <div><h2 id="estimateTitle">Estimate details</h2><p id="estimateSubtitle">Approximate voyage planning values.</p></div>
+          </div>
+          <dl id="estimateDetails" class="estimate-details"></dl>
+          <div class="estimate-note">
+            <b>No map is shown intentionally.</b>
+            <span>The routing geometry is used only as a background calculation aid for an approximate distance. It is not suitable for route display or navigation.</span>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel methodology">
+        <div class="panel-title compact"><div><h2>About this estimator</h2><p>Designed for quick “roughly how far / how long?” checks.</p></div></div>
+        <div class="method-grid estimate-method">
+          <div><b>Distance</b><span>Estimated from a macro maritime routing network rather than a vessel passage plan.</span></div>
+          <div><b>Time</b><span>Estimated distance ÷ selected constant speed. Weather, traffic and operational speed changes are not included.</span></div>
+          <div><b>Fuel</b><span>Only shown when a daily fuel value is available in Vessel Profile.</span></div>
+          <div><b>Scope</b><span>Major ports plus Norwegian offshore fields and fixed facilities. Small local harbours remain outside scope.</span></div>
+          <div><b>Safety boundary</b><span>Not for passage planning, navigation, collision avoidance, UKC or any safety-critical decision.</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<script type="module" src="port-distance-estimator-r14.js?v=20261007-r14"></script>
+</body>
+</html>
