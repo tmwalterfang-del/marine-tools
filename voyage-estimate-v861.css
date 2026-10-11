@@ -1,0 +1,65 @@
+/* Voyage Estimate production integration */
+.ve-page-title{align-items:flex-start}
+.ve-engine-status{display:inline-flex;align-items:center;border:1px solid #285871;border-radius:999px;padding:7px 10px;font-size:11px;color:#9fdcf5;white-space:nowrap;background:#081f30}
+.ve-engine-status.ready{border-color:rgba(50,212,138,.45);color:#7ce9b5}
+.ve-engine-status.error{border-color:rgba(255,98,93,.5);color:#ff9793}
+.ve-warning{margin-bottom:12px;border-left:3px solid var(--amber)}
+.ve-builder{overflow:visible}
+.ve-route-grid{display:grid;grid-template-columns:minmax(220px,1.35fr) 46px minmax(220px,1.35fr) repeat(3,minmax(140px,.62fr));gap:12px;align-items:end}
+.ve-route-grid label{min-width:0}
+.ve-route-grid label>span{font-size:11px;color:#a9c0cf}
+.ve-route-grid label small{display:block;min-height:20px;margin-top:4px;color:#6f91a6;font-size:9px;line-height:1.3}
+.ve-swap{height:42px;padding:0;font-size:18px}
+.ve-catalog{display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 11px;border:1px solid #173f55;background:#071d2a;border-radius:9px;color:#8faabd;font-size:10px}
+.ve-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(50,212,138,.08)}
+.ve-quick-routes{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.ve-quick-routes>span{font-size:10px;color:#6f91a6;margin-right:4px}
+.ve-quick-routes button{font:inherit;font-size:10px;border:1px solid #1e4963;background:#071b2a;color:#bdd0dc;border-radius:999px;padding:6px 9px;cursor:pointer}
+.ve-quick-routes button:hover{border-color:#2e779b;color:#fff}
+.ve-route-alert{margin-top:12px;padding:11px 13px;border-radius:9px;font-size:11px;line-height:1.45;border:1px solid #1e526c;background:#071d2a}
+.ve-route-alert.error{border-color:rgba(255,98,93,.55);background:rgba(255,98,93,.07);color:#ffc0bd}
+.ve-route-alert.warn{border-color:rgba(242,191,73,.45);background:rgba(242,191,73,.07);color:#efd98d}
+.ve-route-alert b{color:var(--text)}
+.ve-actions{margin-top:12px}
+.ve-result-area{margin-top:12px}
+.ve-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.ve-summary-grid article{border:1px solid #1a455e;background:linear-gradient(180deg,#071d2b,#061925);border-radius:10px;padding:16px}
+.ve-summary-grid small{display:block;color:var(--cyan);font-size:9px;letter-spacing:.12em}
+.ve-summary-grid strong{display:block;font-size:25px;margin:5px 0 2px;overflow-wrap:anywhere}
+.ve-summary-grid span{font-size:10px;color:#7f9db0}
+.ve-estimate-details{margin:0}
+.ve-estimate-details>div{display:flex;justify-content:space-between;gap:18px;padding:10px 0;border-bottom:1px solid #14384d}
+.ve-estimate-details>div:last-child{border-bottom:0}
+.ve-estimate-details dt{font-size:10px;color:#7898aa}
+.ve-estimate-details dd{margin:0;text-align:right;font-size:11px;color:#d8e7ef;overflow-wrap:anywhere}
+.ve-methodology{margin-top:10px}
+.ve-method-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.ve-method-grid>div{border:1px solid #173f55;background:#071d2a;border-radius:9px;padding:12px}
+.ve-method-grid b{display:block;font-size:11px;margin-bottom:4px}
+.ve-method-grid span{font-size:10px;color:#8faabd;line-height:1.45}
+.ve-source-note{padding:0 15px 15px;color:#6f91a6;font-size:9px;line-height:1.45}
+[data-theme="bridge"] .ve-engine-status,[data-theme="bridge"] .ve-catalog,[data-theme="bridge"] .ve-quick-routes button,[data-theme="bridge"] .ve-route-alert,[data-theme="bridge"] .ve-method-grid>div{background:#0f0b07;border-color:#4b3421}
+[data-theme="bridge"] .ve-summary-grid article{background:#100c08;border-color:#4b3421}
+[data-theme="bridge"] .ve-estimate-details>div{border-color:#392719}
+@media(max-width:1250px){
+  .ve-route-grid{grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr)}
+  .ve-method-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .ve-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+  .ve-page-title{display:block}
+  .ve-engine-status{margin-top:10px;white-space:normal}
+  .ve-route-grid{grid-template-columns:minmax(0,1fr)}
+  .ve-route-grid input,.ve-route-grid select{font-size:16px;min-width:0}
+  .ve-swap{width:46px;justify-self:center;transform:rotate(90deg)}
+  .ve-quick-routes{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:3px}
+  .ve-quick-routes>span,.ve-quick-routes button{flex:0 0 auto;white-space:nowrap}
+  .ve-actions{display:grid;grid-template-columns:1fr 1fr}
+  .ve-actions .primary{grid-column:1/-1}
+  .ve-summary-grid{grid-template-columns:1fr}
+  .ve-estimate-details>div{display:block}
+  .ve-estimate-details dd{text-align:left;margin-top:4px}
+  .ve-method-grid{grid-template-columns:1fr}
+}
