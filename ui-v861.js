@@ -6,6 +6,7 @@ const ICONS={
  engineering:'<path d="M14.8 6.1a4.3 4.3 0 0 0-5.2 5.4L3.4 17.7a1.6 1.6 0 0 0 0 2.3l.6.6a1.6 1.6 0 0 0 2.3 0l6.2-6.2a4.3 4.3 0 0 0 5.4-5.2l-2.7 2.7-3.1-3.1 2.7-2.7Z"/>',
  electrical:'<path d="M13.5 2 5.5 14h6l-1 8 8-12h-6l1-8Z"/>',
  'vessel-calcs':'<path d="M12 3v8M8 7h8"/><path d="m4 12 8-3 8 3-2.2 6H6.2L4 12Z"/><path d="M4 21c1.2 0 1.8-1 3-1s1.8 1 3 1 1.8-1 3-1 1.8 1 3 1 1.8-1 3-1"/>',
+ 'voyage-estimate':'<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M7.5 16.5 16.5 7.5"/><path d="M11 7h5v5"/>',
  profile:'<path d="M4 15.5 12 12l8 3.5-2 4.5H6l-2-4.5Z"/><path d="M12 4v8M9 7h6"/><path d="M17.5 4.5h3v3"/><path d="M20.5 4.5 17 8"/>',
  quick:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/>',
  weather:'<path d="M7 18h10a4 4 0 0 0 .7-7.94A6 6 0 0 0 6.3 8.7 4.5 4.5 0 0 0 7 18Z"/><path d="M8 21h8"/>',
@@ -38,7 +39,7 @@ const ICONS={
  generator:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="8" cy="12" r="2.5"/><path d="M13 10h5M13 14h3"/>',
  pump:'<circle cx="11" cy="12" r="4"/><path d="M15 12h6M3 12h4M11 8V4"/><path d="M8.5 14.5 13.5 9.5"/>'
 };
-const PAGE_ICONS={home:'home',fuel:'fuel','energy-log':'energy-log',engineering:'engineering',electrical:'electrical','vessel-calcs':'vessel-calcs',quick:'quick',weather:'weather',navigation:'navigation','live-experimental':'live-experimental',survey:'survey',suggestions:'suggestions',support:'support',contact:'contact',about:'about',privacy:'privacy',profile:'profile',settings:'settings'};
+const PAGE_ICONS={home:'home',fuel:'fuel','energy-log':'energy-log',engineering:'engineering',electrical:'electrical','vessel-calcs':'vessel-calcs','voyage-estimate':'voyage-estimate',quick:'quick',weather:'weather',navigation:'navigation','live-experimental':'live-experimental',survey:'survey',suggestions:'suggestions',support:'support',contact:'contact',about:'about',privacy:'privacy',profile:'profile',settings:'settings'};
 const TOOL_ICONS={
  'Fuel ROB & endurance':'gauge',
  'Daily consumption & reporting':'daily',
