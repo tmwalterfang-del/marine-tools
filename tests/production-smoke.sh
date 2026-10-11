@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="8.5.7"
+VERSION="8.6.0"
 : "${GH_TOKEN:?GH_TOKEN is required}"
 : "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
 : "${GITHUB_SHA:?GITHUB_SHA is required}"
@@ -47,13 +47,18 @@ wait_for_check 'Cloudflare Worker deployment' '{"name":"Workers Builds: marine-t
 wait_for_check 'GitHub Pages deployment' '{"name":"deploy","environment":"github-pages"}'
 
 # Validate the exact production source that the successful deployments were built from.
-grep -q '<meta name="application-version" content="8.5.7">' index.html || { echo '::error::Frontend release metadata is not v8.5.7.'; exit 1; }
-grep -q 'release-v857.js?v=20261003-v8-5-7' index.html || { echo '::error::Release UI is not wired into index.html.'; exit 1; }
+grep -q '<meta name="application-version" content="8.6.0">' index.html || { echo '::error::Frontend release metadata is not v8.6.0.'; exit 1; }
+grep -q 'release-v860.js?v=20261005-v8-6-0-ui3' index.html || { echo '::error::Release UI is not wired into index.html.'; exit 1; }
 test -f weather-map-v854.js || { echo '::error::Weather map production asset is missing.'; exit 1; }
 grep -q 'wxShowMapV854' weather-map-v854.js || { echo '::error::Weather map production asset failed integrity check.'; exit 1; }
-test -f release-v857.js || { echo '::error::Release UI production asset is missing.'; exit 1; }
-grep -q "version:'8.5.7'" release-v857.js || { echo '::error::Release UI version metadata failed integrity check.'; exit 1; }
-grep -q 'worker/worker-v857-runtime.js' wrangler.jsonc || { echo '::error::Production Wrangler is not pointing at the runtime-smoke wrapper.'; exit 1; }
+test -f release-v860.js || { echo '::error::Release UI production asset is missing.'; exit 1; }
+grep -q "version:'8.6.0'" release-v860.js || { echo '::error::Release UI version metadata failed integrity check.'; exit 1; }
+test -f voyage-estimate-v861.js || { echo '::error::Voyage Estimate JavaScript asset is missing.'; exit 1; }
+test -f voyage-estimate-v861.css || { echo '::error::Voyage Estimate CSS asset is missing.'; exit 1; }
+grep -q 'Port Distance & Sea Time' voyage-estimate-v861.js || { echo '::error::Voyage Estimate content failed integrity check.'; exit 1; }
+grep -q 'originSnapKm' voyage-estimate-v861.js || { echo '::error::Voyage Estimate endpoint-distance allowance check is missing.'; exit 1; }
+grep -q 'data-page="voyage-estimate"' index.html || { echo '::error::Voyage Estimate is not wired into production navigation.'; exit 1; }
+grep -q 'worker/worker-v860-dashboard.js' wrangler.jsonc || { echo '::error::Production Wrangler is not pointing at the current dashboard wrapper.'; exit 1; }
 grep -Fq '*/15 * * * *' wrangler.jsonc || { echo '::error::Cloudflare runtime smoke cron is missing.'; exit 1; }
 
 echo 'Deployment checks passed. Backend health, Weather, global-wave and AIS runtime checks execute inside Cloudflare, where the public WAF cannot block the synthetic runner.'
