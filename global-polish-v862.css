@@ -1,0 +1,238 @@
+/* Marine Tools — global visual polish
+   Presentation-only refinements. No calculation or data-flow logic is changed. */
+
+:root{
+  --mt-space-1:6px;
+  --mt-space-2:10px;
+  --mt-space-3:14px;
+  --mt-space-4:18px;
+  --mt-space-5:24px;
+  --mt-card-border:#183f56;
+  --mt-card-bg:#091f30;
+}
+
+/* Page rhythm and hierarchy */
+.main-content{padding:22px 24px 34px}
+.page-title{margin:2px 2px 18px;gap:20px}
+.page-title>div{max-width:920px}
+.page-title .eyebrow{font-size:10px;letter-spacing:.15em}
+.page-title h1{font-size:32px;line-height:1.08;letter-spacing:-.025em;margin:2px 0 5px}
+.page-title p{max-width:720px;font-size:13px;line-height:1.5;color:#849fb0}
+.page>.notice:first-of-type{margin-bottom:14px}
+
+/* Panels: less nested visual noise, more consistent spacing */
+.panel{border-color:var(--mt-card-border);box-shadow:0 8px 22px rgba(0,0,0,.10)}
+.panel-head{min-height:52px;padding:12px 15px}
+.panel-head h2,.panel-head h3{font-size:15px;letter-spacing:-.01em}
+.panel-head small{font-size:10px;line-height:1.35}
+.panel-body{padding:15px}
+.notice{padding:11px 13px;font-size:12px;line-height:1.48}
+.helper{font-size:11px;line-height:1.45;color:#7896a8}
+
+/* Calculator grids: give working tools more width. */
+#fuel .tool-grid,
+#engineering .tool-grid,
+#electrical .tool-grid,
+#vessel-calcs .tool-grid,
+#navigation .tool-grid,
+#quick .tool-grid{grid-template-columns:repeat(2,minmax(320px,1fr));gap:14px}
+
+/* Tool cards: concise header, clear work area, quiet details. */
+.tool-card{border-color:#173f56}
+.tool-card-head{padding:15px 16px 10px;gap:14px}
+.tool-card-head h3{font-size:16px;line-height:1.25}
+.tool-card-head p{
+  margin-top:3px!important;
+  max-width:760px;
+  color:#809caf!important;
+  font-size:11px!important;
+  line-height:1.42!important;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+.tool-card-work{padding:4px 16px 15px}
+.tool-card label{gap:5px;color:#9bb2c1}
+.tool-card input,.tool-card select,.tool-card textarea{min-height:40px}
+.tool-details{background:rgba(4,19,29,.18)}
+.tool-details summary{padding:10px 16px;font-size:10px;color:#7494a7}
+.tool-details-inner{padding:0 16px 14px}
+.tool-how{margin:0 0 9px;padding:8px 10px;font-size:11px}
+.tool-info{font-size:11px}
+
+/* Result blocks get one unmistakable hierarchy across calculators. */
+.result{position:relative;margin-top:12px;padding:13px 14px 12px;border-color:#24516a;background:linear-gradient(180deg,#08263a,#071d2c)}
+.result:before{content:"";position:absolute;left:-1px;top:9px;bottom:9px;width:2px;border-radius:2px;background:#2bbceb}
+.result strong{display:block;font-size:20px;line-height:1.25;letter-spacing:-.015em;color:#f1f9fd}
+.result small{font-size:10px;line-height:1.4;color:#7899ac;margin-top:5px}
+.result.ok:before{background:var(--green)}
+.result.caution:before{background:var(--amber)}
+.result.alert:before{background:var(--red)}
+
+/* Primary action first; copy/share and supporting actions stay deliberately quieter. */
+.tool-card .actions{gap:7px;margin-top:11px}
+.tool-card .actions .btn{min-height:38px}
+.tool-card .actions .btn:not(.primary){background:transparent;border-color:#21495f;color:#93adbc}
+.tool-card .actions .btn:not(.primary):hover{background:#0a293d;color:#dbeaf2;border-color:#326984}
+.copy-result,.share-result{font-size:11px}
+.btn.mini,.btn.small{min-height:30px}
+
+/* Forms */
+input,select,textarea{border-color:#204a62}
+label{line-height:1.35}
+.fields{gap:10px}
+
+/* Tables and local histories */
+.table-wrap,.weather-table-wrap,.mt-v860-table-wrap{border:1px solid #173f55;border-radius:10px;background:#071d2b;overflow:auto}
+.table-wrap .table,.mt-v860-table-wrap .table{margin-top:0}
+.table th{background:#082337;color:#7393a6;font-size:9px;letter-spacing:.075em}
+.table td{font-size:11px;color:#c5d8e2}
+.table tbody tr:hover td{background:rgba(40,196,244,.025)}
+.table th,.table td{padding:9px 10px}
+.history-row,.mt-list-row,.mt-summary-row{border-color:#173e54;background:#082234}
+.history-row{padding:10px 11px}
+.history-row small,.mt-list-row small,.mt-summary-row small{font-size:9px}
+
+/* Weather metrics */
+.weather-summary{gap:9px}
+.weather-metric{padding:12px 13px}
+.weather-metric strong{font-size:22px}
+.weather-metric span,.weather-metric small{font-size:9px}
+
+/* Vessel Profile / Settings */
+#profile>.panel>.panel-body,#settings>.panel>.panel-body{padding:17px}
+#profile .fields.three{grid-template-columns:repeat(3,minmax(180px,1fr));gap:11px}
+#profile .actions{margin-top:14px}
+#settings .grid-2{gap:14px}
+#settings .panel h3{margin-top:0}
+.data-stats{gap:7px}
+.data-stats>div{padding:10px 11px}
+.toggle-row{padding:11px}
+
+/* Text-heavy informational pages: compact top, collapsible secondary sections. */
+.about-hero{padding:23px 25px;margin-bottom:14px}
+.about-hero h1{font-size:34px;line-height:1.08;margin:2px 0 7px}
+.about-hero p{font-size:13px;line-height:1.5;margin:0;max-width:760px}
+.bullet-box{padding:16px 17px}
+.bullet-box h3{margin:0 0 9px;font-size:15px}
+.bullet-box ul{margin:0;padding-left:18px;font-size:12px;line-height:1.55}
+.bullet-box p{font-size:12px;line-height:1.5;color:#9db5c4}
+.info-fold{margin-top:12px;overflow:hidden}
+.info-fold>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:13px 15px;cursor:pointer}
+.info-fold>summary::-webkit-details-marker{display:none}
+.info-fold>summary span{display:grid;gap:2px}
+.info-fold>summary b{font-size:14px}
+.info-fold>summary small{font-size:10px;color:#7898ab}
+.info-fold>summary strong{font-size:10px;color:#62cef5}
+.info-fold[open]>summary{border-bottom:1px solid #173e56}
+.info-fold[open]>summary strong{font-size:0}
+.info-fold[open]>summary strong:after{content:"Hide";font-size:10px}
+.info-fold>.panel-body{padding:14px 15px 15px}
+
+/* Survey/support/contact cards: keep them purposeful rather than oversized. */
+.survey-card{padding:23px}
+.survey-card img{width:84px;height:84px}
+.survey-card h2{font-size:25px;margin:7px 0}
+.survey-card p{font-size:13px;max-width:650px}
+
+/* Home: core tools dominate; secondary shortcuts read as secondary. */
+.home-hero-v8{min-height:325px}
+.home-hero-content{padding:34px 38px!important}
+.home-hero-content h1{font-size:clamp(44px,5vw,64px)}
+.home-hero-content>p{font-size:16px;max-width:620px}
+.home-primary-section{padding-top:20px}
+.home-section-head h2{font-size:23px}
+.home-category-a{gap:11px}
+.home-category-a button{min-height:132px;border-color:#225069;background:linear-gradient(180deg,#0d2d43,#092335)}
+.home-category-a button b{font-size:15px}
+.home-category-a button small{font-size:10px;line-height:1.4}
+.home-popular-section{padding-top:14px;border-top:1px solid rgba(29,66,89,.42);margin-top:18px}
+.home-popular-section .home-section-head h2{font-size:18px}
+.home-popular-grid button{min-height:68px}
+.home-more-section{padding-top:8px}
+.home-more-links button{min-height:66px;background:#081f2f}
+.home-more-links button b{font-size:12px}
+.home-more-links button small{font-size:10px}
+.home-dashboard-fold{margin-top:16px}
+
+/* Sidebar: calmer grouping, stronger active-page cue without extra levels. */
+.nav-list{padding-top:12px}
+.nav-label{margin:18px 12px 6px;font-size:9px;letter-spacing:.16em;color:#5f8297}
+.nav-btn{min-height:39px;padding:9px 11px;border-radius:7px}
+.nav-divider{margin:12px 8px}
+.nav-project{margin-top:12px;border-top:1px solid #14384c;padding-top:10px}
+.nav-project>summary{margin-bottom:3px}
+.nav-project-items .nav-btn{font-size:12px}
+
+/* Footer */
+.site-footer{font-size:10px;color:#658599}
+
+/* Bridge Dark equivalents */
+[data-theme="bridge"] .panel,
+[data-theme="bridge"] .tool-card{box-shadow:0 8px 22px rgba(0,0,0,.18)}
+[data-theme="bridge"] .result{background:linear-gradient(180deg,#151009,#0f0b07);border-color:#583b22}
+[data-theme="bridge"] .result:before{background:#d69d45}
+[data-theme="bridge"] .result.ok:before{background:#9caf70}
+[data-theme="bridge"] .result.caution:before{background:#d8a054}
+[data-theme="bridge"] .result.alert:before{background:#d46457}
+[data-theme="bridge"] .tool-card .actions .btn:not(.primary){background:transparent;border-color:#503821;color:#b59a80}
+[data-theme="bridge"] .tool-card .actions .btn:not(.primary):hover{background:#1c140c;border-color:#74502d;color:#eadfD3}
+[data-theme="bridge"] .table-wrap,[data-theme="bridge"] .weather-table-wrap,[data-theme="bridge"] .mt-v860-table-wrap{background:#0f0b07;border-color:#46301d}
+[data-theme="bridge"] .table th{background:#151008}
+[data-theme="bridge"] .table tbody tr:hover td{background:rgba(224,173,77,.025)}
+[data-theme="bridge"] .info-fold[open]>summary{border-color:#3d2a1a}
+[data-theme="bridge"] .home-popular-section{border-top-color:rgba(75,52,33,.55)}
+[data-theme="bridge"] .nav-project{border-top-color:#392719}
+
+/* Responsive density */
+@media(min-width:1550px){
+  #fuel .tool-grid,
+  #engineering .tool-grid,
+  #electrical .tool-grid,
+  #vessel-calcs .tool-grid,
+  #navigation .tool-grid,
+  #quick .tool-grid{grid-template-columns:repeat(3,minmax(300px,1fr))}
+}
+@media(max-width:1180px){
+  #fuel .tool-grid,
+  #engineering .tool-grid,
+  #electrical .tool-grid,
+  #vessel-calcs .tool-grid,
+  #navigation .tool-grid,
+  #quick .tool-grid{grid-template-columns:repeat(2,minmax(280px,1fr))}
+  #profile .fields.three{grid-template-columns:repeat(2,minmax(180px,1fr))}
+}
+@media(max-width:900px){
+  .main-content{padding:16px 14px 30px}
+  .page-title{margin-bottom:15px}
+  .page-title h1{font-size:29px}
+  #fuel .tool-grid,
+  #engineering .tool-grid,
+  #electrical .tool-grid,
+  #vessel-calcs .tool-grid,
+  #navigation .tool-grid,
+  #quick .tool-grid{grid-template-columns:1fr}
+  #profile .fields.three{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .home-hero-v8{min-height:340px}
+}
+@media(max-width:760px){
+  .main-content{padding:13px 11px 27px}
+  .page-title{margin:0 1px 13px}
+  .page-title h1{font-size:27px}
+  .page-title p{font-size:12px}
+  .panel-head{padding:11px 13px}
+  .panel-body{padding:13px}
+  .tool-card-head{padding:13px 13px 8px}
+  .tool-card-work{padding:3px 13px 13px}
+  .tool-details summary{padding:10px 13px}
+  .result{padding:12px 13px}
+  .result strong{font-size:19px}
+  #profile .fields.three{grid-template-columns:1fr}
+  .about-hero{padding:19px 18px}
+  .about-hero h1{font-size:30px}
+  .survey-card{padding:19px 16px}
+  .home-hero-v8{min-height:380px}
+  .home-hero-content{padding:25px 18px!important}
+  .home-hero-content>p{font-size:14px}
+}
