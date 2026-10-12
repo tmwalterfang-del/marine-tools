@@ -13,7 +13,9 @@ Use this checklist for every production release. Safety or bug-fix releases may 
 - [ ] AIS endpoint responds in Norway and outside BarentsWatch coverage.
 - [ ] Navigation DDM input/output remains precise and internally consistent.
 - [ ] Voyage Estimate works for a global port-to-port route and a Norwegian port-to-offshore route.
-- [ ] Voyage Estimate route preferences, optional draft and Vessel Profile reuse behave as labelled.
+- [ ] Voyage Estimate route-preference checkboxes can be combined without contradictory selections.
+- [ ] Draft above a modelled canal limit greys out the corresponding Via option and applies the restriction automatically.
+- [ ] Optional draft and Vessel Profile reuse behave as labelled.
 - [ ] Voyage Estimate includes endpoint connection allowance from the routing engine and does not display route geometry.
 - [ ] No route coordinates, Voyage Estimate locations/inputs, Weather coordinates, vessel profile values, calculation inputs or search text are added to analytics.
 
