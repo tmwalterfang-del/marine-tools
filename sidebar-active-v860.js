@@ -28,6 +28,7 @@ function syncProjectContext(id){
   if(!project)return;
   const active=[...project.querySelectorAll('.nav-project-items .nav-btn[data-page]')].find(btn=>btn.dataset.page===id);
   project.classList.toggle('has-active-page',Boolean(active));
+  if(active)project.open=true;
   const summary=project.querySelector('summary');
   if(!summary)return;
   if(active){
