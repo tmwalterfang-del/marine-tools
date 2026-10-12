@@ -439,7 +439,7 @@ function render(host){
             <label class="ve-route-option"><input id="veAvoidPanama" type="checkbox"><span><b>Avoid Panama</b><small class="ve-option-note"></small></span></label>
           </div>
           <div id="veDraftGateStatus" class="ve-draft-status"><b>No draft entered.</b> Enter draft or use Vessel Profile to apply the estimator's canal draft gates.</div>
-          <div class="ve-draft-model-note">Estimator model limits in searoute-ts 2.3.0: Panama 15.2 m · Suez 20.1 m · Kiel 7.0 m · Corinth 7.3 m. These are static model limits, not live canal-authority restrictions.</div>
+          <div class="ve-draft-model-note">Draft checks use fixed model limits, not live canal-authority restrictions.</div>
         </div>
         <div class="ve-catalog"><span class="ve-dot"></span><span id="veCatalogText">Loading location catalogue…</span></div>
         <div class="ve-quick-routes"><span>Examples</span>
@@ -480,7 +480,6 @@ function render(host){
         <div><b>Locations</b><span>Port directory plus Norwegian offshore fields and fixed facilities.</span></div>
         <div><b>Route preferences</b><span>Combine required and avoided passages. Draft automatically blocks supported canals when the model limit is exceeded.</span></div>
       </div>
-      <div class="ve-source-note">Routing: searoute-ts 2.3.0 using the Eurostat maritime network. Draft gating covers the modelled limits for Panama, Suez, Kiel and Corinth only; beam, LOA, air draft, water level, temporary restrictions and live canal notices are not assessed. Port data is UN/LOCODE-derived. Norwegian offshore locations are loaded from the Norwegian Offshore Directorate. Selected locations are processed in your browser and are not included in Marine Tools analytics.</div>
     </article>
   `;
   bind();init();
