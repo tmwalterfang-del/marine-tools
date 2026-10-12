@@ -57,6 +57,9 @@ test -f voyage-estimate-v861.js || { echo '::error::Voyage Estimate JavaScript a
 test -f voyage-estimate-v861.css || { echo '::error::Voyage Estimate CSS asset is missing.'; exit 1; }
 grep -q 'Port Distance & Sea Time' voyage-estimate-v861.js || { echo '::error::Voyage Estimate content failed integrity check.'; exit 1; }
 grep -q 'originSnapKm' voyage-estimate-v861.js || { echo '::error::Voyage Estimate endpoint-distance allowance check is missing.'; exit 1; }
+grep -q 'veViaSuez' voyage-estimate-v861.js || { echo '::error::Voyage Estimate route-preference checkboxes are missing.'; exit 1; }
+grep -q 'CANAL_MAX_DRAFT_M' voyage-estimate-v861.js || { echo '::error::Voyage Estimate draft-gating integration is missing.'; exit 1; }
+grep -q 'veDraftGateStatus' voyage-estimate-v861.js || { echo '::error::Voyage Estimate draft availability feedback is missing.'; exit 1; }
 grep -q 'data-page="voyage-estimate"' index.html || { echo '::error::Voyage Estimate is not wired into production navigation.'; exit 1; }
 grep -q 'worker/worker-v860-dashboard.js' wrangler.jsonc || { echo '::error::Production Wrangler is not pointing at the current dashboard wrapper.'; exit 1; }
 grep -Fq '*/15 * * * *' wrangler.jsonc || { echo '::error::Cloudflare runtime smoke cron is missing.'; exit 1; }
