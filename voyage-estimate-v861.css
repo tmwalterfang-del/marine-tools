@@ -52,7 +52,6 @@
 .ve-method-grid>div{border:1px solid #173f55;background:#071d2a;border-radius:9px;padding:12px}
 .ve-method-grid b{display:block;font-size:11px;margin-bottom:4px}
 .ve-method-grid span{font-size:10px;color:#8faabd;line-height:1.45}
-.ve-source-note{padding:0 15px 15px;color:#6f91a6;font-size:9px;line-height:1.45}
 [data-theme="bridge"] .ve-engine-status,[data-theme="bridge"] .ve-catalog,[data-theme="bridge"] .ve-route-options-wrap,[data-theme="bridge"] .ve-route-option,[data-theme="bridge"] .ve-quick-routes button,[data-theme="bridge"] .ve-route-alert,[data-theme="bridge"] .ve-method-grid>div{background:#0f0b07;border-color:#4b3421}
 [data-theme="bridge"] .ve-draft-status{background:#171008;border-color:#d88c45}
 [data-theme="bridge"] .ve-summary-grid article{background:#100c08;border-color:#4b3421}
