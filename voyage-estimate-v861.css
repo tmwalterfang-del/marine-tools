@@ -11,9 +11,10 @@
 .ve-route-grid label small{display:block;min-height:20px;margin-top:4px;color:#6f91a6;font-size:9px;line-height:1.3}
 .ve-swap{height:42px;padding:0;font-size:18px}
 .ve-route-options-wrap{margin-top:12px;padding:12px;border:1px solid #173f55;background:#071d2a;border-radius:10px}
-.ve-route-options-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px}
+.ve-route-options-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
 .ve-route-options-head b{display:block;font-size:12px}
 .ve-route-options-head small{display:block;margin-top:3px;color:#7898ab;font-size:10px;line-height:1.35}
+.ve-route-options-head>span{color:#6f91a6;font-size:9px;white-space:nowrap}
 .ve-route-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .ve-route-option{display:flex;align-items:flex-start;gap:9px;min-width:0;padding:10px 11px;border:1px solid #1d4860;background:#081e2d;border-radius:8px;cursor:pointer}
 .ve-route-option input[type="checkbox"]{appearance:auto;-webkit-appearance:checkbox;width:16px;height:16px;min-width:16px;min-height:16px;margin:1px 0 0;padding:0;border:0;border-radius:3px;background:transparent;box-shadow:none;accent-color:var(--cyan);flex:0 0 16px}
@@ -22,9 +23,10 @@
 .ve-route-option small{display:block;min-height:14px;margin-top:3px;color:#7898ab;font-size:9px;line-height:1.3;overflow-wrap:anywhere}
 .ve-route-option.is-disabled{opacity:.48;cursor:not-allowed;background:#071923}
 .ve-route-option.is-disabled b{color:#8faabd}
-.ve-draft-status{margin-top:9px;padding:8px 10px;border-left:2px solid var(--cyan);background:#082438;color:#9db7c7;font-size:10px;line-height:1.4}
+.ve-draft-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:9px;padding:8px 10px;border-left:2px solid var(--cyan);background:#082438;border-radius:6px}
+.ve-draft-status{color:#9db7c7;font-size:10px;line-height:1.4}
 .ve-draft-status b{color:#d8e7ef}
-.ve-draft-model-note{margin-top:7px;color:#66879a;font-size:9px;line-height:1.4}
+.ve-draft-model-note{color:#66879a;font-size:9px;line-height:1.4;white-space:nowrap}
 .ve-catalog{display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 11px;border:1px solid #173f55;background:#071d2a;border-radius:9px;color:#8faabd;font-size:10px}
 .ve-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(50,212,138,.08)}
 .ve-quick-routes{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px}
@@ -47,13 +49,23 @@
 .ve-estimate-details>div:last-child{border-bottom:0}
 .ve-estimate-details dt{font-size:10px;color:#7898aa}
 .ve-estimate-details dd{margin:0;text-align:right;font-size:11px;color:#d8e7ef;overflow-wrap:anywhere}
-.ve-methodology{margin-top:10px}
+.ve-methodology{margin-top:10px;overflow:hidden}
+.ve-methodology>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 15px}
+.ve-methodology>summary::-webkit-details-marker{display:none}
+.ve-methodology>summary span{display:grid;gap:2px}
+.ve-methodology>summary b{font-size:12px}
+.ve-methodology>summary small{color:#7898ab;font-size:10px}
+.ve-methodology>summary>strong{color:#69c9ec;font-size:10px;font-weight:600}
+.ve-methodology[open]>summary{border-bottom:1px solid #173e56}
+.ve-methodology[open]>summary>strong{font-size:0}
+.ve-methodology[open]>summary>strong:after{content:'Hide';font-size:10px}
 .ve-method-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
 .ve-method-grid>div{border:1px solid #173f55;background:#071d2a;border-radius:9px;padding:12px}
 .ve-method-grid b{display:block;font-size:11px;margin-bottom:4px}
 .ve-method-grid span{font-size:10px;color:#8faabd;line-height:1.45}
 [data-theme="bridge"] .ve-engine-status,[data-theme="bridge"] .ve-catalog,[data-theme="bridge"] .ve-route-options-wrap,[data-theme="bridge"] .ve-route-option,[data-theme="bridge"] .ve-quick-routes button,[data-theme="bridge"] .ve-route-alert,[data-theme="bridge"] .ve-method-grid>div{background:#0f0b07;border-color:#4b3421}
-[data-theme="bridge"] .ve-draft-status{background:#171008;border-color:#d88c45}
+[data-theme="bridge"] .ve-draft-meta{background:#171008;border-color:#d88c45}
+[data-theme="bridge"] .ve-methodology[open]>summary{border-color:#392719}
 [data-theme="bridge"] .ve-summary-grid article{background:#100c08;border-color:#4b3421}
 [data-theme="bridge"] .ve-estimate-details>div{border-color:#392719}
 @media(max-width:1250px){
@@ -71,6 +83,10 @@
   .ve-route-grid input,.ve-route-grid select{font-size:16px;min-width:0}
   .ve-route-options{grid-template-columns:1fr}
   .ve-route-option{padding:11px}
+  .ve-route-options-head{display:block}
+  .ve-route-options-head>span{display:block;margin-top:5px;white-space:normal}
+  .ve-draft-meta{display:block}
+  .ve-draft-model-note{display:block;margin-top:4px;white-space:normal}
   .ve-swap{width:46px;justify-self:center;transform:rotate(90deg)}
   .ve-quick-routes{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:3px}
   .ve-quick-routes>span,.ve-quick-routes button{flex:0 0 auto;white-space:nowrap}
