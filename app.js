@@ -1087,7 +1087,7 @@ function renderSettings(){
   <div class="actions"><button class="btn primary" id="exportData">Download backup</button><button class="btn" id="importData">Restore backup</button><input id="importDataFile" type="file" accept=".json,application/json" hidden><button class="btn" id="clearHistorySet">Clear calculation history</button><button class="btn danger-soft" id="clearData">Clear all local data</button></div>
   <p class="helper">The backup contains your locally stored Marine Tools settings and histories. It does not contain anonymous analytics already sent to the server.</p>
  </div></article>
- <article class="panel" style="margin-top:12px"><div class="panel-body"><h3>Data principle</h3><p class="helper">Marine Tools keeps entered operational data local where possible. Live-data requests send only the route or position context needed for that request. Anonymous product analytics records only page/tool names, device class, app version and visible-time seconds.</p></div></article>`;
+ <details class="panel info-fold"><summary><span><b>Data principle</b><small>How Marine Tools handles operational data</small></span><strong>Show</strong></summary><div class="panel-body"><p class="helper">Marine Tools keeps entered operational data local where possible. Online requests send only the context needed for that request. Anonymous product analytics records only page/tool names, device class, app version and visible-time seconds.</p></div></details>`;
  $('#setTheme').value=state.theme;
  $('#saveSet').onclick=()=>{setTheme($('#setTheme').value);saveAppSettings({usageAnalytics:$('#setAnalytics')?.checked!==false});toast('Settings saved.')};
  if($('#setAnalytics'))$('#setAnalytics').onchange=e=>{saveAppSettings({usageAnalytics:e.target.checked});if(e.target.checked){sendAnalyticsEvent('analytics_enabled',{page:'settings'});analyticsVisibleSince=performance.now()}else flushAnalyticsEngagement(true);toast(e.target.checked?'Anonymous usage analytics enabled.':'Anonymous usage analytics disabled.')};
@@ -1162,63 +1162,70 @@ function renderContact(){
  </div>`;
 }
 function renderAbout(){
- $('#about').innerHTML=`<div class="about-hero"><div class="eyebrow">ABOUT THIS PROJECT</div><h1>Why Marine Tools exists</h1><p>Marine Tools is an independent maritime helper-tool project created to make common calculations, planning tasks and technical lookups easier to access in one place.</p></div>
+ $('#about').innerHTML=`<div class="about-hero"><div class="eyebrow">ABOUT THIS PROJECT</div><h1>Why Marine Tools exists</h1><p>Marine Tools brings practical maritime calculations and technical helpers together in one place.</p></div>
  <div class="about-columns">
    <article class="panel bullet-box"><h3>What it is</h3><ul>
-     <li>Calculation tools for navigation, engineering, electrical work, fuel and vessel operations</li>
-     <li>Optional experimental live-data features kept separate from the core calculators</li>
-     <li>Quick converters and technical utilities designed for PC, tablet and mobile use</li>
-     <li>A free project shaped by practical feedback from seafarers</li>
+     <li>Practical tools for navigation, engineering, electrical work, fuel and vessel operations</li>
+     <li>Quick converters and technical utilities for PC, tablet and mobile</li>
+     <li>Optional live and experimental features kept separate from core calculators</li>
    </ul></article>
    <article class="panel bullet-box"><h3>What it is not</h3><ul>
      <li>Not ECDIS or approved navigation equipment</li>
-     <li>Not a PMS, electronic logbook or checklist/SMS system</li>
-     <li>Not a certified decision-support system</li>
+     <li>Not a PMS, electronic logbook or certified decision-support system</li>
      <li>Not a replacement for vessel procedures, official publications or professional judgement</li>
    </ul></article>
  </div>
- <article class="panel" style="margin-top:12px"><div class="panel-body">
-   <h2>Independent and focused</h2>
-   <p>Marine Tools is currently designed, developed and maintained by <b>one person</b>. The scope is intentionally focused on practical helper tools that can save time or make routine calculations easier to verify.</p>
-   <p>Features such as watch handover, maintenance management, checklists and electronic records are outside the intended purpose. The focus is simple: <b>useful tools for seafarers</b>.</p>
-   <div class="notice"><b>Safety boundary:</b> All outputs are planning or calculation aids. Users remain responsible for checking data, assumptions, units and results against approved systems, official sources, vessel-specific documentation and applicable procedures.</div>
-   <div class="actions" style="margin-top:16px">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}${button('Support Marine Tools','support','btn')}${button('Business & contact','contact','btn')}</div>
- </div></article>
- <div class="grid-2" style="margin-top:12px">
-   <article class="panel bullet-box"><h3>Live & external data</h3><p>Weather point forecasts are provided as supporting context. Voyage Estimate loads public routing and location datasets when opened. AIS and route-context functions remain explicitly marked experimental and separate from the core calculators. Source, data age and limitations must always be considered.</p></article>
-   <article class="panel bullet-box"><h3>Privacy by design</h3><p>Vessel Profile, route and local settings are stored in this browser. Live-data requests send only the context needed to obtain the requested result. Marine Tools does not use operational data for advertising, profiling or unrelated purposes. Minimal anonymous product analytics can be disabled in Settings.</p><div class="actions" style="margin-top:12px">${button("Read Privacy & data","privacy","btn")}</div></article>
- </div>`;
+ <details class="panel info-fold">
+   <summary><span><b>Project scope & safety</b><small>Purpose, boundaries and project focus</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Marine Tools is independently developed and focused on practical helper tools that can save time or make routine calculations easier to verify.</p>
+     <div class="notice"><b>Safety boundary:</b> Outputs are planning or calculation aids. Check data, assumptions, units and results against approved systems, official sources, vessel-specific documentation and applicable procedures.</div>
+     <div class="actions">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}${button('Business & contact','contact','btn')}</div>
+   </div>
+ </details>
+ <details class="panel info-fold">
+   <summary><span><b>Live data & privacy</b><small>How online features and local data are handled</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Weather and voyage-estimate data are supporting context. AIS and route-context functions remain experimental. Vessel Profile, route and local settings stay in this browser unless a feature explicitly needs an online request.</p>
+     <div class="actions">${button("Read Privacy & data","privacy","btn")}</div>
+   </div>
+ </details>`;
 }
 function renderPrivacy(){
- $('#privacy').innerHTML=`<div class="about-hero"><div class="eyebrow">PRIVACY & DATA</div><h1>Local-first by design</h1><p>Marine Tools uses only the data needed to perform the calculation, save your local setup or return the live-data request you choose to make.</p></div>
+ $('#privacy').innerHTML=`<div class="about-hero"><div class="eyebrow">PRIVACY & DATA</div><h1>Local-first by design</h1><p>Marine Tools keeps user-entered operational data local where possible and sends only what an online feature needs.</p></div>
  <div class="about-columns">
    <article class="panel bullet-box"><h3>Stored on your device</h3><ul>
-     <li>Vessel Profile values</li>
-     <li>Route waypoints created in the optional experimental Route Intelligence feature</li>
-     <li>Theme and local application settings</li>
-     <li>The previous route-analysis snapshot used for “What changed?”</li><li>Saved fuel, urea and lube-oil consumption history</li><li>Saved bunkering history</li><li>The last successful weather forecast for offline reference</li>
-   </ul><p class="helper">These values are stored in your browser on the device you are using. They are not automatically synced to a Marine Tools account or central project database.</p></article>
-   <article class="panel bullet-box"><h3>Not used for unrelated purposes</h3><ul>
-     <li>No advertising or behavioural profiling</li>
-     <li>No sale of vessel, route or calculation data</li>
-     <li>No use of entered operational data to train AI models</li>
-     <li>No intentional use for employment, disciplinary, enforcement or commercial assessment</li>
-   </ul><p class="helper">Marine Tools also collects minimal anonymous product analytics: page opened, tool used, device class, app version and visible-time seconds. No calculation inputs, vessel profile values, route coordinates, weather positions, names, email addresses or persistent user IDs are included. You can disable this under Settings. </p><p class="helper">Marine Tools has no user-account database and no function that lets another Marine Tools user retrieve your locally stored operational data.</p></article>
+     <li>Vessel Profile and local settings</li>
+     <li>Calculation, consumption and bunkering history</li>
+     <li>Optional experimental route data</li>
+     <li>Cached weather data for offline reference</li>
+   </ul><p class="helper">These values are stored in this browser and are not automatically synced to a Marine Tools account.</p></article>
+   <article class="panel bullet-box"><h3>Anonymous product analytics</h3><ul>
+     <li>Page and tool names</li>
+     <li>Device class and app version</li>
+     <li>Visible-time seconds</li>
+     <li>No calculation inputs, vessel values, route coordinates or weather positions</li>
+   </ul><p class="helper">Anonymous usage analytics can be disabled under Settings.</p></article>
  </div>
- <article class="panel" style="margin-top:12px"><div class="panel-body">
-   <h2>When online data is requested</h2>
-   <p>Some tools require internet access. Weather, AIS and experimental route-context requests send only the context needed to return the requested result to the Marine Tools API. Voyage Estimate instead downloads public routing and location datasets from external providers and performs the selected route calculation in your browser; the selected origin, destination, speed and draft are not included in Marine Tools analytics.</p>
-   <div class="notice"><b>External infrastructure:</b> Internet requests necessarily pass through hosting, maritime-data, map and network providers. Those providers may process or retain technical request logs according to their own systems and policies.</div>
- </div></article>
- <div class="grid-2" style="margin-top:12px">
-   <article class="panel bullet-box"><h3>Maps & live-data sources</h3><p>Map tiles and live maritime data are requested from external services when the relevant feature is used. Those services receive the technical information necessary to return the requested content.</p></article>
-   <article class="panel bullet-box"><h3>Survey & suggestions</h3><p>Survey and suggestion submissions are handled through an external form service and are separate from locally stored Marine Tools operational data. Avoid submitting confidential vessel, company or personal information unless it is necessary.</p></article>
- </div>
- <article class="panel" style="margin-top:12px"><div class="panel-body">
-   <h2>Your control</h2>
-   <p>You can download a local backup, restore it on another device, or erase local Marine Tools data under <b>Settings → Data stored on this device</b>. Clearing browser site data will also remove locally stored Marine Tools data.</p>
-   <p><b>Data principle:</b> collect as little as possible, keep user-entered operational data local where possible, and send only what is necessary when a live-data feature explicitly requires a network request.</p>
- </div></article>`;
+ <details class="panel info-fold">
+   <summary><span><b>Online requests</b><small>Weather, AIS, maps and Voyage Estimate</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Weather, AIS and experimental route-context requests send only the context needed to return the requested result. Voyage Estimate downloads public routing and location datasets and performs the selected route calculation in your browser.</p>
+     <div class="notice"><b>External infrastructure:</b> Internet requests pass through hosting, maritime-data, map and network providers, which may process technical request logs according to their own systems and policies.</div>
+   </div>
+ </details>
+ <details class="panel info-fold">
+   <summary><span><b>Forms & external services</b><small>Maps, surveys and suggestions</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Map tiles and live maritime data are requested from external services when those features are used. Survey and suggestion submissions use an external form service and are separate from locally stored operational data.</p>
+   </div>
+ </details>
+ <details class="panel info-fold">
+   <summary><span><b>Your control</b><small>Backup, restore or clear local data</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Under <b>Settings → Data stored on this device</b> you can download a backup, restore it on another device, clear calculation history or erase local Marine Tools data. Clearing browser site data will also remove locally stored Marine Tools data.</p>
+   </div>
+ </details>`;
 }
 function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow">MARINE TOOLS</div><h1>${h}</h1><p>${p}</p></div></div>`}
 function setRes(id,main,sub='',cls=''){const e=$('#'+id);if(!e)return;e.className=`result ${cls}`;e.innerHTML=`<strong>${main}</strong>${sub?`<small>${sub}</small>`:''}`}
