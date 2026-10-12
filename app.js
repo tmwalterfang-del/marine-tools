@@ -452,6 +452,7 @@ function renderHome(){
  </section>
 
  <section class="home-more-section">
+   <div class="home-section-head"><div><span class="eyebrow">PLANNING & DATA</span><h2>More tools</h2></div></div>
    <div class="home-more-links">
      <button data-go="voyage-estimate"><span>↗</span><b>Voyage Estimate</b><small>Approximate port distance, sea time and optional fuel</small><strong>→</strong></button>
      <button data-go="weather"><span>☁</span><b>Weather</b><small>MET Norway point forecast and weather helpers</small><strong>→</strong></button>
