@@ -2,6 +2,7 @@
 'use strict';
 
 const LIB_VERSION='2.3.0';
+const DRAFT_LIMITS_FALLBACK={panama:15.2,suez:20.1,kiel:7.0,corinth:7.3};
 const CORE_MODULES=[
   'https://esm.sh/searoute-ts@2.3.0?bundle&target=es2022',
   'https://cdn.jsdelivr.net/npm/searoute-ts@2.3.0/+esm'
@@ -186,26 +187,93 @@ function applyProfile(show=true){
     const hint=$('#veSpeedHint');
     if(hint)hint.textContent=(p.speed||p.draft||p.fuelDay)?'Loaded available values from Vessel Profile.':'No saved Vessel Profile found in this browser.';
   }
+  updateRouteOptionAvailability();
   return p;
 }
-function routeOptions(mode,networkInfo){
-  const speed=Number($('#veSpeedKnots').value),draft=Number($('#veDraftM').value);
+function draftLimits(){
+  return state.engine&&state.engine.CANAL_MAX_DRAFT_M?state.engine.CANAL_MAX_DRAFT_M:DRAFT_LIMITS_FALLBACK;
+}
+function currentDraft(){
+  const raw=$('#veDraftM')?.value?.trim();
+  if(raw==null||raw==='')return null;
+  const value=Number(raw);
+  return Number.isFinite(value)&&value>=0?value:null;
+}
+function draftBlockedPassages(draft=currentDraft()){
+  if(!(draft>0))return[];
+  const limits=draftLimits();
+  return Object.entries(limits)
+    .filter(([,limit])=>Number.isFinite(Number(limit))&&draft>Number(limit))
+    .map(([passage,limit])=>({passage,limit:Number(limit)}));
+}
+function passageLabel(p){return({suez:'Suez',panama:'Panama',kiel:'Kiel',corinth:'Corinth',babelmandeb:'Bab-el-Mandeb'})[p]||titleCase(p)}
+function option(id){return document.getElementById(id)}
+function setOptionVisual(input,disabled,reason=''){
+  if(!input)return;
+  input.disabled=disabled;
+  const label=input.closest('.ve-route-option');
+  if(label){label.classList.toggle('is-disabled',disabled);const note=label.querySelector('.ve-option-note');if(note)note.textContent=reason}
+}
+function updateRouteOptionAvailability(){
+  const viaSuez=option('veViaSuez'),avoidSuez=option('veAvoidSuez'),viaPanama=option('veViaPanama'),avoidPanama=option('veAvoidPanama');
+  if(!viaSuez||!avoidSuez||!viaPanama||!avoidPanama)return;
+
+  for(const input of [viaSuez,avoidSuez,viaPanama,avoidPanama]){
+    input.checked=input.dataset.userChecked==='1';
+    setOptionVisual(input,false,'');
+  }
+
+  const draft=currentDraft(),limits=draftLimits(),blocked=draftBlockedPassages(draft);
+  const blockedNames=new Set(blocked.map(x=>x.passage));
+
+  const applyPair=(via,avoid,passage,avoidName)=>{
+    const limit=Number(limits[passage]);
+    if(blockedNames.has(passage)){
+      via.checked=false;
+      setOptionVisual(via,true,'Unavailable: draft exceeds '+fmt(limit,1)+' m model limit.');
+      avoid.checked=true;
+      setOptionVisual(avoid,true,'Applied automatically from entered draft.');
+      return;
+    }
+    if(avoid.checked){
+      via.checked=false;
+      setOptionVisual(via,true,'Unavailable while '+avoidName+' is selected.');
+    }else if(via.checked){
+      avoid.checked=false;
+      setOptionVisual(avoid,true,'Unavailable while Via '+passageLabel(passage)+' is selected.');
+    }
+  };
+  applyPair(viaSuez,avoidSuez,'suez','Avoid Suez / Bab-el-Mandeb');
+  applyPair(viaPanama,avoidPanama,'panama','Avoid Panama');
+
+  const status=$('#veDraftGateStatus');
+  if(status){
+    if(!(draft>0))status.innerHTML='<b>No draft entered.</b> Enter draft or use Vessel Profile to apply the estimator\'s canal draft gates.';
+    else if(blocked.length)status.innerHTML='<b>Draft '+esc(fmt(draft,1))+' m:</b> model automatically blocks '+blocked.map(x=>esc(passageLabel(x.passage))+' ('+esc(fmt(x.limit,1))+' m)').join(', ')+'.';
+    else status.innerHTML='<b>Draft '+esc(fmt(draft,1))+' m:</b> no modelled canal draft limit is exceeded.';
+  }
+}
+function routePreferences(){
+  const via=[],restrictions=[],labels=[];
+  const viaSuez=option('veViaSuez'),avoidSuez=option('veAvoidSuez'),viaPanama=option('veViaPanama'),avoidPanama=option('veAvoidPanama');
+  if(viaSuez?.checked&&!viaSuez.disabled){via.push('suez');labels.push('Via Suez')}
+  if(viaPanama?.checked&&!viaPanama.disabled){via.push('panama');labels.push('Via Panama')}
+  if(avoidSuez?.checked){restrictions.push('suez','babelmandeb');labels.push('Avoid Suez / Bab-el-Mandeb')}
+  if(avoidPanama?.checked){restrictions.push('panama');labels.push('Avoid Panama')}
+  return{via,restrictions:[...new Set(restrictions)],labels};
+}
+function routeOptions(preferences,networkInfo){
+  const speed=Number($('#veSpeedKnots').value),draft=currentDraft();
   const o={units:'nauticalmiles',speedKnots:speed,returnPassages:true};
   if(networkInfo&&networkInfo.network){o.network=networkInfo.network;o.maxSnapDistanceKm=networkInfo.resolutionKm<=20?35:65}
   if(Number.isFinite(draft)&&draft>0)o.vesselDraftMeters=draft;
-  if(mode==='suez')o.via=['suez'];
-  if(mode==='panama')o.via=['panama'];
-  if(mode==='cape')o.restrictions=['suez','babelmandeb'];
-  if(mode==='no-panama')o.restrictions=['panama'];
+  if(preferences.via.length)o.via=preferences.via;
+  if(preferences.restrictions.length)o.restrictions=preferences.restrictions;
   return o;
 }
-function routeBasis(mode,route){
+function routeBasis(preferences,route){
   const pass=route.properties&&route.properties.passages||[];
-  if(mode==='suez')return['Via Suez',pass];
-  if(mode==='panama')return['Via Panama',pass];
-  if(mode==='cape')return['Avoid Suez / Bab-el-Mandeb',pass];
-  if(mode==='no-panama')return['Avoid Panama',pass];
-  return['Automatic estimate',pass];
+  return[preferences.labels.length?preferences.labels.join(' · '):'Automatic estimate',pass];
 }
 function routeMetrics(route,speed){
   const p=route.properties||{};
@@ -217,15 +285,17 @@ function routeMetrics(route,speed){
   return{networkNm,originSnapKm,destinationSnapKm,endpointNm,distanceNm,hours};
 }
 function fuelEstimate(hours){const p=loadProfile();return p.fuelDay>0&&Number.isFinite(hours)?p.fuelDay*(hours/24):null}
-function detailsRows(from,to,route,mode,speed){
-  const m=routeMetrics(route,speed),gc=greatCircleNm(from.coordinates,to.coordinates),ratio=gc?m.distanceNm/gc:null,[basis,pass]=routeBasis(mode,route);
+function detailsRows(from,to,route,preferences,speed){
+  const m=routeMetrics(route,speed),gc=greatCircleNm(from.coordinates,to.coordinates),ratio=gc?m.distanceNm/gc:null,[basis,pass]=routeBasis(preferences,route),draft=currentDraft(),blocked=draftBlockedPassages(draft);
   const rows=[
     ['From',from.name+' · '+typeName(from)],
     ['To',to.name+' · '+typeName(to)],
     ['Estimated distance',fmt(m.distanceNm,1)+' NM'],
     ['Selected speed',fmt(speed,1)+' kn'],
+    ['Draft',draft!=null?fmt(draft,1)+' m':'Not entered'],
     ['Estimated sea time',etaText(m.hours)],
-    ['Route preference',basis],
+    ['Route preferences',basis],
+    ['Draft restrictions (model)',blocked.length?blocked.map(x=>passageLabel(x.passage)+' > '+fmt(x.limit,1)+' m').join(', '):draft!=null?'None triggered':'Not assessed'],
     ['Detected passages',pass.length?pass.map(titleCase).join(', '):'None labelled']
   ];
   if(m.endpointNm>0.05)rows.push(['Endpoint connection allowance',fmt(m.endpointNm,1)+' NM']);
@@ -238,8 +308,8 @@ function detailsRows(from,to,route,mode,speed){
   );
   return rows;
 }
-function renderEstimate(from,to,route,mode){
-  const speed=Number($('#veSpeedKnots').value),m=routeMetrics(route,speed),fuel=fuelEstimate(m.hours),[basis,pass]=routeBasis(mode,route);
+function renderEstimate(from,to,route,preferences){
+  const speed=Number($('#veSpeedKnots').value),m=routeMetrics(route,speed),fuel=fuelEstimate(m.hours),[basis,pass]=routeBasis(preferences,route);
   $('#veDistanceValue').textContent=fmt(m.distanceNm,0)+' NM';
   $('#veEtaValue').textContent=etaText(m.hours);
   $('#veEtaSpeed').textContent='at '+fmt(speed,1)+' kn';
@@ -249,7 +319,7 @@ function renderEstimate(from,to,route,mode){
   $('#vePassageValue').textContent=pass.length?pass.map(titleCase).join(', '):'macro estimate';
   $('#veEstimateTitle').textContent=from.name+' → '+to.name;
   $('#veEstimateSubtitle').textContent='Approximate voyage estimate only.';
-  $('#veEstimateDetails').innerHTML=detailsRows(from,to,route,mode,speed).map(([k,v])=>'<div><dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd></div>').join('');
+  $('#veEstimateDetails').innerHTML=detailsRows(from,to,route,preferences,speed).map(([k,v])=>'<div><dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd></div>').join('');
   $('#veResultArea').hidden=false;
   window.__marineToolsAnalyticsV2?.send?.('calculation_completed',{page:'voyage-estimate',tool:'Port Distance & Sea Time'});
   $('#veResultArea').scrollIntoView({behavior:'smooth',block:'start'});
@@ -269,10 +339,11 @@ async function calculate(){
     if(needsCoastalNetwork(from,to)){
       try{networkInfo=await ensureCoastalNetwork()}catch(e){console.warn('Fine coastal network unavailable; using standard estimate network',e)}
     }
-    const mode=$('#veRouteMode').value,opts=routeOptions(mode,networkInfo);
+    updateRouteOptionAvailability();
+    const preferences=routePreferences(),opts=routeOptions(preferences,networkInfo);
     const route=state.engine.seaRoute(from.coordinates,to.coordinates,opts);
     if(!route||!route.properties||!Number.isFinite(Number(route.properties.length)))throw new Error('No distance estimate returned');
-    renderEstimate(from,to,route,mode);
+    renderEstimate(from,to,route,preferences);
   }catch(e){
     console.error(e);$('#veResultArea').hidden=true;
     const msg=String(e&&e.message||e||'Unknown error');
@@ -286,6 +357,18 @@ function bind(){
   $('#veCalculateRoute').addEventListener('click',calculate);
   $('#veSwapPorts').addEventListener('click',()=>{const a=$('#veFromPort').value;$('#veFromPort').value=$('#veToPort').value;$('#veToPort').value=a});
   $('#veUseProfile').addEventListener('click',()=>applyProfile(true));
+  $('#veDraftM').addEventListener('input',updateRouteOptionAvailability);
+  const pairs={veViaSuez:'veAvoidSuez',veAvoidSuez:'veViaSuez',veViaPanama:'veAvoidPanama',veAvoidPanama:'veViaPanama'};
+  for(const id of Object.keys(pairs)){
+    const input=option(id);if(!input)continue;
+    input.dataset.userChecked=input.checked?'1':'0';
+    input.addEventListener('change',()=>{
+      input.dataset.userChecked=input.checked?'1':'0';
+      if(input.checked){const other=option(pairs[id]);if(other)other.dataset.userChecked='0'}
+      updateRouteOptionAvailability();
+    });
+  }
+  updateRouteOptionAvailability();
   $('#veClearRoute').addEventListener('click',clearAll);
   document.querySelectorAll('#voyage-estimate [data-route]').forEach(b=>b.addEventListener('click',()=>{const[a,z]=b.dataset.route.split('|');setPort($('#veFromPort'),a);setPort($('#veToPort'),z)}));
   document.querySelectorAll('#voyage-estimate [data-mixed-from]').forEach(b=>b.addEventListener('click',()=>{
@@ -311,6 +394,7 @@ async function init(){
       rebuildIndex();applyProfile(false);
       setPort($('#veFromPort'),'NLRTM');setPort($('#veToPort'),'SGSIN');
       state.ready=true;setStatus('ready','Ready · engine '+LIB_VERSION);
+      updateRouteOptionAvailability();
       $('#veCalculateRoute').disabled=false;
       loadOffshore().catch(e=>console.warn('Offshore catalogue unavailable',e));
     }catch(e){
@@ -344,14 +428,18 @@ function render(host){
           <label><span>To location</span><input id="veToPort" list="vePortList" autocomplete="off" placeholder="Port, field, facility or lat,lon"></label>
           <datalist id="vePortList"></datalist>
           <label><span>Speed kn</span><input id="veSpeedKnots" type="number" min="1" max="40" step="0.1" value="12"><small id="veSpeedHint">Used for estimated sea time.</small></label>
-          <label><span>Draft m</span><input id="veDraftM" type="number" min="0" max="30" step="0.1" placeholder="Optional"><small>Used for supported passage restrictions.</small></label>
-          <label><span>Route preference</span><select id="veRouteMode">
-            <option value="shortest">Automatic / shortest estimate</option>
-            <option value="suez">Via Suez</option>
-            <option value="panama">Via Panama</option>
-            <option value="cape">Avoid Suez / Bab-el-Mandeb</option>
-            <option value="no-panama">Avoid Panama</option>
-          </select></label>
+          <label><span>Draft m</span><input id="veDraftM" type="number" min="0" max="30" step="0.1" placeholder="Optional"><small>Applies supported canal draft gates.</small></label>
+        </div>
+        <div class="ve-route-options-wrap">
+          <div class="ve-route-options-head"><div><b>Route preferences</b><small>Select none for automatic routing, or combine several options. Multiple “Via” passages are applied in the order shown.</small></div></div>
+          <div class="ve-route-options">
+            <label class="ve-route-option"><input id="veViaSuez" type="checkbox"><span><b>Via Suez</b><small class="ve-option-note"></small></span></label>
+            <label class="ve-route-option"><input id="veViaPanama" type="checkbox"><span><b>Via Panama</b><small class="ve-option-note"></small></span></label>
+            <label class="ve-route-option"><input id="veAvoidSuez" type="checkbox"><span><b>Avoid Suez / Bab-el-Mandeb</b><small class="ve-option-note"></small></span></label>
+            <label class="ve-route-option"><input id="veAvoidPanama" type="checkbox"><span><b>Avoid Panama</b><small class="ve-option-note"></small></span></label>
+          </div>
+          <div id="veDraftGateStatus" class="ve-draft-status"><b>No draft entered.</b> Enter draft or use Vessel Profile to apply the estimator's canal draft gates.</div>
+          <div class="ve-draft-model-note">Estimator model limits in searoute-ts 2.3.0: Panama 15.2 m · Suez 20.1 m · Kiel 7.0 m · Corinth 7.3 m. These are static model limits, not live canal-authority restrictions.</div>
         </div>
         <div class="ve-catalog"><span class="ve-dot"></span><span id="veCatalogText">Loading location catalogue…</span></div>
         <div class="ve-quick-routes"><span>Examples</span>
@@ -390,9 +478,9 @@ function render(host){
         <div><b>Sea time</b><span>Estimated from distance and selected speed.</span></div>
         <div><b>Fuel</b><span>Estimated from saved daily fuel consumption in Vessel Profile.</span></div>
         <div><b>Locations</b><span>Port directory plus Norwegian offshore fields and fixed facilities.</span></div>
-        <div><b>Route preference</b><span>Automatic estimate with optional passage preferences and restrictions.</span></div>
+        <div><b>Route preferences</b><span>Combine required and avoided passages. Draft automatically blocks supported canals when the model limit is exceeded.</span></div>
       </div>
-      <div class="ve-source-note">Routing: searoute-ts 2.3.0 using the Eurostat maritime network. Port data is UN/LOCODE-derived. Norwegian offshore locations are loaded from the Norwegian Offshore Directorate. Selected locations are processed in your browser and are not included in Marine Tools analytics.</div>
+      <div class="ve-source-note">Routing: searoute-ts 2.3.0 using the Eurostat maritime network. Draft gating covers the modelled limits for Panama, Suez, Kiel and Corinth only; beam, LOA, air draft, water level, temporary restrictions and live canal notices are not assessed. Port data is UN/LOCODE-derived. Norwegian offshore locations are loaded from the Norwegian Offshore Directorate. Selected locations are processed in your browser and are not included in Marine Tools analytics.</div>
     </article>
   `;
   bind();init();
