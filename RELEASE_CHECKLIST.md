@@ -24,6 +24,9 @@ Use this checklist for every production release. Safety or bug-fix releases may 
 Test both portrait and landscape on a phone-sized viewport.
 
 - [ ] Sidebar opens, closes and does not cover active content after navigation.
+- [ ] Core calculator pages use consistent headers, card spacing and result hierarchy.
+- [ ] About, Privacy and Settings secondary information expands/collapses cleanly.
+- [ ] Tables and histories remain readable in Dark and Bridge Dark.
 - [ ] Home search and global search remain usable.
 - [ ] Weather: `Show map`, `Use my position`, DDM fields and `Load forecast` are visible and usable.
 - [ ] Weather map can be opened, tapped and dragged without freezing the page.
