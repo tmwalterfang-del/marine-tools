@@ -431,15 +431,14 @@ function render(host){
           <label><span>Draft m</span><input id="veDraftM" type="number" min="0" max="30" step="0.1" placeholder="Optional"><small>Applies supported canal draft gates.</small></label>
         </div>
         <div class="ve-route-options-wrap">
-          <div class="ve-route-options-head"><div><b>Route preferences</b><small>Select none for automatic routing, or combine several options. Multiple “Via” passages are applied in the order shown.</small></div></div>
+          <div class="ve-route-options-head"><div><b>Route preferences</b><small>Optional · combine where relevant</small></div><span>Automatic if none selected</span></div>
           <div class="ve-route-options">
             <label class="ve-route-option"><input id="veViaSuez" type="checkbox"><span><b>Via Suez</b><small class="ve-option-note"></small></span></label>
             <label class="ve-route-option"><input id="veViaPanama" type="checkbox"><span><b>Via Panama</b><small class="ve-option-note"></small></span></label>
             <label class="ve-route-option"><input id="veAvoidSuez" type="checkbox"><span><b>Avoid Suez / Bab-el-Mandeb</b><small class="ve-option-note"></small></span></label>
             <label class="ve-route-option"><input id="veAvoidPanama" type="checkbox"><span><b>Avoid Panama</b><small class="ve-option-note"></small></span></label>
           </div>
-          <div id="veDraftGateStatus" class="ve-draft-status"><b>No draft entered.</b> Enter draft or use Vessel Profile to apply the estimator's canal draft gates.</div>
-          <div class="ve-draft-model-note">Draft checks use fixed model limits, not live canal-authority restrictions.</div>
+          <div class="ve-draft-meta"><div id="veDraftGateStatus" class="ve-draft-status"><b>No draft entered.</b> Canal draft gating is inactive.</div><span class="ve-draft-model-note">Fixed model limits · not live clearance</span></div>
         </div>
         <div class="ve-catalog"><span class="ve-dot"></span><span id="veCatalogText">Loading location catalogue…</span></div>
         <div class="ve-quick-routes"><span>Examples</span>
@@ -471,16 +470,16 @@ function render(host){
       </article>
     </section>
 
-    <article class="panel ve-methodology">
-      <div class="panel-head"><div><h2>About this estimator</h2><small>Quick voyage estimates from selected locations and vessel speed.</small></div></div>
+    <details class="panel ve-methodology">
+      <summary><span><b>Estimator details</b><small>Sources, assumptions and limitations</small></span><strong>Show</strong></summary>
       <div class="panel-body ve-method-grid">
-        <div><b>Distance</b><span>Estimated sea distance in nautical miles, including endpoint connection allowance where provided by the routing engine.</span></div>
-        <div><b>Sea time</b><span>Estimated from distance and selected speed.</span></div>
-        <div><b>Fuel</b><span>Estimated from saved daily fuel consumption in Vessel Profile.</span></div>
-        <div><b>Locations</b><span>Port directory plus Norwegian offshore fields and fixed facilities.</span></div>
-        <div><b>Route preferences</b><span>Combine required and avoided passages. Draft automatically blocks supported canals when the model limit is exceeded.</span></div>
+        <div><b>Distance</b><span>Estimated sea distance including endpoint connection allowance.</span></div>
+        <div><b>Sea time</b><span>Distance divided by selected speed.</span></div>
+        <div><b>Fuel</b><span>Uses saved daily fuel consumption when available.</span></div>
+        <div><b>Locations</b><span>Ports plus Norwegian offshore fields and fixed facilities.</span></div>
+        <div><b>Draft & passages</b><span>Supported canal limits and selected route preferences are applied to the estimate.</span></div>
       </div>
-    </article>
+    </details>
   `;
   bind();init();
 }
