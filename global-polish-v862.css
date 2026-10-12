@@ -150,8 +150,11 @@ label{line-height:1.35}
 .home-popular-section{padding-top:14px;border-top:1px solid rgba(29,66,89,.42);margin-top:18px}
 .home-popular-section .home-section-head h2{font-size:18px}
 .home-popular-grid button{min-height:68px}
-.home-more-section{padding-top:8px}
-.home-more-links button{min-height:66px;background:#081f2f}
+.home-more-section{padding-top:18px;margin-top:14px;border-top:1px solid rgba(29,66,89,.42)}
+.home-more-section .home-section-head{margin-bottom:10px}
+.home-more-section .home-section-head h2{font-size:18px}
+.home-more-links{grid-template-columns:repeat(4,minmax(0,1fr))}
+.home-more-links button{min-height:70px;background:#081f2f}
 .home-more-links button b{font-size:12px}
 .home-more-links button small{font-size:10px}
 .home-dashboard-fold{margin-top:16px}
@@ -182,7 +185,7 @@ label{line-height:1.35}
 [data-theme="bridge"] .table th{background:#151008}
 [data-theme="bridge"] .table tbody tr:hover td{background:rgba(224,173,77,.025)}
 [data-theme="bridge"] .info-fold[open]>summary{border-color:#3d2a1a}
-[data-theme="bridge"] .home-popular-section{border-top-color:rgba(75,52,33,.55)}
+[data-theme="bridge"] .home-popular-section,[data-theme="bridge"] .home-more-section{border-top-color:rgba(75,52,33,.55)}
 [data-theme="bridge"] .nav-project{border-top-color:#392719}
 
 /* Responsive density */
@@ -195,6 +198,7 @@ label{line-height:1.35}
   #quick .tool-grid{grid-template-columns:repeat(3,minmax(300px,1fr))}
 }
 @media(max-width:1180px){
+  .home-more-links{grid-template-columns:repeat(2,minmax(0,1fr))}
   #fuel .tool-grid,
   #engineering .tool-grid,
   #electrical .tool-grid,
@@ -232,6 +236,7 @@ label{line-height:1.35}
   .about-hero{padding:19px 18px}
   .about-hero h1{font-size:30px}
   .survey-card{padding:19px 16px}
+  .home-more-links{grid-template-columns:1fr}
   .home-hero-v8{min-height:380px}
   .home-hero-content{padding:25px 18px!important}
   .home-hero-content>p{font-size:14px}
