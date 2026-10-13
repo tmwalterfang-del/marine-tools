@@ -203,6 +203,9 @@ label{line-height:1.35}
 .nav-project{margin-top:12px;border-top:1px solid #14384c;padding-top:10px}
 .nav-project>summary{margin-bottom:3px}
 .nav-project-items .nav-btn{font-size:12px}
+.nav-project[open] .nav-project-items{padding-bottom:8px}
+.nav-project[open] .nav-project-items .nav-btn{min-height:34px;padding:7px 9px}
+.nav-project[open] summary{position:sticky;top:-1px;z-index:2;background:#071d2e}
 
 /* Footer */
 .site-footer{font-size:10px;color:#658599}
@@ -223,6 +226,7 @@ label{line-height:1.35}
 [data-theme="bridge"] .info-fold[open]>summary{border-color:#3d2a1a}
 [data-theme="bridge"] .home-popular-section,[data-theme="bridge"] .home-more-section{border-top-color:rgba(75,52,33,.55)}
 [data-theme="bridge"] .nav-project{border-top-color:#392719}
+[data-theme="bridge"] .nav-project[open] summary{background:#100b07}
 
 /* Responsive density */
 @media(min-width:1550px){
