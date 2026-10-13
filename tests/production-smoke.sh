@@ -55,6 +55,11 @@ test -f release-v860.js || { echo '::error::Release UI production asset is missi
 grep -q "version:'8.6.1'" release-v860.js || { echo '::error::Release UI version metadata failed integrity check.'; exit 1; }
 test -f voyage-estimate-v861.js || { echo '::error::Voyage Estimate JavaScript asset is missing.'; exit 1; }
 test -f voyage-estimate-v861.css || { echo '::error::Voyage Estimate CSS asset is missing.'; exit 1; }
+test -f voyage-planning-draft-v1.js || { echo '::error::Voyage Planning Lab JavaScript asset is missing.'; exit 1; }
+test -f voyage-planning-draft-v1.css || { echo '::error::Voyage Planning Lab CSS asset is missing.'; exit 1; }
+grep -q 'voyage-planning-lab' index.html || { echo '::error::Voyage Planning Lab page is not wired into index.html.'; exit 1; }
+grep -q 'Bunker Requirement / Stem Planner' voyage-planning-draft-v1.js || { echo '::error::Voyage Planning Lab bunker draft is missing.'; exit 1; }
+grep -q 'Vessel Consumption Curve' voyage-planning-draft-v1.js || { echo '::error::Voyage Planning Lab consumption-curve draft is missing.'; exit 1; }
 test -f global-polish-v862.css || { echo '::error::Global visual polish CSS asset is missing.'; exit 1; }
 grep -q 'global-polish-v862.css' index.html || { echo '::error::Global visual polish is not wired into index.html.'; exit 1; }
 grep -q 'Port Distance & Sea Time' voyage-estimate-v861.js || { echo '::error::Voyage Estimate content failed integrity check.'; exit 1; }
