@@ -17,6 +17,7 @@ const IMO_FACTORS={
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const num=(v)=>Number(v);
+const inputNum=(el)=>{const v=el?.value;return v==null||String(v).trim()===''?NaN:Number(v)};
 const ok=(v)=>Number.isFinite(Number(v));
 const fmt=(v,d=1)=>ok(v)?Number(v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -54,15 +55,15 @@ function curveRate(speed){
 }
 function shared(){
   return{
-    distance:num($('#vpdDistance')?.value),
-    speed:num($('#vpdSpeed')?.value),
-    fuelDay:num($('#vpdFuelDay')?.value)
+    distance:inputNum($('#vpdDistance')),
+    speed:inputNum($('#vpdSpeed')),
+    fuelDay:inputNum($('#vpdFuelDay'))
   };
 }
 function effectiveRate(speed=shared().speed){
   const curve=curveRate(speed);
   if(curve)return curve;
-  const manual=num($('#vpdFuelDay')?.value);
+  const manual=inputNum($('#vpdFuelDay'));
   return manual>=0&&ok(manual)?{rate:manual,source:'manual / Vessel Profile fuel-day value'}:null;
 }
 function setResult(id,main,sub='',cls=''){
@@ -101,7 +102,7 @@ function bunker(){
   const b=validateBasis();if(b.error)return setResult('vpdBunkerResult',b.error,'','caution');
   const rate=effectiveRate(b.speed);
   if(!rate||!(rate.rate>=0))return setResult('vpdBunkerResult','Enter daily fuel consumption or save a usable consumption curve.','','caution');
-  const rob=num($('#vpdRob').value),arrival=num($('#vpdArrivalRob').value),reserve=num($('#vpdReservePct').value);
+  const rob=inputNum($('#vpdRob')),arrival=inputNum($('#vpdArrivalRob')),reserve=inputNum($('#vpdReservePct'));
   if([rob,arrival,reserve].some(v=>!ok(v)||v<0))return setResult('vpdBunkerResult','Check ROB, arrival ROB and reserve inputs.','','caution');
   const h=b.distance/b.speed,cons=rate.rate*h/24,reserveVol=cons*reserve/100,total=cons+reserveVol+arrival,stem=Math.max(0,total-rob);
   setResult('vpdBunkerResult',fmt(stem,1)+' m³ estimated bunker requirement',
@@ -162,7 +163,7 @@ function arrivalPlanner(){
 }
 function factorForSelection(){
   const key=$('#vpdFuelType').value;
-  if(key==='custom')return num($('#vpdCustomFactor').value);
+  if(key==='custom')return inputNum($('#vpdCustomFactor'));
   return IMO_FACTORS[key]?.factor;
 }
 function updateFactorUi(){
@@ -174,7 +175,7 @@ function emissions(){
   const b=validateBasis();if(b.error)return setResult('vpdEmissionResult',b.error,'','caution');
   const rate=effectiveRate(b.speed);
   if(!rate)return setResult('vpdEmissionResult','Enter daily fuel consumption or save a usable curve.','','caution');
-  const density=num($('#vpdDensity').value),cf=factorForSelection();
+  const density=inputNum($('#vpdDensity')),cf=factorForSelection();
   if(!(density>0&&density<2000))return setResult('vpdEmissionResult','Enter a valid fuel density in kg/m³.','','caution');
   if(!(cf>0&&cf<10))return setResult('vpdEmissionResult','Enter or select a valid CO₂ conversion factor.','','caution');
   const h=b.distance/b.speed,volume=rate.rate*h/24,massT=volume*density/1000,co2=massT*cf;
@@ -199,7 +200,7 @@ function refreshCurveHint(){
   hint.textContent='Saved '+pts.length+' points from '+fmt(pts[0].speed,1)+' to '+fmt(pts[pts.length-1].speed,1)+' kn.'+(r?' At planned speed: '+fmt(r.rate,2)+' m³/day.':' Planned speed is outside the saved curve range.');
 }
 function saveCurve(){
-  const rows=$$('.vpd-curve-row',$('#vpdCurveRows')).map(r=>({speed:num($('.vpd-curve-speed',r).value),fuelDay:num($('.vpd-curve-fuel',r).value)}))
+  const rows=$$('.vpd-curve-row',$('#vpdCurveRows')).map(r=>({speed:inputNum($('.vpd-curve-speed',r)),fuelDay:inputNum($('.vpd-curve-fuel',r))}))
     .filter(x=>x.speed>0&&x.speed<=40&&x.fuelDay>=0&&ok(x.fuelDay)).sort((a,b)=>a.speed-b.speed);
   const unique=rows.filter((x,i,a)=>!i||Math.abs(x.speed-a[i-1].speed)>.0001);
   if(unique.length<2)return setResult('vpdCurveResult','Add at least two valid, unique speed points.','','caution');
