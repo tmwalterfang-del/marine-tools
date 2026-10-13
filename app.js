@@ -104,7 +104,7 @@ function loadLeaflet(){
 }
 function loadSupportWidget(){if(bmcLoaded)return;bmcLoaded=true;const s=document.createElement('script');s.src='https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js';s.async=true;s.dataset.name='BMC-Widget';s.dataset.cfasync='false';s.dataset.id='marinetools';s.dataset.description='Support Marine Tools on Buy Me a Coffee';s.dataset.message='Enjoying Marine Tools? Support continued development and help keep the tools free.';s.dataset.color='#159fe4';s.dataset.position='Right';s.dataset.x_margin='18';s.dataset.y_margin='18';document.body.appendChild(s)}
 function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)requestIdleCallback(fn,{timeout});else setTimeout(fn,timeout)}
-const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
+const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'voyage-planning-lab':renderVoyagePlanningDraft,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
 function page(id){ensurePage(id);document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
 window.__marineToolsOpenPage=page;
@@ -555,6 +555,12 @@ function renderVoyageEstimate(){
  const host=$('#voyage-estimate');
  if(window.__marineToolsVoyageEstimate?.render)window.__marineToolsVoyageEstimate.render(host);
  else if(host)host.innerHTML=pageTitle('Port Distance & Sea Time','Voyage Estimate could not be loaded. Refresh the page and try again.');
+}
+
+function renderVoyagePlanningDraft(){
+ const host=$('#voyage-planning-lab');
+ if(window.__marineToolsVoyagePlanningDraft?.render)window.__marineToolsVoyagePlanningDraft.render(host);
+ else if(host)host.innerHTML=pageTitle('Voyage Planning Lab','Draft planning prototypes could not be loaded. Refresh the page and try again.');
 }
 
 function renderNavigation(){
