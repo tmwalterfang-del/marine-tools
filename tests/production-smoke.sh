@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="8.6.0"
+VERSION="8.6.1"
 : "${GH_TOKEN:?GH_TOKEN is required}"
 : "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
 : "${GITHUB_SHA:?GITHUB_SHA is required}"
@@ -47,12 +47,12 @@ wait_for_check 'Cloudflare Worker deployment' '{"name":"Workers Builds: marine-t
 wait_for_check 'GitHub Pages deployment' '{"name":"deploy","environment":"github-pages"}'
 
 # Validate the exact production source that the successful deployments were built from.
-grep -q '<meta name="application-version" content="8.6.0">' index.html || { echo '::error::Frontend release metadata is not v8.6.0.'; exit 1; }
-grep -q 'release-v860.js?v=20261005-v8-6-0-ui3' index.html || { echo '::error::Release UI is not wired into index.html.'; exit 1; }
+grep -q '<meta name="application-version" content="8.6.1">' index.html || { echo '::error::Frontend release metadata is not v8.6.0.'; exit 1; }
+grep -q 'release-v860.js?v=20261013-v8-6-1' index.html || { echo '::error::Release UI is not wired into index.html.'; exit 1; }
 test -f weather-map-v854.js || { echo '::error::Weather map production asset is missing.'; exit 1; }
 grep -q 'wxShowMapV854' weather-map-v854.js || { echo '::error::Weather map production asset failed integrity check.'; exit 1; }
 test -f release-v860.js || { echo '::error::Release UI production asset is missing.'; exit 1; }
-grep -q "version:'8.6.0'" release-v860.js || { echo '::error::Release UI version metadata failed integrity check.'; exit 1; }
+grep -q "version:'8.6.1'" release-v860.js || { echo '::error::Release UI version metadata failed integrity check.'; exit 1; }
 test -f voyage-estimate-v861.js || { echo '::error::Voyage Estimate JavaScript asset is missing.'; exit 1; }
 test -f voyage-estimate-v861.css || { echo '::error::Voyage Estimate CSS asset is missing.'; exit 1; }
 test -f global-polish-v862.css || { echo '::error::Global visual polish CSS asset is missing.'; exit 1; }
@@ -63,6 +63,9 @@ grep -q 'veViaSuez' voyage-estimate-v861.js || { echo '::error::Voyage Estimate 
 grep -q 'CANAL_MAX_DRAFT_M' voyage-estimate-v861.js || { echo '::error::Voyage Estimate draft-gating integration is missing.'; exit 1; }
 grep -q 'veDraftGateStatus' voyage-estimate-v861.js || { echo '::error::Voyage Estimate draft availability feedback is missing.'; exit 1; }
 grep -q 'data-page="voyage-estimate"' index.html || { echo '::error::Voyage Estimate is not wired into production navigation.'; exit 1; }
+grep -Fq "$('.page').forEach" app.js || { echo '::error::Page navigation selector regression detected.'; exit 1; }
+grep -q 'overflow-y:auto!important' sidebar-v858.css || { echo '::error::Sidebar scrolling fix is missing.'; exit 1; }
+grep -q 'position:static' sidebar-v858.css || { echo '::error::Expanded Project menu must remain inside the scroll flow.'; exit 1; }
 grep -q 'worker/worker-v860-dashboard.js' wrangler.jsonc || { echo '::error::Production Wrangler is not pointing at the current dashboard wrapper.'; exit 1; }
 grep -Fq '*/15 * * * *' wrangler.jsonc || { echo '::error::Cloudflare runtime smoke cron is missing.'; exit 1; }
 
