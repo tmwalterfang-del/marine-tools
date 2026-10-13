@@ -195,7 +195,7 @@ function refreshCurveHint(){
   hint.textContent='Saved '+pts.length+' points from '+fmt(pts[0].speed,1)+' to '+fmt(pts[pts.length-1].speed,1)+' kn.'+(r?' At planned speed: '+fmt(r.rate,2)+' m³/day.':' Planned speed is outside the saved curve range.');
 }
 function saveCurve(){
-  const rows=$$('.vpd-curve-row','#vpdCurveRows').map(r=>({speed:num($('.vpd-curve-speed',r).value),fuelDay:num($('.vpd-curve-fuel',r).value)}))
+  const rows=$('.vpd-curve-row',$('#vpdCurveRows')).map(r=>({speed:num($('.vpd-curve-speed',r).value),fuelDay:num($('.vpd-curve-fuel',r).value)}))
     .filter(x=>x.speed>0&&x.speed<=40&&x.fuelDay>=0&&ok(x.fuelDay)).sort((a,b)=>a.speed-b.speed);
   const unique=rows.filter((x,i,a)=>!i||Math.abs(x.speed-a[i-1].speed)>.0001);
   if(unique.length<2)return setResult('vpdCurveResult','Add at least two valid, unique speed points.','','caution');
@@ -330,7 +330,7 @@ function render(host){
         <div><b>Bunker requirement</b><span>Voyage fuel + percentage reserve + desired arrival ROB − current ROB. Result is floored at zero.</span></div>
         <div><b>Scenario compare</b><span>Fuel curve interpolation is used inside its saved range. Otherwise the draft uses a simple cubic speed/fuel comparison from the planned-speed reference.</span></div>
         <div><b>Arrival planning</b><span>Sea time = distance / speed. Required average speed = distance / available hours.</span></div>
-        <div><b>CO₂ estimate</b><span>Fuel volume × density = fuel mass; fuel mass × IMO C_F = tank-to-wake CO₂ estimate.</span></div>
+        <div><b>CO₂ estimate</b><span>Fuel volume × density = fuel mass; fuel mass × IMO C_F = tank-to-wake CO₂ estimate. Listed C_F values follow IMO MEPC.395(82), Annex 7.</span></div>
         <div><b>Consumption curve</b><span>Locally saved speed / m³-day points with linear interpolation only between known points.</span></div>
       </div>
     </details>
