@@ -1,0 +1,65 @@
+/* Voyage Planning Lab — draft prototypes */
+.vpd-title{align-items:flex-start}
+.vpd-draft-badge{display:inline-flex;align-items:center;border:1px solid rgba(242,191,73,.45);border-radius:999px;padding:7px 10px;background:rgba(242,191,73,.07);color:#f0cf72;font-size:10px;font-weight:800;letter-spacing:.1em}
+.vpd-warning{margin-bottom:12px;border-left:3px solid var(--amber)}
+.vpd-basis{margin-bottom:12px}
+.vpd-basis .panel-head{align-items:center}
+.vpd-basis .panel-head .actions{margin:0}
+.vpd-basis-status{margin-top:10px;padding:9px 11px;border:1px solid #173f55;border-radius:8px;background:#071d2a;color:#839faf;font-size:10px}
+.vpd-basis-status.ok{border-color:rgba(50,212,138,.35);color:#91ddb7}
+.vpd-basis-status.warn{border-color:rgba(242,191,73,.4);color:#e4ca7f}
+.vpd-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.vpd-card{min-width:0}
+.vpd-card .tool-card-head>div{min-width:0}
+.vpd-number{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;margin-bottom:8px;border:1px solid #24536d;border-radius:8px;background:#082438;color:#63d5fa;font:800 10px/1 ui-monospace,SFMono-Regular,Consolas,monospace}
+.vpd-card .tool-card-work{padding-top:5px}
+.vpd-card .result{min-height:74px}
+.vpd-table-result .table-wrap{margin-top:10px;max-width:100%}
+.vpd-table-result table{min-width:620px}
+.vpd-curve-card{grid-column:1/-1}
+.vpd-curve-rows{display:grid;gap:8px}
+.vpd-curve-row{display:grid;grid-template-columns:minmax(130px,.7fr) minmax(160px,1fr) auto;gap:9px;align-items:end;padding:9px;border:1px solid #173f55;border-radius:9px;background:#071d2a}
+.vpd-curve-row .btn{height:40px}
+.vpd-card label small{display:block;margin-top:4px;color:#7898ab;font-size:9px;line-height:1.35}
+.vpd-method{margin-top:14px;overflow:hidden}
+.vpd-method>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 15px}
+.vpd-method>summary::-webkit-details-marker{display:none}
+.vpd-method>summary span{display:grid;gap:2px}
+.vpd-method>summary b{font-size:12px}
+.vpd-method>summary small{font-size:10px;color:#7898ab}
+.vpd-method>summary>strong{font-size:10px;color:#69c9ec}
+.vpd-method[open]>summary{border-bottom:1px solid #173e56}
+.vpd-method[open]>summary>strong{font-size:0}
+.vpd-method[open]>summary>strong:after{content:'Hide';font-size:10px}
+.vpd-method-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.vpd-method-grid>div{padding:11px;border:1px solid #173f55;border-radius:9px;background:#071d2a}
+.vpd-method-grid b{display:block;margin-bottom:4px;font-size:10px}
+.vpd-method-grid span{font-size:9px;line-height:1.45;color:#8faabd}
+.vpd-footer-actions{margin:14px 0 2px}
+.ve-draft-launch{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 12px;padding:11px 13px;border:1px solid #1d4a62;border-radius:10px;background:#082234}
+.ve-draft-launch>div{min-width:0}
+.ve-draft-launch b{display:block;font-size:11px}
+.ve-draft-launch span{display:block;margin-top:2px;color:#7898ab;font-size:9px}
+.ve-draft-launch .btn{flex:0 0 auto}
+[data-theme="bridge"] .vpd-basis-status,
+[data-theme="bridge"] .vpd-curve-row,
+[data-theme="bridge"] .vpd-method-grid>div,
+[data-theme="bridge"] .ve-draft-launch{background:#0f0b07;border-color:#4b3421}
+[data-theme="bridge"] .vpd-number{background:#171008;border-color:#674627;color:#dfad50}
+[data-theme="bridge"] .vpd-method[open]>summary{border-color:#392719}
+@media(max-width:1100px){
+  .vpd-grid{grid-template-columns:1fr}
+  .vpd-curve-card{grid-column:auto}
+  .vpd-method-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+  .vpd-title{display:block}
+  .vpd-draft-badge{margin-top:9px}
+  .vpd-basis .panel-head{display:block}
+  .vpd-basis .panel-head .actions{margin-top:9px;display:grid;grid-template-columns:1fr}
+  .vpd-curve-row{grid-template-columns:1fr}
+  .vpd-curve-row .btn{height:auto}
+  .vpd-method-grid{grid-template-columns:1fr}
+  .ve-draft-launch{display:block}
+  .ve-draft-launch .btn{width:100%;margin-top:9px}
+}
