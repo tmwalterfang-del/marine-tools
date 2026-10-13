@@ -309,7 +309,7 @@ function render(host){
             <label id="vpdCustomFactorWrap" hidden>Custom C_F t-CO₂/t-fuel<input id="vpdCustomFactor" type="number" min="0.001" step="0.001" value="3.206"></label>
           </div>
           <div class="actions"><button id="vpdCalcEmission" class="btn primary">Estimate fuel & CO₂</button></div>
-          <div id="vpdEmissionResult" class="result"><strong>—</strong><small>IMO C_F factors are provided for the listed fossil/standard fuel categories. Not an EU ETS or FuelEU compliance calculation.</small></div>
+          <div id="vpdEmissionResult" class="result"><strong>—</strong><small>IMO C_F factors are provided for the listed fuel categories. Not an EU ETS or FuelEU compliance calculation.</small></div>
         </div>
       </article>
 
