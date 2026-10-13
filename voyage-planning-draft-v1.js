@@ -330,7 +330,7 @@ function render(host){
         <div><b>Bunker requirement</b><span>Voyage fuel + percentage reserve + desired arrival ROB − current ROB. Result is floored at zero.</span></div>
         <div><b>Scenario compare</b><span>Fuel curve interpolation is used inside its saved range. Otherwise the draft uses a simple cubic speed/fuel comparison from the planned-speed reference.</span></div>
         <div><b>Arrival planning</b><span>Sea time = distance / speed. Required average speed = distance / available hours.</span></div>
-        <div><b>CO₂ estimate</b><span>Fuel volume × density = fuel mass; fuel mass × IMO C_F = tank-to-wake CO₂ estimate. Listed C_F values follow IMO MEPC.395(82), Annex 7.</span></div>
+        <div><b>CO₂ estimate</b><span>Fuel volume × density = fuel mass; fuel mass × IMO C_F = tank-to-wake CO₂ estimate. Listed C_F values follow IMO MEPC.395(82), Appendix 2 §5.</span></div>
         <div><b>Consumption curve</b><span>Locally saved speed / m³-day points with linear interpolation only between known points.</span></div>
       </div>
     </details>
