@@ -195,7 +195,7 @@ function refreshCurveHint(){
   hint.textContent='Saved '+pts.length+' points from '+fmt(pts[0].speed,1)+' to '+fmt(pts[pts.length-1].speed,1)+' kn.'+(r?' At planned speed: '+fmt(r.rate,2)+' m³/day.':' Planned speed is outside the saved curve range.');
 }
 function saveCurve(){
-  const rows=$('.vpd-curve-row',$('#vpdCurveRows')).map(r=>({speed:num($('.vpd-curve-speed',r).value),fuelDay:num($('.vpd-curve-fuel',r).value)}))
+  const rows=$$('.vpd-curve-row',$('#vpdCurveRows')).map(r=>({speed:num($('.vpd-curve-speed',r).value),fuelDay:num($('.vpd-curve-fuel',r).value)}))
     .filter(x=>x.speed>0&&x.speed<=40&&x.fuelDay>=0&&ok(x.fuelDay)).sort((a,b)=>a.speed-b.speed);
   const unique=rows.filter((x,i,a)=>!i||Math.abs(x.speed-a[i-1].speed)>.0001);
   if(unique.length<2)return setResult('vpdCurveResult','Add at least two valid, unique speed points.','','caution');
