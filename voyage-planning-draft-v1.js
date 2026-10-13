@@ -261,7 +261,7 @@ function render(host){
         <div class="fields three">
           <label>Distance NM<input id="vpdDistance" type="number" min="0" step="0.1" value="1000"></label>
           <label>Planned speed kn<input id="vpdSpeed" type="number" min="0.1" max="40" step="0.1" value="12"></label>
-          <label>Reference fuel m³/day<input id="vpdFuelDay" type="number" min="0" step="0.01" placeholder="Optional if curve is saved"></label>
+          <label>Reference fuel m³/day<input id="vpdFuelDay" type="number" min="0" step="0.01" placeholder="Optional if saved curve covers planned speed"></label>
         </div>
         <div id="vpdBasisStatus" class="vpd-basis-status">Enter values manually or reuse locally saved voyage/profile data.</div>
       </div>
@@ -308,13 +308,13 @@ function render(host){
           <div class="fields three">
             <label>Fuel type<select id="vpdFuelType">
               <option value="mdo">Diesel / Gas Oil</option><option value="lfo">Light Fuel Oil (LFO)</option><option value="hfo">Heavy Fuel Oil (HFO)</option>
-              <option value="lpgp">LPG · Propane</option><option value="lpgb">LPG · Butane</option><option value="lng">LNG</option><option value="methanol">Methanol</option><option value="ethanol">Ethanol</option><option value="custom">Custom factor</option>
+              <option value="lpgp">LPG · Propane</option><option value="lpgb">LPG · Butane</option><option value="lng">LNG</option><option value="methanol">Methanol</option><option value="ethanol">Ethanol</option><option value="custom">Other / custom factor</option>
             </select><small id="vpdFactorText"></small></label>
             <label>Density kg/m³<input id="vpdDensity" type="number" min="1" step="0.1" placeholder="Enter actual / approved value"></label>
             <label id="vpdCustomFactorWrap" hidden>Custom C_F t-CO₂/t-fuel<input id="vpdCustomFactor" type="number" min="0.001" step="0.001" value="3.206"></label>
           </div>
           <div class="actions"><button id="vpdCalcEmission" class="btn primary">Estimate fuel & CO₂</button></div>
-          <div id="vpdEmissionResult" class="result"><strong>—</strong><small>IMO C_F factors are provided for the listed fuel categories. Not an EU ETS or FuelEU compliance calculation.</small></div>
+          <div id="vpdEmissionResult" class="result"><strong>—</strong><small>IMO C_F factors are provided for the listed fuel categories. For other fuels, use an approved custom factor. Direct CO₂ only; no CH₄/N₂O or lifecycle effects. Not an EU ETS or FuelEU compliance calculation.</small></div>
         </div>
       </article>
 
