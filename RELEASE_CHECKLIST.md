@@ -25,6 +25,7 @@ Test both portrait and landscape on a phone-sized viewport.
 
 - [ ] Sidebar opens, closes and does not cover active content after navigation.
 - [ ] Sidebar scrolls through every navigation item on short desktop, laptop and phone viewports while the status footer remains visible.
+- [ ] Expanded Project & contact menu scrolls into view and every item remains reachable on desktop, laptop and phone viewports.
 - [ ] Core calculator pages use consistent headers, card spacing and result hierarchy.
 - [ ] About, Privacy and Settings secondary information expands/collapses cleanly.
 - [ ] Tables and histories remain readable in Dark and Bridge Dark.
