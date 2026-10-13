@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const API='https://api.marinetools.app';
-const APP_VERSION='8.5.1';
+const APP_VERSION='8.6.1';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
 const SUPPORT_URL='https://buymeacoffee.com/marinetools';
@@ -106,7 +106,14 @@ function loadSupportWidget(){if(bmcLoaded)return;bmcLoaded=true;const s=document
 function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)requestIdleCallback(fn,{timeout});else setTimeout(fn,timeout)}
 const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
-function page(id){ensurePage(id);$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
+function page(id){ensurePage(id);document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
+window.__marineToolsOpenPage=page;
+function requestedInitialPage(){
+ const q=new URLSearchParams(location.search).get('page');
+ const h=decodeURIComponent((location.hash||'').replace(/^#/,'')).replace(/^page=/,'');
+ const id=(q||h||'').trim();
+ return id&&document.getElementById(id)&&PAGE_RENDERERS[id]?id:'';
+}
 function openTool(pageId,title=''){page(pageId);if(title)setTimeout(()=>{const card=$$('.tool-card').find(x=>x.dataset.toolTitle===title);if(card){if(card.hidden&&card.dataset.toolGroup){const sel=pageId==='fuel'?$('#fuelView'):pageId==='engineering'?$('#engView'):null;if(sel){sel.value=card.dataset.toolGroup;sel.dispatchEvent(new Event('change'))}}card.scrollIntoView({behavior:'smooth',block:'start'});card.classList.add('tool-focus');setTimeout(()=>card.classList.remove('tool-focus'),1600)}},80)}
 function button(label,pageId,cls='btn primary'){return `<button class="${cls}" data-go="${pageId}">${label}</button>`}
 
@@ -1242,6 +1249,6 @@ function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow
 function setRes(id,main,sub='',cls=''){const e=$('#'+id);if(!e)return;e.className=`result ${cls}`;e.innerHTML=`<strong>${main}</strong>${sub?`<small>${sub}</small>`:''}`}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-function init(){renderHome();renderedPages.add('home');bindGlobal();initUsageAnalytics();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();}
+function init(){renderHome();renderedPages.add('home');bindGlobal();initUsageAnalytics();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();const requested=requestedInitialPage();if(requested&&requested!=='home')setTimeout(()=>page(requested),0)}
 document.addEventListener('DOMContentLoaded',init);
 })();

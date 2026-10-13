@@ -24,6 +24,8 @@ Use this checklist for every production release. Safety or bug-fix releases may 
 Test both portrait and landscape on a phone-sized viewport.
 
 - [ ] Sidebar opens, closes and does not cover active content after navigation.
+- [ ] Tapping every visible sidebar page on a phone changes page and closes the sidebar.
+- [ ] Direct page links (`#voyage-estimate`, `#fuel`, etc.) open the requested page.
 - [ ] Sidebar scrolls through every navigation item on short desktop, laptop and phone viewports while the status footer remains visible.
 - [ ] Expanded Project & contact menu scrolls into view and every item remains reachable on desktop, laptop and phone viewports.
 - [ ] Core calculator pages use consistent headers, card spacing and result hierarchy.
@@ -40,6 +42,7 @@ Test both portrait and landscape on a phone-sized viewport.
 - [ ] Route Intelligence map and waypoint DDM list remain usable.
 - [ ] Update-available banner fits without covering essential controls.
 - [ ] Changelog dialog opens, scrolls and closes.
+- [ ] What’s new shows v8.6.1 and includes Voyage Estimate, interface polish and sidebar/navigation fixes.
 
 ## Analytics-led product review
 
