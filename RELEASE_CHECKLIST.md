@@ -24,7 +24,7 @@ Use this checklist for every production release. Safety or bug-fix releases may 
 Test both portrait and landscape on a phone-sized viewport.
 
 - [ ] Sidebar opens, closes and does not cover active content after navigation.
-- [ ] Mobile sidebar scrolls through every navigation item on short phone viewports while the status footer remains visible.
+- [ ] Sidebar scrolls through every navigation item on short desktop, laptop and phone viewports while the status footer remains visible.
 - [ ] Core calculator pages use consistent headers, card spacing and result hierarchy.
 - [ ] About, Privacy and Settings secondary information expands/collapses cleanly.
 - [ ] Tables and histories remain readable in Dark and Bridge Dark.
