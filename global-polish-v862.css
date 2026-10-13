@@ -159,7 +159,43 @@ label{line-height:1.35}
 .home-more-links button small{font-size:10px}
 .home-dashboard-fold{margin-top:16px}
 
-/* Sidebar: calmer grouping, stronger active-page cue without extra levels. */
+/* Sidebar: calmer grouping, stronger active-page cue without extra levels.
+   The navigation itself scrolls on every viewport so short laptops/desktops never lose menu items. */
+.sidebar{
+  height:100vh;
+  height:100dvh;
+  max-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.sidebar .brand{flex:0 0 74px}
+.sidebar .nav-list{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding-bottom:18px;
+  scrollbar-width:thin;
+  scrollbar-color:#285871 transparent;
+}
+.sidebar .nav-list::-webkit-scrollbar{width:5px}
+.sidebar .nav-list::-webkit-scrollbar-thumb{background:#285871;border-radius:999px}
+.sidebar .sidebar-bottom{
+  position:static;
+  flex:0 0 auto;
+  left:auto;
+  right:auto;
+  bottom:auto;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  background:#061521;
+}
+[data-theme="bridge"] .sidebar .nav-list{scrollbar-color:#654628 transparent}
+[data-theme="bridge"] .sidebar .nav-list::-webkit-scrollbar-thumb{background:#654628}
+[data-theme="bridge"] .sidebar .sidebar-bottom{background:#080705}
+
 .nav-list{padding-top:12px}
 .nav-label{margin:18px 12px 6px;font-size:9px;letter-spacing:.16em;color:#5f8297}
 .nav-btn{min-height:39px;padding:9px 11px;border-radius:7px}
@@ -208,43 +244,6 @@ label{line-height:1.35}
   #profile .fields.three{grid-template-columns:repeat(2,minmax(180px,1fr))}
 }
 @media(max-width:900px){
-  /* Mobile sidebar: keep header/footer visible and make the complete menu independently scrollable. */
-  .sidebar{
-    top:0;
-    bottom:auto;
-    height:100vh;
-    height:100dvh;
-    max-height:100dvh;
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-  }
-  .sidebar .brand{flex:0 0 74px}
-  .sidebar .nav-list{
-    flex:1 1 auto;
-    min-height:0;
-    overflow-y:auto;
-    overflow-x:hidden;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior:contain;
-    padding:10px 10px 18px;
-    scrollbar-width:thin;
-    scrollbar-color:#285871 transparent;
-  }
-  .sidebar .nav-list::-webkit-scrollbar{width:5px}
-  .sidebar .nav-list::-webkit-scrollbar-thumb{background:#285871;border-radius:999px}
-  .sidebar .sidebar-bottom{
-    position:static;
-    flex:0 0 auto;
-    left:auto;
-    right:auto;
-    bottom:auto;
-    padding:10px 16px calc(10px + env(safe-area-inset-bottom));
-    background:#061521;
-  }
-  [data-theme="bridge"] .sidebar .nav-list{scrollbar-color:#654628 transparent}
-  [data-theme="bridge"] .sidebar .nav-list::-webkit-scrollbar-thumb{background:#654628}
-  [data-theme="bridge"] .sidebar .sidebar-bottom{background:#080705}
   .main-content{padding:16px 14px 30px}
   .page-title{margin-bottom:15px}
   .page-title h1{font-size:29px}
