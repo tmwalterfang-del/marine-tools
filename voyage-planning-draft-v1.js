@@ -123,16 +123,19 @@ function scenarios(){
   const basis={...b,fuelDay:baseRate?.rate};
   const speeds=parseSpeeds();
   if(!speeds.length)return setResult('vpdScenarioResult','Enter one or more speeds to compare.','','caution');
-  if(!(basis.fuelDay>=0))return setResult('vpdScenarioResult','Enter daily fuel consumption or save a usable curve first.','','caution');
-  const rows=speeds.map(s=>{
-    const r=scenarioRate(s,basis);
+  const evaluated=speeds.map(s=>({s,r:scenarioRate(s,basis)}));
+  if(!evaluated.some(x=>x.r))return setResult('vpdScenarioResult','No usable fuel model for the selected speeds. Add curve coverage or a planned-speed reference fuel rate.','','caution');
+  const rows=evaluated.map(({s,r})=>{
     if(!r)return'<tr><td>'+fmt(s,1)+' kn</td><td colspan="4">No usable fuel model</td></tr>';
     const h=b.distance/s,fuel=r.rate*h/24;
     return'<tr><td>'+fmt(s,1)+' kn</td><td>'+hoursText(h)+'</td><td>'+fmt(r.rate,2)+' m³/day</td><td>'+fmt(fuel,1)+' m³</td><td>'+esc(r.model)+'</td></tr>';
   }).join('');
   const el=$('#vpdScenarioResult');
   el.className='result vpd-table-result';
-  el.innerHTML='<strong>Voyage scenario comparison</strong><div class="table-wrap"><table class="table compact"><thead><tr><th>Speed</th><th>Sea time</th><th>Fuel rate</th><th>Voyage fuel</th><th>Model</th></tr></thead><tbody>'+rows+'</tbody></table></div><small>Saved curve values are linearly interpolated inside the curve range. Other speeds use the simple cubic comparison model from the planned-speed reference.</small>';
+  const modelNote=basis.fuelDay>=0
+    ?'Saved curve values are linearly interpolated inside the curve range. Other speeds use the simple cubic comparison model from the planned-speed reference.'
+    :'Saved curve values are linearly interpolated inside the curve range. Speeds outside the saved curve show no model because no planned-speed reference fuel rate is available.';
+  el.innerHTML='<strong>Voyage scenario comparison</strong><div class="table-wrap"><table class="table compact"><thead><tr><th>Speed</th><th>Sea time</th><th>Fuel rate</th><th>Voyage fuel</th><th>Model</th></tr></thead><tbody>'+rows+'</tbody></table></div><small>'+esc(modelNote)+'</small>';
 }
 function localDateTimeInputValue(d){
   const p=n=>String(n).padStart(2,'0');
@@ -145,7 +148,7 @@ function arrivalPlanner(){
   const plannedHours=b.distance/b.speed,eta=new Date(dep.getTime()+plannedHours*3600000);
   const targetRaw=$('#vpdTargetArrival').value;
   let sub='ETA at '+fmt(b.speed,1)+' kn: '+eta.toLocaleString();
-  let main='Planned sea time '+hoursText(plannedHours);
+  let main='Planned sea time '+hoursText(plannedHours),cls='';
   if(targetRaw){
     const target=new Date(targetRaw);
     const available=(target-dep)/3600000;
@@ -153,8 +156,9 @@ function arrivalPlanner(){
     const req=b.distance/available,delta=req-b.speed;
     main='Required average speed '+fmt(req,1)+' kn';
     sub='Available '+hoursText(available)+' · planned '+fmt(b.speed,1)+' kn · '+(delta>=0?'+':'')+fmt(delta,1)+' kn versus plan';
+    if(req>40){cls='caution';sub+=' · above the prototype 40 kn input range';}
   }
-  setResult('vpdArrivalResult',main,sub,main.includes('Required')&&num(main.match(/[\d.]+/)?.[0])>40?'caution':'');
+  setResult('vpdArrivalResult',main,sub,cls);
 }
 function factorForSelection(){
   const key=$('#vpdFuelType').value;
