@@ -104,13 +104,14 @@ function loadLeaflet(){
 }
 function loadSupportWidget(){if(bmcLoaded)return;bmcLoaded=true;const s=document.createElement('script');s.src='https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js';s.async=true;s.dataset.name='BMC-Widget';s.dataset.cfasync='false';s.dataset.id='marinetools';s.dataset.description='Support Marine Tools on Buy Me a Coffee';s.dataset.message='Enjoying Marine Tools? Support continued development and help keep the tools free.';s.dataset.color='#159fe4';s.dataset.position='Right';s.dataset.x_margin='18';s.dataset.y_margin='18';document.body.appendChild(s)}
 function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)requestIdleCallback(fn,{timeout});else setTimeout(fn,timeout)}
-const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
+const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
-function page(id){ensurePage(id);$$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
+function page(id){ensurePage(id);$('.page').forEach(x=>x.classList.toggle('active',x.id===id));$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
 function openTool(pageId,title=''){page(pageId);if(title)setTimeout(()=>{const card=$$('.tool-card').find(x=>x.dataset.toolTitle===title);if(card){if(card.hidden&&card.dataset.toolGroup){const sel=pageId==='fuel'?$('#fuelView'):pageId==='engineering'?$('#engView'):null;if(sel){sel.value=card.dataset.toolGroup;sel.dispatchEvent(new Event('change'))}}card.scrollIntoView({behavior:'smooth',block:'start'});card.classList.add('tool-focus');setTimeout(()=>card.classList.remove('tool-focus'),1600)}},80)}
 function button(label,pageId,cls='btn primary'){return `<button class="${cls}" data-go="${pageId}">${label}</button>`}
 
 const TOOL_META={
+ 'Port Distance & Sea Time':{how:'Select two ports or Norwegian offshore locations, choose vessel speed and calculate an approximate sea distance and sea time.',formula:'Estimated sea-network distance including the routing engine endpoint connection allowance; sea time = distance / selected speed. Optional fuel = sea time × saved daily fuel consumption.',units:'Nautical miles, knots, hours/days, metres draft and m³ fuel.',assume:'Constant selected speed. Location coordinates and maritime-network paths are approximate planning references.',limits:'Estimate only — not a passage plan, navigational route or replacement for approved voyage-planning systems and vessel procedures.'},
  'Daily consumption & reporting':{how:'Record fuel, urea or lube-oil consumption from a reading difference or a directly entered amount, then save it locally.',formula:'Reading mode: consumed volume = current reading − previous reading. Mass = volume × density. Specific rate = mass / running hours when hours are entered.',units:'m³ or litres, kg/m³, kg, tonnes, hours and kg/h.',assume:'The entered readings or direct amount represent consumption for the selected date/period.',limits:'Local operational helper only. It does not replace an approved engine, fuel, emissions or statutory logbook.'},
  'Bunkering history & export':{how:'Save each bunkering locally with date, grade, volume and density, then review totals and export the history.',formula:'Mass = volume × density. Weighted density = total mass / total volume.',units:'m³, kg/m³ and tonnes.',assume:'Entered quantities and density are taken from the relevant delivery documentation.',limits:'Local analysis history only — not a BDN, Oil Record Book or statutory bunkering record.'},
  'Bearing, distance & destination':{how:'Enter two positions, then calculate distance and initial true bearing.',formula:'Spherical great-circle distance and initial bearing.',units:'Degrees, nautical miles, degrees true.',assume:'Positions use WGS-84-style latitude/longitude input.',limits:'Planning helper only; use approved navigation systems for the voyage plan.'},
@@ -220,16 +221,16 @@ function riskFor(f,p=state.profile){let score=0,reasons=[];if(Number.isFinite(f.
 function sourceStatus(id,status,text){const e=$(id);if(!e)return;e.className=`chip ${status}`;e.textContent=text}
 
 const tools=[
- ['Fuel & bunkering','fuel','◧'],['Engineering','engineering','⚙'],['Electrical','electrical','ϟ'],['Vessel calculations','vessel-calcs','⚓'],['Quick tools','quick','▦'],
+ ['Fuel & bunkering','fuel','◧'],['Engineering','engineering','⚙'],['Electrical','electrical','ϟ'],['Vessel calculations','vessel-calcs','⚓'],['Voyage Estimate','voyage-estimate','↗'],['Quick tools','quick','▦'],
  ['Weather','weather','☁'],['Navigation','navigation','△'],['Live & Experimental','live-experimental','◉'],['Route Intelligence (experimental)','route-intelligence','◉'],
  ['Vessel profile','profile','⚓'],['Settings','settings','☷'],['Help shape Marine Tools','survey','▥'],['Suggestions','suggestions','✧'],['Support Marine Tools','support','☕'],['Business & contact','contact','✉'],['About this project','about','ⓘ'],['Privacy & data','privacy','◈']
 ];
-const STATIC_TOOL_INDEX=[{"title":"Bearing, distance & destination","page":"navigation","icon":"→","tool":"Bearing, distance & destination"},{"title":"Closest point on active route","page":"navigation","icon":"→","tool":"Closest point on active route"},{"title":"Coordinate toolbox","page":"navigation","icon":"→","tool":"Coordinate toolbox"},{"title":"Current-corrected ETA","page":"navigation","icon":"→","tool":"Current-corrected ETA"},{"title":"Great circle vs rhumb line","page":"navigation","icon":"→","tool":"Great circle vs rhumb line"},{"title":"Passage scenario compare","page":"navigation","icon":"→","tool":"Passage scenario compare"},{"title":"Route fuel estimate","page":"navigation","icon":"→","tool":"Route fuel estimate"},{"title":"Set & drift","page":"navigation","icon":"→","tool":"Set & drift"},{"title":"True / apparent wind","page":"navigation","icon":"→","tool":"True / apparent wind"},{"title":"Wind component","page":"navigation","icon":"→","tool":"Wind component"},{"title":"Wave encounter period","page":"weather","icon":"→","tool":"Wave encounter period"},{"title":"Weather window finder","page":"weather","icon":"→","tool":"Weather window finder"},{"title":"Bunkering overview","page":"fuel","icon":"→","tool":"Bunkering overview"},{"title":"Endurance scenario compare","page":"fuel","icon":"→","tool":"Endurance scenario compare"},{"title":"Fuel / Urea converter","page":"fuel","icon":"→","tool":"Fuel / Urea converter"},{"title":"Fuel ROB & endurance","page":"fuel","icon":"→","tool":"Fuel ROB & endurance"},{"title":"Fuel blending","page":"fuel","icon":"→","tool":"Fuel blending"},{"title":"Fuel consumption by speed","page":"fuel","icon":"→","tool":"Fuel consumption by speed"},{"title":"Fuel temperature correction","page":"fuel","icon":"→","tool":"Fuel temperature correction"},{"title":"Route fuel estimate","page":"fuel","icon":"→","tool":"Route fuel estimate"},{"title":"Tank transfer","page":"fuel","icon":"→","tool":"Tank transfer"},{"title":"Air draft / bridge clearance","page":"vessel-calcs","icon":"→","tool":"Air draft / bridge clearance"},{"title":"Anchor swing radius","page":"vessel-calcs","icon":"→","tool":"Anchor swing radius"},{"title":"Draft / tide UKC","page":"vessel-calcs","icon":"→","tool":"Draft / tide UKC"},{"title":"Dynamic UKC & squat","page":"vessel-calcs","icon":"→","tool":"Dynamic UKC & squat"},{"title":"FWA / DWA","page":"vessel-calcs","icon":"→","tool":"FWA / DWA"},{"title":"Chemical dosing","page":"engineering","icon":"→","tool":"Chemical dosing"},{"title":"Flow / fill time","page":"engineering","icon":"→","tool":"Flow / fill time"},{"title":"Generator load margin","page":"engineering","icon":"→","tool":"Generator load margin"},{"title":"Hydraulic power","page":"engineering","icon":"→","tool":"Hydraulic power"},{"title":"Lube oil trend","page":"engineering","icon":"→","tool":"Lube oil trend"},{"title":"NOx reporting helper","page":"engineering","icon":"→","tool":"NOx reporting helper"},{"title":"Pipe velocity","page":"engineering","icon":"→","tool":"Pipe velocity"},{"title":"Pressure ↔ head","page":"engineering","icon":"→","tool":"Pressure ↔ head"},{"title":"Pump speed change","page":"engineering","icon":"→","tool":"Pump speed change"},{"title":"Tank table interpolation","page":"engineering","icon":"→","tool":"Tank table interpolation"},{"title":"Battery runtime","page":"electrical","icon":"→","tool":"Battery runtime"},{"title":"Current imbalance","page":"electrical","icon":"→","tool":"Current imbalance"},{"title":"Motor current","page":"electrical","icon":"→","tool":"Motor current"},{"title":"Power factor correction","page":"electrical","icon":"→","tool":"Power factor correction"},{"title":"Three-phase power","page":"electrical","icon":"→","tool":"Three-phase power"},{"title":"Transformer calculator","page":"electrical","icon":"→","tool":"Transformer calculator"},{"title":"Voltage drop","page":"electrical","icon":"→","tool":"Voltage drop"},{"title":"Beaufort converter","page":"quick","icon":"→","tool":"Beaufort converter"},{"title":"Compass / gyro correction","page":"quick","icon":"→","tool":"Compass / gyro correction"},{"title":"Speed · distance · time","page":"quick","icon":"→","tool":"Speed · distance · time"},{"title":"Unit converter","page":"quick","icon":"→","tool":"Unit converter"},{"title":"Daily consumption & reporting","page":"fuel","icon":"→","tool":"Daily consumption & reporting"},{"title":"Bunkering history & export","page":"fuel","icon":"→","tool":"Bunkering history & export"}];
+const STATIC_TOOL_INDEX=[{"title":"Port Distance & Sea Time","page":"voyage-estimate","icon":"↗","tool":"Port Distance & Sea Time"},{"title":"Bearing, distance & destination","page":"navigation","icon":"→","tool":"Bearing, distance & destination"},{"title":"Closest point on active route","page":"navigation","icon":"→","tool":"Closest point on active route"},{"title":"Coordinate toolbox","page":"navigation","icon":"→","tool":"Coordinate toolbox"},{"title":"Current-corrected ETA","page":"navigation","icon":"→","tool":"Current-corrected ETA"},{"title":"Great circle vs rhumb line","page":"navigation","icon":"→","tool":"Great circle vs rhumb line"},{"title":"Passage scenario compare","page":"navigation","icon":"→","tool":"Passage scenario compare"},{"title":"Route fuel estimate","page":"navigation","icon":"→","tool":"Route fuel estimate"},{"title":"Set & drift","page":"navigation","icon":"→","tool":"Set & drift"},{"title":"True / apparent wind","page":"navigation","icon":"→","tool":"True / apparent wind"},{"title":"Wind component","page":"navigation","icon":"→","tool":"Wind component"},{"title":"Wave encounter period","page":"weather","icon":"→","tool":"Wave encounter period"},{"title":"Weather window finder","page":"weather","icon":"→","tool":"Weather window finder"},{"title":"Bunkering overview","page":"fuel","icon":"→","tool":"Bunkering overview"},{"title":"Endurance scenario compare","page":"fuel","icon":"→","tool":"Endurance scenario compare"},{"title":"Fuel / Urea converter","page":"fuel","icon":"→","tool":"Fuel / Urea converter"},{"title":"Fuel ROB & endurance","page":"fuel","icon":"→","tool":"Fuel ROB & endurance"},{"title":"Fuel blending","page":"fuel","icon":"→","tool":"Fuel blending"},{"title":"Fuel consumption by speed","page":"fuel","icon":"→","tool":"Fuel consumption by speed"},{"title":"Fuel temperature correction","page":"fuel","icon":"→","tool":"Fuel temperature correction"},{"title":"Route fuel estimate","page":"fuel","icon":"→","tool":"Route fuel estimate"},{"title":"Tank transfer","page":"fuel","icon":"→","tool":"Tank transfer"},{"title":"Air draft / bridge clearance","page":"vessel-calcs","icon":"→","tool":"Air draft / bridge clearance"},{"title":"Anchor swing radius","page":"vessel-calcs","icon":"→","tool":"Anchor swing radius"},{"title":"Draft / tide UKC","page":"vessel-calcs","icon":"→","tool":"Draft / tide UKC"},{"title":"Dynamic UKC & squat","page":"vessel-calcs","icon":"→","tool":"Dynamic UKC & squat"},{"title":"FWA / DWA","page":"vessel-calcs","icon":"→","tool":"FWA / DWA"},{"title":"Chemical dosing","page":"engineering","icon":"→","tool":"Chemical dosing"},{"title":"Flow / fill time","page":"engineering","icon":"→","tool":"Flow / fill time"},{"title":"Generator load margin","page":"engineering","icon":"→","tool":"Generator load margin"},{"title":"Hydraulic power","page":"engineering","icon":"→","tool":"Hydraulic power"},{"title":"Lube oil trend","page":"engineering","icon":"→","tool":"Lube oil trend"},{"title":"NOx reporting helper","page":"engineering","icon":"→","tool":"NOx reporting helper"},{"title":"Pipe velocity","page":"engineering","icon":"→","tool":"Pipe velocity"},{"title":"Pressure ↔ head","page":"engineering","icon":"→","tool":"Pressure ↔ head"},{"title":"Pump speed change","page":"engineering","icon":"→","tool":"Pump speed change"},{"title":"Tank table interpolation","page":"engineering","icon":"→","tool":"Tank table interpolation"},{"title":"Battery runtime","page":"electrical","icon":"→","tool":"Battery runtime"},{"title":"Current imbalance","page":"electrical","icon":"→","tool":"Current imbalance"},{"title":"Motor current","page":"electrical","icon":"→","tool":"Motor current"},{"title":"Power factor correction","page":"electrical","icon":"→","tool":"Power factor correction"},{"title":"Three-phase power","page":"electrical","icon":"→","tool":"Three-phase power"},{"title":"Transformer calculator","page":"electrical","icon":"→","tool":"Transformer calculator"},{"title":"Voltage drop","page":"electrical","icon":"→","tool":"Voltage drop"},{"title":"Beaufort converter","page":"quick","icon":"→","tool":"Beaufort converter"},{"title":"Compass / gyro correction","page":"quick","icon":"→","tool":"Compass / gyro correction"},{"title":"Speed · distance · time","page":"quick","icon":"→","tool":"Speed · distance · time"},{"title":"Unit converter","page":"quick","icon":"→","tool":"Unit converter"},{"title":"Daily consumption & reporting","page":"fuel","icon":"→","tool":"Daily consumption & reporting"},{"title":"Bunkering history & export","page":"fuel","icon":"→","tool":"Bunkering history & export"}];
 function toolSearchIndex(){
  const found=[...tools.map(x=>({title:x[0],page:x[1],icon:x[2],tool:''})),...STATIC_TOOL_INDEX];
  return found.filter((x,i,a)=>a.findIndex(y=>y.title===x.title&&y.page===x.page)===i);
 }
-function pageLabel(id){return({'fuel':'Fuel & Bunkering','engineering':'Engineering','electrical':'Electrical','vessel-calcs':'Vessel Calculations','quick':'Quick Tools','weather':'Weather','navigation':'Navigation','live-experimental':'Live & Experimental','route-intelligence':'Experimental','profile':'Vessel Profile','settings':'Settings'}[id]||id.replaceAll('-',' '))}
+function pageLabel(id){return({'fuel':'Fuel & Bunkering','engineering':'Engineering','electrical':'Electrical','vessel-calcs':'Vessel Calculations','voyage-estimate':'Voyage Estimate','quick':'Quick Tools','weather':'Weather','navigation':'Navigation','live-experimental':'Live & Experimental','route-intelligence':'Experimental','profile':'Vessel Profile','settings':'Settings'}[id]||id.replaceAll('-',' '))}
 function toolSearchText(x){const meta=TOOL_META[x.title]||{};return `${x.title} ${pageLabel(x.page)} ${meta.how||''} ${meta.units||''}`.toLowerCase()}
 
 function toolSearchScore(x,q){
@@ -368,6 +369,16 @@ function bindGlobal(){
  const g=e.target.closest('[data-go]');if(g){openTool(g.dataset.go,g.dataset.toolTarget||'');return}
  const n=e.target.closest('.nav-btn[data-page]');if(n)page(n.dataset.page)
 });
+ const projectNav=$('.nav-project'),navList=$('.nav-list');
+ if(projectNav&&navList){
+  projectNav.addEventListener('toggle',()=>{
+   if(!projectNav.open)return;
+   requestAnimationFrame(()=>{
+    const top=Math.max(0,projectNav.offsetTop-navList.offsetTop-6);
+    navList.scrollTo({top,behavior:'smooth'});
+   });
+  });
+ }
  $('#mobileMenu').onclick=()=>{const sb=$('#sidebar'),open=sb.classList.toggle('open');$('#mobileMenu').setAttribute('aria-expanded',String(open))};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){const sb=$('#sidebar');if(sb.classList.contains('open')){sb.classList.remove('open');$('#mobileMenu').setAttribute('aria-expanded','false');$('#mobileMenu').focus()}}});
  $('#themeToggle').onclick=()=>setTheme(state.theme==='bridge'?'dark':'bridge');
@@ -451,7 +462,9 @@ function renderHome(){
  </section>
 
  <section class="home-more-section">
+   <div class="home-section-head"><div><span class="eyebrow">PLANNING & DATA</span><h2>More tools</h2></div></div>
    <div class="home-more-links">
+     <button data-go="voyage-estimate"><span>↗</span><b>Voyage Estimate</b><small>Approximate port distance, sea time and optional fuel</small><strong>→</strong></button>
      <button data-go="weather"><span>☁</span><b>Weather</b><small>MET Norway point forecast and weather helpers</small><strong>→</strong></button>
      <button data-go="navigation"><span>△</span><b>Navigation</b><small>Distance, bearing, coordinates and passage maths</small><strong>→</strong></button>
      <button data-go="live-experimental"><span>◉</span><b>Live & Experimental</b><small>AIS and route-context experiments, clearly separated from core tools</small><strong>→</strong></button>
@@ -530,6 +543,12 @@ async function runAnalysis(showToast=true){
 }
 function snapshot(){const cpa=cpaTargets().filter(x=>x.cpa<state.profile.cpaAlert).length;return{time:new Date().toISOString(),ais:corridorTargets().length,cpa,maxHs:Math.max(...state.forecast.map(x=>Number(x.hs)||0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
 function compareAnalysis(){const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');if(box){if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{const d=b-a,cls=d>0?'up':d<0?'down':'same';return `<div class="change-row"><span>${n}</span><b>${nf(a,n.includes('AIS')||n.includes('CPA')?0:1)} → ${nf(b,n.includes('AIS')||n.includes('CPA')?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`}).join('')}store.set(K.lastAnalysis,cur)}
+
+function renderVoyageEstimate(){
+ const host=$('#voyage-estimate');
+ if(window.__marineToolsVoyageEstimate?.render)window.__marineToolsVoyageEstimate.render(host);
+ else if(host)host.innerHTML=pageTitle('Port Distance & Sea Time','Voyage Estimate could not be loaded. Refresh the page and try again.');
+}
 
 function renderNavigation(){
  $('#navigation').innerHTML=pageTitle('Navigation','Everyday navigation calculations and route helpers. These tools supplement — never replace — approved navigation equipment.')+`<div class="tool-grid">
@@ -1079,7 +1098,7 @@ function renderSettings(){
   <div class="actions"><button class="btn primary" id="exportData">Download backup</button><button class="btn" id="importData">Restore backup</button><input id="importDataFile" type="file" accept=".json,application/json" hidden><button class="btn" id="clearHistorySet">Clear calculation history</button><button class="btn danger-soft" id="clearData">Clear all local data</button></div>
   <p class="helper">The backup contains your locally stored Marine Tools settings and histories. It does not contain anonymous analytics already sent to the server.</p>
  </div></article>
- <article class="panel" style="margin-top:12px"><div class="panel-body"><h3>Data principle</h3><p class="helper">Marine Tools keeps entered operational data local where possible. Live-data requests send only the route or position context needed for that request. Anonymous product analytics records only page/tool names, device class, app version and visible-time seconds.</p></div></article>`;
+ <details class="panel info-fold"><summary><span><b>Data principle</b><small>How Marine Tools handles operational data</small></span><strong>Show</strong></summary><div class="panel-body"><p class="helper">Marine Tools keeps entered operational data local where possible. Online requests send only the context needed for that request. Anonymous product analytics records only page/tool names, device class, app version and visible-time seconds.</p></div></details>`;
  $('#setTheme').value=state.theme;
  $('#saveSet').onclick=()=>{setTheme($('#setTheme').value);saveAppSettings({usageAnalytics:$('#setAnalytics')?.checked!==false});toast('Settings saved.')};
  if($('#setAnalytics'))$('#setAnalytics').onchange=e=>{saveAppSettings({usageAnalytics:e.target.checked});if(e.target.checked){sendAnalyticsEvent('analytics_enabled',{page:'settings'});analyticsVisibleSince=performance.now()}else flushAnalyticsEngagement(true);toast(e.target.checked?'Anonymous usage analytics enabled.':'Anonymous usage analytics disabled.')};
@@ -1154,63 +1173,70 @@ function renderContact(){
  </div>`;
 }
 function renderAbout(){
- $('#about').innerHTML=`<div class="about-hero"><div class="eyebrow">ABOUT THIS PROJECT</div><h1>Why Marine Tools exists</h1><p>Marine Tools is an independent maritime helper-tool project created to make common calculations, planning tasks and technical lookups easier to access in one place.</p></div>
+ $('#about').innerHTML=`<div class="about-hero"><div class="eyebrow">ABOUT THIS PROJECT</div><h1>Why Marine Tools exists</h1><p>Marine Tools brings practical maritime calculations and technical helpers together in one place.</p></div>
  <div class="about-columns">
    <article class="panel bullet-box"><h3>What it is</h3><ul>
-     <li>Calculation tools for navigation, engineering, electrical work, fuel and vessel operations</li>
-     <li>Optional experimental live-data features kept separate from the core calculators</li>
-     <li>Quick converters and technical utilities designed for PC, tablet and mobile use</li>
-     <li>A free project shaped by practical feedback from seafarers</li>
+     <li>Practical tools for navigation, engineering, electrical work, fuel and vessel operations</li>
+     <li>Quick converters and technical utilities for PC, tablet and mobile</li>
+     <li>Optional live and experimental features kept separate from core calculators</li>
    </ul></article>
    <article class="panel bullet-box"><h3>What it is not</h3><ul>
      <li>Not ECDIS or approved navigation equipment</li>
-     <li>Not a PMS, electronic logbook or checklist/SMS system</li>
-     <li>Not a certified decision-support system</li>
+     <li>Not a PMS, electronic logbook or certified decision-support system</li>
      <li>Not a replacement for vessel procedures, official publications or professional judgement</li>
    </ul></article>
  </div>
- <article class="panel" style="margin-top:12px"><div class="panel-body">
-   <h2>Independent and focused</h2>
-   <p>Marine Tools is currently designed, developed and maintained by <b>one person</b>. The scope is intentionally focused on practical helper tools that can save time or make routine calculations easier to verify.</p>
-   <p>Features such as watch handover, maintenance management, checklists and electronic records are outside the intended purpose. The focus is simple: <b>useful tools for seafarers</b>.</p>
-   <div class="notice"><b>Safety boundary:</b> All outputs are planning or calculation aids. Users remain responsible for checking data, assumptions, units and results against approved systems, official sources, vessel-specific documentation and applicable procedures.</div>
-   <div class="actions" style="margin-top:16px">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}${button('Support Marine Tools','support','btn')}${button('Business & contact','contact','btn')}</div>
- </div></article>
- <div class="grid-2" style="margin-top:12px">
-   <article class="panel bullet-box"><h3>Live data</h3><p>Weather point forecasts are provided as supporting context. AIS and route-context functions are explicitly marked experimental and kept separate from the core calculators. Source, data age and limitations must always be considered.</p></article>
-   <article class="panel bullet-box"><h3>Privacy by design</h3><p>Vessel Profile, route and local settings are stored in this browser. Live-data requests send only the context needed to obtain the requested result. Marine Tools does not use operational data for advertising, profiling or unrelated purposes. Minimal anonymous product analytics can be disabled in Settings.</p><div class="actions" style="margin-top:12px">${button("Read Privacy & data","privacy","btn")}</div></article>
- </div>`;
+ <details class="panel info-fold">
+   <summary><span><b>Project scope & safety</b><small>Purpose, boundaries and project focus</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Marine Tools is independently developed and focused on practical helper tools that can save time or make routine calculations easier to verify.</p>
+     <div class="notice"><b>Safety boundary:</b> Outputs are planning or calculation aids. Check data, assumptions, units and results against approved systems, official sources, vessel-specific documentation and applicable procedures.</div>
+     <div class="actions">${button('Take the survey →','survey')}${button('Send a suggestion','suggestions','btn')}${button('Business & contact','contact','btn')}</div>
+   </div>
+ </details>
+ <details class="panel info-fold">
+   <summary><span><b>Live data & privacy</b><small>How online features and local data are handled</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Weather and voyage-estimate data are supporting context. AIS and route-context functions remain experimental. Vessel Profile, route and local settings stay in this browser unless a feature explicitly needs an online request.</p>
+     <div class="actions">${button("Read Privacy & data","privacy","btn")}</div>
+   </div>
+ </details>`;
 }
 function renderPrivacy(){
- $('#privacy').innerHTML=`<div class="about-hero"><div class="eyebrow">PRIVACY & DATA</div><h1>Local-first by design</h1><p>Marine Tools uses only the data needed to perform the calculation, save your local setup or return the live-data request you choose to make.</p></div>
+ $('#privacy').innerHTML=`<div class="about-hero"><div class="eyebrow">PRIVACY & DATA</div><h1>Local-first by design</h1><p>Marine Tools keeps user-entered operational data local where possible and sends only what an online feature needs.</p></div>
  <div class="about-columns">
    <article class="panel bullet-box"><h3>Stored on your device</h3><ul>
-     <li>Vessel Profile values</li>
-     <li>Route waypoints created in the optional experimental Route Intelligence feature</li>
-     <li>Theme and local application settings</li>
-     <li>The previous route-analysis snapshot used for “What changed?”</li><li>Saved fuel, urea and lube-oil consumption history</li><li>Saved bunkering history</li><li>The last successful weather forecast for offline reference</li>
-   </ul><p class="helper">These values are stored in your browser on the device you are using. They are not automatically synced to a Marine Tools account or central project database.</p></article>
-   <article class="panel bullet-box"><h3>Not used for unrelated purposes</h3><ul>
-     <li>No advertising or behavioural profiling</li>
-     <li>No sale of vessel, route or calculation data</li>
-     <li>No use of entered operational data to train AI models</li>
-     <li>No intentional use for employment, disciplinary, enforcement or commercial assessment</li>
-   </ul><p class="helper">Marine Tools also collects minimal anonymous product analytics: page opened, tool used, device class, app version and visible-time seconds. No calculation inputs, vessel profile values, route coordinates, weather positions, names, email addresses or persistent user IDs are included. You can disable this under Settings. </p><p class="helper">Marine Tools has no user-account database and no function that lets another Marine Tools user retrieve your locally stored operational data.</p></article>
+     <li>Vessel Profile and local settings</li>
+     <li>Calculation, consumption and bunkering history</li>
+     <li>Optional experimental route data</li>
+     <li>Cached weather data for offline reference</li>
+   </ul><p class="helper">These values are stored in this browser and are not automatically synced to a Marine Tools account.</p></article>
+   <article class="panel bullet-box"><h3>Anonymous product analytics</h3><ul>
+     <li>Page and tool names</li>
+     <li>Device class and app version</li>
+     <li>Visible-time seconds</li>
+     <li>No calculation inputs, vessel values, route coordinates or weather positions</li>
+   </ul><p class="helper">Anonymous usage analytics can be disabled under Settings.</p></article>
  </div>
- <article class="panel" style="margin-top:12px"><div class="panel-body">
-   <h2>When live data is requested</h2>
-   <p>Some tools require internet access. Only the route or position context needed to return the requested live result is sent to the Marine Tools API. Marine Tools does not intentionally store those requests in an application database for later unrelated use.</p>
-   <div class="notice"><b>External infrastructure:</b> Internet requests necessarily pass through hosting, maritime-data, map and network providers. Those providers may process or retain technical request logs according to their own systems and policies.</div>
- </div></article>
- <div class="grid-2" style="margin-top:12px">
-   <article class="panel bullet-box"><h3>Maps & live-data sources</h3><p>Map tiles and live maritime data are requested from external services when the relevant feature is used. Those services receive the technical information necessary to return the requested content.</p></article>
-   <article class="panel bullet-box"><h3>Survey & suggestions</h3><p>Survey and suggestion submissions are handled through an external form service and are separate from locally stored Marine Tools operational data. Avoid submitting confidential vessel, company or personal information unless it is necessary.</p></article>
- </div>
- <article class="panel" style="margin-top:12px"><div class="panel-body">
-   <h2>Your control</h2>
-   <p>You can download a local backup, restore it on another device, or erase local Marine Tools data under <b>Settings → Data stored on this device</b>. Clearing browser site data will also remove locally stored Marine Tools data.</p>
-   <p><b>Data principle:</b> collect as little as possible, keep user-entered operational data local where possible, and send only what is necessary when a live-data feature explicitly requires a network request.</p>
- </div></article>`;
+ <details class="panel info-fold">
+   <summary><span><b>Online requests</b><small>Weather, AIS, maps and Voyage Estimate</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Weather, AIS and experimental route-context requests send only the context needed to return the requested result. Voyage Estimate downloads public routing and location datasets and performs the selected route calculation in your browser.</p>
+     <div class="notice"><b>External infrastructure:</b> Internet requests pass through hosting, maritime-data, map and network providers, which may process technical request logs according to their own systems and policies.</div>
+   </div>
+ </details>
+ <details class="panel info-fold">
+   <summary><span><b>Forms & external services</b><small>Maps, surveys and suggestions</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Map tiles and live maritime data are requested from external services when those features are used. Survey and suggestion submissions use an external form service and are separate from locally stored operational data.</p>
+   </div>
+ </details>
+ <details class="panel info-fold">
+   <summary><span><b>Your control</b><small>Backup, restore or clear local data</small></span><strong>Show</strong></summary>
+   <div class="panel-body">
+     <p>Under <b>Settings → Data stored on this device</b> you can download a backup, restore it on another device, clear calculation history or erase local Marine Tools data. Clearing browser site data will also remove locally stored Marine Tools data.</p>
+   </div>
+ </details>`;
 }
 function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow">MARINE TOOLS</div><h1>${h}</h1><p>${p}</p></div></div>`}
 function setRes(id,main,sub='',cls=''){const e=$('#'+id);if(!e)return;e.className=`result ${cls}`;e.innerHTML=`<strong>${main}</strong>${sub?`<small>${sub}</small>`:''}`}

@@ -12,18 +12,29 @@ Use this checklist for every production release. Safety or bug-fix releases may 
 - [ ] Global Weather returns wave data through the configured global fallback.
 - [ ] AIS endpoint responds in Norway and outside BarentsWatch coverage.
 - [ ] Navigation DDM input/output remains precise and internally consistent.
-- [ ] No route coordinates, Weather coordinates, vessel profile values, calculation inputs or search text are added to analytics.
+- [ ] Voyage Estimate works for a global port-to-port route and a Norwegian port-to-offshore route.
+- [ ] Voyage Estimate route-preference checkboxes can be combined without contradictory selections.
+- [ ] Draft above a modelled canal limit greys out the corresponding Via option and applies the restriction automatically.
+- [ ] Optional draft and Vessel Profile reuse behave as labelled.
+- [ ] Voyage Estimate includes endpoint connection allowance from the routing engine and does not display route geometry.
+- [ ] No route coordinates, Voyage Estimate locations/inputs, Weather coordinates, vessel profile values, calculation inputs or search text are added to analytics.
 
 ## Mobile QA
 
 Test both portrait and landscape on a phone-sized viewport.
 
 - [ ] Sidebar opens, closes and does not cover active content after navigation.
+- [ ] Sidebar scrolls through every navigation item on short desktop, laptop and phone viewports while the status footer remains visible.
+- [ ] Expanded Project & contact menu scrolls into view and every item remains reachable on desktop, laptop and phone viewports.
+- [ ] Core calculator pages use consistent headers, card spacing and result hierarchy.
+- [ ] About, Privacy and Settings secondary information expands/collapses cleanly.
+- [ ] Tables and histories remain readable in Dark and Bridge Dark.
 - [ ] Home search and global search remain usable.
 - [ ] Weather: `Show map`, `Use my position`, DDM fields and `Load forecast` are visible and usable.
 - [ ] Weather map can be opened, tapped and dragged without freezing the page.
 - [ ] Weather tables fit or scroll without clipping controls.
 - [ ] Navigation DDM editors fit on screen and do not overlap.
+- [ ] Voyage Estimate inputs, examples and result cards fit without horizontal clipping.
 - [ ] Bearing / distance / destination output is readable.
 - [ ] Coordinate toolbox output is readable.
 - [ ] Route Intelligence map and waypoint DDM list remain usable.
@@ -53,5 +64,6 @@ The `Production smoke test` GitHub Action must pass after production deployment.
 - [ ] Weather inland / Norway sea / global wave checks pass.
 - [ ] AIS Norway / global endpoint checks pass.
 - [ ] Weather map production asset is present.
+- [ ] Voyage Estimate production assets and navigation entry are present.
 
 If a production smoke test fails, treat the release as incomplete until the failure is understood and resolved.

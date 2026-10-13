@@ -1,6 +1,8 @@
 name: Production smoke test
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,12 +28,16 @@ jobs:
 
       - name: Static JavaScript checks
         run: |
-          node --check release-v857.js
+          node --check release-v860.js
           node --check analytics-v856.js
           node --check weather-map-v854.js
           node --check ui-v854.js
-          node --check worker/worker-v857.js
-          node --check worker/worker-v857-runtime.js
+          node --check ui-v861.js
+          node --check product-v860.js
+          node --check voyage-estimate-v861.js
+          node --check app.js
+          node --check worker/worker-v860-product.js
+          node --check worker/worker-v860-dashboard.js
 
       - name: Navigation calculation smoke test
         run: node tests/navigation-smoke.mjs
