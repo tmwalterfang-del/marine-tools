@@ -60,6 +60,7 @@ test -f voyage-planning-draft-v1.css || { echo '::error::Voyage Planning Lab CSS
 grep -q 'voyage-planning-lab' index.html || { echo '::error::Voyage Planning Lab page is not wired into index.html.'; exit 1; }
 grep -q 'Bunker Requirement / Stem Planner' voyage-planning-draft-v1.js || { echo '::error::Voyage Planning Lab bunker draft is missing.'; exit 1; }
 grep -q 'Vessel Consumption Curve' voyage-planning-draft-v1.js || { echo '::error::Voyage Planning Lab consumption-curve draft is missing.'; exit 1; }
+grep -Fq "const rows=\$\$('.vpd-curve-row'" voyage-planning-draft-v1.js || { echo '::error::Voyage Planning Lab curve-save selector regression detected.'; exit 1; }
 test -f global-polish-v862.css || { echo '::error::Global visual polish CSS asset is missing.'; exit 1; }
 grep -q 'global-polish-v862.css' index.html || { echo '::error::Global visual polish is not wired into index.html.'; exit 1; }
 grep -q 'Port Distance & Sea Time' voyage-estimate-v861.js || { echo '::error::Voyage Estimate content failed integrity check.'; exit 1; }
