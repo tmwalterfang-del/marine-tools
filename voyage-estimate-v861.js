@@ -320,6 +320,7 @@ function renderEstimate(from,to,route,preferences){
   $('#veEstimateTitle').textContent=from.name+' → '+to.name;
   $('#veEstimateSubtitle').textContent='Approximate voyage estimate only.';
   $('#veEstimateDetails').innerHTML=detailsRows(from,to,route,preferences,speed).map(([k,v])=>'<div><dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd></div>').join('');
+  try{localStorage.setItem('mt.voyageEstimate.last',JSON.stringify({from:from.name,to:to.name,distanceNm:m.distanceNm,speedKnots:speed,hours:m.hours,fuelEstimateM3:fuel,routeBasis:basis,savedAt:new Date().toISOString()}))}catch{}
   $('#veResultArea').hidden=false;
   window.__marineToolsAnalyticsV2?.send?.('calculation_completed',{page:'voyage-estimate',tool:'Port Distance & Sea Time'});
   $('#veResultArea').scrollIntoView({behavior:'smooth',block:'start'});
@@ -418,6 +419,8 @@ function render(host){
     </div>
 
     <div class="notice ve-warning"><b>Estimate only.</b> This is not a passage plan or navigational route. Actual sailed distance and time will vary with the vessel's passage plan, weather, traffic, restrictions, speed changes and operational requirements.</div>
+
+    <div class="ve-draft-launch"><div><b>Voyage planning prototypes</b><span>Draft concepts for bunker requirement, speed scenarios, arrival planning, CO₂ estimates and vessel consumption curves.</span></div><button class="btn" type="button" data-go="voyage-planning-lab">Open planning drafts →</button></div>
 
     <article class="panel ve-builder">
       <div class="panel-head"><div><h2>Estimate voyage</h2><small>Select two locations and a speed. Marine Tools estimates distance, sea time and optional fuel use.</small></div></div>
