@@ -369,6 +369,16 @@ function bindGlobal(){
  const g=e.target.closest('[data-go]');if(g){openTool(g.dataset.go,g.dataset.toolTarget||'');return}
  const n=e.target.closest('.nav-btn[data-page]');if(n)page(n.dataset.page)
 });
+ const projectNav=$('.nav-project'),navList=$('.nav-list');
+ if(projectNav&&navList){
+  projectNav.addEventListener('toggle',()=>{
+   if(!projectNav.open)return;
+   requestAnimationFrame(()=>{
+    const top=Math.max(0,projectNav.offsetTop-navList.offsetTop-6);
+    navList.scrollTo({top,behavior:'smooth'});
+   });
+  });
+ }
  $('#mobileMenu').onclick=()=>{const sb=$('#sidebar'),open=sb.classList.toggle('open');$('#mobileMenu').setAttribute('aria-expanded',String(open))};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){const sb=$('#sidebar');if(sb.classList.contains('open')){sb.classList.remove('open');$('#mobileMenu').setAttribute('aria-expanded','false');$('#mobileMenu').focus()}}});
  $('#themeToggle').onclick=()=>setTheme(state.theme==='bridge'?'dark':'bridge');
