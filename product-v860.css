@@ -30,3 +30,28 @@
 #mtProfileV2 .mt-v860-table-wrap table{min-width:850px;width:max-content;table-layout:auto}
 #mtProfileV2 .mt-v860-table-wrap th,#mtProfileV2 .mt-v860-table-wrap td{min-width:0;white-space:nowrap}
 @media(max-width:760px){#mtProfileV2 .mt-add-grid{grid-template-columns:minmax(0,1fr)}}
+
+
+/* QA-019: shrink Vessel Profile's outer and inner grids instead of expanding
+   the document. Only the carrier table should scroll horizontally. */
+#mtProfileV2 .grid-2.mt-v860-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+#mtProfileV2 .grid-2.mt-v860-grid > *,
+#mtProfileV2 .grid-2.mt-v860-grid .fields.three > *{
+  min-width:0;
+  max-width:100%;
+}
+#mtProfileV2 .grid-2.mt-v860-grid .fields.three{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+@media(max-width:1250px){
+  #mtProfileV2 .grid-2.mt-v860-grid{
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+@media(max-width:760px){
+  #mtProfileV2 .grid-2.mt-v860-grid .fields.three{
+    grid-template-columns:minmax(0,1fr);
+  }
+}
