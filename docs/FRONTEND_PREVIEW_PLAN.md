@@ -57,10 +57,11 @@ Local checks passed on 2026-10-15:
 - Preview build and syntax checks for every generated root JS file.
 - `node tests/frontend-preview-guards.mjs`: all HTML has preview metadata/banner; both analytics/SW paths disabled; output filtering; blocked production API write methods, unknown endpoints and Request/URL variants; allowed GET preservation.
 - `node tests/navigation-smoke.mjs`: existing navigation calculations.
+- The same build/guard/navigation checks and syntax checks for all generated root JS files also passed against a temporary checkout of PR #31 at `209a5f3`. PR #31 was not changed; its browser/deployed-origin QA remains pending.
 
-`tests/frontend-preview-smoke.mjs` implements Chromium checks at 390, 820 and 1440 px for Dark Maritime and Bridge Dark, navigation, banner spacing, local assets, no analytics/write requests, no SW registrations, plus the education/professionals pages. External services are mocked; it does not verify live CORS or provider data. Local execution was blocked because no Chromium was installed and its download failed. **No visual/browser pass is claimed.**
+`tests/frontend-preview-smoke.mjs` implements Chromium checks at 390, 820 and 1440 px for Dark Maritime and Bridge Dark, navigation, banner spacing, local assets, no analytics/write requests, no SW registrations, plus the education/professionals pages. External services are mocked; it does not verify live CORS or provider data. Local execution was blocked because no Chromium was installed and its download failed. GitHub Actions subsequently installed Chromium successfully. After correcting the test server root-path handling, all six viewport/theme combinations and the additional HTML-page checks passed in run https://github.com/tmwalterfang-del/marine-tools/actions/runs/38700306705 (tested code commit `4d7f99777628f43290cf722bf728df1417b8db00`). This is automated local-server browser QA, not manual visual approval or a deployed Pages test.
 
-GitHub workflow `Frontend preview checks` runs the isolated build, guard checks, navigation checks and browser checks on PRs targeting main, with read-only permissions and no deployment step. Browser QA requires Playwright 1.62.1 and `npx playwright install --with-deps chromium`; CI results must be inspected before claiming it passed.
+GitHub workflow `Frontend preview checks` runs the isolated build, guard checks, navigation checks and browser checks on PRs targeting main, with read-only permissions and no deployment step. Browser QA requires Playwright 1.62.1 and `npx playwright install --with-deps chromium`; The successful run above was inspected directly.
 
 After the first real Pages deployment:
 
