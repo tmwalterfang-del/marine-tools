@@ -6,12 +6,12 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
 const {chromium}=createRequire(import.meta.url)('playwright');
-const root=fileURLToPath(new URL('../.preview-dist/',import.meta.url));
+const root=path.resolve(fileURLToPath(new URL('../.preview-dist/',import.meta.url)));
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml'};
 const server=createServer(async(req,res)=>{
   try{
     let file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));
-    if(!file.startsWith(root))throw Error('Invalid path');
+    if(file!==root&&!file.startsWith(root+path.sep))throw Error('Invalid path');
     if((await stat(file)).isDirectory())file=path.join(file,'index.html');
     res.setHeader('Content-Type',mime[path.extname(file)]||'application/octet-stream');
     res.end(await readFile(file));
@@ -39,7 +39,8 @@ try{
       return route.abort();
     });
     await page.addInitScript(t=>localStorage.setItem('mt.theme',JSON.stringify(t)),theme);
-    await page.goto(origin,{waitUntil:'networkidle'});
+    const response=await page.goto(origin,{waitUntil:'networkidle'});
+    assert.equal(response.status(),200,'preview root HTTP status');
     // Wait past both automatic widget timers and API startup checks.
     await page.waitForTimeout(6000);
     await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
