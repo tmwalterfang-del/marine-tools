@@ -59,7 +59,7 @@ function setStatus(kind,text){
 }
 async function importFirst(urls){
   let last;
-  for(const url of urls){try{return await import(url)}catch(e){last=e}}
+  for(const url of urls){let timer;try{return await Promise.race([import(url),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Network module loading timed out after 12 seconds')),12000)})])}catch(e){last=e}finally{clearTimeout(timer)}}
   throw last||new Error('Module unavailable');
 }
 async function loadPortDirectory(){
