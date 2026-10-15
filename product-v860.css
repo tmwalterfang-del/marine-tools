@@ -12,3 +12,10 @@
 
 @media(max-width:1100px){.mt-add-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mt-v860-grid,.mt-energy-layout{grid-template-columns:1fr}}
 @media(max-width:700px){.mt-section-head{display:block}.mt-section-head>.chip{margin-top:9px}.mt-add-grid,.mt-energy-layout .fields.three{grid-template-columns:1fr}.mt-profile-reuse{grid-template-columns:1fr}.mt-summary-row{align-items:flex-start}.mt-history-actions{display:grid;grid-template-columns:1fr}.mt-history-actions select{width:100%}.mt-energy-topline{align-items:flex-start;flex-direction:column}}
+
+/* QA-019: contain wide Vessel Profile 2.0 tables inside their scroll area. */
+#profile,#mtProfileV2,#mtProfileV2 .mt-v860-panel,#mtProfileV2 .panel-body{min-width:0;max-width:100%;box-sizing:border-box}
+#mtProfileV2 .mt-v860-table-wrap{min-width:0;max-width:100%;width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+#mtProfileV2 .mt-v860-table-wrap table{width:max-content;min-width:850px}
+#mtProfileV2 .mt-v860-table-wrap input,#mtProfileV2 .mt-v860-table-wrap select{min-width:0;width:100%;box-sizing:border-box}
+@media(max-width:760px){#mtProfileV2 .mt-add-grid{grid-template-columns:minmax(0,1fr)}#mtProfileV2 .mt-section-head{flex-wrap:wrap}}
