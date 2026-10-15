@@ -70,7 +70,7 @@ function setTheme(v){
 function nowUTC(){const d=new Date();return d.toISOString().slice(11,16)}
 
 function localDateISO(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
-function csvCell(v){const s=String(v??'');return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}
+function csvCell(v){let s=String(v??'');if(/^[\s\uFEFF]*[=+@\-\t\r]/.test(s)&&!/^\s*-?\d+(?:\.\d+)?\s*$/.test(s))s="'"+s;return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}
 function downloadCsv(filename,rows){
  const csv=rows.map(r=>r.map(csvCell).join(',')).join('\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click();URL.revokeObjectURL(a.href)
@@ -107,7 +107,7 @@ function loadSupportWidget(){if(bmcLoaded)return;bmcLoaded=true;const s=document
 function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)requestIdleCallback(fn,{timeout});else setTimeout(fn,timeout)}
 const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
-function page(id){ensurePage(id);document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
+function page(id){ensurePage(id);document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();if(id==='settings')renderSettings();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
 window.__marineToolsOpenPage=page;
 function requestedInitialPage(){
  const q=new URLSearchParams(location.search).get('page');
@@ -653,7 +653,7 @@ async function loadPointWeather(){
      `weather: ${d.location?.ok?'ok':d.location?.status||'unavailable'}`,
      `ocean: ${d.ocean?.ok?'ok':d.ocean?.status||'unavailable'}`
    ];
-   const marineOk=Boolean(d.ocean?.ok);
+   const marineOk=Boolean(d.ocean?.ok||d.globalWave?.ok||state.weather.some(x=>x.hs!=null&&Number.isFinite(Number(x.hs))));
    diag.textContent=marineOk?`MET Norway · ${parts.join(' · ')} · updated ${new Date().toISOString().slice(11,16)} UTC`:`Global weather loaded · Marine wave/current data unavailable for this position · updated ${new Date().toISOString().slice(11,16)} UTC`;
    const usable=state.weather.some(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v))));
    if(state.weather.length&&usable){sourceStatus('#wxStatus',marineOk?'ok':'warn',marineOk?'FORECAST LOADED':'WEATHER ONLY');renderPointWeather();sendAnalyticsEvent('tool_use',{page:'weather',tool:'Point weather forecast'})}
@@ -672,7 +672,7 @@ async function loadPointWeather(){
    }
  }
 }
-function findWeatherWindow(){const rows=$$('.weather-row',$('#windowRows')).map(r=>({t:$('.ww-time',r).value,hs:+$('.ww-hs',r).value,w:+$('.ww-wind',r).value,c:+$('.ww-current',r).value})).filter(x=>x.t&&[x.hs,x.w,x.c].every(Number.isFinite));const lim={hs:+$('#wwHs').value,w:+$('#wwWind').value,c:+$('#wwCur').value};let groups=[],cur=[];for(const r of rows){if(r.hs<=lim.hs&&r.w<=lim.w&&r.c<=lim.c)cur.push(r);else if(cur.length){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);const txt=groups.length?groups.map(g=>`${g[0].t} → ${g[g.length-1].t} (${g.length} consecutive row${g.length>1?'s':''})`).join('<br>'):'No matching window in the supplied rows.';setRes('wwResult',txt,'Manual planning aid — verify against official forecasts.')}
+function findWeatherWindow(){const rows=$$('.weather-row',$('#windowRows')).map(r=>({t:$('.ww-time',r).value,hs:inputNumber($('.ww-hs',r)),w:inputNumber($('.ww-wind',r)),c:inputNumber($('.ww-current',r))}));const lim={hs:+$('#wwHs').value,w:+$('#wwWind').value,c:+$('#wwCur').value};let groups=[],cur=[];for(const r of rows){if(r.t&&[r.hs,r.w,r.c].every(Number.isFinite)&&r.hs<=lim.hs&&r.w<=lim.w&&r.c<=lim.c)cur.push(r);else if(cur.length){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);const txt=groups.length?groups.map(g=>`${g[0].t} → ${g[g.length-1].t} (${g.length} consecutive row${g.length>1?'s':''})`).join('<br>'):'No matching window in the supplied rows.';setRes('wwResult',txt,'Manual planning aid — verify against official forecasts.')}
 
 
 function calcWaveEncounter(){
@@ -912,7 +912,7 @@ function bindFuel(){
 
  $('#calcFuelDensity').onclick=()=>{const v=inputNumber('#fuelVol'),rho=inputNumber('#fuelDensity'),t=inputNumber('#fuelTemp'),tr=inputNumber('#fuelRef'),a=inputNumber('#fuelAlpha');if(![v,rho,t,tr,a].every(Number.isFinite)||v<0||rho<=0||1+a*(t-tr)<=0)return setRes('resFuelDensity','Check volume, density and temperature','All required inputs must be present and density positive.','caution');const vr=v/(1+a*(t-tr)),mass=v*rho/1000;setRes('resFuelDensity',`${nf(vr,3)} m³ @ ${tr}°C · ${nf(mass,3)} t`,`Simple thermal-volume correction using user-supplied coefficient.`)};
  $('#calcTransfer').onclick=()=>{const cap=inputNumber('#tankCap'),n=inputNumber('#tankNow'),m=inputNumber('#tankMove'),r=inputNumber('#tankRate');if(![cap,n,m,r].every(Number.isFinite)||cap<=0||n<0||n>cap||m<0||r<=0)return setRes('resTransfer','Check tank quantities','Capacity and rate must be positive; volumes cannot be negative or exceed capacity.','caution');const final=n+m,pct=final/cap*100,time=m/r;setRes('resTransfer',`${nf(final,2)} m³ · ${nf(pct,1)}% · ${formatHours(time)}`,pct>90?'Receiving tank exceeds 90% fill.':'Check tank-specific maximum fill and procedures.',pct>100?'alert':pct>90?'caution':'ok')};
- $('#calcBlend').onclick=()=>{const va=+$('#blendVA').value,da=+$('#blendDA').value,sa=+$('#blendSA').value,vb=+$('#blendVB').value,db=+$('#blendDB').value,sb=+$('#blendSB').value;if(!(va>=0&&vb>=0&&da>0&&db>0&&va+vb>0))return setRes('resBlend','Check blend inputs.','','caution');const ma=va*da,mb=vb*db,mt=ma+mb,vt=va+vb,rho=mt/vt,s=(ma*sa+mb*sb)/mt;setRes('resBlend',`${nf(vt,2)} m³ · ${nf(rho,1)} kg/m³ · ${nf(s,3)}% S`,`Mass basis: Fuel A ${nf(ma/1000,2)} t + Fuel B ${nf(mb/1000,2)} t. Compatibility/stability is not evaluated.`)};
+ $('#calcBlend').onclick=()=>{const va=inputNumber('#blendVA'),da=inputNumber('#blendDA'),sa=inputNumber('#blendSA'),vb=inputNumber('#blendVB'),db=inputNumber('#blendDB'),sb=inputNumber('#blendSB');if(![va,da,sa,vb,db,sb].every(Number.isFinite)||!(va>=0&&vb>=0&&da>0&&db>0&&va+vb>0&&sa>=0&&sa<=100&&sb>=0&&sb<=100))return setRes('resBlend','Check blend inputs.','','caution');const ma=va*da,mb=vb*db,mt=ma+mb,vt=va+vb,rho=mt/vt,s=(ma*sa+mb*sb)/mt;setRes('resBlend',`${nf(vt,2)} m³ · ${nf(rho,1)} kg/m³ · ${nf(s,3)}% S`,`Mass basis: Fuel A ${nf(ma/1000,2)} t + Fuel B ${nf(mb/1000,2)} t. Compatibility/stability is not evaluated.`)};
 
  $('#fuMode').onchange=()=>{$('#fuAmountText').textContent=$('#fuMode').value==='v2m'?'Volume m³':'Mass tonnes'};
  $('#calcFuelUrea').onclick=()=>{const amount=inputNumber('#fuAmount'),d=inputNumber('#fuDensity'),mode=$('#fuMode').value,product=$('#fuProduct').value;if(!(amount>=0&&d>0))return setRes('resFuelUrea','Check amount and density.','','caution');if(mode==='v2m'){const kg=amount*d,t=kg/1000;setRes('resFuelUrea',`${nf(t,3)} t · ${nf(kg,0)} kg`,`${nf(amount,3)} m³ ${product.toLowerCase()} at ${nf(d,1)} kg/m³.`)}else{const m3=amount*1000/d;setRes('resFuelUrea',`${nf(m3,3)} m³ · ${nf(m3*1000,0)} L`,`${nf(amount,3)} t ${product.toLowerCase()} at ${nf(d,1)} kg/m³.`)}};
@@ -1082,7 +1082,7 @@ function bindQuick(){
  $('#calcDST').onclick=()=>{const d=+$('#qDist').value,s=+$('#qSpeed').value;if(!(d>=0&&s>0))return setRes('resDST','Check distance and speed.','Speed must be above 0 kn and distance cannot be negative.','caution');const h=d/s;setRes('resDST',`${formatHours(h)}`,`${nf(d,1)} NM at ${nf(s,1)} kn.`)};
  $('#calcBf').onclick=()=>{const k=+$('#bfKn').value;if(!(k>=0))return setRes('resBf','Check wind speed.','Wind speed cannot be negative.','caution');const b=beaufort(k);setRes('resBf',`Beaufort ${b.force} · ${b.desc}`,`${b.range} kn approximate range.`)};
  $('#calcUnit').onclick=()=>{const v=+$('#unitVal').value,t=$('#unitType').value,fn={"nm-km":x=>[x*1.852,'km'],"km-nm":x=>[x/1.852,'NM'],"kn-ms":x=>[x/1.943844,'m/s'],"ms-kn":x=>[x*1.943844,'kn'],"bar-kpa":x=>[x*100,'kPa'],"kw-hp":x=>[x*1.34102,'hp'],"c-f":x=>[x*9/5+32,'°F']}[t],r=fn(v);setRes('resUnit',`${nf(r[0],3)} ${r[1]}`,'')};
- $('#calcCompass').onclick=()=>{const c=+$('#compC').value,v=+$('#compVar').value,d=+$('#compDev').value,t=(c+v+d+360)%360;setRes('resCompass',`${nf(t,1)}° true`,`Uses signed east-positive corrections. Confirm convention against your vessel procedures.`)};
+ $('#calcCompass').onclick=()=>{const c=+$('#compC').value,v=+$('#compVar').value,d=+$('#compDev').value,t=((c+v+d)%360+360)%360;setRes('resCompass',`${nf(t,1)}° true`,`Uses signed east-positive corrections. Confirm convention against your vessel procedures.`)};
 }
 function beaufort(k){const rows=[[1,'Light air','1–3'],[4,'Light breeze','4–6'],[7,'Gentle breeze','7–10'],[11,'Moderate breeze','11–16'],[17,'Fresh breeze','17–21'],[22,'Strong breeze','22–27'],[28,'Near gale','28–33'],[34,'Gale','34–40'],[41,'Strong gale','41–47'],[48,'Storm','48–55'],[56,'Violent storm','56–63'],[64,'Hurricane','64+']];if(k<1)return{force:0,desc:'Calm',range:'<1'};for(let i=0;i<rows.length;i++){const next=rows[i+1]?.[0]??Infinity;if(k<next)return{force:i+1,desc:rows[i][1],range:rows[i][2]}}return{force:12,desc:'Hurricane',range:'64+'}}
 
@@ -1114,11 +1114,11 @@ function renderSettings(){
  $('#importData').onclick=()=>$('#importDataFile').click();
  $('#importDataFile').onchange=e=>{const f=e.target.files?.[0];if(f)importDataBackup(f);e.target.value=''};
  $('#clearHistorySet').onclick=()=>{clearHistory();renderSettings()};
- $('#clearData').onclick=()=>{if(confirm('Clear all Marine Tools local data in this browser?')){Object.values(K).forEach(k=>localStorage.removeItem(k));location.reload()}}
+ $('#clearData').onclick=()=>{if(confirm('Clear all Marine Tools local data in this browser?')){[...Object.values(K),...[['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']].map(x=>x[1])].forEach(k=>localStorage.removeItem(k));location.reload()}}
 }
 
 function exportData(){
- const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),exported:new Date().toISOString()};
+ const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),extraLocal:Object.fromEntries([['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']].map(([n,k])=>[n,store.get(k,null)])),exported:new Date().toISOString()};
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=`marine-tools-backup-${localDateISO()}.json`;a.click();URL.revokeObjectURL(a.href);toast('Local backup downloaded.')
 }
 async function importDataBackup(file){
@@ -1127,7 +1127,7 @@ async function importDataBackup(file){
   if(!data||typeof data!=='object'||(!data.profile&&!data.consumption&&!data.bunkering&&!data.settings))return toast('This does not look like a Marine Tools backup.');
   if(!confirm('Restore this Marine Tools backup? Existing local values may be replaced.'))return;
   const mapping=[[K.profile,data.profile],[K.route,data.route],[K.lastAnalysis,data.lastAnalysis],[K.settings,data.settings],[K.theme,data.theme],[K.favorites,data.favorites],[K.recent,data.recent],[K.history,data.history],[K.consumption,data.consumption],[K.bunkHistory,data.bunkering],[K.weatherCache,data.weatherCache]];
-  for(const [key,value] of mapping)if(value!==undefined&&value!==null)store.set(key,value);
+  for(const [key,value] of mapping)if(value!==undefined&&value!==null)store.set(key,value);if(data.extraLocal&&typeof data.extraLocal==='object')for(const [n,k] of [['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']])if(data.extraLocal[n]!=null)store.set(k,data.extraLocal[n]);
   toast('Backup restored. Reloading…');setTimeout(()=>location.reload(),500)
  }catch{toast('Could not restore backup JSON.')}
 }
