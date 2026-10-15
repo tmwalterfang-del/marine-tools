@@ -38,7 +38,7 @@ def main():
                 page=context.new_page()
                 page.on("pageerror",lambda exc:errors.append(str(exc)))
                 # Set initial theme without touching real user data.
-                page.add_init_script("(theme)=>{localStorage.setItem('mt.theme',JSON.stringify(theme));}", theme)
+                page.add_init_script(f"localStorage.setItem('mt.theme',JSON.stringify('{theme}'))")
                 try:
                     page.goto(args.url,wait_until="domcontentloaded",timeout=45000)
                     page.wait_for_function("!!window.__marineToolsOpenPage",timeout=30000)
