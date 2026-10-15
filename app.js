@@ -653,8 +653,8 @@ async function loadPointWeather(){
      `weather: ${d.location?.ok?'ok':d.location?.status||'unavailable'}`,
      `ocean: ${d.ocean?.ok?'ok':d.ocean?.status||'unavailable'}`
    ];
-   const marineOk=Boolean(d.ocean?.ok||d.globalWave?.ok||state.weather.some(x=>x.hs!=null&&Number.isFinite(Number(x.hs))));
-   diag.textContent=marineOk?`MET Norway · ${parts.join(' · ')} · updated ${new Date().toISOString().slice(11,16)} UTC`:`Global weather loaded · Marine wave/current data unavailable for this position · updated ${new Date().toISOString().slice(11,16)} UTC`;
+   const waveAvailable=state.weather.some(x=>x.hs!=null&&Number.isFinite(Number(x.hs)));const currentAvailable=state.weather.some(x=>x.currentKn!=null&&Number.isFinite(Number(x.currentKn)));const marineOk=Boolean(waveAvailable||currentAvailable);
+   diag.textContent=`MET Norway atmosphere · waves: ${waveAvailable?(d.globalWave?.ok?'NOAA/GFS-Wave':d.ocean?.ok?'MET Oceanforecast':'available, source unverified'):'unavailable'} · currents: ${currentAvailable?'available':'unavailable'} · updated ${new Date().toISOString().slice(11,16)} UTC`;
    const usable=state.weather.some(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v))));
    if(state.weather.length&&usable){sourceStatus('#wxStatus',marineOk?'ok':'warn',marineOk?'FORECAST LOADED':'WEATHER ONLY');renderPointWeather();sendAnalyticsEvent('tool_use',{page:'weather',tool:'Point weather forecast'})}
    else if(state.weather.length){sourceStatus('#wxStatus','warn','NO VALUES');renderPointWeather()}
@@ -1114,7 +1114,7 @@ function renderSettings(){
  $('#importData').onclick=()=>$('#importDataFile').click();
  $('#importDataFile').onchange=e=>{const f=e.target.files?.[0];if(f)importDataBackup(f);e.target.value=''};
  $('#clearHistorySet').onclick=()=>{clearHistory();renderSettings()};
- $('#clearData').onclick=()=>{if(confirm('Clear all Marine Tools local data in this browser?')){[...Object.values(K),...[['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']].map(x=>x[1])].forEach(k=>localStorage.removeItem(k));location.reload()}}
+ $('#clearData').onclick=()=>{if(confirm('Clear all Marine Tools local data in this browser?')){Object.keys(localStorage).filter(k=>k.startsWith('mt.')).forEach(k=>localStorage.removeItem(k));location.reload()}}
 }
 
 function exportData(){
