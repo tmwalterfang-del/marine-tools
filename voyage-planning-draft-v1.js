@@ -177,11 +177,11 @@ function emissions(){
   if(!rate)return setResult('vpdEmissionResult','Enter daily fuel consumption or save a usable curve.','','caution');
   const density=inputNum($('#vpdDensity')),cf=factorForSelection();
   if(!(density>0&&density<2000))return setResult('vpdEmissionResult','Enter a valid fuel density in kg/m³.','','caution');
-  if(!(cf>0&&cf<10))return setResult('vpdEmissionResult','Enter or select a valid CO₂ conversion factor.','','caution');
+  if(!(cf>=0&&cf<10))return setResult('vpdEmissionResult','Enter a valid CO₂ factor (0 permitted only where a documented direct-CO₂ factor is zero).','','caution');
   const h=b.distance/b.speed,volume=rate.rate*h/24,massT=volume*density/1000,co2=massT*cf;
   const fuelLabel=$('#vpdFuelType option:checked')?.textContent||'Selected fuel';
   setResult('vpdEmissionResult',fmt(co2,1)+' t CO₂ estimate',
-    fuelLabel+' · '+fmt(volume,1)+' m³ · '+fmt(massT,1)+' t fuel · C_F '+fmt(cf,3)+' · '+rate.source);
+    fuelLabel+' · '+fmt(volume,1)+' m³ · '+fmt(massT,1)+' t fuel · C_F '+fmt(cf,3)+' · '+rate.source+' · density assumed at the same temperature as the entered volume'+(cf===0?' · zero direct CO₂ does not mean zero GHG or lifecycle emissions':''));
 }
 function curveRow(point={speed:'',fuelDay:''}){
   return'<div class="vpd-curve-row"><label>Speed kn<input class="vpd-curve-speed" type="number" min="0.1" max="40" step="0.1" value="'+esc(point.speed)+'"></label><label>Fuel m³/day<input class="vpd-curve-fuel" type="number" min="0" step="0.01" value="'+esc(point.fuelDay)+'"></label><button type="button" class="btn small vpd-remove-curve">Remove</button></div>';
@@ -310,8 +310,8 @@ function render(host){
               <option value="mdo">Diesel / Gas Oil</option><option value="lfo">Light Fuel Oil (LFO)</option><option value="hfo">Heavy Fuel Oil (HFO)</option>
               <option value="lpgp">LPG · Propane</option><option value="lpgb">LPG · Butane</option><option value="lng">LNG</option><option value="methanol">Methanol</option><option value="ethanol">Ethanol</option><option value="custom">Other / custom factor</option>
             </select><small id="vpdFactorText"></small></label>
-            <label>Density kg/m³<input id="vpdDensity" type="number" min="1" step="0.1" placeholder="Enter actual / approved value"></label>
-            <label id="vpdCustomFactorWrap" hidden>Custom C_F t-CO₂/t-fuel<input id="vpdCustomFactor" type="number" min="0.001" step="0.001" value="3.206"></label>
+            <label>Density kg/m³ (at volume measurement temperature)<input id="vpdDensity" type="number" min="1" step="0.1" placeholder="Enter actual / approved value"></label>
+            <label id="vpdCustomFactorWrap" hidden>Custom C_F t-CO₂/t-fuel<input id="vpdCustomFactor" type="number" min="0" step="0.001" value="3.206"></label>
           </div>
           <div class="actions"><button id="vpdCalcEmission" class="btn primary">Estimate fuel & CO₂</button></div>
           <div id="vpdEmissionResult" class="result"><strong>—</strong><small>IMO C_F factors are provided for the listed fuel categories. For other fuels, use an approved custom factor. Direct CO₂ only; no CH₄/N₂O or lifecycle effects. Not an EU ETS or FuelEU compliance calculation.</small></div>
