@@ -1,0 +1,8 @@
+:root{--mt-preview-height:72px}
+html{scroll-padding-top:calc(var(--mt-preview-height) + 72px)}
+body{padding-top:var(--mt-preview-height)}
+#mtPreviewBanner{position:fixed;top:0;left:0;right:0;z-index:10000;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 16px;padding:9px 16px;background:#ffd174;color:#201708;font:13px/1.4 system-ui,sans-serif;text-align:center;border-bottom:1px solid #8f651b}
+#mtPreviewBanner strong{letter-spacing:.05em}
+body .sidebar{top:var(--mt-preview-height);height:calc(100dvh - var(--mt-preview-height));max-height:calc(100dvh - var(--mt-preview-height))}
+body .topbar{top:var(--mt-preview-height)}
+@media print{#mtPreviewBanner{position:static}body{padding-top:0}}

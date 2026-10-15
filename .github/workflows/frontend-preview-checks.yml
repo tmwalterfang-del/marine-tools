@@ -1,0 +1,32 @@
+name: Frontend preview checks
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: frontend-preview-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build isolated frontend (no deploy)
+        run: node scripts/build-frontend-preview.mjs
+      - name: Check preview JavaScript and isolation
+        run: |
+          for file in .preview-dist/*.js; do node --check "$file"; done
+          node tests/frontend-preview-guards.mjs
+          node tests/navigation-smoke.mjs
+      - name: Install browser test dependency
+        run: npm install --no-save --package-lock=false playwright@1.62.1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Desktop, tablet and mobile browser checks (external services mocked)
+        run: node tests/frontend-preview-smoke.mjs
