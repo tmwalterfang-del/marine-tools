@@ -55,3 +55,11 @@
     grid-template-columns:minmax(0,1fr);
   }
 }
+
+/* Form controls must be allowed to shrink with their responsive grid tracks. */
+#mtProfileV2 .grid-2.mt-v860-grid .fields.three :is(input,select,textarea){
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  box-sizing:border-box;
+}
