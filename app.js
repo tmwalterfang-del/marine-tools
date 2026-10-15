@@ -19,7 +19,7 @@ const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}cat
 const DEFAULT_SETTINGS={usageAnalytics:true};
 function appSettings(){return{...DEFAULT_SETTINGS,...(store.get(K.settings,{})||{})}}
 function saveAppSettings(next){store.set(K.settings,{...appSettings(),...next})}
-function analyticsEnabled(){return appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function analyticsEnabled(){return !/\.pages\.dev$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
 function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
 let analyticsCurrentPage='home',analyticsVisibleSince=null,analyticsTimer=null;
 function sendAnalyticsEvent(event,{page=analyticsCurrentPage,tool='',duration=0,beacon=false}={}){
