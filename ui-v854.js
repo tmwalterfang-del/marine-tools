@@ -8,7 +8,7 @@ const rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function ddmParts(v,lat){const n=Number(v)||0,a=Math.abs(n),d=Math.floor(a),m=(a-d)*60;return{deg:d,min:m,hem:lat?(n<0?'S':'N'):(n<0?'W':'E')}}
-function ddmValue(prefix,lat){const d=Number($(`#${prefix}Deg`)?.value),m=Number($(`#${prefix}Min`)?.value),h=$(`#${prefix}Hem`)?.value;if(!Number.isFinite(d)||!Number.isFinite(m)||d<0||m<0||m>=60||d>(lat?90:180))return null;let v=d+m/60;if(h==='S'||h==='W')v=-v;return v}
+function ddmValue(prefix,lat){const d=Number($(`#${prefix}Deg`)?.value),m=Number($(`#${prefix}Min`)?.value),h=$(`#${prefix}Hem`)?.value;if(!Number.isFinite(d)||!Number.isFinite(m)||d<0||m<0||m>=60||d>(lat?90:180)||(d===(lat?90:180)&&m>0))return null;let v=d+m/60;if(h==='S'||h==='W')v=-v;return v}
 function fmtDeg(d,lat){return String(d).padStart(lat?2:3,'0')}
 function toDDM(v,lat,p=5){if(!Number.isFinite(Number(v)))return '—';const n=Number(v),h=lat?(n>=0?'N':'S'):(n>=0?'E':'W'),a=Math.abs(n),d=Math.floor(a),m=(a-d)*60;return `${fmtDeg(d,lat)}° ${m.toFixed(p)}′ ${h}`}
 function toDMS(v,lat){if(!Number.isFinite(Number(v)))return '—';const n=Number(v),h=lat?(n>=0?'N':'S'):(n>=0?'E':'W'),a=Math.abs(n),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;return `${fmtDeg(d,lat)}° ${String(m).padStart(2,'0')}′ ${s.toFixed(2)}″ ${h}`}
