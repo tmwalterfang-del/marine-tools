@@ -57,7 +57,7 @@ const state={
   profile:store.get(K.profile,{name:'',loa:80,draft:4,serviceSpeed:8,fuelDay:4,maxHs:3,maxWind:30,maxCurrent:2,minUKC:1,cpaAlert:1,corridor:5}),
   route:store.get(K.route,[]),
   theme:['dark','bridge'].includes(store.get(K.theme,'dark'))?store.get(K.theme,'dark'):'dark',
-  ais:[], forecast:[], weather:Array.isArray(cachedWeather.forecast)?cachedWeather.forecast:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, aisStatus:'never',forecastStatus:'never',aisFetchedAt:null,forecastFetchedAt:null,weatherFetchedAt:cachedWeather.fetchedAt||null
+  ais:[], forecast:[], weather:cleanForecast(cachedWeather.forecast), map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, aisStatus:'never',forecastStatus:'never',aisFetchedAt:null,forecastFetchedAt:null,weatherFetchedAt:cachedWeather.fetchedAt||null
 };
 function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2800)}
 function setTheme(v){
@@ -738,7 +738,7 @@ async function loadPointWeather(){
    const r=await fetch(`${API}/api/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=12`,{cache:'no-store'}),text=await r.text();
    let j;try{j=JSON.parse(text)}catch{j={error:text||`HTTP ${r.status}`}}
    if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
-   state.weather=Array.isArray(j.forecast)?j.forecast:[];state.weatherFetchedAt=new Date().toISOString();store.set(K.weatherCache,{lat,lon,forecast:state.weather,fetchedAt:state.weatherFetchedAt,diagnostics:j.diagnostics||null});
+   state.weather=cleanForecast(j.forecast);state.weatherFetchedAt=new Date().toISOString();store.set(K.weatherCache,{lat,lon,forecast:state.weather,fetchedAt:state.weatherFetchedAt,diagnostics:j.diagnostics||null});
    const d=j.diagnostics||{};
    const parts=[
      `weather: ${d.location?.ok?'ok':d.location?.status||'unavailable'}`,
@@ -753,7 +753,7 @@ async function loadPointWeather(){
  }catch(e){
    const cw=store.get(K.weatherCache,null);
    if(cw&&Array.isArray(cw.forecast)&&cw.forecast.length){
-     state.weather=cw.forecast;state.weatherFetchedAt=cw.fetchedAt||null;renderPointWeather();
+     state.weather=cleanForecast(cw.forecast);state.weatherFetchedAt=cw.fetchedAt||null;renderPointWeather();
      sourceStatus('#wxStatus','warn','CACHED FORECAST');
      diag.textContent=`Offline/live request unavailable — showing the last forecast saved on this device${cw.fetchedAt?` from ${forecastTimeLabel(cw.fetchedAt)}`:''}.`;
    }else{
@@ -1178,7 +1178,17 @@ function bindQuick(){
 function beaufort(k){const rows=[[1,'Light air','1–3'],[4,'Light breeze','4–6'],[7,'Gentle breeze','7–10'],[11,'Moderate breeze','11–16'],[17,'Fresh breeze','17–21'],[22,'Strong breeze','22–27'],[28,'Near gale','28–33'],[34,'Gale','34–40'],[41,'Strong gale','41–47'],[48,'Storm','48–55'],[56,'Violent storm','56–63'],[64,'Hurricane','64+']];if(k<1)return{force:0,desc:'Calm',range:'<1'};for(let i=0;i<rows.length;i++){const next=rows[i+1]?.[0]??Infinity;if(k<next)return{force:i+1,desc:rows[i][1],range:rows[i][2]}}return{force:12,desc:'Hurricane',range:'64+'}}
 
 function renderProfile(){const p=state.profile;$('#profile').innerHTML=pageTitle('Vessel Profile','Shared vessel values are used by route, fuel and operational-envelope calculations.')+`<article class="panel"><div class="panel-body"><div class="fields three"><label>Vessel name<input id="pName" value="${esc(p.name)}"></label><label>LOA m<input id="pLoa" type="number" step=".1" value="${p.loa}"></label><label>Draft m<input id="pDraft" type="number" step=".1" value="${p.draft}"></label><label>Service speed kn<input id="pSpeed" type="number" step=".1" value="${p.serviceSpeed}"></label><label>Fuel consumption m³/day<input id="pFuel" type="number" step=".1" value="${p.fuelDay}"></label><label>Max Hs m<input id="pHs" type="number" step=".1" value="${p.maxHs}"></label><label>Max wind kn<input id="pWind" type="number" value="${p.maxWind}"></label><label>Max current kn<input id="pCur" type="number" step=".1" value="${p.maxCurrent}"></label><label>Minimum UKC m<input id="pUkc" type="number" step=".1" value="${p.minUKC}"></label><label>CPA alert NM<input id="pCpa" type="number" step=".1" value="${p.cpaAlert}"></label><label>AIS route corridor NM<input id="pCorr" type="number" step=".1" value="${p.corridor}"></label></div><div class="actions"><button class="btn primary" id="saveProfile">Save profile</button></div><p class="helper">Operational limits are user-defined planning values. Marine Tools does not determine safe limits for your vessel.</p></div></article>`;$('#saveProfile').onclick=saveProfile}
-function saveProfile(){state.profile={name:$('#pName').value.trim(),loa:+$('#pLoa').value,draft:+$('#pDraft').value,serviceSpeed:+$('#pSpeed').value,fuelDay:+$('#pFuel').value,maxHs:+$('#pHs').value,maxWind:+$('#pWind').value,maxCurrent:+$('#pCur').value,minUKC:$('#pUkc')?inputNumber('#pUkc'):state.profile.minUKC,cpaAlert:+$('#pCpa').value,corridor:+$('#pCorr').value};store.set(K.profile,state.profile);toast('Vessel profile saved.');renderEnvelope();updateHome()}
+function saveProfile(){
+ const previous=state.profile;
+ const field=(id,key)=>{const el=$(id);if(!el||el.value.trim()==='')return previous[key];const value=Number(el.value);return Number.isFinite(value)?value:previous[key]};
+ state.profile={
+  name:$('#pName')?.value.trim()??previous.name,loa:field('#pLoa','loa'),draft:field('#pDraft','draft'),
+  serviceSpeed:field('#pSpeed','serviceSpeed'),fuelDay:field('#pFuel','fuelDay'),
+  maxHs:field('#pHs','maxHs'),maxWind:field('#pWind','maxWind'),maxCurrent:field('#pCur','maxCurrent'),
+  minUKC:field('#pUkc','minUKC'),cpaAlert:field('#pCpa','cpaAlert'),corridor:field('#pCorr','corridor')
+ };
+ store.set(K.profile,state.profile);toast('Vessel profile saved.');renderEnvelope();updateHome();
+}
 
 function localDataStats(){
  const bytes=Object.keys(localStorage).filter(k=>k.startsWith('mt.')).reduce((n,k)=>n+(localStorage.getItem(k)?.length||0),0);
