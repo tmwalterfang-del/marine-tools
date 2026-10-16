@@ -57,7 +57,7 @@ const state={
   profile:store.get(K.profile,{name:'',loa:80,draft:4,serviceSpeed:8,fuelDay:4,maxHs:3,maxWind:30,maxCurrent:2,minUKC:1,cpaAlert:1,corridor:5}),
   route:store.get(K.route,[]),
   theme:['dark','bridge'].includes(store.get(K.theme,'dark'))?store.get(K.theme,'dark'):'dark',
-  ais:[], forecast:[], weather:Array.isArray(cachedWeather.forecast)?cachedWeather.forecast:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, weatherFetchedAt:cachedWeather.fetchedAt||null
+  ais:[], forecast:[], weather:Array.isArray(cachedWeather.forecast)?cachedWeather.forecast:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, aisStatus:'never',forecastStatus:'never',aisFetchedAt:null,forecastFetchedAt:null,weatherFetchedAt:cachedWeather.fetchedAt||null
 };
 function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2800)}
 function setTheme(v){
@@ -426,8 +426,19 @@ function liveFreshness(){
  const ms=liveAge();if(ms==null)return 'neutral';return ms>30*60000?'bad':ms>15*60000?'warn':'ok'
 }
 function updateLiveAgeIndicators(){
- const txt=liveAgeText(),fresh=liveFreshness();
- const ri=$('#riDataAge');if(ri&&state.lastRefreshAt){ri.className=`chip ${fresh}`;ri.textContent=`AIS + route forecast · ${txt}${fresh==='bad'?' · STALE':''}`}
+ const ri=$('#riDataAge');
+ if(ri&&(state.aisStatus!=='never'||state.forecastStatus!=='never')){
+  const age=stamp=>{if(!stamp)return 'time unknown';const ms=Date.now()-Date.parse(stamp);if(!Number.isFinite(ms))return 'time unknown';const min=Math.max(0,Math.floor(ms/60000));return min<1?'just now':min<60?`${min} min ago`:`${Math.floor(min/60)} h ago`};
+  const ais=state.aisStatus==='ok'?`AIS updated ${age(state.aisFetchedAt)}`:state.aisStatus==='error'?'AIS unavailable':'AIS not loaded';
+  const wx=state.forecastStatus==='ok'?`route forecast updated ${age(state.forecastFetchedAt)}`:state.forecastStatus==='error'?'route forecast unavailable':'route forecast not loaded';
+  const invalid=state.ais.filter(v=>aisAgeReason(v)).length;
+  const note=state.aisStatus==='ok'&&invalid?` · ${invalid} AIS target(s) stale / time unknown`:'';
+  const stamps=[state.aisFetchedAt,state.forecastFetchedAt].filter(Boolean).map(Date.parse).filter(Number.isFinite);
+  const oldest=stamps.length?Math.min(...stamps):Date.now();
+  const ms=Date.now()-oldest;
+  ri.className=`chip ${state.aisStatus==='error'||state.forecastStatus==='error'||invalid||ms>30*60000?'warn':'ok'}`;
+  ri.textContent=`${ais} · ${wx}${note}`;
+ }
  const ws=$('#wxStatus');if(ws&&state.weatherFetchedAt){const ms=Math.max(0,Date.now()-new Date(state.weatherFetchedAt).getTime()),min=Math.floor(ms/60000),age=min<1?'just now':min<60?`${min} min ago`:`${Math.floor(min/60)} h ago`,cls=min>30?'bad':min>15?'warn':'ok';ws.innerHTML=`<span class="chip ${cls}">MET Norway · ${age}${cls==='bad'?' · STALE':''}</span>`}
 }
 
@@ -597,18 +608,32 @@ async function runAnalysis(showToast=true){
  const box=routeBBox(state.route,Math.max(8,state.profile.corridor+2));
  sourceStatus('#riDataAge','warn','LOADING');
  const jobs=await Promise.allSettled([
-   fetch(`${API}/api/ais/latest?minLat=${box.minLat}&maxLat=${box.maxLat}&minLon=${box.minLon}&maxLon=${box.maxLon}`,{cache:'no-store'}),
-   fetch(`${API}/api/forecast?route=${encodeURIComponent(JSON.stringify(state.route))}`,{cache:'no-store'})
+  Promise.all(box.boxes.map(b=>fetch(`${API}/api/ais/latest?minLat=${b.minLat}&maxLat=${b.maxLat}&minLon=${b.minLon}&maxLon=${b.maxLon}`,{cache:'no-store'}))),
+  fetch(`${API}/api/forecast?route=${encodeURIComponent(JSON.stringify(state.route))}`,{cache:'no-store'})
  ]);
  let aisOk=false,wxOk=false;
- try{if(jobs[0].status==='fulfilled'&&jobs[0].value.ok){const a=await jobs[0].value.json();state.ais=Array.isArray(a)?a:[];aisOk=true}}catch{}
- try{if(jobs[1].status==='fulfilled'&&jobs[1].value.ok){const w=await jobs[1].value.json();state.forecast=Array.isArray(w)?w:[];wxOk=true}}catch{}
- if(!aisOk&&!wxOk){sourceStatus('#riDataAge','bad','LIVE DATA ERROR');if(showToast)toast('Could not load experimental live data.');return}
- state.lastRefresh=nowUTC();state.lastRefreshAt=new Date().toISOString();
- sourceStatus('#riDataAge',aisOk&&wxOk?'ok':'warn',aisOk&&wxOk?'AIS + route forecast · just now':aisOk?'AIS loaded · forecast unavailable':'Forecast loaded · AIS unavailable');
- drawAis();updateRiSummary();compareAnalysis();updateLiveAgeIndicators();
+ try{
+  if(jobs[0].status==='fulfilled'&&jobs[0].value.every(r=>r.ok)){
+   const payloads=await Promise.all(jobs[0].value.map(r=>r.json()));
+   if(payloads.every(Array.isArray)){
+    const combined=payloads.flat(),dedup=new Map();
+    combined.forEach((v,i)=>dedup.set(v.mmsi!=null?`${v.mmsi}:${v.timestamp??v.dataAgeSource??''}`:`index:${i}`,v));
+    state.ais=[...dedup.values()];aisOk=true;
+   }
+  }
+ }catch{}
+ try{if(jobs[1].status==='fulfilled'&&jobs[1].value.ok){const w=await jobs[1].value.json();if(Array.isArray(w)){state.forecast=cleanForecast(w);wxOk=true}}}catch{}
+ const stamp=new Date().toISOString();
+ state.aisStatus=aisOk?'ok':'error';state.forecastStatus=wxOk?'ok':'error';
+ if(aisOk)state.aisFetchedAt=stamp;else{state.ais=[];state.aisFetchedAt=null}
+ if(wxOk)state.forecastFetchedAt=stamp;else{state.forecast=[];state.forecastFetchedAt=null}
+ if(aisOk||wxOk){state.lastRefresh=nowUTC();state.lastRefreshAt=stamp}
+ drawAis();updateRiSummary();updateLiveAgeIndicators();
+ if(!aisOk&&!wxOk){if(showToast)toast('Could not load experimental live data.');return}
+ compareAnalysis();
  if(showToast)toast(aisOk&&wxOk?'Experimental route context updated.':'Partial live data loaded.');
 }
+
 function snapshot(){const cpa=cpaTargets().filter(isCpaAlert).length;return{time:new Date().toISOString(),ais:corridorTargets().length,cpa,maxHs:Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
 function compareAnalysis(){const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');if(box){if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{const d=b-a,cls=d>0?'up':d<0?'down':'same';return `<div class="change-row"><span>${n}</span><b>${nf(a,n.includes('AIS')||n.includes('CPA')?0:1)} → ${nf(b,n.includes('AIS')||n.includes('CPA')?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`}).join('')}store.set(K.lastAnalysis,cur)}
 
