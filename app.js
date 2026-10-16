@@ -219,12 +219,24 @@ function rhumb(a,b){
 
 function destination(a,brg,nm){const R=3440.065,d=nm/R,p1=rad(a.lat),l1=rad(a.lon),t=rad(brg);const p2=Math.asin(Math.sin(p1)*Math.cos(d)+Math.cos(p1)*Math.sin(d)*Math.cos(t));const l2=l1+Math.atan2(Math.sin(t)*Math.sin(d)*Math.cos(p1),Math.cos(d)-Math.sin(p1)*Math.sin(p2));return{lat:deg(p2),lon:((deg(l2)+540)%360)-180}}
 function routeDistance(r=state.route){let n=0;for(let i=1;i<r.length;i++)n+=hav(r[i-1],r[i]);return n}
-function routeBBox(r=state.route,padNm=8){if(!r.length)return null;const lats=r.map(p=>p.lat),lons=r.map(p=>p.lon),mid=lats.reduce((a,b)=>a+b,0)/lats.length;const dLat=padNm/60,dLon=padNm/(60*Math.max(.25,Math.cos(rad(mid))));return{minLat:Math.min(...lats)-dLat,maxLat:Math.max(...lats)+dLat,minLon:Math.min(...lons)-dLon,maxLon:Math.max(...lons)+dLon}}
-function nmPointLine(p,a,b){const lat0=rad((a.lat+b.lat+p.lat)/3),sx=60*Math.cos(lat0),sy=60;const ax=a.lon*sx,ay=a.lat*sy,bx=b.lon*sx,by=b.lat*sy,px=p.lon*sx,py=p.lat*sy,dx=bx-ax,dy=by-ay;const t=clamp(((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy||1),0,1);return Math.hypot(px-(ax+t*dx),py-(ay+t*dy))}
+function shortestLonDelta(a,b){return ((b-a+540)%360+360)%360-180}
+function routeBBox(r=state.route,padNm=8){
+ if(!r.length)return null;
+ const lats=r.map(p=>p.lat),mid=lats.reduce((a,b)=>a+b,0)/lats.length;
+ const dLat=padNm/60,dLon=padNm/(60*Math.max(.25,Math.cos(rad(mid))));
+ const lons=[r[0].lon];for(let i=1;i<r.length;i++)lons.push(lons[i-1]+shortestLonDelta(r[i-1].lon,r[i].lon));
+ let lo=Math.min(...lons)-dLon,hi=Math.max(...lons)+dLon;
+ const bounds={minLat:Math.max(-90,Math.min(...lats)-dLat),maxLat:Math.min(90,Math.max(...lats)+dLat)};
+ if(hi-lo>=360)return{...bounds,boxes:[{...bounds,minLon:-180,maxLon:180}]};
+ while(lo < -180){lo+=360;hi+=360}while(lo>=180){lo-=360;hi-=360}
+ const boxes=hi<=180?[{...bounds,minLon:lo,maxLon:hi}]:[{...bounds,minLon:lo,maxLon:180},{...bounds,minLon:-180,maxLon:hi-360}];
+ return{...bounds,boxes};
+}
+function nmPointLine(p,a,b){const lat0=rad((a.lat+b.lat+p.lat)/3),sx=60*Math.cos(lat0),sy=60;const ax=0,ay=a.lat*sy,bx=shortestLonDelta(a.lon,b.lon)*sx,by=b.lat*sy,px=shortestLonDelta(a.lon,p.lon)*sx,py=p.lat*sy,dx=bx-ax,dy=by-ay;const t=clamp(((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy||1),0,1);return Math.hypot(px-(ax+t*dx),py-(ay+t*dy))}
 function distToRoute(p,r=state.route){if(r.length<2)return Infinity;let d=Infinity;for(let i=1;i<r.length;i++)d=Math.min(d,nmPointLine(p,r[i-1],r[i]));return d}
 function mpsToKn(x){return x*1.943844}
 function vectorFrom(sog,cog){return{x:sog*Math.sin(rad(cog)),y:sog*Math.cos(rad(cog))}}
-function cpaTcpa(own,target){const lat0=rad((own.lat+target.lat)/2),rx=(target.lon-own.lon)*60*Math.cos(lat0),ry=(target.lat-own.lat)*60;const vo=vectorFrom(own.sog,own.cog),vt=vectorFrom(target.sog,target.cog),vx=vt.x-vo.x,vy=vt.y-vo.y;const vv=vx*vx+vy*vy;let t=vv?-(rx*vx+ry*vy)/vv:0;t=Math.max(0,t);const cx=rx+vx*t,cy=ry+vy*t;return{cpa:Math.hypot(cx,cy),tcpa:t*60}}
+function cpaTcpa(own,target){const lat0=rad((own.lat+target.lat)/2),rx=shortestLonDelta(own.lon,target.lon)*60*Math.cos(lat0),ry=(target.lat-own.lat)*60;const vo=vectorFrom(own.sog,own.cog),vt=vectorFrom(target.sog,target.cog),vx=vt.x-vo.x,vy=vt.y-vo.y;const vv=vx*vx+vy*vy;let t=vv?-(rx*vx+ry*vy)/vv:0;t=Math.max(0,t);const cx=rx+vx*t,cy=ry+vy*t;return{cpa:Math.hypot(cx,cy),tcpa:t*60}}
 function riskFor(f,p=state.profile){let score=0,reasons=[];if(Number.isFinite(f.hs)){const q=f.hs/p.maxHs;if(q>1){score=2;reasons.push(`Hs ${nf(f.hs)} m > ${p.maxHs} m`)}else if(q>.8){score=Math.max(score,1);reasons.push(`Hs near limit`)}}if(Number.isFinite(f.windKn)){const q=f.windKn/p.maxWind;if(q>1){score=2;reasons.push(`Wind ${nf(f.windKn,0)} kn > ${p.maxWind} kn`)}else if(q>.8){score=Math.max(score,1);reasons.push('Wind near limit')}}if(Number.isFinite(f.currentKn)){const q=f.currentKn/p.maxCurrent;if(q>1){score=2;reasons.push(`Current ${nf(f.currentKn)} kn > ${p.maxCurrent} kn`)}else if(q>.8){score=Math.max(score,1);reasons.push('Current near limit')}}return{score,label:['Normal','Caution','Alert'][score],reasons}}
 function sourceStatus(id,status,text){const e=$(id);if(!e)return;e.className=`chip ${status}`;e.textContent=text}
 
@@ -526,11 +538,59 @@ function initRouteMap(){if(state.map)return;const el=$('#riMap');if(!el)return;s
 function drawRoute(){if(!state.routeLayer)return;state.routeLayer.clearLayers();state.riskLayer.clearLayers();if(state.route.length){state.route.forEach((p,i)=>L.circleMarker([p.lat,p.lon],{radius:5,color:'#75ddff',fillColor:'#092a3c',fillOpacity:1,weight:2}).bindTooltip(p.name||`WP${i+1}`).addTo(state.routeLayer));if(state.route.length>1)L.polyline(state.route.map(p=>[p.lat,p.lon]),{color:'#39c5f3',weight:3,dashArray:'8 7'}).addTo(state.routeLayer)}drawRiskSegments()}
 function fitRoute(){if(state.map&&state.route.length)state.map.fitBounds(L.latLngBounds(state.route.map(p=>[p.lat,p.lon])).pad(.18));}
 function renderEnvelope(){const box=$('#envelopeBox');if(!box)return;const p=state.profile;box.innerHTML=`<div class="source-box"><div class="source-item"><span>Max Hs</span><b>${p.maxHs} m</b></div><div class="source-item"><span>Max wind</span><b>${p.maxWind} kn</b></div><div class="source-item"><span>Max current</span><b>${p.maxCurrent} kn</b></div><div class="source-item"><span>Min UKC</span><b>${p.minUKC} m</b></div><div class="source-item"><span>CPA alert</span><b>${p.cpaAlert} NM</b></div><div class="source-item"><span>AIS corridor</span><b>${p.corridor} NM</b></div></div><div class="actions">${button('Edit vessel profile','profile','btn')}</div>`}
-function updateRiSummary(){const d=routeDistance(),corr=corridorTargets(),cpa=cpaTargets().filter(x=>x.cpa<state.profile.cpaAlert);const maxHs=Math.max(...state.forecast.map(x=>Number(x.hs)||0),0),maxW=Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0);$('#riDistance')&&($('#riDistance').textContent=d?`${nf(d,1)} NM`:'—');$('#riAis')&&($('#riAis').textContent=state.ais.length?corr.length:'—');$('#riCpa')&&($('#riCpa').textContent=state.ais.length?cpa.length:'—');$('#riHs')&&($('#riHs').textContent=maxHs?`${nf(maxHs)} m`:'—');$('#riWind')&&($('#riWind').textContent=maxW?`${nf(maxW,0)} kn`:'—');renderAisTable();drawRiskSegments();}
-function corridorTargets(){return state.ais.filter(v=>{const lat=Number(v.latitude??v.lat),lon=Number(v.longitude??v.lon);return Number.isFinite(lat)&&Number.isFinite(lon)&&distToRoute({lat,lon})<=state.profile.corridor})}
-function cpaTargets(){if(state.route.length<2)return[];const own={lat:state.route[0].lat,lon:state.route[0].lon,sog:state.profile.serviceSpeed,cog:bearing(state.route[0],state.route[1])};return corridorTargets().map(v=>{const t={lat:Number(v.latitude??v.lat),lon:Number(v.longitude??v.lon),sog:Number(v.speedOverGround??v.sog)||0,cog:Number(v.courseOverGround??v.cog)||0};return{v,...cpaTcpa(own,t)}}).sort((a,b)=>a.cpa-b.cpa)}
-function renderAisTable(){const tb=$('#aisTable');if(!tb)return;tb.innerHTML=cpaTargets().slice(0,20).map(x=>`<tr><td>${esc(x.v.name||x.v.shipName||String(x.v.mmsi||'Unknown'))}</td><td>${nf(x.v.speedOverGround??x.v.sog,1)}</td><td class="${x.cpa<state.profile.cpaAlert?'delta up':''}">${nf(x.cpa,2)}</td><td>${nf(x.tcpa,0)} min</td></tr>`).join('')||'<tr><td colspan="4" class="helper">No AIS targets loaded.</td></tr>'}
-function drawAis(){if(!state.aisLayer)return;state.aisLayer.clearLayers();corridorTargets().forEach(v=>{const lat=Number(v.latitude??v.lat),lon=Number(v.longitude??v.lon),cog=Number(v.courseOverGround??v.cog)||0,sog=Number(v.speedOverGround??v.sog)||0;const cpa=cpaTargets().find(x=>x.v===v);const col=cpa&&cpa.cpa<state.profile.cpaAlert?'#ff625d':'#60d6ff';L.circleMarker([lat,lon],{radius:4,color:col,fillColor:col,fillOpacity:.75,weight:1}).bindPopup(`<b>${esc(v.name||v.shipName||'AIS target')}</b><br>MMSI ${esc(String(v.mmsi||'—'))}<br>SOG ${nf(sog)} kn · COG ${nf(cog,0)}°${cpa?`<br>CPA ${nf(cpa.cpa,2)} NM · TCPA ${nf(cpa.tcpa,0)} min`:''}`).addTo(state.aisLayer)})}
+const MAX_AIS_AGE_MS=15*60*1000; // Experimental CPA threshold; NOT a navigation-safety guarantee.
+function aisNumeric(value,max){if(value==null||value===''||typeof value==='boolean')return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=max?n:null}
+function aisPosition(v){const rawLat=v.latitude??v.lat,rawLon=v.longitude??v.lon;if(rawLat==null||rawLon==null||rawLat===''||rawLon==='')return null;const lat=Number(rawLat),lon=Number(rawLon);return Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180?{lat,lon}:null}
+function aisAgeReason(v){
+ const raw=v.timestamp??v.dataAgeSource??v.timeStamp??v.dateTime??v.lastUpdated??v.time;
+ if(raw==null||raw==='')return 'AIS time unknown';
+ const ms=typeof raw==='number'?(raw<1e12?raw*1000:raw):Date.parse(raw);
+ if(!Number.isFinite(ms)||ms>Date.now()+120000)return 'AIS time unknown';
+ if(Date.now()-ms>MAX_AIS_AGE_MS)return 'Stale AIS position';
+ return null;
+}
+function aisMotion(v){const sog=aisNumeric(v.speedOverGround??v.sog,102.2),cog=aisNumeric(v.courseOverGround??v.cog,359.9);return sog==null||(sog>0&&cog==null)?null:{sog,cog:cog??0}}
+function safeWaveHs(value){if(value==null||value==='')return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=40?n:null}
+function cleanForecast(rows){return Array.isArray(rows)?rows.map(r=>({...r,hs:safeWaveHs(r?.hs)})):[]}
+function isCpaAlert(x){return Number.isFinite(x.cpa)&&x.cpa<state.profile.cpaAlert}
+function updateRiSummary(){
+ const d=routeDistance(),corr=corridorTargets(),cpa=cpaTargets().filter(isCpaAlert);
+ const maxHs=Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxW=Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0);
+ $('#riDistance')&&($('#riDistance').textContent=d?`${nf(d,1)} NM`:'—');
+ $('#riAis')&&($('#riAis').textContent=state.aisStatus==='ok'?corr.length:'—');
+ $('#riCpa')&&($('#riCpa').textContent=state.aisStatus==='ok'?cpa.length:'—');
+ $('#riHs')&&($('#riHs').textContent=maxHs?`${nf(maxHs)} m`:'—');
+ $('#riWind')&&($('#riWind').textContent=maxW?`${nf(maxW,0)} kn`:'—');
+ renderAisTable();drawRiskSegments();
+}
+function corridorTargets(){return state.ais.filter(v=>{const p=aisPosition(v);return p&&distToRoute(p)<=state.profile.corridor})}
+function cpaTargets(){
+ if(state.route.length<2)return[];
+ const own={lat:state.route[0].lat,lon:state.route[0].lon,sog:state.profile.serviceSpeed,cog:bearing(state.route[0],state.route[1])};
+ return corridorTargets().map(v=>{
+  const reason=aisAgeReason(v),motion=aisMotion(v),position=aisPosition(v);
+  if(reason||!motion||!position||!Number.isFinite(own.sog)||own.sog<=0)return{v,cpa:null,tcpa:null,reason:reason||'Motion data unavailable'};
+  return{v,...cpaTcpa(own,{...position,...motion}),reason:null};
+ }).sort((a,b)=>(a.cpa??Infinity)-(b.cpa??Infinity));
+}
+function renderAisTable(){
+ const tb=$('#aisTable');if(!tb)return;
+ tb.innerHTML=cpaTargets().slice(0,20).map(x=>{
+  const sog=aisNumeric(x.v.speedOverGround??x.v.sog,102.2),reason=x.reason?esc(x.reason):'';
+  return `<tr><td>${esc(x.v.name||x.v.shipName||String(x.v.mmsi||'Unknown'))}</td><td>${sog==null?'—':nf(sog,1)}</td><td class="${isCpaAlert(x)?'delta up':''}" title="${reason}">${x.cpa==null?`— · ${reason}`:nf(x.cpa,2)}</td><td>${x.tcpa==null?'—':nf(x.tcpa,0)+' min'}</td></tr>`;
+ }).join('')||'<tr><td colspan="4" class="helper">No AIS targets loaded.</td></tr>';
+}
+function drawAis(){
+ if(!state.aisLayer)return;state.aisLayer.clearLayers();
+ const computed=cpaTargets();
+ corridorTargets().forEach(v=>{
+  const p=aisPosition(v),cpa=computed.find(x=>x.v===v),col=cpa&&isCpaAlert(cpa)?'#ff625d':'#60d6ff';
+  const sog=aisNumeric(v.speedOverGround??v.sog,102.2),cog=aisNumeric(v.courseOverGround??v.cog,359.9);
+  const txt=cpa?.reason?`<br>CPA unavailable · ${esc(cpa.reason)}`:cpa?`<br>CPA ${nf(cpa.cpa,2)} NM · TCPA ${nf(cpa.tcpa,0)} min`:'';
+  L.circleMarker([p.lat,p.lon],{radius:4,color:col,fillColor:col,fillOpacity:.75,weight:1})
+   .bindPopup(`<b>${esc(v.name||v.shipName||'AIS target')}</b><br>MMSI ${esc(String(v.mmsi||'—'))}<br>SOG ${sog==null?'—':nf(sog)} kn · COG ${cog==null?'—':nf(cog,0)}°${txt}`).addTo(state.aisLayer);
+ });
+}
 function drawRiskSegments(){if(!state.riskLayer||state.route.length<2||!state.forecast.length)return;state.riskLayer.clearLayers();for(let i=1;i<state.route.length;i++){const f=state.forecast[Math.round((i-1)*(state.forecast.length-1)/Math.max(1,state.route.length-2))]||{};const r=riskFor(f),col=r.score===2?'#ff625d':r.score===1?'#f2bf49':'#32d48a';L.polyline([[state.route[i-1].lat,state.route[i-1].lon],[state.route[i].lat,state.route[i].lon]],{color:col,weight:7,opacity:.72}).bindTooltip(`${r.label}${r.reasons.length?`: ${r.reasons.join(', ')}`:''}`).addTo(state.riskLayer)}}
 async function runAnalysis(showToast=true){
  if(state.route.length<2){if(showToast)toast('Add at least two route waypoints first.');return}
@@ -549,7 +609,7 @@ async function runAnalysis(showToast=true){
  drawAis();updateRiSummary();compareAnalysis();updateLiveAgeIndicators();
  if(showToast)toast(aisOk&&wxOk?'Experimental route context updated.':'Partial live data loaded.');
 }
-function snapshot(){const cpa=cpaTargets().filter(x=>x.cpa<state.profile.cpaAlert).length;return{time:new Date().toISOString(),ais:corridorTargets().length,cpa,maxHs:Math.max(...state.forecast.map(x=>Number(x.hs)||0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
+function snapshot(){const cpa=cpaTargets().filter(isCpaAlert).length;return{time:new Date().toISOString(),ais:corridorTargets().length,cpa,maxHs:Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
 function compareAnalysis(){const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');if(box){if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{const d=b-a,cls=d>0?'up':d<0?'down':'same';return `<div class="change-row"><span>${n}</span><b>${nf(a,n.includes('AIS')||n.includes('CPA')?0:1)} → ${nf(b,n.includes('AIS')||n.includes('CPA')?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`}).join('')}store.set(K.lastAnalysis,cur)}
 
 function renderVoyageEstimate(){
