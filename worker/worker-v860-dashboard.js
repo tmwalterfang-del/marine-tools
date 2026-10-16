@@ -33,6 +33,8 @@ async function isolatedQaFetch(request,env,ctx){
  if(!["GET","HEAD"].includes(request.method)){
   return qaPreviewResponse({error:"QA preview is read-only."},405,origin);
  }
+ const readOnlyPaths=new Set(["/api/health","/api/auth/status","/api/release","/api/ais/latest","/api/weather","/api/forecast"]);
+ if(!readOnlyPaths.has(path))return qaPreviewResponse({error:"Endpoint not enabled in QA preview."},404,origin);
  // Even if deployment preview inherits production bindings, downstream
  // handlers cannot read analytics or publish production analytics events.
  const safeEnv={...env,ANALYTICS:undefined,ANALYTICS_SQL:undefined};
