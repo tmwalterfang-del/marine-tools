@@ -9,11 +9,16 @@
  if(!/\.pages\.dev$/i.test(location.hostname))return;
  window.__MARINE_TOOLS_PREVIEW_ISOLATED=true;
  const production='https://api.marinetools.app';
+ const preview='https://feature-qa-integrated-preview-20261015.api.marinetools.app';
  const rawFetch=window.fetch.bind(window);
  window.fetch=function(input,init){
   let target=null;
   try{target=new URL(typeof input==='string'?input:input?.url??input,location.href)}catch{}
   if(target?.origin===production)return Promise.reject(new Error('QA preview: production Marine Tools API access is blocked'));
+  if(target?.origin===preview){
+   // Attach Cloudflare Access cookies only to the approved QA Worker.
+   return rawFetch(input,{...(init||{}),credentials:init?.credentials??'include'});
+  }
   return rawFetch(input,init);
  };
 })()</script>
