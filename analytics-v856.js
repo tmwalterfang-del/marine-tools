@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 
-const API='https://api.marinetools.app';
+const API=/\.pages\.dev$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
 const VERSION=window.__MARINE_TOOLS_RELEASE?.version||'8.5.7';
 const EVENT_URL=`${API}/api/analytics/event`;
 const SEARCH_IDS=new Map([
