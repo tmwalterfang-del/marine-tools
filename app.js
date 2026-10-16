@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const API='https://api.marinetools.app';
+const API=/\.pages\.dev$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
 const APP_VERSION='8.6.1';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
