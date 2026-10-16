@@ -5,28 +5,43 @@ const WORKER="worker-v860-dashboard";
 // QA preview requests must never read from or write to the production analytics
 // bindings, even if Cloudflare deploy preview inherited their configuration.
 function qaPreviewHost(host){return host!=="api.marinetools.app"&&host.endsWith(".api.marinetools.app")}
-function qaPreviewResponse(body,status=200){return new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json;charset=utf-8","cache-control":"no-store","x-marine-tools-environment":"preview","x-marine-tools-analytics":"disabled"}})}
+function qaPreviewOrigin(origin){return /^https:\/\/[a-z0-9-]+\.marine-tools-frontend-preview\.pages\.dev$/i.test(origin)}
+function qaHeaders(origin){
+ const headers={"cache-control":"no-store","x-marine-tools-environment":"preview","x-marine-tools-analytics":"disabled"};
+ if(qaPreviewOrigin(origin)){
+  headers["access-control-allow-origin"]=origin;
+  headers["access-control-allow-credentials"]="true";
+  headers["access-control-allow-methods"]="GET,HEAD,OPTIONS";
+  headers["access-control-allow-headers"]="content-type";
+  headers["vary"]="Origin";
+ }
+ return headers;
+}
+function qaPreviewResponse(body,status=200,origin=""){
+ return new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json;charset=utf-8",...qaHeaders(origin)}});
+}
 async function isolatedQaFetch(request,env,ctx){
- const url=new URL(request.url),path=url.pathname;
+ const url=new URL(request.url),path=url.pathname,origin=request.headers.get("origin")||"";
+ if(origin&&!qaPreviewOrigin(origin))return qaPreviewResponse({error:"Origin not allowed in QA preview."},403);
+ if(request.method==="OPTIONS")return new Response(null,{status:204,headers:qaHeaders(origin)});
  if(path==="/api/preview-isolation"&&request.method==="GET"){
-  return qaPreviewResponse({environment:"preview",analyticsWrites:false,analyticsQueries:false,apiHost:url.hostname});
+  return qaPreviewResponse({environment:"preview",analyticsWrites:false,analyticsQueries:false,apiHost:url.hostname},200,origin);
  }
  if(path.startsWith("/api/analytics")||path.startsWith("/admin/")){
-  return qaPreviewResponse({error:"Analytics and admin endpoints are disabled in QA preview."},403);
+  return qaPreviewResponse({error:"Analytics and admin endpoints are disabled in QA preview."},403,origin);
  }
- if(!["GET","HEAD","OPTIONS"].includes(request.method)){
-  return qaPreviewResponse({error:"QA preview is read-only."},405);
+ if(!["GET","HEAD"].includes(request.method)){
+  return qaPreviewResponse({error:"QA preview is read-only."},405,origin);
  }
+ // Even if deployment preview inherits production bindings, downstream
+ // handlers cannot read analytics or publish production analytics events.
  const safeEnv={...env,ANALYTICS:undefined,ANALYTICS_SQL:undefined};
  const response=await previousWorker.fetch(request,safeEnv,ctx);
  const headers=new Headers(response.headers);
- headers.set("x-marine-tools-environment","preview");
- headers.set("x-marine-tools-analytics","disabled");
- headers.set("cache-control","no-store");
+ for(const [name,value] of Object.entries(qaHeaders(origin)))headers.set(name,value);
+ if(!origin){headers.delete("access-control-allow-origin");headers.delete("access-control-allow-credentials")}
  return new Response(response.body,{status:response.status,headers});
 }
-
-
 function enhance(html){
   html=html.replace(/Analytics Dashboard v2/g,"Analytics Dashboard v3").replace("Marine Tools v8.5.6 analytics","Marine Tools v8.6.1 analytics");
   const hasPanel=html.includes('id="mtV860Product"');
