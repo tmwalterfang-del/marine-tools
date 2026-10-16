@@ -42,6 +42,7 @@ check('Vary Origin used',health.headers.get('vary')==='Origin');
 check('QA analytics event blocked',(await worker.fetch(req(qaWorker+'/api/analytics/event','POST',qaPage),env,{})).status===403);
 check('QA private analytics blocked',(await worker.fetch(req(qaWorker+'/admin/api/analytics','GET',qaPage),env,{})).status===403);
 check('QA method writes blocked',(await worker.fetch(req(qaWorker+'/api/health','POST',qaPage),env,{})).status===405);
+check('Unlisted QA endpoint blocked',(await worker.fetch(req(qaWorker+'/api/probe','GET',qaPage),env,{})).status===404);
 check('Unknown preview caller denied',(await worker.fetch(req(qaWorker+'/api/health','GET','https://attacker.invalid'),env,{})).status===403);
 const options=await worker.fetch(req(qaWorker+'/api/ais/latest','OPTIONS',qaPage),env,{});
 check('Approved OPTIONS preflight works',options.status===204&&options.headers.get('access-control-allow-origin')===qaPage);
