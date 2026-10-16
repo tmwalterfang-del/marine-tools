@@ -569,7 +569,7 @@ function updateRiSummary(){
  const maxHs=Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxW=Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0);
  $('#riDistance')&&($('#riDistance').textContent=d?`${nf(d,1)} NM`:'—');
  $('#riAis')&&($('#riAis').textContent=state.aisStatus==='ok'?corr.length:'—');
- $('#riCpa')&&($('#riCpa').textContent=state.aisStatus==='ok'?cpa.length:'—');
+ $('#riCpa')&&($('#riCpa').textContent=state.aisStatus==='ok'?(corr.length&&!cpaTargets().some(x=>Number.isFinite(x.cpa))?'—':cpa.length):'—');
  $('#riHs')&&($('#riHs').textContent=maxHs?`${nf(maxHs)} m`:'—');
  $('#riWind')&&($('#riWind').textContent=maxW?`${nf(maxW,0)} kn`:'—');
  renderAisTable();drawRiskSegments();
@@ -589,7 +589,7 @@ function renderAisTable(){
  tb.innerHTML=cpaTargets().slice(0,20).map(x=>{
   const sog=aisNumeric(x.v.speedOverGround??x.v.sog,102.2),reason=x.reason?esc(x.reason):'';
   return `<tr><td>${esc(x.v.name||x.v.shipName||String(x.v.mmsi||'Unknown'))}</td><td>${sog==null?'—':nf(sog,1)}</td><td class="${isCpaAlert(x)?'delta up':''}" title="${reason}">${x.cpa==null?`— · ${reason}`:nf(x.cpa,2)}</td><td>${x.tcpa==null?'—':nf(x.tcpa,0)+' min'}</td></tr>`;
- }).join('')||'<tr><td colspan="4" class="helper">No AIS targets loaded.</td></tr>';
+ }).join('')||(state.aisStatus==='error'?'<tr><td colspan="4" class="helper">AIS unavailable — previous targets cleared.</td></tr>':'<tr><td colspan="4" class="helper">No AIS targets in corridor.</td></tr>');
 }
 function drawAis(){
  if(!state.aisLayer)return;state.aisLayer.clearLayers();
