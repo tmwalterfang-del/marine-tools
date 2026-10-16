@@ -338,3 +338,59 @@ label{line-height:1.35}
 [data-theme="bridge"] #route-intelligence :is(button,input,select):focus-visible{
   outline-color:#ffd58b;
 }
+
+
+/* QA 2026-10-16: Route Intelligence 200% text-only zoom / mobile reflow.
+   The data-age chip must wrap inside its own panel; never hide overflow globally. */
+#route-intelligence,
+#route-intelligence .grid-2 > *,
+#route-intelligence .panel,
+#route-intelligence .panel-body,
+#route-intelligence .right-stack,
+#route-intelligence .map-toolbar{
+  min-width:0;
+  max-width:100%;
+}
+#route-intelligence .grid-2{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+#route-intelligence .map-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+}
+#route-intelligence .map-toolbar #riDataAge{
+  display:block;
+  flex:1 1 100%;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  line-height:1.5;
+  border-radius:10px;
+}
+#route-intelligence .panel-head,
+#route-intelligence .legend,
+#route-intelligence .change-row{
+  min-width:0;
+  flex-wrap:wrap;
+}
+#route-intelligence .panel-head > *,
+#route-intelligence .change-row > *,
+#route-intelligence .analysis-summary .metric{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+@media(max-width:900px){
+  #route-intelligence .grid-2{
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+@media(max-width:560px){
+  #route-intelligence .analysis-summary{
+    grid-template-columns:minmax(0,1fr);
+  }
+}
