@@ -438,6 +438,13 @@ function updateLiveAgeIndicators(){
   const ms=Date.now()-oldest;
   ri.className=`chip ${state.aisStatus==='error'||state.forecastStatus==='error'||invalid||ms>30*60000?'warn':'ok'}`;
   ri.textContent=`${ais} · ${wx}${note}`;
+  // Recalculate derived CPA figures when target age crosses the validity limit.
+  // Only redraw the table/map on a transition, not on each one-second clock tick.
+  const validityKey=state.ais.map(v=>aisAgeReason(v)||'fresh').join('|');
+  if(state.aisValidityKey!==validityKey){
+   state.aisValidityKey=validityKey;
+   if(state.aisStatus==='ok'&&$('#riCpa')){updateRiSummary();drawAis()}
+  }
  }
  const ws=$('#wxStatus');if(ws&&state.weatherFetchedAt){const ms=Math.max(0,Date.now()-new Date(state.weatherFetchedAt).getTime()),min=Math.floor(ms/60000),age=min<1?'just now':min<60?`${min} min ago`:`${Math.floor(min/60)} h ago`,cls=min>30?'bad':min>15?'warn':'ok';ws.innerHTML=`<span class="chip ${cls}">MET Norway · ${age}${cls==='bad'?' · STALE':''}</span>`}
 }
