@@ -68,12 +68,39 @@ function productOriginAllowed(request){
 }
 async function pelyrSources(env){if(!env.PELYR_API_KEY)throw new Error("Pelyr API key is not configured");if(pelyrSourcesCache.map&&pelyrSourcesCache.expires>Date.now())return pelyrSourcesCache.map;const r=await timedFetch(`${PELYR_API_ROOT}/v1/sources`,{headers:{authorization:`Bearer ${env.PELYR_API_KEY}`,accept:"application/json"}},3500);if(!r.ok)throw new Error(`Pelyr sources request failed (${r.status})`);const j=await r.json(),map=new Map((Array.isArray(j?.sources)?j.sources:[]).map(s=>[String(s.id),s]));pelyrSourcesCache={map,expires:Date.now()+30*60*1000};return map}
 function pelyrCacheKey(b){return[b.minLat,b.maxLat,b.minLon,b.maxLon].map(v=>Number(v).toFixed(2)).join(":")}
-async function pelyrLatest(url,env){const b=parseBounds(url);if(!b)throw new Error("Invalid AIS bounding box");const key=pelyrCacheKey(b),hit=pelyrAisCache.get(key);if(hit&&hit.expires>Date.now())return hit.data;const sourceMap=await pelyrSources(env),bbox=[b.minLon,b.minLat,b.maxLon,b.maxLat].join(","),endpoint=`${PELYR_API_ROOT}/v1/vessels?bbox=${encodeURIComponent(bbox)}&max=2000`,r=await timedFetch(endpoint,{headers:{authorization:`Bearer ${env.PELYR_API_KEY}`,accept:"application/json"}},4500);if(!r.ok)throw new Error(`Pelyr AIS request failed (${r.status})`);const j=await r.json(),vessels=[];for(const vessel of Array.isArray(j?.vessels)?j.vessels:[]){const p=vessel?.position;if(!p)continue;const lat=num(p.lat),lon=num(p.lon);if(lat==null||lon==null)continue;const pSource=sourceMap.get(String(p.license??"")),openLicence=x=>Boolean(x&&(/NLOD/i.test(String(x.license||""))||/CC[-_ ]?BY/i.test(String(x.license||""))));if(!openLicence(pSource))continue;const s=vessel?.static||null,sSource=s?sourceMap.get(String(s.license??"")):null,staticAllowed=!s||openLicence(sSource),attrs=uniq([pSource?.attribution,staticAllowed?sSource?.attribution:null]);vessels.push({mmsi:vessel.mmsi,name:staticAllowed?(s?.name||null):null,shipName:staticAllowed?(s?.name||null):null,latitude:lat,longitude:lon,speedOverGround:num(p.sog),courseOverGround:num(p.cog),trueHeading:num(p.heading),navigationalStatus:num(p.nav_status),shipType:staticAllowed?num(s?.type):null,timestamp:p.ts||null,source:pSource?.source||"Open AIS source",attributions:attrs,dataAgeSource:p.ts||null})}const data={vessels,generatedAt:j?.generated_at||new Date().toISOString(),truncated:Boolean(j?.truncated)};pelyrAisCache.set(key,{data,expires:Date.now()+15*1000});return data}
+async function pelyrLatest(url,env){const b=parseBounds(url);if(!b)throw new Error("Invalid AIS bounding box");const key=pelyrCacheKey(b),hit=pelyrAisCache.get(key);if(hit&&hit.expires>Date.now())return hit.data;const sourceMap=await pelyrSources(env),bbox=[b.minLon,b.minLat,b.maxLon,b.maxLat].join(","),endpoint=`${PELYR_API_ROOT}/v1/vessels?bbox=${encodeURIComponent(bbox)}&max=2000`,r=await timedFetch(endpoint,{headers:{authorization:`Bearer ${env.PELYR_API_KEY}`,accept:"application/json"}},4500);if(!r.ok)throw new Error(`Pelyr AIS request failed (${r.status})`);const j=await r.json();if(!Array.isArray(j?.vessels))throw new Error("Invalid Pelyr AIS response");const vessels=[];for(const vessel of j.vessels){const p=vessel?.position;if(!p)continue;const lat=num(p.lat),lon=num(p.lon);if(lat==null||lon==null)continue;const pSource=sourceMap.get(String(p.license??"")),openLicence=x=>Boolean(x&&(/NLOD/i.test(String(x.license||""))||/CC[-_ ]?BY/i.test(String(x.license||""))));if(!openLicence(pSource))continue;const s=vessel?.static||null,sSource=s?sourceMap.get(String(s.license??"")):null,staticAllowed=!s||openLicence(sSource),attrs=uniq([pSource?.attribution,staticAllowed?sSource?.attribution:null]);vessels.push({mmsi:vessel.mmsi,name:staticAllowed?(s?.name||null):null,shipName:staticAllowed?(s?.name||null):null,latitude:lat,longitude:lon,speedOverGround:num(p.sog),courseOverGround:num(p.cog),trueHeading:num(p.heading),navigationalStatus:num(p.nav_status),shipType:staticAllowed?num(s?.type):null,timestamp:p.ts||null,source:pSource?.source||"Open AIS source",attributions:attrs,dataAgeSource:p.ts||null})}const data={vessels,generatedAt:j?.generated_at||new Date().toISOString(),truncated:Boolean(j?.truncated)};pelyrAisCache.set(key,{data,expires:Date.now()+15*1000});return data}
 async function barentsWatchAis(request,env,ctx){const base=await baseWorker.fetch(request,env,ctx);if(!base.ok)return null;try{const arr=await base.clone().json();if(!Array.isArray(arr))return null;return arr.map(v=>({...v,source:v?.source||"BarentsWatch",attributions:uniq([...(Array.isArray(v?.attributions)?v.attributions:[]),"Data delivered by BarentsWatch"])}))}catch{return null}}
-async function aisResponse(request,env,ctx){const url=new URL(request.url),bounds=parseBounds(url);if(!productOriginAllowed(request))return json({error:"AIS context is available only inside the Marine Tools web application."},403,{"access-control-allow-origin":"null"});const bwArea=intersectsBarentsWatchArea(bounds);if(bwArea){try{const bw=await barentsWatchAis(request,env,ctx);if(Array.isArray(bw)&&bw.length)return json(bw,200,{"access-control-allow-origin":request.headers.get("origin"),"vary":"Origin","x-marine-tools-ais-provider":"BarentsWatch"})}catch{}}
-  if(env.PELYR_API_KEY){try{const p=await pelyrLatest(url,env);if(p.vessels.length||!bwArea)return json(p.vessels,200,{"access-control-allow-origin":request.headers.get("origin"),"vary":"Origin","x-marine-tools-ais-provider":"Pelyr-open-sources"})}catch{}}
-  if(!bwArea){try{const bw=await barentsWatchAis(request,env,ctx);if(Array.isArray(bw)&&bw.length)return json(bw,200,{"access-control-allow-origin":request.headers.get("origin"),"vary":"Origin","x-marine-tools-ais-provider":"BarentsWatch"})}catch{}}
-  return json([],200,{"access-control-allow-origin":request.headers.get("origin"),"vary":"Origin","x-marine-tools-ais-provider":"none"})}
+async function aisResponse(request,env,ctx){
+  const url=new URL(request.url),bounds=parseBounds(url);
+  if(!productOriginAllowed(request))return json({error:"AIS context is available only inside the Marine Tools web application."},403,{"access-control-allow-origin":"null"});
+  const bwArea=intersectsBarentsWatchArea(bounds);
+  const headers={"access-control-allow-origin":request.headers.get("origin"),"vary":"Origin"};
+  const reply=(data,provider)=>json(data,200,{...headers,"x-marine-tools-ais-provider":provider});
+  // A valid empty response is different from a provider that could not answer.
+  // Keep it while trying the existing fallback order for actual targets.
+  let emptyProvider=null;
+  const barentsWatch=async()=>{
+    try{
+      const vessels=await barentsWatchAis(request,env,ctx);
+      if(Array.isArray(vessels)){
+        if(vessels.length)return reply(vessels,"BarentsWatch");
+        emptyProvider??="BarentsWatch";
+      }
+    }catch{}
+    return null;
+  };
+  if(bwArea){const response=await barentsWatch();if(response)return response}
+  if(env.PELYR_API_KEY){
+    try{
+      const p=await pelyrLatest(url,env);
+      if(p.vessels.length||!bwArea)return reply(p.vessels,"Pelyr-open-sources");
+      emptyProvider??="Pelyr-open-sources";
+    }catch{}
+  }
+  if(!bwArea){const response=await barentsWatch();if(response)return response}
+  if(emptyProvider)return reply([],emptyProvider);
+  return json({error:"AIS data unavailable. Please try again later.",code:"AIS_UNAVAILABLE"},503,{...headers,"x-marine-tools-ais-provider":"none"});
+}
 
 async function routeForecastResponse(request,env,ctx){const base=await baseWorker.fetch(request,env,ctx);if(!base.ok)return base;let data;try{data=await base.clone().json()}catch{return base}if(!Array.isArray(data))return base;data=data.map(row=>({...row,hs:safeHs(row?.hs)}));const cycle=await Promise.race([latestCycle(),new Promise(resolve=>setTimeout(()=>resolve(null),2200))]);if(!cycle)return json(data);const out=await Promise.all(data.map(async row=>{if(row?.hs!=null)return{...row,marineSource:"MET Norway Oceanforecast"};const lat=num(row?.lat),lon=num(row?.lon);if(lat==null||lon==null)return row;const wave=await Promise.race([waveForPoint(cycle,lat,lon,row?.forecastTime),new Promise(resolve=>setTimeout(()=>resolve(null),3200))]);return wave?{...row,...wave}:row}));return json(out)}
 async function healthResponse(request,env,ctx){const base=await baseWorker.fetch(request,env,ctx);if(!base.ok)return base;let j;try{j=await base.clone().json()}catch{return base}const capabilities=Array.isArray(j?.capabilities)?[...j.capabilities]:[];for(const cap of ["global-wave-fallback","global-open-ais"]){if(!capabilities.includes(cap))capabilities.push(cap)}return json({...j,capabilities,globalWaveConfigured:true,globalWaveProvider:"NOAA/NCEP GFS-Wave",globalAisConfigured:Boolean(env.PELYR_API_KEY),globalAisProvider:env.PELYR_API_KEY?"BarentsWatch in supported region; open-license Pelyr sources elsewhere/fallback":"BarentsWatch only"})}
