@@ -4,6 +4,7 @@ Run the actual complete Worker chain with mocked upstream responses:
 
 ```sh
 node tests/qa-ais-provider-status-20261018.mjs
+node tests/qa-ais-comparison-20261018.mjs
 ```
 
 Each scenario uses a fresh process to isolate provider and token caches. All credentials are synthetic; provider requests are intercepted and unexpected requests fail. Cases cover missing credentials, token/upstream failures, malformed responses, successful empty responses, populated responses, provider fallbacks, preview/production request routing and rejection of untrusted origins. Production request routing is simulated locally; this command does not call production.

@@ -641,8 +641,23 @@ async function runAnalysis(showToast=true){
  if(showToast)toast(aisOk&&wxOk?'Experimental route context updated.':'Partial live data loaded.');
 }
 
-function snapshot(){const cpa=cpaTargets().filter(isCpaAlert).length;return{time:new Date().toISOString(),ais:corridorTargets().length,cpa,maxHs:Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
-function compareAnalysis(){const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');if(box){if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{const d=b-a,cls=d>0?'up':d<0?'down':'same';return `<div class="change-row"><span>${n}</span><b>${nf(a,n.includes('AIS')||n.includes('CPA')?0:1)} → ${nf(b,n.includes('AIS')||n.includes('CPA')?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`}).join('')}store.set(K.lastAnalysis,cur)}
+function snapshot(){const cpa=cpaTargets().filter(isCpaAlert).length,aisOk=state.aisStatus==='ok';return{time:new Date().toISOString(),aisStatus:state.aisStatus,ais:aisOk?corridorTargets().length:null,cpa:aisOk?cpa:null,maxHs:Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
+function compareAnalysis(){
+ const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');
+ if(box){
+  if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';
+  else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{
+   const ais=n==='AIS targets'||n==='CPA alerts';
+   if(ais&&(old.aisStatus!=='ok'||cur.aisStatus!=='ok')){
+    const before=old.aisStatus==='ok'&&a!=null?nf(a,0):'—',after=cur.aisStatus==='ok'&&b!=null?nf(b,0):'—';
+    return `<div class="change-row"><span>${n}</span><b>${before} → ${after}</b><span class="delta same">${cur.aisStatus==='ok'?'Not comparable':'AIS unavailable'}</span></div>`;
+   }
+   const d=b-a,cls=d>0?'up':d<0?'down':'same';
+   return `<div class="change-row"><span>${n}</span><b>${nf(a,ais?0:1)} → ${nf(b,ais?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`;
+  }).join('');
+ }
+ store.set(K.lastAnalysis,cur);
+}
 
 function renderVoyageEstimate(){
  const host=$('#voyage-estimate');

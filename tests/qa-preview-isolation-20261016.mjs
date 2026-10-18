@@ -82,5 +82,5 @@ check('Production preconnect removed from preview artifact',!html.includes('<lin
 for(const [name,source] of [['app.js',app],['analytics-v856.js',analytics],['release-v860.js',release]]){
  check(name+' selects dedicated preview Worker',source.includes(qaWorker)&&source.includes(production)&&source.includes('pages'));
 }
-check('PWA cache rotated for isolated QA build',sw.includes('marine-tools-fullscale-20261016-qa-preview-isolation1'));
+check('PWA cache rotated for isolated QA build',sw.includes('marine-tools-fullscale-20261018-qa-preview-isolation-ais-status2'));
 console.log(JSON.stringify({result:'PASS',assertions:pass,scope:'source/worker/browser-mock; authenticated Cloudflare Access and live providers NOT tested'}));
