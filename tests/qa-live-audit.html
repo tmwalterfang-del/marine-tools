@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Marine Tools preview audit</title>
+<style>body{font:16px system-ui;margin:20px;background:#102331;color:#edf4fa}button{font:inherit;padding:12px;margin:6px 12px 6px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#061722;padding:16px}iframe{width:100%;height:850px;border:1px solid #7792a4}summary{padding:12px;cursor:pointer}a{color:#9fdaff}</style></head><body>
+<h1>Marine Tools preview audit</h1><p>QA only. Exercise the embedded real app, then run checks. No cookies, tokens, URL queries, request bodies or vessel data are recorded. This is a scoped browser audit, not a raw HAR or physical-device certification.</p>
+<button id="run">Run API guard checks</button><button id="refresh">Refresh audit summary</button><pre id="auditSummary">Waiting for preview validation.</pre>
+<details><summary>Sanitized network records</summary><pre id="records"></pre></details><iframe id="app" title="Actual Marine Tools preview"></iframe>
+<script>
+(() => {
+ 'use strict';
+ const summary=document.getElementById('auditSummary'),frame=document.getElementById('app'),run=document.getElementById('run');
+ if(!/^[a-z0-9-]+\.marine-tools-frontend-preview\.pages\.dev$/i.test(location.hostname)){summary.textContent='BLOCKED: this audit runs only on the Marine Tools Pages preview project.';run.disabled=true;return;}
+ const api='https://feature-qa-integrated-preview-20261015.api.marinetools.app',records=[],checks=[];
+ function show(){
+  const prod=records.filter(r=>r.url?.startsWith('https://api.marinetools.app/')||r.urls?.some(u=>u.startsWith('https://api.marinetools.app/')));
+  const worker=records.filter(r=>r.kind==='fetch'&&r.url?.startsWith(api+'/'));
+  const ais=worker.filter(r=>r.url===api+'/api/ais/latest');
+  summary.textContent=JSON.stringify({checks,observedRequests:records.length,productionAttempts:prod.length,workerResponses:worker.length,aisResponses:ais.map(r=>({status:r.status,provider:r.headers?.['x-marine-tools-ais-provider']})),networkConclusion:prod.length?'FAIL: production attempt observed':records.length?'No production request/beacon/preconnect observed in this captured flow':'NOT TESTED: no observed activity',scope:'Early native fetch/XHR/beacon and ResourceTiming in this app frame only; no raw HAR, no service-worker internals'},null,2);
+  document.getElementById('records').textContent=JSON.stringify(records,null,2);
+ }
+ addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==frame.contentWindow||event.data?.type!=='marine-qa-network')return;records.push(event.data.record);show();});
+ document.getElementById('refresh').addEventListener('click',show);
+ run.addEventListener('click',async()=>{
+  run.disabled=true;checks.length=0;
+  for(const [name,route,method,expected]of [['isolation','/api/preview-isolation','GET',200],['health','/api/health','GET',200],['auth','/api/auth/status','GET',200],['release','/api/release','GET',200],['admin blocked','/admin/api/analytics','GET',403],['analytics blocked','/api/analytics/event','POST',403],['writes blocked','/api/health','POST',405],['unknown path','/api/qa-unknown-endpoint','GET',404]]){
+   try{
+    const r=await fetch(api+route,{method,credentials:'include',cache:'no-store',...(method==='POST'?{headers:{'content-type':'text/plain'},body:'{"event":"qa_invalid_event_do_not_store"}'}:{})});
+    const d=await r.json(),h=Object.fromEntries(['x-marine-tools-environment','x-marine-tools-analytics','access-control-allow-origin','access-control-allow-credentials','vary'].map(k=>[k,r.headers.get(k)]));
+    const body=name==='isolation'?{environment:d.environment,analyticsWrites:d.analyticsWrites,analyticsQueries:d.analyticsQueries}:name==='auth'?{aisConfigured:d.ais?.configured,aisAuthenticated:d.ais?.authenticated}:name==='health'?{status:d.status,analyticsConfigured:d.analyticsConfigured,analyticsQueryConfigured:d.analyticsQueryConfigured,globalAisConfigured:d.globalAisConfigured}:name==='release'?{version:d.version,build:d.build,released:d.released}:undefined;
+    const headersOk=h['x-marine-tools-environment']==='preview'&&h['x-marine-tools-analytics']==='disabled'&&h['access-control-allow-origin']===location.origin&&h['access-control-allow-credentials']==='true'&&/Origin/i.test(h.vary||'');
+    const bodyOk=name!=='isolation'||d.environment==='preview'&&d.analyticsWrites===false&&d.analyticsQueries===false;
+    checks.push({name,status:r.status===expected&&headersOk&&bodyOk?'PASS':'FAIL',http:r.status,expected,headers:h,body});
+   }catch{checks.push({name,status:'BLOCKED',reason:'Native fetch could not read the QA response; check Access/CORS/network without bypassing it'});}
+   show();
+  }
+  run.disabled=false;
+ });
+ frame.src='/?qa-audit=1';show();
+})();
+</script></body></html>
