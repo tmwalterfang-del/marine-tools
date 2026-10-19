@@ -2,7 +2,8 @@
  * Subject gaps identified by reviewing available user-supplied chapter samples.
  * Formula entries are newly worded and NOT a transcription or facsimile of the source book.
  * Requires students/formulas.js first. For teaching and dimensional checking only. */
-window.MT_FORMULAS.push(...[
+(function(){
+const extra = [
  {
   "id": "student-v2-atomic-mass-number",
   "category": "Chemistry",
@@ -883,4 +884,7 @@ window.MT_FORMULAS.push(...[
   "note": "Effective Cd and projected area; simplified",
   "tags": "wind"
  }
-]);
+].filter(x=>x.name!=="Apparent weight while lifting");
+const existing=new Set(window.MT_FORMULAS.map(x=>x.name.toLowerCase()));
+window.MT_FORMULAS.push(...extra.filter(x=>!existing.has(x.name.toLowerCase())));
+})();
