@@ -128,3 +128,51 @@ footer a{font-size:11px;text-decoration:none;color:var(--muted)}
 @media(max-width:400px){.calc-fields{grid-template-columns:1fr}.toplinks a:first-child{display:none}.hero-buttons .main-btn,.hero-buttons .outline-btn{width:100%}.stats-grid>div{padding:15px}.formula-card{padding:16px}.exercise-actions button{flex:1 1 100%}}
 @media print{html,body{background:#fff!important;color:#000!important;color-scheme:light}.topbar,.hero,.selectors,.tabs,.controls,.load-row,footer,.formula-actions,.card-actions,.section-line button{display:none!important}.workspace{padding:0}.formula-grid{display:block}.formula-card{break-inside:avoid;border:1px solid #ccc;background:#fff;color:#000;margin:0 0 12px;padding:12px}.formula-card h3,.formula-card p,.equation{color:#000!important;background:#fff}.formula-card{min-height:0}.card-line button{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Study v2: authored formula guides, discipline filters, practice and print sheet */
+#study-group{flex:1 1 175px;max-width:255px}
+.formula-explanation{border-top:1px solid var(--border);margin-top:12px;padding-top:11px;font-size:12px}
+.formula-explanation summary{cursor:pointer;font-weight:700;color:var(--accent);padding:4px 0;line-height:1.6}
+.formula-explanation summary:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.explanation-body{padding:11px 0 0}
+.explanation-body h4{margin:0 0 11px;font-size:13px;letter-spacing:.02em}
+.symbol-grid{display:grid;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.symbol-grid>div{display:grid;grid-template-columns:minmax(65px,.55fr) minmax(0,2fr) minmax(65px,.8fr);align-items:center;gap:11px;padding:9px 10px;border-bottom:1px solid var(--border)}
+.symbol-grid>div:last-child{border-bottom:0}
+.symbol-grid code{color:var(--accent);font-size:13px;font-family:"Cambria Math",Consolas,monospace}
+.symbol-grid span{color:var(--text);min-width:0}
+.symbol-grid small{color:var(--muted);overflow-wrap:anywhere;font-size:11px}
+.annotation-pending{font-size:12px;color:var(--muted);margin:8px 0}
+.source-status{border-top:1px solid var(--border);margin-top:12px;padding-top:12px;color:var(--muted);font-size:11px;line-height:1.6}
+.source-status strong{color:var(--text)}.source-status p{font-size:11px;margin:7px 0 0}
+.study-diagram{max-width:390px;margin:14px auto;padding:8px;background:var(--raised);border-radius:10px;color:var(--text)}
+.study-diagram svg{width:100%;height:auto;max-height:210px}
+.study-diagram svg text{fill:var(--text);font-size:13px;font-family:Inter,"Segoe UI",sans-serif}
+.practice-controls{display:flex;flex-wrap:wrap;gap:15px;margin:18px 0}
+.practice-controls label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted);min-width:min(230px,100%);max-width:100%}
+.practice-controls select{width:100%;max-width:320px}
+.exercise-meta{flex-wrap:wrap}
+.study-hint{margin:14px 0;padding:13px 16px;border:1px solid var(--border);border-left:3px solid var(--accent);background:var(--raised);color:var(--text);border-radius:9px;font-size:13px}
+#show-solution:disabled{cursor:not-allowed;opacity:.45}
+#show-solution:disabled::after{content:" · Attempt first";font-size:10px}
+.sheet-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:24px 0}
+.sheet-toolbar>span{color:var(--muted);font-size:13px;margin-right:auto}
+.sheet-formulas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sheet-card{min-height:0}
+.sheet-card .formula-explanation{border-top:1px solid var(--border)}
+.sheet-card .source-status{margin-bottom:4px}
+@media(max-width:850px){.sheet-formulas{grid-template-columns:1fr}#study-group{max-width:none}}
+@media(max-width:480px){.symbol-grid>div{grid-template-columns:minmax(60px,.8fr) 1.7fr;gap:6px}.symbol-grid small{grid-column:2}.practice-controls{flex-direction:column}.practice-controls label{min-width:0}.sheet-toolbar button{flex:1 1 100%}}
+@media print{
+ .formula-explanation summary,.formula-explanation .source-status a,.card-line button{display:none!important}
+ .formula-explanation .explanation-body{display:block!important}
+ .formula-explanation .symbol-grid,.source-status{border-color:#ccc!important}
+ .study-diagram{background:#fff!important;color:#000!important}
+ .study-diagram svg text{fill:#000!important}
+ body.print-sheet .workspace-top,body.print-sheet .section-line,body.print-sheet [data-pane]:not([data-pane="sheet"]),body.print-sheet .sheet-toolbar,body.print-sheet .section-intro{display:none!important}
+ body.print-sheet [data-pane="sheet"]{display:block!important}
+ body.print-sheet .sheet-formulas{display:block}
+ body.print-sheet .sheet-card{border:1px solid #bbb;margin:0 0 10px}
+ body.print-sheet .symbol-grid>div{color:#000!important}
+ body.print-sheet .source-status,body.print-sheet .symbol-grid span,body.print-sheet .symbol-grid small,body.print-sheet .formula-explanation summary{color:#111!important}
+}
