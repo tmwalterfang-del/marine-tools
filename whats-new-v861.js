@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const SEEN_KEY='mt.lastSeenReleaseBuild';
-const release=()=>window.__MARINE_TOOLS_RELEASE||{version:'8.7.0-rc.1',released:'2026-10-18',build:'20261018-v8-7-0-rc1',history:[]};
+const release=()=>window.__MARINE_TOOLS_RELEASE||{version:'8.7.0',released:'2026-10-19',build:'20261019-v8-7-0',history:[]};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function getSeen(){try{return localStorage.getItem(SEEN_KEY)||''}catch{return''}}
 function setSeen(v){try{localStorage.setItem(SEEN_KEY,String(v||''))}catch{}}

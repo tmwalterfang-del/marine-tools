@@ -42,7 +42,7 @@ Test both portrait and landscape on a phone-sized viewport.
 - [ ] Route Intelligence map and waypoint DDM list remain usable.
 - [ ] Update-available banner fits without covering essential controls.
 - [ ] Changelog dialog opens, scrolls and closes.
-- [ ] What’s new shows v8.6.1 and includes Voyage Estimate, interface polish and sidebar/navigation fixes.
+- [ ] What’s new shows v8.7.0 and includes Voyage Planning Lab, AIS/CPA reliability and responsive/offline improvements.
 
 ## Analytics-led product review
 

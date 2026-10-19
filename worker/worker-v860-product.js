@@ -1,8 +1,8 @@
 import previousWorker from "./worker-v858-dashboard.js";
 
-const VERSION="8.7.0-rc.1";
-const BUILD="20261018-v8-7-0-rc1";
-const RELEASED="2026-10-18";
+const VERSION="8.7.0";
+const BUILD="20261019-v8-7-0";
+const RELEASED="2026-10-19";
 const DATASET="events.analyticsEngine.marine_tools_usage";
 const EVENTS=new Set(["calculation_completed","result_saved","result_exported","profile_value_used","offline_tool_used","visitor_type"]);
 const ORIGINS=new Set(["https://marinetools.app","https://www.marinetools.app"]);
