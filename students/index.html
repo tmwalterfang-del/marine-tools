@@ -1,24 +1,24 @@
 <!doctype html>
-<html lang="no" data-theme="maritime">
+<html lang="en" data-theme="maritime">
 <head>
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <meta name="theme-color" content="#071725">
  <meta name="robots" content="noindex,nofollow">
  <title>For Students · Marine Tools</title>
- <meta name="description" content="Søkbare maritime og tekniske formler, interaktive kalkulatorer og oppgaver for studenter.">
+ <meta name="description" content="Searchable maritime and technical formulas, interactive calculators, and student practice exercises.">
  <link rel="icon" href="../assets/icon-192.png" type="image/png">
- <link rel="stylesheet" href="styles.css?v=students-draft-1">
+ <link rel="stylesheet" href="styles.css?v=students-draft-4">
  <script defer src="formulas.js?v=students-draft-1"></script>
  <script defer src="formulas-extension.js?v=students-draft-2"></script>
  <script defer src="formulas-expansion-v1.js?v=students-draft-3"></script>
  <script defer src="calculators.js?v=students-draft-1"></script>
  <script defer src="calculators-extension.js?v=students-draft-2"></script>
  <script defer src="calculators-expansion-v1.js?v=students-draft-3"></script>
- <script defer src="app.js?v=students-draft-1"></script>
+ <script defer src="app.js?v=students-draft-4"></script>
 </head>
 <body>
-<a class="skip-link" href="#workspace">Hopp til innhold</a>
+<a class="skip-link" href="#workspace">Skip to content</a>
 <header class="topbar">
  <a class="brand" href="../education/"><img src="../assets/icon-192.png" width="43" height="43" alt=""><span><strong>MARINE TOOLS</strong><small>EDUCATION / STUDENTS</small></span></a>
  <nav class="toplinks" aria-label="Main navigation">
@@ -47,27 +47,26 @@
  </section>
  <section class="workspace" aria-label="Student tools">
   <div class="workspace-top">
-   <div><span class="eyebrow">YOUR LEARNING TOOLS</span><h2 id="section-title">Formler</h2></div>
+   <div><span class="eyebrow">YOUR LEARNING TOOLS</span><h2 id="section-title">Formulas</h2></div>
    <div class="selectors">
-    <label>Language<select id="student-lang" aria-label="Language"><option value="no">Norsk</option><option value="en">English</option></select></label>
     <label>Theme<select id="student-theme" aria-label="Theme"><option value="maritime">Dark Maritime</option><option value="bridge">Bridge Dark</option></select></label>
    </div>
   </div>
   <div class="tabs" role="tablist" aria-label="Student tools">
-   <button role="tab" aria-selected="true" data-tab="formulas" data-label="formulas">Formler</button>
-   <button role="tab" aria-selected="false" data-tab="calculators" data-label="calculators">Kalkulatorer</button>
-   <button role="tab" aria-selected="false" data-tab="practice" data-label="practice">Oppgaver</button>
-   <button role="tab" aria-selected="false" data-tab="resources" data-label="resources">Kilder</button>
+   <button role="tab" aria-selected="true" data-tab="formulas" data-label="formulas">Formulas</button>
+   <button role="tab" aria-selected="false" data-tab="calculators" data-label="calculators">Calculators</button>
+   <button role="tab" aria-selected="false" data-tab="practice" data-label="practice">Exercises</button>
+   <button role="tab" aria-selected="false" data-tab="resources" data-label="resources">Resources</button>
   </div>
   <div id="formula-controls" class="controls">
-   <label class="search-field"><span aria-hidden="true">⌕</span><input id="formula-search" type="search" placeholder="Søk: GM, TPC, elektro, trim ..." autocomplete="off" aria-label="Search formulas"></label>
-   <select id="topic-filter" aria-label="Fagområde"><option value="All">Alle fagområder</option></select>
-   <label class="saved-check"><input id="saved-only" type="checkbox"><span id="saved-only-text">Kun lagrede</span></label>
+   <label class="search-field"><span aria-hidden="true">⌕</span><input id="formula-search" type="search" placeholder="Search: GM, TPC, electrical, trim ..." autocomplete="off" aria-label="Search formulas"></label>
+   <select id="topic-filter" aria-label="Subject area"><option value="All">All subjects</option></select>
+   <label class="saved-check"><input id="saved-only" type="checkbox"><span id="saved-only-text">Saved only</span></label>
   </div>
   <section data-pane="formulas" aria-label="Formula catalogue">
    <div class="section-line"><p><span id="formula-count">—</span> formulas matching</p><button type="button" id="print-formulas" class="quiet-button">⎙ Print / Save PDF</button></div>
    <div id="formula-grid" class="formula-grid" aria-live="polite"></div>
-   <div class="load-row"><button id="load-more" type="button" class="outline-btn">Vis flere</button></div>
+   <div class="load-row"><button id="load-more" type="button" class="outline-btn">Show more</button></div>
   </section>
   <section data-pane="calculators" aria-label="Interactive calculators" hidden>
    <div class="section-intro"><h3>Learn the method. Check the arithmetic.</h3><p>Transparent educational computations with visible units and working steps. Every calculation is performed in your browser.</p></div>
@@ -80,9 +79,8 @@
     </div>
     <div class="calc-card result-card">
      <div id="calc-output" class="calc-output" aria-live="polite"></div>
-     <button id="working-toggle" type="button" class="outline-btn">Vis mellomregning</button>
+     <button id="working-toggle" type="button" class="outline-btn">Show working</button>
      <div id="calc-steps" class="steps"></div>
-     <p class="result-foot">Not a substitute for a vessel's approved loading software, PMS, engineering documentation or nautical equipment.</p>
     </div>
    </div>
   </section>
@@ -94,16 +92,16 @@
     <div class="exercise-entry"><label for="exercise-answer">Your answer</label><div class="answer-field"><input type="text" id="exercise-answer" inputmode="decimal" autocomplete="off"><span id="exercise-unit"></span></div></div>
     <p id="exercise-feedback" aria-live="polite"></p>
     <div class="exercise-actions">
-     <button id="check-answer" type="button" class="main-btn" data-label="answer">Kontroller svar</button>
-     <button id="show-solution" type="button" class="outline-btn" data-label="solution">Vis fasit</button>
+     <button id="check-answer" type="button" class="main-btn" data-label="answer">Check answer</button>
+     <button id="show-solution" type="button" class="outline-btn" data-label="solution">Show solution</button>
     </div>
     <div id="exercise-solution" class="steps solution" hidden></div>
     <div class="exercise-footer"><div><strong id="exercise-progress"></strong> <span>completed locally</span></div><div class="exercise-nav">
-     <button id="exercise-prev" type="button" class="quiet-button" data-label="previous">Forrige</button>
-     <button id="exercise-next" type="button" class="quiet-button" data-label="next">Neste</button>
+     <button id="exercise-prev" type="button" class="quiet-button" data-label="previous">Previous</button>
+     <button id="exercise-next" type="button" class="quiet-button" data-label="next">Next</button>
     </div></div>
    </div>
-   <button id="reset-progress" type="button" class="quiet-button subtle" data-label="reset">Nullstill progresjon</button>
+   <button id="reset-progress" type="button" class="quiet-button subtle" data-label="reset">Reset progress</button>
   </section>
   <section data-pane="resources" aria-label="Academic references" hidden>
    <div class="section-intro"><h3>Reference books and further reading</h3><p>References are linked to their original publishers and libraries. Copyrighted textbook pages, original publisher tables and artwork are not reproduced here.</p></div>
@@ -114,7 +112,6 @@
    </div>
   </section>
  </section>
- <section class="safety" aria-label="Educational safety notice"><strong>EDUCATIONAL USE ONLY</strong><p id="safety-text">Kun til utdanning. Erstatter ikke godkjent lastecomputer, stabilitetsdokumentasjon eller fartøyprosedyrer.</p></section>
 </main>
 <footer><span>Marine Tools by Walterfang Design · For Students preview</span><a href="../education/">Education</a><a href="../">Main application</a></footer>
 </body>
