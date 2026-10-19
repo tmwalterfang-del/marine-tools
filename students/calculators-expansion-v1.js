@@ -2,7 +2,7 @@
 (function(){
  const F=(key,label,unit,initial,check="positive")=>({key,label,unit,initial,check});
  const R=(value,unit,steps,extra={})=>({value,unit,steps,...extra});
- window.MT_CALCULATORS.push(
+ const extra=[
   {id:"molar-concentration",name:"Molar concentration",category:"Chemistry",
    description:"Concentration from dissolved solute amount and solution volume.",
    fields:[F("n","Amount","mol",0.5),F("v","Solution volume","L",2)],
@@ -84,5 +84,7 @@
    description:"RMS pressure level relative to chosen reference; different media have different references.",
    fields:[F("p","RMS pressure","Pa",0.02),F("p0","Reference pressure","Pa",0.00002)],
    compute:({p,p0})=>R(20*Math.log10(p/p0),"dB re reference",["Lp = 20 log₁₀(prms/p0)"])}
- );
+ ];
+ const existing=new Set(window.MT_CALCULATORS.map(c=>c.id));
+ window.MT_CALCULATORS.push(...extra.filter(c=>!existing.has(c.id)));
 })();
