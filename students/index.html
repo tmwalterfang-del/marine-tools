@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="no" data-theme="maritime">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#071725">
+ <meta name="robots" content="noindex,nofollow">
+ <title>For Students · Marine Tools</title>
+ <meta name="description" content="Søkbare maritime og tekniske formler, interaktive kalkulatorer og oppgaver for studenter.">
+ <link rel="icon" href="../assets/icon-192.png" type="image/png">
+ <link rel="stylesheet" href="styles.css?v=students-draft-1">
+ <script defer src="formulas.js?v=students-draft-1"></script>
+ <script defer src="calculators.js?v=students-draft-1"></script>
+ <script defer src="app.js?v=students-draft-1"></script>
+</head>
+<body>
+<a class="skip-link" href="#workspace">Hopp til innhold</a>
+<header class="topbar">
+ <a class="brand" href="../education/"><img src="../assets/icon-192.png" width="43" height="43" alt=""><span><strong>MARINE TOOLS</strong><small>EDUCATION / STUDENTS</small></span></a>
+ <nav class="toplinks" aria-label="Main navigation">
+  <a href="../education/">Education</a><a href="../">Marine Tools ↗</a>
+ </nav>
+</header>
+<main id="workspace">
+ <section class="hero" aria-labelledby="hero-title">
+  <div class="hero-copy">
+   <span class="eyebrow"><span class="status-dot"></span> MARITIME STUDY WORKSPACE · DEVELOPMENT PREVIEW</span>
+   <h1 id="hero-title">Technical formulas made practical.</h1>
+   <p>Find the formula, understand its assumptions, test values and practice with worked solutions — from ship stability to electricity and thermodynamics.</p>
+   <div class="hero-buttons"><a href="#formulas" class="main-btn">Explore Formula Library <span aria-hidden="true">→</span></a><a class="outline-btn" href="#practice">Try practice mode</a></div>
+   <p class="preview-note">This page is an experimental educational reference. Formula coverage and academic validation are still being expanded.</p>
+  </div>
+  <div class="hero-aside" aria-label="Study workspace overview">
+   <div class="aside-head"><strong>STUDY WORKSPACE</strong><span class="live-tag">LOCAL · PRIVATE</span></div>
+   <div class="stats-grid">
+    <div><b id="formula-total">—</b><small>SEARCHABLE FORMULAS</small></div>
+    <div><b id="calculator-total">—</b><small>CALCULATORS</small></div>
+    <div><b id="practice-total">—</b><small>EXERCISES</small></div>
+    <div><b id="saved-total">—</b><small>BOOKMARKS</small></div>
+   </div>
+   <div class="aside-foot"><span class="tiny-dot"></span> No account required · works with your own calculations</div>
+  </div>
+ </section>
+ <section class="workspace" aria-label="Student tools">
+  <div class="workspace-top">
+   <div><span class="eyebrow">YOUR LEARNING TOOLS</span><h2 id="section-title">Formler</h2></div>
+   <div class="selectors">
+    <label>Language<select id="student-lang" aria-label="Language"><option value="no">Norsk</option><option value="en">English</option></select></label>
+    <label>Theme<select id="student-theme" aria-label="Theme"><option value="maritime">Dark Maritime</option><option value="bridge">Bridge Dark</option></select></label>
+   </div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Student tools">
+   <button role="tab" aria-selected="true" data-tab="formulas" data-label="formulas">Formler</button>
+   <button role="tab" aria-selected="false" data-tab="calculators" data-label="calculators">Kalkulatorer</button>
+   <button role="tab" aria-selected="false" data-tab="practice" data-label="practice">Oppgaver</button>
+   <button role="tab" aria-selected="false" data-tab="resources" data-label="resources">Kilder</button>
+  </div>
+  <div id="formula-controls" class="controls">
+   <label class="search-field"><span aria-hidden="true">⌕</span><input id="formula-search" type="search" placeholder="Søk: GM, TPC, elektro, trim ..." autocomplete="off" aria-label="Search formulas"></label>
+   <select id="topic-filter" aria-label="Fagområde"><option value="All">Alle fagområder</option></select>
+   <label class="saved-check"><input id="saved-only" type="checkbox"><span id="saved-only-text">Kun lagrede</span></label>
+  </div>
+  <section data-pane="formulas" aria-label="Formula catalogue">
+   <div class="section-line"><p><span id="formula-count">—</span> formulas matching</p><button type="button" id="print-formulas" class="quiet-button">⎙ Print / Save PDF</button></div>
+   <div id="formula-grid" class="formula-grid" aria-live="polite"></div>
+   <div class="load-row"><button id="load-more" type="button" class="outline-btn">Vis flere</button></div>
+  </section>
+  <section data-pane="calculators" aria-label="Interactive calculators" hidden>
+   <div class="section-intro"><h3>Learn the method. Check the arithmetic.</h3><p>Transparent educational computations with visible units and working steps. Every calculation is performed in your browser.</p></div>
+   <div class="calc-layout">
+    <div class="calc-card">
+     <label class="select-label" for="calc-selector">Choose calculator</label><select id="calc-selector"></select>
+     <h3 id="calc-title">—</h3><p id="calc-description"></p>
+     <div id="calc-fields" class="calc-fields"></div>
+     <p class="helper">Values are synthetic examples. Replace them with your exercise values and verify assumptions.</p>
+    </div>
+    <div class="calc-card result-card">
+     <div id="calc-output" class="calc-output" aria-live="polite"></div>
+     <button id="working-toggle" type="button" class="outline-btn">Vis mellomregning</button>
+     <div id="calc-steps" class="steps"></div>
+     <p class="result-foot">Not a substitute for a vessel's approved loading software, PMS, engineering documentation or nautical equipment.</p>
+    </div>
+   </div>
+  </section>
+  <section data-pane="practice" aria-label="Exercises" hidden>
+   <div class="section-intro"><h3>Learn first, then try it yourself.</h3><p>Original example exercises with a numerical answer, units, immediate feedback and optional worked solutions.</p></div>
+   <div class="exercise-card">
+    <div class="exercise-meta"><span id="exercise-category" class="topic-pill"></span><span id="exercise-index"></span></div>
+    <h3 id="exercise-question"></h3>
+    <div class="exercise-entry"><label for="exercise-answer">Your answer</label><div class="answer-field"><input type="text" id="exercise-answer" inputmode="decimal" autocomplete="off"><span id="exercise-unit"></span></div></div>
+    <p id="exercise-feedback" aria-live="polite"></p>
+    <div class="exercise-actions">
+     <button id="check-answer" type="button" class="main-btn" data-label="answer">Kontroller svar</button>
+     <button id="show-solution" type="button" class="outline-btn" data-label="solution">Vis fasit</button>
+    </div>
+    <div id="exercise-solution" class="steps solution" hidden></div>
+    <div class="exercise-footer"><div><strong id="exercise-progress"></strong> <span>completed locally</span></div><div class="exercise-nav">
+     <button id="exercise-prev" type="button" class="quiet-button" data-label="previous">Forrige</button>
+     <button id="exercise-next" type="button" class="quiet-button" data-label="next">Neste</button>
+    </div></div>
+   </div>
+   <button id="reset-progress" type="button" class="quiet-button subtle" data-label="reset">Nullstill progresjon</button>
+  </section>
+  <section data-pane="resources" aria-label="Academic references" hidden>
+   <div class="section-intro"><h3>Reference books and further reading</h3><p>References are linked to their original publishers and libraries. Copyrighted textbook pages, original publisher tables and artwork are not reproduced here.</p></div>
+   <div class="resource-grid">
+    <article class="resource-card"><span class="topic-pill">Technical handbook</span><h3>Teknisk formelsamling med tabeller</h3><p>Svein Erik Pedersen, Jan Gustavsen, Svein Kaasa og Oddmund Olsen. Gyldendal Undervisning.</p><a href="https://www.nb.no/items/7dd9087d6a49416798fe7b2f6fdd86c2" target="_blank" rel="noopener noreferrer">View catalogue at Nasjonalbiblioteket ↗</a><small>Digital reading access and reproduction rights depend on the library/publisher. This app does not distribute a copy.</small></article>
+    <article class="resource-card"><span class="topic-pill">Maritime references</span><h3>MARFAG formula collections</h3><p>Maritime F1 navigation, F2/F3 cargo and stability, mathematics, physics and technical training materials.</p><a href="https://www.marfag.no/formelsamlinger" target="_blank" rel="noopener noreferrer">Explore original formula booklets ↗</a><small>Check original editions and school requirements. Do not use older instructional excerpts as a current regulatory source.</small></article>
+    <article class="resource-card"><span class="topic-pill">For instructors</span><h3>Original learning content</h3><p>Marine Tools formulas are independently explained and illustrated with synthetic exercises. Use this resource to complement, not replace, your own curriculum and approved training material.</p><a href="../education/">Education landing page →</a><small>Formula inclusion does not imply permission to use the site as an examination aid.</small></article>
+   </div>
+  </section>
+ </section>
+ <section class="safety" aria-label="Educational safety notice"><strong>EDUCATIONAL USE ONLY</strong><p id="safety-text">Kun til utdanning. Erstatter ikke godkjent lastecomputer, stabilitetsdokumentasjon eller fartøyprosedyrer.</p></section>
+</main>
+<footer><span>Marine Tools by Walterfang Design · For Students preview</span><a href="../education/">Education</a><a href="../">Main application</a></footer>
+</body>
+</html>
