@@ -41,8 +41,6 @@ const rawLinks={
  "ext-level-annuity-present-value":"annuity-pv",
  "student-v2-radioactive-remaining-fraction":"radioactive-half-life",
  "ext-power-gain-in-decibels":"sound-db",
- "student-v2-power-gain-in-decibels":"sound-db",
- "student-v2-rc-filter-cutoff":"rc-filter",
  "student-v2-single-phase-full-wave-rectifier-average":"fullwave-rectifier",
  "student-v2-multicylinder-swept-volume":"engine-displacement",
  "ext-mean-piston-speed":"mean-piston-speed",
