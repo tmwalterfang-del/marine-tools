@@ -12,6 +12,7 @@ const srcCalculators=read('students/calculators.js');
 const srcCalculatorsExt=read('students/calculators-extension.js');
 const srcCalculatorsExpand=read('students/calculators-expansion-v1.js');
 const srcApp=read('students/app.js');
+const studySource=read('students/learning-data.js');
 const sw=read('sw.js');
 const main=read('index.html');
 const education=read('education/index.html');
@@ -22,6 +23,7 @@ new Function('window',srcFormulasExpand)(sandbox);
 new Function('window',srcCalculators)(sandbox);
 new Function('window',srcCalculatorsExt)(sandbox);
 new Function('window',srcCalculatorsExpand)(sandbox);
+new Function('window',studySource)(sandbox);
 new Function(srcApp);
 const formulas=sandbox.MT_FORMULAS,calculators=sandbox.MT_CALCULATORS,exercises=sandbox.MT_PRACTICE;
 let passed=0;
@@ -101,5 +103,29 @@ ok(!srcApp.includes('state.lang')&&!srcApp.includes('tr.no'),'English-only scrip
 ok(!html.includes("Not a substitute for a vessel's approved loading software"),'requested calculator notice removed');
 ok(!html.includes('EDUCATIONAL USE ONLY')&&!html.includes('Kun til utdanning'),'requested generic safety section removed');
 ok(!css.includes('.safety{')&&!css.includes('.result-foot{'),'unused generic-warning styles removed');
+
+const study=sandbox.MT_STUDY;
+ok(study.groups.length===8,'eight cross-discipline groups defined');
+ok(study.groups.flatMap(g=>g.categories).length===28,'28 subject categories mapped to study groups');
+ok(new Set(study.groups.flatMap(g=>g.categories)).size===28,'study subject grouping unambiguous');
+ok(formulas.every(f=>study.groups.some(g=>g.categories.includes(f.category))),'all 366 formula entries have a study discipline');
+ok(Object.keys(study.calculatorByFormula).length>=50,'at least fifty explicit formula-to-calculator mappings');
+ok(Object.entries(study.calculatorByFormula).every(([id,cid])=>formulas.some(f=>f.id===id)&&calculators.some(c=>c.id===cid)),'all explicit formula-to-calculator IDs valid');
+ok(Object.keys(study.details).length>=20,'curated symbol definitions for core formulas');
+ok(Object.entries(study.details).every(([id,d])=>formulas.some(f=>f.id===id)&&Array.isArray(d.symbols)&&d.symbols.every(v=>v.symbol&&v.meaning&&v.unit)),'curated formula symbols have units and meanings');
+ok(Object.keys(study.figures).length===5,'five original SVG learning diagrams');
+ok(Object.values(study.figures).every(fig=>fig.includes('<svg')&&fig.includes('role="img"')&&fig.includes('aria-label')),'SVG diagrams accessible via descriptive labels');
+ok(formulas.every(f=>Boolean(study.topicChapters[f.category])),'all formula categories have topical source mapping');
+ok(study.chapterLabel.includes('not evidence'),'topic mapping clearly marked unverified at equation level');
+ok(html.includes('id="study-group"')&&html.includes('id="practice-subject"')&&html.includes('id="practice-difficulty"'),'subject and difficulty controls present');
+ok(html.includes('id="show-hint"')&&html.includes('id="exercise-hint"'),'hint view present');
+ok(html.includes('id="sheet-formulas"')&&html.includes('id="print-sheet"'),'saved formula sheet and export control present');
+ok(html.includes('learning-data.js')&&sw.includes("'./students/learning-data.js'"),'study data loaded and cached offline');
+ok(srcApp.includes('study.calculatorByFormula[f.id]')&&!srcApp.includes('calc.find(c=>c.category===f.category'),'only exact formula-to-calculator links used');
+ok(srcApp.includes('if(!state.attempted)return')&&srcApp.includes('state.attempted=true'),'worked solution locked until answer attempt');
+ok(srcApp.includes('mt-student-formulas-fav-v1')&&srcApp.includes('print-sheet'),'saved selections drive printable sheet');
+ok(css.includes('body.print-sheet .sheet-formulas')&&css.includes('.symbol-grid'),'print stylesheet and symbol legend styles present');
+ok(!srcApp.includes('fetch(')&&!srcApp.includes('sendBeacon'),'student resources remain local-only');
+
 console.log(JSON.stringify({result:'PASS',checks:passed,formulas:formulas.length,calculators:calculators.length,exercises:exercises.length,
  note:'Isolated source smoke only; browser reflow, installed PWA and full editorial accuracy are still pending.'}));
