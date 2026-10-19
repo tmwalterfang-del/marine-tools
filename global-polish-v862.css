@@ -281,3 +281,116 @@ label{line-height:1.35}
   .home-hero-content{padding:25px 18px!important}
   .home-hero-content>p{font-size:14px}
 }
+
+
+/* QA 2026-10-16: improve small-text legibility in experimental planning flows.
+   Do not modify navigation, calculation logic or global document overflow. */
+#voyage-planning-lab .helper,
+#voyage-planning-lab .vpd-basis-status,
+#voyage-planning-lab .vpd-card label small,
+#voyage-planning-lab .vpd-method-grid span,
+#voyage-planning-lab .vpd-method > summary small,
+#voyage-planning-lab .vpd-table-result .helper,
+#route-intelligence .helper{
+  color:#b9d1e0;
+  font-size:12px;
+  line-height:1.5;
+}
+#voyage-planning-lab .table th,
+#route-intelligence .table th{
+  color:#bbd7e6;
+  font-size:11px;
+  line-height:1.4;
+}
+#voyage-planning-lab .table td,
+#route-intelligence .table td{
+  color:#e1ebf2;
+  font-size:12px;
+}
+#voyage-planning-lab .vpd-card button,
+#voyage-planning-lab .vpd-method > summary{
+  min-height:40px;
+}
+#voyage-planning-lab :is(button,input,select,summary):focus-visible,
+#route-intelligence :is(button,input,select):focus-visible{
+  outline:2px solid #70ddff;
+  outline-offset:3px;
+}
+@media(min-width:1280px){
+  #voyage-planning-lab .vpd-table-result table{
+    min-width:0;
+    width:100%;
+  }
+}
+[data-theme="bridge"] #voyage-planning-lab .helper,
+[data-theme="bridge"] #voyage-planning-lab .vpd-basis-status,
+[data-theme="bridge"] #voyage-planning-lab .vpd-card label small,
+[data-theme="bridge"] #voyage-planning-lab .vpd-method-grid span,
+[data-theme="bridge"] #voyage-planning-lab .vpd-method > summary small,
+[data-theme="bridge"] #route-intelligence .helper{
+  color:#d9c4ac;
+}
+[data-theme="bridge"] #voyage-planning-lab .table th,
+[data-theme="bridge"] #route-intelligence .table th{color:#e6cba8}
+[data-theme="bridge"] #voyage-planning-lab .table td,
+[data-theme="bridge"] #route-intelligence .table td{color:#f1e1ce}
+[data-theme="bridge"] #voyage-planning-lab :is(button,input,select,summary):focus-visible,
+[data-theme="bridge"] #route-intelligence :is(button,input,select):focus-visible{
+  outline-color:#ffd58b;
+}
+
+
+/* QA 2026-10-16: Route Intelligence 200% text-only zoom / mobile reflow.
+   The data-age chip must wrap inside its own panel; never hide overflow globally. */
+#route-intelligence,
+#route-intelligence .grid-2 > *,
+#route-intelligence .panel,
+#route-intelligence .panel-body,
+#route-intelligence .right-stack,
+#route-intelligence .map-toolbar{
+  min-width:0;
+  max-width:100%;
+}
+#route-intelligence .grid-2{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+#route-intelligence .map-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+}
+#route-intelligence .map-toolbar #riDataAge{
+  display:block;
+  flex:1 1 100%;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  line-height:1.5;
+  border-radius:10px;
+}
+#route-intelligence .panel-head,
+#route-intelligence .legend,
+#route-intelligence .change-row{
+  min-width:0;
+  flex-wrap:wrap;
+}
+#route-intelligence .panel-head > *,
+#route-intelligence .change-row > *,
+#route-intelligence .analysis-summary .metric{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+@media(max-width:900px){
+  #route-intelligence .grid-2{
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+@media(max-width:560px){
+  #route-intelligence .analysis-summary{
+    grid-template-columns:minmax(0,1fr);
+  }
+}

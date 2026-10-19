@@ -1,9 +1,53 @@
 import previousWorker from "./worker-v860-product.js";
-const VERSION="8.6.1";
+const VERSION="8.7.0";
 const WORKER="worker-v860-dashboard";
 
+// QA preview requests must never read from or write to the production analytics
+// bindings, even if Cloudflare deploy preview inherited their configuration.
+function qaPreviewHost(host){return host!=="api.marinetools.app"&&host.endsWith(".api.marinetools.app")}
+function qaPreviewOrigin(origin){return /^https:\/\/[a-z0-9-]+\.marine-tools-frontend-preview\.pages\.dev$/i.test(origin)}
+function qaHeaders(origin){
+ const headers={"cache-control":"no-store","x-marine-tools-environment":"preview","x-marine-tools-analytics":"disabled"};
+ if(qaPreviewOrigin(origin)){
+  headers["access-control-allow-origin"]=origin;
+  headers["access-control-allow-credentials"]="true";
+  headers["access-control-allow-methods"]="GET,HEAD,OPTIONS";
+  headers["access-control-allow-headers"]="content-type";
+  headers["vary"]="Origin";
+  // Only non-secret QA diagnostic metadata, for the already-approved origin.
+  headers["access-control-expose-headers"]="x-marine-tools-environment,x-marine-tools-analytics,x-marine-tools-ais-provider,access-control-allow-origin,access-control-allow-credentials,vary";
+ }
+ return headers;
+}
+function qaPreviewResponse(body,status=200,origin=""){
+ return new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json;charset=utf-8",...qaHeaders(origin)}});
+}
+async function isolatedQaFetch(request,env,ctx){
+ const url=new URL(request.url),path=url.pathname,origin=request.headers.get("origin")||"";
+ if(origin&&!qaPreviewOrigin(origin))return qaPreviewResponse({error:"Origin not allowed in QA preview."},403);
+ if(request.method==="OPTIONS")return new Response(null,{status:204,headers:qaHeaders(origin)});
+ if(path==="/api/preview-isolation"&&request.method==="GET"){
+  return qaPreviewResponse({environment:"preview",analyticsWrites:false,analyticsQueries:false,apiHost:url.hostname},200,origin);
+ }
+ if(path.startsWith("/api/analytics")||path.startsWith("/admin/")){
+  return qaPreviewResponse({error:"Analytics and admin endpoints are disabled in QA preview."},403,origin);
+ }
+ if(!["GET","HEAD"].includes(request.method)){
+  return qaPreviewResponse({error:"QA preview is read-only."},405,origin);
+ }
+ const readOnlyPaths=new Set(["/api/health","/api/auth/status","/api/release","/api/ais/latest","/api/weather","/api/forecast"]);
+ if(!readOnlyPaths.has(path))return qaPreviewResponse({error:"Endpoint not enabled in QA preview."},404,origin);
+ // Even if deployment preview inherits production bindings, downstream
+ // handlers cannot read analytics or publish production analytics events.
+ const safeEnv={...env,ANALYTICS:undefined,ANALYTICS_SQL:undefined};
+ const response=await previousWorker.fetch(request,safeEnv,ctx);
+ const headers=new Headers(response.headers);
+ for(const [name,value] of Object.entries(qaHeaders(origin)))headers.set(name,value);
+ if(!origin){headers.delete("access-control-allow-origin");headers.delete("access-control-allow-credentials")}
+ return new Response(response.body,{status:response.status,headers});
+}
 function enhance(html){
-  html=html.replace(/Analytics Dashboard v2/g,"Analytics Dashboard v3").replace("Marine Tools v8.5.6 analytics","Marine Tools v8.6.1 analytics");
+  html=html.replace(/Analytics Dashboard v2/g,"Analytics Dashboard v3").replace("Marine Tools v8.5.6 analytics","Marine Tools v8.7.0 analytics");
   const hasPanel=html.includes('id="mtV860Product"');
   const panel=`<div class="section-title">Workflow adoption</div><div class="panel" id="mtV860Product"><div class="panel-head"><h2>Product actions</h2><span class="pill mono">Analytics v3</span></div><div class="cards"><div class="card"><small>Calculations</small><strong id="v860Calc">—</strong></div><div class="card"><small>Saves</small><strong id="v860Save">—</strong></div><div class="card"><small>Exports</small><strong id="v860Export">—</strong></div><div class="card"><small>Profile reuse</small><strong id="v860Reuse">—</strong></div><div class="card"><small>Offline uses</small><strong id="v860Offline">—</strong></div><div class="card"><small>Returning browsers</small><strong id="v860Returning">—</strong></div></div><div id="v860Tools" class="status">Loading…</div></div>`;
   const script=`<script id="mtV860AnalyticsScript">(function(){function n(v){return Number(v)||0}function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}async function load(){var active=document.querySelector('.range button.active'),range=active&&active.dataset.range||'24h';try{var r=await fetch('/admin/api/analytics?range='+encodeURIComponent(range),{cache:'no-store',credentials:'same-origin'}),d=await r.json(),p=d.productActions||{},t=p.totals||{},v=p.visitorType||{};document.getElementById('v860Calc').textContent=n(t.calculation_completed);document.getElementById('v860Save').textContent=n(t.result_saved);document.getElementById('v860Export').textContent=n(t.result_exported);document.getElementById('v860Reuse').textContent=n(t.profile_value_used);document.getElementById('v860Offline').textContent=n(t.offline_tool_used);document.getElementById('v860Returning').textContent=n(v.returningShare).toFixed(0)+'%';var rows=p.tools||[],h=document.getElementById('v860Tools');h.innerHTML=rows.length?'<table><thead><tr><th>Tool</th><th>Calculations</th><th>Saves</th><th>Exports</th><th>Profile reuse</th><th>Offline</th></tr></thead><tbody>'+rows.slice(0,18).map(function(x){return'<tr><td>'+esc(x.tool)+'</td><td>'+n(x.calculations)+'</td><td>'+n(x.saves)+'</td><td>'+n(x.exports)+'</td><td>'+n(x.profileReuse)+'</td><td>'+n(x.offlineUses)+'</td></tr>'}).join('')+'</tbody></table>':'<div class="empty">No Analytics v3 actions observed yet.</div>'}catch(e){var h=document.getElementById('v860Tools');if(h)h.innerHTML='<div class="error">Analytics v3 data unavailable.</div>'}}setTimeout(load,0);document.querySelectorAll('.range button').forEach(function(b){b.addEventListener('click',function(){setTimeout(load,100)})});document.getElementById('refresh')&&document.getElementById('refresh').addEventListener('click',function(){setTimeout(load,100)})})();</script>`;
@@ -23,4 +67,4 @@ async function identify(response,path){
   return new Response(JSON.stringify(body),{status:response.status,headers});
 }
 
-export default{async fetch(request,env,ctx){const path=new URL(request.url).pathname;const response=await previousWorker.fetch(request,env,ctx);if(path==="/api/release"||path==="/api/health"||path==="/admin/api/analytics")return identify(response,path);if(path!=="/admin/analytics"||!response.ok)return response;const headers=new Headers(response.headers);headers.set("content-type","text/html;charset=utf-8");headers.set("cache-control","no-store");headers.set("x-frame-options","DENY");headers.set("x-marine-tools-dashboard",VERSION);headers.set("x-marine-tools-worker",WORKER);return new Response(enhance(await response.text()),{status:response.status,headers})},async scheduled(controller,env,ctx){if(previousWorker.scheduled)return previousWorker.scheduled(controller,env,ctx)}};
+export default{async fetch(request,env,ctx){const url=new URL(request.url);if(qaPreviewHost(url.hostname))return isolatedQaFetch(request,env,ctx);const path=url.pathname;const response=await previousWorker.fetch(request,env,ctx);if(path==="/api/release"||path==="/api/health"||path==="/admin/api/analytics")return identify(response,path);if(path!=="/admin/analytics"||!response.ok)return response;const headers=new Headers(response.headers);headers.set("content-type","text/html;charset=utf-8");headers.set("cache-control","no-store");headers.set("x-frame-options","DENY");headers.set("x-marine-tools-dashboard",VERSION);headers.set("x-marine-tools-worker",WORKER);return new Response(enhance(await response.text()),{status:response.status,headers})},async scheduled(controller,env,ctx){if(previousWorker.scheduled)return previousWorker.scheduled(controller,env,ctx)}};

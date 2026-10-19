@@ -42,7 +42,7 @@ Test both portrait and landscape on a phone-sized viewport.
 - [ ] Route Intelligence map and waypoint DDM list remain usable.
 - [ ] Update-available banner fits without covering essential controls.
 - [ ] Changelog dialog opens, scrolls and closes.
-- [ ] What’s new shows v8.6.1 and includes Voyage Estimate, interface polish and sidebar/navigation fixes.
+- [ ] What’s new shows v8.7.0 and includes Voyage Planning Lab, AIS/CPA reliability and responsive/offline improvements.
 
 ## Analytics-led product review
 
@@ -68,5 +68,13 @@ The `Production smoke test` GitHub Action must pass after production deployment.
 - [ ] AIS Norway / global endpoint checks pass.
 - [ ] Weather map production asset is present.
 - [ ] Voyage Estimate production assets and navigation entry are present.
+
+- [ ] Voyage Planning Lab opens from Voyage Estimate and by direct page link.
+- [ ] Bunker Requirement draft handles ROB, arrival ROB and reserve inputs.
+- [ ] Scenario Compare uses saved curve where available and clearly labels cubic fallback.
+- [ ] Arrival / Departure Planner returns ETA or required average speed.
+- [ ] Fuel & CO₂ draft requires density and shows the selected C_F basis.
+- [ ] Vessel Consumption Curve saves at least two unique speed points locally and interpolates only inside the saved range.
+- [ ] Last Voyage Estimate can be reused by the planning drafts without sending voyage values to analytics.
 
 If a production smoke test fails, treat the release as incomplete until the failure is understood and resolved.

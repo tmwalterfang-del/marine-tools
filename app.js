@@ -1,7 +1,7 @@
 (() => {
 'use strict';
-const API='https://api.marinetools.app';
-const APP_VERSION='8.6.1';
+const API=/\.pages\.dev$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
+const APP_VERSION='8.7.0';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
 const SUPPORT_URL='https://buymeacoffee.com/marinetools';
@@ -10,6 +10,7 @@ const LINKEDIN_URL='https://www.linkedin.com/company/marinetools';
 const CUSTOM_TOOL_URL='mailto:contact@marinetools.app?subject=Custom%20Marine%20Tools%20request&body=Hi%2C%0A%0AI%20would%20like%20to%20discuss%20a%20custom%20Marine%20Tools%20tool.%0A%0ACompany%20/%20vessel%3A%0AYour%20role%3A%0AArea%3A%0AWhat%20do%20you%20need%20the%20tool%20to%20do%3A%0AHow%20do%20you%20handle%20this%20today%3A%0APreferred%20output%20/%20result%3A%0AShould%20this%20be%20private%20for%20one%20vessel/company%2C%20or%20could%20it%20become%20part%20of%20public%20Marine%20Tools%3F%3A%0AWould%20you%20like%20a%20price%20estimate%3F%3A%0A%0AYou%20can%20attach%20screenshots%2C%20spreadsheets%20or%20example%20calculations%20to%20this%20email.%0A%0ARegards%2C%0A';
 const K={profile:'mt.profile',route:'mt.route',theme:'mt.theme',lastAnalysis:'mt.lastAnalysis',settings:'mt.settings',favorites:'mt.favorites',history:'mt.history',recent:'mt.recent',consumption:'mt.consumption',bunkHistory:'mt.bunkHistory',weatherCache:'mt.weatherCache'};
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const inputNumber=selector=>{const el=typeof selector==='string'?$(selector):selector;return el&&String(el.value).trim()!==''?Number(el.value):NaN};
 const nf=(n,d=1)=>Number.isFinite(Number(n))?Number(n).toFixed(d):'—';
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
@@ -18,7 +19,7 @@ const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}cat
 const DEFAULT_SETTINGS={usageAnalytics:true};
 function appSettings(){return{...DEFAULT_SETTINGS,...(store.get(K.settings,{})||{})}}
 function saveAppSettings(next){store.set(K.settings,{...appSettings(),...next})}
-function analyticsEnabled(){return appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function analyticsEnabled(){return !/\.pages\.dev$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
 function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
 let analyticsCurrentPage='home',analyticsVisibleSince=null,analyticsTimer=null;
 function sendAnalyticsEvent(event,{page=analyticsCurrentPage,tool='',duration=0,beacon=false}={}){
@@ -56,7 +57,7 @@ const state={
   profile:store.get(K.profile,{name:'',loa:80,draft:4,serviceSpeed:8,fuelDay:4,maxHs:3,maxWind:30,maxCurrent:2,minUKC:1,cpaAlert:1,corridor:5}),
   route:store.get(K.route,[]),
   theme:['dark','bridge'].includes(store.get(K.theme,'dark'))?store.get(K.theme,'dark'):'dark',
-  ais:[], forecast:[], weather:Array.isArray(cachedWeather.forecast)?cachedWeather.forecast:[], map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, weatherFetchedAt:cachedWeather.fetchedAt||null
+  ais:[], forecast:[], weather:cleanForecast(cachedWeather.forecast), map:null, routeLayer:null, aisLayer:null, riskLayer:null, lastRefresh:null, lastRefreshAt:null, aisStatus:'never',forecastStatus:'never',aisFetchedAt:null,forecastFetchedAt:null,weatherFetchedAt:cachedWeather.fetchedAt||null
 };
 function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2800)}
 function setTheme(v){
@@ -69,7 +70,7 @@ function setTheme(v){
 function nowUTC(){const d=new Date();return d.toISOString().slice(11,16)}
 
 function localDateISO(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
-function csvCell(v){const s=String(v??'');return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}
+function csvCell(v){let s=String(v??'');if(/^[\s\uFEFF]*[=+@\-\t\r]/.test(s)&&!/^\s*-?\d+(?:\.\d+)?\s*$/.test(s))s="'"+s;return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}
 function downloadCsv(filename,rows){
  const csv=rows.map(r=>r.map(csvCell).join(',')).join('\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click();URL.revokeObjectURL(a.href)
@@ -102,11 +103,11 @@ function loadLeaflet(){
  if(window.L)return Promise.resolve(window.L);if(leafletPromise)return leafletPromise;
  leafletPromise=new Promise((resolve,reject)=>{if(!document.getElementById('leafletCss')){const l=document.createElement('link');l.id='leafletCss';l.rel='stylesheet';l.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(l)}const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.async=true;s.onload=()=>resolve(window.L);s.onerror=reject;document.head.appendChild(s)});return leafletPromise;
 }
-function loadSupportWidget(){if(bmcLoaded)return;bmcLoaded=true;const s=document.createElement('script');s.src='https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js';s.async=true;s.dataset.name='BMC-Widget';s.dataset.cfasync='false';s.dataset.id='marinetools';s.dataset.description='Support Marine Tools on Buy Me a Coffee';s.dataset.message='Enjoying Marine Tools? Support continued development and help keep the tools free.';s.dataset.color='#159fe4';s.dataset.position='Right';s.dataset.x_margin='18';s.dataset.y_margin='18';document.body.appendChild(s)}
+function loadSupportWidget(){if(bmcLoaded||document.querySelector('script[data-name="BMC-Widget"]'))return;bmcLoaded=true;const s=document.createElement('script');s.src='https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js';s.async=true;s.dataset.name='BMC-Widget';s.dataset.cfasync='false';s.dataset.id='marinetools';s.dataset.description='Support Marine Tools on Buy Me a Coffee';s.dataset.message='Enjoying Marine Tools? Support continued development and help keep the tools free.';s.dataset.color='#159fe4';s.dataset.position='Right';s.dataset.x_margin='18';s.dataset.y_margin='18';document.body.appendChild(s)}
 function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)requestIdleCallback(fn,{timeout});else setTimeout(fn,timeout)}
-const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
+const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'voyage-planning-lab':renderVoyagePlanningDraft,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
-function page(id){ensurePage(id);document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
+function page(id){ensurePage(id);document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();if(id==='settings')renderSettings();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
 window.__marineToolsOpenPage=page;
 function requestedInitialPage(){
  const q=new URLSearchParams(location.search).get('page');
@@ -218,12 +219,24 @@ function rhumb(a,b){
 
 function destination(a,brg,nm){const R=3440.065,d=nm/R,p1=rad(a.lat),l1=rad(a.lon),t=rad(brg);const p2=Math.asin(Math.sin(p1)*Math.cos(d)+Math.cos(p1)*Math.sin(d)*Math.cos(t));const l2=l1+Math.atan2(Math.sin(t)*Math.sin(d)*Math.cos(p1),Math.cos(d)-Math.sin(p1)*Math.sin(p2));return{lat:deg(p2),lon:((deg(l2)+540)%360)-180}}
 function routeDistance(r=state.route){let n=0;for(let i=1;i<r.length;i++)n+=hav(r[i-1],r[i]);return n}
-function routeBBox(r=state.route,padNm=8){if(!r.length)return null;const lats=r.map(p=>p.lat),lons=r.map(p=>p.lon),mid=lats.reduce((a,b)=>a+b,0)/lats.length;const dLat=padNm/60,dLon=padNm/(60*Math.max(.25,Math.cos(rad(mid))));return{minLat:Math.min(...lats)-dLat,maxLat:Math.max(...lats)+dLat,minLon:Math.min(...lons)-dLon,maxLon:Math.max(...lons)+dLon}}
-function nmPointLine(p,a,b){const lat0=rad((a.lat+b.lat+p.lat)/3),sx=60*Math.cos(lat0),sy=60;const ax=a.lon*sx,ay=a.lat*sy,bx=b.lon*sx,by=b.lat*sy,px=p.lon*sx,py=p.lat*sy,dx=bx-ax,dy=by-ay;const t=clamp(((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy||1),0,1);return Math.hypot(px-(ax+t*dx),py-(ay+t*dy))}
+function shortestLonDelta(a,b){return ((b-a+540)%360+360)%360-180}
+function routeBBox(r=state.route,padNm=8){
+ if(!r.length)return null;
+ const lats=r.map(p=>p.lat),mid=lats.reduce((a,b)=>a+b,0)/lats.length;
+ const dLat=padNm/60,dLon=padNm/(60*Math.max(.25,Math.cos(rad(mid))));
+ const lons=[r[0].lon];for(let i=1;i<r.length;i++)lons.push(lons[i-1]+shortestLonDelta(r[i-1].lon,r[i].lon));
+ let lo=Math.min(...lons)-dLon,hi=Math.max(...lons)+dLon;
+ const bounds={minLat:Math.max(-90,Math.min(...lats)-dLat),maxLat:Math.min(90,Math.max(...lats)+dLat)};
+ if(hi-lo>=360)return{...bounds,boxes:[{...bounds,minLon:-180,maxLon:180}]};
+ while(lo < -180){lo+=360;hi+=360}while(lo>=180){lo-=360;hi-=360}
+ const boxes=hi<=180?[{...bounds,minLon:lo,maxLon:hi}]:[{...bounds,minLon:lo,maxLon:180},{...bounds,minLon:-180,maxLon:hi-360}];
+ return{...bounds,boxes};
+}
+function nmPointLine(p,a,b){const lat0=rad((a.lat+b.lat+p.lat)/3),sx=60*Math.cos(lat0),sy=60;const ax=0,ay=a.lat*sy,bx=shortestLonDelta(a.lon,b.lon)*sx,by=b.lat*sy,px=shortestLonDelta(a.lon,p.lon)*sx,py=p.lat*sy,dx=bx-ax,dy=by-ay;const t=clamp(((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy||1),0,1);return Math.hypot(px-(ax+t*dx),py-(ay+t*dy))}
 function distToRoute(p,r=state.route){if(r.length<2)return Infinity;let d=Infinity;for(let i=1;i<r.length;i++)d=Math.min(d,nmPointLine(p,r[i-1],r[i]));return d}
 function mpsToKn(x){return x*1.943844}
 function vectorFrom(sog,cog){return{x:sog*Math.sin(rad(cog)),y:sog*Math.cos(rad(cog))}}
-function cpaTcpa(own,target){const lat0=rad((own.lat+target.lat)/2),rx=(target.lon-own.lon)*60*Math.cos(lat0),ry=(target.lat-own.lat)*60;const vo=vectorFrom(own.sog,own.cog),vt=vectorFrom(target.sog,target.cog),vx=vt.x-vo.x,vy=vt.y-vo.y;const vv=vx*vx+vy*vy;let t=vv?-(rx*vx+ry*vy)/vv:0;t=Math.max(0,t);const cx=rx+vx*t,cy=ry+vy*t;return{cpa:Math.hypot(cx,cy),tcpa:t*60}}
+function cpaTcpa(own,target){const lat0=rad((own.lat+target.lat)/2),rx=shortestLonDelta(own.lon,target.lon)*60*Math.cos(lat0),ry=(target.lat-own.lat)*60;const vo=vectorFrom(own.sog,own.cog),vt=vectorFrom(target.sog,target.cog),vx=vt.x-vo.x,vy=vt.y-vo.y;const vv=vx*vx+vy*vy;let t=vv?-(rx*vx+ry*vy)/vv:0;t=Math.max(0,t);const cx=rx+vx*t,cy=ry+vy*t;return{cpa:Math.hypot(cx,cy),tcpa:t*60}}
 function riskFor(f,p=state.profile){let score=0,reasons=[];if(Number.isFinite(f.hs)){const q=f.hs/p.maxHs;if(q>1){score=2;reasons.push(`Hs ${nf(f.hs)} m > ${p.maxHs} m`)}else if(q>.8){score=Math.max(score,1);reasons.push(`Hs near limit`)}}if(Number.isFinite(f.windKn)){const q=f.windKn/p.maxWind;if(q>1){score=2;reasons.push(`Wind ${nf(f.windKn,0)} kn > ${p.maxWind} kn`)}else if(q>.8){score=Math.max(score,1);reasons.push('Wind near limit')}}if(Number.isFinite(f.currentKn)){const q=f.currentKn/p.maxCurrent;if(q>1){score=2;reasons.push(`Current ${nf(f.currentKn)} kn > ${p.maxCurrent} kn`)}else if(q>.8){score=Math.max(score,1);reasons.push('Current near limit')}}return{score,label:['Normal','Caution','Alert'][score],reasons}}
 function sourceStatus(id,status,text){const e=$(id);if(!e)return;e.className=`chip ${status}`;e.textContent=text}
 
@@ -325,7 +338,7 @@ function sanityCheckInput(input){
  input.classList.toggle('sanity-bad',bad);input.title=bad?why:'';
  const card=input.closest('.tool-card');if(card){
    let note=card.querySelector('.sanity-note');
-   if(bad&&!note){note=document.createElement('div');note.className='sanity-note';note.textContent='Check highlighted input — the value is outside a typical range.';card.insertBefore(note,card.querySelector('.tool-info'))}
+   if(bad&&!note){note=document.createElement('div');note.className='sanity-note';note.textContent='Check highlighted input — the value is outside a typical range.';card.insertBefore(note,card.querySelector('.tool-info')?.parentElement===card?card.querySelector('.tool-info'):null)}
    if(note&&!card.querySelector('.sanity-bad'))note.remove()
  }
 }
@@ -413,8 +426,26 @@ function liveFreshness(){
  const ms=liveAge();if(ms==null)return 'neutral';return ms>30*60000?'bad':ms>15*60000?'warn':'ok'
 }
 function updateLiveAgeIndicators(){
- const txt=liveAgeText(),fresh=liveFreshness();
- const ri=$('#riDataAge');if(ri&&state.lastRefreshAt){ri.className=`chip ${fresh}`;ri.textContent=`AIS + route forecast · ${txt}${fresh==='bad'?' · STALE':''}`}
+ const ri=$('#riDataAge');
+ if(ri&&(state.aisStatus!=='never'||state.forecastStatus!=='never')){
+  const age=stamp=>{if(!stamp)return 'time unknown';const ms=Date.now()-Date.parse(stamp);if(!Number.isFinite(ms))return 'time unknown';const min=Math.max(0,Math.floor(ms/60000));return min<1?'just now':min<60?`${min} min ago`:`${Math.floor(min/60)} h ago`};
+  const ais=state.aisStatus==='ok'?`AIS updated ${age(state.aisFetchedAt)}`:state.aisStatus==='error'?'AIS unavailable':'AIS not loaded';
+  const wx=state.forecastStatus==='ok'?`route forecast updated ${age(state.forecastFetchedAt)}`:state.forecastStatus==='error'?'route forecast unavailable':'route forecast not loaded';
+  const invalid=state.ais.filter(v=>aisAgeReason(v)).length;
+  const note=state.aisStatus==='ok'&&invalid?` · ${invalid} AIS target(s) stale / time unknown`:'';
+  const stamps=[state.aisFetchedAt,state.forecastFetchedAt].filter(Boolean).map(Date.parse).filter(Number.isFinite);
+  const oldest=stamps.length?Math.min(...stamps):Date.now();
+  const ms=Date.now()-oldest;
+  ri.className=`chip ${state.aisStatus==='error'||state.forecastStatus==='error'||invalid||ms>30*60000?'warn':'ok'}`;
+  ri.textContent=`${ais} · ${wx}${note}`;
+  // Recalculate derived CPA figures when target age crosses the validity limit.
+  // Only redraw the table/map on a transition, not on each one-second clock tick.
+  const validityKey=state.ais.map(v=>aisAgeReason(v)||'fresh').join('|');
+  if(state.aisValidityKey!==validityKey){
+   state.aisValidityKey=validityKey;
+   if(state.aisStatus==='ok'&&$('#riCpa')){updateRiSummary();drawAis()}
+  }
+ }
  const ws=$('#wxStatus');if(ws&&state.weatherFetchedAt){const ms=Math.max(0,Date.now()-new Date(state.weatherFetchedAt).getTime()),min=Math.floor(ms/60000),age=min<1?'just now':min<60?`${min} min ago`:`${Math.floor(min/60)} h ago`,cls=min>30?'bad':min>15?'warn':'ok';ws.innerHTML=`<span class="chip ${cls}">MET Norway · ${age}${cls==='bad'?' · STALE':''}</span>`}
 }
 
@@ -524,37 +555,120 @@ function renderRouteIntelligence(){
 function initRouteMap(){if(state.map)return;const el=$('#riMap');if(!el)return;state.map=L.map(el,{zoomControl:true}).setView([59.2,10.5],7);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(state.map);L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenSeaMap'}).addTo(state.map);state.routeLayer=L.layerGroup().addTo(state.map);state.riskLayer=L.layerGroup().addTo(state.map);state.aisLayer=L.layerGroup().addTo(state.map);state.map.on('click',e=>{state.route.push({lat:+e.latlng.lat.toFixed(5),lon:+e.latlng.lng.toFixed(5),name:`WP${state.route.length+1}`});store.set(K.route,state.route);drawRoute();updateRiSummary()});drawRoute();fitRoute()}
 function drawRoute(){if(!state.routeLayer)return;state.routeLayer.clearLayers();state.riskLayer.clearLayers();if(state.route.length){state.route.forEach((p,i)=>L.circleMarker([p.lat,p.lon],{radius:5,color:'#75ddff',fillColor:'#092a3c',fillOpacity:1,weight:2}).bindTooltip(p.name||`WP${i+1}`).addTo(state.routeLayer));if(state.route.length>1)L.polyline(state.route.map(p=>[p.lat,p.lon]),{color:'#39c5f3',weight:3,dashArray:'8 7'}).addTo(state.routeLayer)}drawRiskSegments()}
 function fitRoute(){if(state.map&&state.route.length)state.map.fitBounds(L.latLngBounds(state.route.map(p=>[p.lat,p.lon])).pad(.18));}
-function renderEnvelope(){const p=state.profile;$('#envelopeBox').innerHTML=`<div class="source-box"><div class="source-item"><span>Max Hs</span><b>${p.maxHs} m</b></div><div class="source-item"><span>Max wind</span><b>${p.maxWind} kn</b></div><div class="source-item"><span>Max current</span><b>${p.maxCurrent} kn</b></div><div class="source-item"><span>Min UKC</span><b>${p.minUKC} m</b></div><div class="source-item"><span>CPA alert</span><b>${p.cpaAlert} NM</b></div><div class="source-item"><span>AIS corridor</span><b>${p.corridor} NM</b></div></div><div class="actions">${button('Edit vessel profile','profile','btn')}</div>`}
-function updateRiSummary(){const d=routeDistance(),corr=corridorTargets(),cpa=cpaTargets().filter(x=>x.cpa<state.profile.cpaAlert);const maxHs=Math.max(...state.forecast.map(x=>Number(x.hs)||0),0),maxW=Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0);$('#riDistance')&&($('#riDistance').textContent=d?`${nf(d,1)} NM`:'—');$('#riAis')&&($('#riAis').textContent=state.ais.length?corr.length:'—');$('#riCpa')&&($('#riCpa').textContent=state.ais.length?cpa.length:'—');$('#riHs')&&($('#riHs').textContent=maxHs?`${nf(maxHs)} m`:'—');$('#riWind')&&($('#riWind').textContent=maxW?`${nf(maxW,0)} kn`:'—');renderAisTable();drawRiskSegments();}
-function corridorTargets(){return state.ais.filter(v=>{const lat=Number(v.latitude??v.lat),lon=Number(v.longitude??v.lon);return Number.isFinite(lat)&&Number.isFinite(lon)&&distToRoute({lat,lon})<=state.profile.corridor})}
-function cpaTargets(){if(state.route.length<2)return[];const own={lat:state.route[0].lat,lon:state.route[0].lon,sog:state.profile.serviceSpeed,cog:bearing(state.route[0],state.route[1])};return corridorTargets().map(v=>{const t={lat:Number(v.latitude??v.lat),lon:Number(v.longitude??v.lon),sog:Number(v.speedOverGround??v.sog)||0,cog:Number(v.courseOverGround??v.cog)||0};return{v,...cpaTcpa(own,t)}}).sort((a,b)=>a.cpa-b.cpa)}
-function renderAisTable(){const tb=$('#aisTable');if(!tb)return;tb.innerHTML=cpaTargets().slice(0,20).map(x=>`<tr><td>${esc(x.v.name||x.v.shipName||String(x.v.mmsi||'Unknown'))}</td><td>${nf(x.v.speedOverGround??x.v.sog,1)}</td><td class="${x.cpa<state.profile.cpaAlert?'delta up':''}">${nf(x.cpa,2)}</td><td>${nf(x.tcpa,0)} min</td></tr>`).join('')||'<tr><td colspan="4" class="helper">No AIS targets loaded.</td></tr>'}
-function drawAis(){if(!state.aisLayer)return;state.aisLayer.clearLayers();corridorTargets().forEach(v=>{const lat=Number(v.latitude??v.lat),lon=Number(v.longitude??v.lon),cog=Number(v.courseOverGround??v.cog)||0,sog=Number(v.speedOverGround??v.sog)||0;const cpa=cpaTargets().find(x=>x.v===v);const col=cpa&&cpa.cpa<state.profile.cpaAlert?'#ff625d':'#60d6ff';L.circleMarker([lat,lon],{radius:4,color:col,fillColor:col,fillOpacity:.75,weight:1}).bindPopup(`<b>${esc(v.name||v.shipName||'AIS target')}</b><br>MMSI ${esc(String(v.mmsi||'—'))}<br>SOG ${nf(sog)} kn · COG ${nf(cog,0)}°${cpa?`<br>CPA ${nf(cpa.cpa,2)} NM · TCPA ${nf(cpa.tcpa,0)} min`:''}`).addTo(state.aisLayer)})}
+function renderEnvelope(){const box=$('#envelopeBox');if(!box)return;const p=state.profile;box.innerHTML=`<div class="source-box"><div class="source-item"><span>Max Hs</span><b>${p.maxHs} m</b></div><div class="source-item"><span>Max wind</span><b>${p.maxWind} kn</b></div><div class="source-item"><span>Max current</span><b>${p.maxCurrent} kn</b></div><div class="source-item"><span>Min UKC</span><b>${p.minUKC} m</b></div><div class="source-item"><span>CPA alert</span><b>${p.cpaAlert} NM</b></div><div class="source-item"><span>AIS corridor</span><b>${p.corridor} NM</b></div></div><div class="actions">${button('Edit vessel profile','profile','btn')}</div>`}
+const MAX_AIS_AGE_MS=15*60*1000; // Experimental CPA threshold; NOT a navigation-safety guarantee.
+function aisNumeric(value,max){if(value==null||value===''||typeof value==='boolean')return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=max?n:null}
+function aisPosition(v){const rawLat=v.latitude??v.lat,rawLon=v.longitude??v.lon;if(rawLat==null||rawLon==null||rawLat===''||rawLon==='')return null;const lat=Number(rawLat),lon=Number(rawLon);return Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180?{lat,lon}:null}
+function aisAgeReason(v){
+ const raw=v.timestamp??v.dataAgeSource??v.timeStamp??v.dateTime??v.lastUpdated??v.time;
+ if(raw==null||raw==='')return 'AIS time unknown';
+ const ms=typeof raw==='number'?(raw<1e12?raw*1000:raw):Date.parse(raw);
+ if(!Number.isFinite(ms)||ms>Date.now()+120000)return 'AIS time unknown';
+ if(Date.now()-ms>MAX_AIS_AGE_MS)return 'Stale AIS position';
+ return null;
+}
+function aisMotion(v){const sog=aisNumeric(v.speedOverGround??v.sog,102.2),cog=aisNumeric(v.courseOverGround??v.cog,359.9);return sog==null||(sog>0&&cog==null)?null:{sog,cog:cog??0}}
+function safeWaveHs(value){if(value==null||value==='')return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=40?n:null}
+function cleanForecast(rows){return Array.isArray(rows)?rows.map(r=>({...r,hs:safeWaveHs(r?.hs)})):[]}
+function isCpaAlert(x){return Number.isFinite(x.cpa)&&x.cpa<state.profile.cpaAlert}
+function updateRiSummary(){
+ const d=routeDistance(),corr=corridorTargets(),cpa=cpaTargets().filter(isCpaAlert);
+ const maxHs=Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxW=Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0);
+ $('#riDistance')&&($('#riDistance').textContent=d?`${nf(d,1)} NM`:'—');
+ $('#riAis')&&($('#riAis').textContent=state.aisStatus==='ok'?corr.length:'—');
+ $('#riCpa')&&($('#riCpa').textContent=state.aisStatus==='ok'?(corr.length&&!cpaTargets().some(x=>Number.isFinite(x.cpa))?'—':cpa.length):'—');
+ $('#riHs')&&($('#riHs').textContent=maxHs?`${nf(maxHs)} m`:'—');
+ $('#riWind')&&($('#riWind').textContent=maxW?`${nf(maxW,0)} kn`:'—');
+ renderAisTable();drawRiskSegments();
+}
+function corridorTargets(){return state.ais.filter(v=>{const p=aisPosition(v);return p&&distToRoute(p)<=state.profile.corridor})}
+function cpaTargets(){
+ if(state.route.length<2)return[];
+ const own={lat:state.route[0].lat,lon:state.route[0].lon,sog:state.profile.serviceSpeed,cog:bearing(state.route[0],state.route[1])};
+ return corridorTargets().map(v=>{
+  const reason=aisAgeReason(v),motion=aisMotion(v),position=aisPosition(v);
+  if(reason||!motion||!position||!Number.isFinite(own.sog)||own.sog<=0)return{v,cpa:null,tcpa:null,reason:reason||'Motion data unavailable'};
+  return{v,...cpaTcpa(own,{...position,...motion}),reason:null};
+ }).sort((a,b)=>(a.cpa??Infinity)-(b.cpa??Infinity));
+}
+function renderAisTable(){
+ const tb=$('#aisTable');if(!tb)return;
+ tb.innerHTML=cpaTargets().slice(0,20).map(x=>{
+  const sog=aisNumeric(x.v.speedOverGround??x.v.sog,102.2),reason=x.reason?esc(x.reason):'';
+  return `<tr><td>${esc(x.v.name||x.v.shipName||String(x.v.mmsi||'Unknown'))}</td><td>${sog==null?'—':nf(sog,1)}</td><td class="${isCpaAlert(x)?'delta up':''}" title="${reason}">${x.cpa==null?`— · ${reason}`:nf(x.cpa,2)}</td><td>${x.tcpa==null?'—':nf(x.tcpa,0)+' min'}</td></tr>`;
+ }).join('')||(state.aisStatus==='error'?'<tr><td colspan="4" class="helper">AIS unavailable — previous targets cleared.</td></tr>':'<tr><td colspan="4" class="helper">No AIS targets in corridor.</td></tr>');
+}
+function drawAis(){
+ if(!state.aisLayer)return;state.aisLayer.clearLayers();
+ const computed=cpaTargets();
+ corridorTargets().forEach(v=>{
+  const p=aisPosition(v),cpa=computed.find(x=>x.v===v),col=cpa&&isCpaAlert(cpa)?'#ff625d':'#60d6ff';
+  const sog=aisNumeric(v.speedOverGround??v.sog,102.2),cog=aisNumeric(v.courseOverGround??v.cog,359.9);
+  const txt=cpa?.reason?`<br>CPA unavailable · ${esc(cpa.reason)}`:cpa?`<br>CPA ${nf(cpa.cpa,2)} NM · TCPA ${nf(cpa.tcpa,0)} min`:'';
+  L.circleMarker([p.lat,p.lon],{radius:4,color:col,fillColor:col,fillOpacity:.75,weight:1})
+   .bindPopup(`<b>${esc(v.name||v.shipName||'AIS target')}</b><br>MMSI ${esc(String(v.mmsi||'—'))}<br>SOG ${sog==null?'—':nf(sog)} kn · COG ${cog==null?'—':nf(cog,0)}°${txt}`).addTo(state.aisLayer);
+ });
+}
 function drawRiskSegments(){if(!state.riskLayer||state.route.length<2||!state.forecast.length)return;state.riskLayer.clearLayers();for(let i=1;i<state.route.length;i++){const f=state.forecast[Math.round((i-1)*(state.forecast.length-1)/Math.max(1,state.route.length-2))]||{};const r=riskFor(f),col=r.score===2?'#ff625d':r.score===1?'#f2bf49':'#32d48a';L.polyline([[state.route[i-1].lat,state.route[i-1].lon],[state.route[i].lat,state.route[i].lon]],{color:col,weight:7,opacity:.72}).bindTooltip(`${r.label}${r.reasons.length?`: ${r.reasons.join(', ')}`:''}`).addTo(state.riskLayer)}}
 async function runAnalysis(showToast=true){
  if(state.route.length<2){if(showToast)toast('Add at least two route waypoints first.');return}
  const box=routeBBox(state.route,Math.max(8,state.profile.corridor+2));
  sourceStatus('#riDataAge','warn','LOADING');
  const jobs=await Promise.allSettled([
-   fetch(`${API}/api/ais/latest?minLat=${box.minLat}&maxLat=${box.maxLat}&minLon=${box.minLon}&maxLon=${box.maxLon}`,{cache:'no-store'}),
-   fetch(`${API}/api/forecast?route=${encodeURIComponent(JSON.stringify(state.route))}`,{cache:'no-store'})
+  Promise.all(box.boxes.map(b=>fetch(`${API}/api/ais/latest?minLat=${b.minLat}&maxLat=${b.maxLat}&minLon=${b.minLon}&maxLon=${b.maxLon}`,{cache:'no-store'}))),
+  fetch(`${API}/api/forecast?route=${encodeURIComponent(JSON.stringify(state.route))}`,{cache:'no-store'})
  ]);
  let aisOk=false,wxOk=false;
- try{if(jobs[0].status==='fulfilled'&&jobs[0].value.ok){const a=await jobs[0].value.json();state.ais=Array.isArray(a)?a:[];aisOk=true}}catch{}
- try{if(jobs[1].status==='fulfilled'&&jobs[1].value.ok){const w=await jobs[1].value.json();state.forecast=Array.isArray(w)?w:[];wxOk=true}}catch{}
- if(!aisOk&&!wxOk){sourceStatus('#riDataAge','bad','LIVE DATA ERROR');if(showToast)toast('Could not load experimental live data.');return}
- state.lastRefresh=nowUTC();state.lastRefreshAt=new Date().toISOString();
- sourceStatus('#riDataAge',aisOk&&wxOk?'ok':'warn',aisOk&&wxOk?'AIS + route forecast · just now':aisOk?'AIS loaded · forecast unavailable':'Forecast loaded · AIS unavailable');
- drawAis();updateRiSummary();compareAnalysis();updateLiveAgeIndicators();
+ try{
+  if(jobs[0].status==='fulfilled'&&jobs[0].value.every(r=>r.ok)){
+   const payloads=await Promise.all(jobs[0].value.map(r=>r.json()));
+   if(payloads.every(Array.isArray)){
+    const combined=payloads.flat(),dedup=new Map();
+    combined.forEach((v,i)=>dedup.set(v.mmsi!=null?`${v.mmsi}:${v.timestamp??v.dataAgeSource??''}`:`index:${i}`,v));
+    state.ais=[...dedup.values()];aisOk=true;
+   }
+  }
+ }catch{}
+ try{if(jobs[1].status==='fulfilled'&&jobs[1].value.ok){const w=await jobs[1].value.json();if(Array.isArray(w)){state.forecast=cleanForecast(w);wxOk=true}}}catch{}
+ const stamp=new Date().toISOString();
+ state.aisStatus=aisOk?'ok':'error';state.forecastStatus=wxOk?'ok':'error';
+ if(aisOk)state.aisFetchedAt=stamp;else{state.ais=[];state.aisFetchedAt=null}
+ if(wxOk)state.forecastFetchedAt=stamp;else{state.forecast=[];state.forecastFetchedAt=null}
+ if(aisOk||wxOk){state.lastRefresh=nowUTC();state.lastRefreshAt=stamp}
+ drawAis();updateRiSummary();updateLiveAgeIndicators();
+ if(!aisOk&&!wxOk){if(showToast)toast('Could not load experimental live data.');return}
+ compareAnalysis();
  if(showToast)toast(aisOk&&wxOk?'Experimental route context updated.':'Partial live data loaded.');
 }
-function snapshot(){const cpa=cpaTargets().filter(x=>x.cpa<state.profile.cpaAlert).length;return{time:new Date().toISOString(),ais:corridorTargets().length,cpa,maxHs:Math.max(...state.forecast.map(x=>Number(x.hs)||0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
-function compareAnalysis(){const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');if(box){if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{const d=b-a,cls=d>0?'up':d<0?'down':'same';return `<div class="change-row"><span>${n}</span><b>${nf(a,n.includes('AIS')||n.includes('CPA')?0:1)} → ${nf(b,n.includes('AIS')||n.includes('CPA')?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`}).join('')}store.set(K.lastAnalysis,cur)}
+
+function snapshot(){const cpa=cpaTargets().filter(isCpaAlert).length,aisOk=state.aisStatus==='ok';return{time:new Date().toISOString(),aisStatus:state.aisStatus,ais:aisOk?corridorTargets().length:null,cpa:aisOk?cpa:null,maxHs:Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
+function compareAnalysis(){
+ const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');
+ if(box){
+  if(!old)box.innerHTML='<span class="helper">Baseline saved. Run analysis again later to compare.</span>';
+  else box.innerHTML=[['AIS targets',old.ais,cur.ais,''],['CPA alerts',old.cpa,cur.cpa,''],['Max Hs',old.maxHs,cur.maxHs,' m'],['Max wind',old.maxWind,cur.maxWind,' kn'],['Max current',old.maxCurrent,cur.maxCurrent,' kn']].map(([n,a,b,u])=>{
+   const ais=n==='AIS targets'||n==='CPA alerts';
+   if(ais&&(old.aisStatus!=='ok'||cur.aisStatus!=='ok')){
+    const before=old.aisStatus==='ok'&&a!=null?nf(a,0):'—',after=cur.aisStatus==='ok'&&b!=null?nf(b,0):'—';
+    return `<div class="change-row"><span>${n}</span><b>${before} → ${after}</b><span class="delta same">${cur.aisStatus==='ok'?'Not comparable':'AIS unavailable'}</span></div>`;
+   }
+   const d=b-a,cls=d>0?'up':d<0?'down':'same';
+   return `<div class="change-row"><span>${n}</span><b>${nf(a,ais?0:1)} → ${nf(b,ais?0:1)}${u}</b><span class="delta ${cls}">${d?`${d>0?'+':''}${nf(d,1)}`:'No change'}</span></div>`;
+  }).join('');
+ }
+ store.set(K.lastAnalysis,cur);
+}
 
 function renderVoyageEstimate(){
  const host=$('#voyage-estimate');
  if(window.__marineToolsVoyageEstimate?.render)window.__marineToolsVoyageEstimate.render(host);
  else if(host)host.innerHTML=pageTitle('Port Distance & Sea Time','Voyage Estimate could not be loaded. Refresh the page and try again.');
+}
+
+function renderVoyagePlanningDraft(){
+ const host=$('#voyage-planning-lab');
+ if(window.__marineToolsVoyagePlanningDraft?.render)window.__marineToolsVoyagePlanningDraft.render(host);
+ else if(host)host.innerHTML=pageTitle('Voyage Planning Lab','Draft planning prototypes could not be loaded. Refresh the page and try again.');
 }
 
 function renderNavigation(){
@@ -579,8 +693,8 @@ function renderNavigation(){
 function bindNavigation(){
  $('#calcBearing').onclick=()=>{const a={lat:+$('#navLat1').value,lon:+$('#navLon1').value},b={lat:+$('#navLat2').value,lon:+$('#navLon2').value},d=hav(a,b),br=bearing(a,b),dest=destination(a,br,d);setRes('resBearing',`${nf(d,2)} NM · ${nf(br,1)}°T`,`Destination check: ${nf(dest.lat,5)}, ${nf(dest.lon,5)}`)};
  $('#calcCoords').onclick=()=>{const la=+$('#coordLat').value,lo=+$('#coordLon').value;setRes('resCoords',`${toDDM(la,true)} · ${toDDM(lo,false)}`,`${toDMS(la,true)} · ${toDMS(lo,false)}`)};
- $('#calcEta').onclick=()=>{const d=+$('#etaDist').value,s=+$('#etaStw').value,c=+$('#etaCur').value,sog=s+c,h=d/Math.max(.01,sog);setRes('resEta',`${nf(sog,2)} kn SOG · ${formatHours(h)}`,`Assumes constant current component over ${d} NM.`)};
- $('#calcWindComp').onclick=()=>{const c=rad(+$('#windCourse').value),from=rad(+$('#windDir').value),s=+$('#windSpeed').value;const rel=from-c,head=-s*Math.cos(rel),cross=s*Math.sin(rel);setRes('resWindComp',`${head>=0?'Headwind':'Tailwind'} ${nf(Math.abs(head),1)} kn`,`Crosswind ${nf(Math.abs(cross),1)} kn from ${cross>0?'starboard':'port'}.`)};
+ $('#calcEta').onclick=()=>{const d=inputNumber('#etaDist'),s=inputNumber('#etaStw'),c=inputNumber('#etaCur'),sog=s+c;if(![d,s,c].every(Number.isFinite)||d<0||s<0||sog<=0)return setRes('resEta','ETA unavailable','Ground speed must be above zero and inputs complete.','caution');const h=d/sog;setRes('resEta',`${nf(sog,2)} kn SOG · ${formatHours(h)}`,`Assumes constant current component over ${d} NM.`)};
+ $('#calcWindComp').onclick=()=>{const c=rad(+$('#windCourse').value),from=rad(+$('#windDir').value),s=+$('#windSpeed').value;const rel=from-c,head=s*Math.cos(rel),cross=s*Math.sin(rel);setRes('resWindComp',`${head>=0?'Headwind':'Tailwind'} ${nf(Math.abs(head),1)} kn`,`Crosswind ${nf(Math.abs(cross),1)} kn from ${cross>0?'starboard':'port'}.`)};
  $('#calcNearest').onclick=()=>{if(state.route.length<2)return setRes('resNearest','No active route','Add at least two route waypoints first.','caution');const p={lat:+$('#nearLat').value,lon:+$('#nearLon').value},d=distToRoute(p);setRes('resNearest',`${nf(d,2)} NM from route`,d<=state.profile.corridor?'Inside configured AIS corridor.':'Outside configured AIS corridor.');};
 
 
@@ -598,7 +712,7 @@ function bindNavigation(){
 function updateRouteFuel(){const d=routeDistance(),s=state.profile.serviceSpeed||0,h=d/Math.max(.01,s),f=h/24*(state.profile.fuelDay||0);setRes('resRouteFuel',d?`${nf(d,1)} NM · ${formatHours(h)} · ${nf(f,2)} m³`:'No active route',d?'Uses service speed and daily fuel consumption from Vessel Profile.':'Create an experimental route under Live & Experimental.');}
 function toDDM(v,lat){const h=lat?(v>=0?'N':'S'):(v>=0?'E':'W'),a=Math.abs(v),d=Math.floor(a),m=(a-d)*60;return `${d}° ${m.toFixed(3)}' ${h}`}
 function toDMS(v,lat){const h=lat?(v>=0?'N':'S'):(v>=0?'E':'W'),a=Math.abs(v),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;return `${d}° ${m}' ${s.toFixed(1)}\" ${h}`}
-function formatHours(h){if(!Number.isFinite(h))return'—';return `${Math.floor(h)} h ${Math.round((h%1)*60)} min`}
+function formatHours(h){if(!Number.isFinite(h)||h<0)return'—';const minutes=Math.round(h*60);return `${Math.floor(minutes/60)} h ${minutes%60} min`}
 
 function renderWeather(){
  $('#weather').innerHTML=pageTitle('Weather','Point weather and sea forecast from MET Norway, plus manual weather-planning helpers.')+`
@@ -646,14 +760,14 @@ async function loadPointWeather(){
    const r=await fetch(`${API}/api/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=12`,{cache:'no-store'}),text=await r.text();
    let j;try{j=JSON.parse(text)}catch{j={error:text||`HTTP ${r.status}`}}
    if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
-   state.weather=Array.isArray(j.forecast)?j.forecast:[];state.weatherFetchedAt=new Date().toISOString();store.set(K.weatherCache,{lat,lon,forecast:state.weather,fetchedAt:state.weatherFetchedAt,diagnostics:j.diagnostics||null});
+   state.weather=cleanForecast(j.forecast);state.weatherFetchedAt=new Date().toISOString();store.set(K.weatherCache,{lat,lon,forecast:state.weather,fetchedAt:state.weatherFetchedAt,diagnostics:j.diagnostics||null});
    const d=j.diagnostics||{};
    const parts=[
      `weather: ${d.location?.ok?'ok':d.location?.status||'unavailable'}`,
      `ocean: ${d.ocean?.ok?'ok':d.ocean?.status||'unavailable'}`
    ];
-   const marineOk=Boolean(d.ocean?.ok);
-   diag.textContent=marineOk?`MET Norway · ${parts.join(' · ')} · updated ${new Date().toISOString().slice(11,16)} UTC`:`Global weather loaded · Marine wave/current data unavailable for this position · updated ${new Date().toISOString().slice(11,16)} UTC`;
+   const waveAvailable=state.weather.some(x=>x.hs!=null&&Number.isFinite(Number(x.hs)));const currentAvailable=state.weather.some(x=>x.currentKn!=null&&Number.isFinite(Number(x.currentKn)));const marineOk=Boolean(waveAvailable||currentAvailable);
+   diag.textContent=`MET Norway atmosphere · waves: ${waveAvailable?(d.globalWave?.ok?'NOAA/GFS-Wave':d.ocean?.ok?'MET Oceanforecast':'available, source unverified'):'unavailable'} · currents: ${currentAvailable?'available':'unavailable'} · updated ${new Date().toISOString().slice(11,16)} UTC`;
    const usable=state.weather.some(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v))));
    if(state.weather.length&&usable){sourceStatus('#wxStatus',marineOk?'ok':'warn',marineOk?'FORECAST LOADED':'WEATHER ONLY');renderPointWeather();sendAnalyticsEvent('tool_use',{page:'weather',tool:'Point weather forecast'})}
    else if(state.weather.length){sourceStatus('#wxStatus','warn','NO VALUES');renderPointWeather()}
@@ -661,7 +775,7 @@ async function loadPointWeather(){
  }catch(e){
    const cw=store.get(K.weatherCache,null);
    if(cw&&Array.isArray(cw.forecast)&&cw.forecast.length){
-     state.weather=cw.forecast;state.weatherFetchedAt=cw.fetchedAt||null;renderPointWeather();
+     state.weather=cleanForecast(cw.forecast);state.weatherFetchedAt=cw.fetchedAt||null;renderPointWeather();
      sourceStatus('#wxStatus','warn','CACHED FORECAST');
      diag.textContent=`Offline/live request unavailable — showing the last forecast saved on this device${cw.fetchedAt?` from ${forecastTimeLabel(cw.fetchedAt)}`:''}.`;
    }else{
@@ -671,7 +785,7 @@ async function loadPointWeather(){
    }
  }
 }
-function findWeatherWindow(){const rows=$$('.weather-row',$('#windowRows')).map(r=>({t:$('.ww-time',r).value,hs:+$('.ww-hs',r).value,w:+$('.ww-wind',r).value,c:+$('.ww-current',r).value})).filter(x=>x.t&&[x.hs,x.w,x.c].every(Number.isFinite));const lim={hs:+$('#wwHs').value,w:+$('#wwWind').value,c:+$('#wwCur').value};let groups=[],cur=[];for(const r of rows){if(r.hs<=lim.hs&&r.w<=lim.w&&r.c<=lim.c)cur.push(r);else if(cur.length){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);const txt=groups.length?groups.map(g=>`${g[0].t} → ${g[g.length-1].t} (${g.length} consecutive row${g.length>1?'s':''})`).join('<br>'):'No matching window in the supplied rows.';setRes('wwResult',txt,'Manual planning aid — verify against official forecasts.')}
+function findWeatherWindow(){const rows=$$('.weather-row',$('#windowRows')).map(r=>({t:$('.ww-time',r).value,hs:inputNumber($('.ww-hs',r)),w:inputNumber($('.ww-wind',r)),c:inputNumber($('.ww-current',r))}));const lim={hs:+$('#wwHs').value,w:+$('#wwWind').value,c:+$('#wwCur').value};let groups=[],cur=[];for(const r of rows){if(r.t&&[r.hs,r.w,r.c].every(Number.isFinite)&&r.hs<=lim.hs&&r.w<=lim.w&&r.c<=lim.c)cur.push(r);else if(cur.length){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);const txt=groups.length?groups.map(g=>`${g[0].t} → ${g[g.length-1].t} (${g.length} consecutive row${g.length>1?'s':''})`).join('<br>'):'No matching window in the supplied rows.';setRes('wwResult',txt,'Manual planning aid — verify against official forecasts.')}
 
 
 function calcWaveEncounter(){
@@ -728,7 +842,7 @@ function renderFuel(){
 
  ${groupedCard('planning','Fuel consumption by speed','Interpolate between your own measured speed and consumption points.',`<div id="speedFuelRows" class="dynamic-list"><div class="dynamic-row speed-row"><label>Speed kn<input class="sf-speed" type="number" step=".1" value="6"></label><label>Consumption m³/day<input class="sf-cons" type="number" step=".1" value="2.1"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row speed-row"><label>Speed kn<input class="sf-speed" type="number" step=".1" value="8"></label><label>Consumption m³/day<input class="sf-cons" type="number" step=".1" value="3.4"></label><button type="button" class="btn small remove-row">Remove</button></div><div class="dynamic-row speed-row"><label>Speed kn<input class="sf-speed" type="number" step=".1" value="10"></label><label>Consumption m³/day<input class="sf-cons" type="number" step=".1" value="5.8"></label><button type="button" class="btn small remove-row">Remove</button></div></div><button type="button" class="btn small" id="addSpeedFuel">+ Add measured point</button><label>Target speed kn<input id="targetSpeed" type="number" step=".1" value="9"></label>${calcButton('calcSpeedFuel')}${result('resSpeedFuel')}`)}
 
- ${groupedCard('advanced','Fuel temperature correction','Correct a supplied volume between temperatures using a user-supplied expansion coefficient.',`<div class="fields"><label>Volume at observed temp m³<input id="fuelVol" type="number" step=".01" value="30"></label><label>Density kg/m³<input id="fuelDensity" type="number" step=".1" value="839.3"></label><label>Observed temp °C<input id="fuelTemp" type="number" value="20"></label><label>Reference temp °C<input id="fuelRef" type="number" value="15"></label><label>Expansion coefficient /°C<input id="fuelAlpha" type="number" step=".00001" value="0.00083"></label></div>${calcButton('calcFuelDensity')}${result('resFuelDensity')}`)}
+ ${groupedCard('advanced','Fuel temperature correction','Correct a supplied volume between temperatures using a user-supplied expansion coefficient.',`<div class="fields"><label>Volume at observed temp m³<input id="fuelVol" type="number" step=".01" value="30"></label><label>Density at observed temp kg/m³<input id="fuelDensity" type="number" step=".1" value="839.3"></label><label>Observed temp °C<input id="fuelTemp" type="number" value="20"></label><label>Reference temp °C<input id="fuelRef" type="number" value="15"></label><label>Expansion coefficient /°C<input id="fuelAlpha" type="number" step=".00001" value="0.00083"></label></div>${calcButton('calcFuelDensity')}${result('resFuelDensity')}`)}
 
  ${groupedCard('everyday','Tank transfer','Estimate receiving-tank final volume, fill percentage and transfer time.',`<div class="fields"><label>Receiving tank capacity m³<input id="tankCap" type="number" value="20"></label><label>Current volume m³<input id="tankNow" type="number" value="8"></label><label>Transfer volume m³<input id="tankMove" type="number" value="6"></label><label>Pump rate m³/h<input id="tankRate" type="number" value="12"></label></div>${calcButton('calcTransfer')}${result('resTransfer')}`)}
 
@@ -897,7 +1011,7 @@ function bindFuel(){
  $('#bunkHistoryRows').addEventListener('click',e=>{const id=e.target.dataset.bunkDelete;if(!id)return;store.set(K.bunkHistory,bunkeringHistory().filter(x=>x.id!==id));renderBunkeringHistory();toast('Bunkering entry deleted.')});
  renderBunkeringHistory();
 
- $('#calcRob').onclick=()=>{const r=+$('#rob').value,d=+$('#robDay').value,res=+$('#robRes').value,usable=r*(1-res/100),days=usable/Math.max(.0001,d);setRes('resRob',`${nf(usable,1)} m³ usable · ${nf(days,1)} days`,`${nf(r-usable,1)} m³ held as reserve.`)};
+ $('#calcRob').onclick=()=>{const r=inputNumber('#rob'),d=inputNumber('#robDay'),res=inputNumber('#robRes');if(![r,d,res].every(Number.isFinite)||r<0||d<=0||res<0||res>100)return setRes('resRob','Check ROB, consumption and reserve','Consumption must be above zero; reserve must be between 0 and 100%.','caution');const usable=r*(1-res/100),days=usable/d;setRes('resRob',`${nf(usable,1)} m³ usable · ${nf(days,1)} days`,`${nf(r-usable,1)} m³ held as reserve.`)};
 
  const endRows=$('#endScenarioRows');
  $('#addEndRate').onclick=()=>endRows.insertAdjacentHTML('beforeend','<div class="dynamic-row simple-row end-row"><label>Consumption m³/day<input class="end-rate" type="number" step=".1"></label><button type="button" class="btn small remove-row">Remove</button></div>');
@@ -907,14 +1021,14 @@ function bindFuel(){
  const speedRows=$('#speedFuelRows');
  $('#addSpeedFuel').onclick=()=>speedRows.insertAdjacentHTML('beforeend','<div class="dynamic-row speed-row"><label>Speed kn<input class="sf-speed" type="number" step=".1"></label><label>Consumption m³/day<input class="sf-cons" type="number" step=".1"></label><button type="button" class="btn small remove-row">Remove</button></div>');
  speedRows.addEventListener('click',e=>{if(e.target.matches('.remove-row')&&$$('.speed-row',speedRows).length>2)e.target.closest('.speed-row').remove()});
- $('#calcSpeedFuel').onclick=()=>{const pts=$$('.speed-row',speedRows).map(r=>[+$('.sf-speed',r).value,+$('.sf-cons',r).value]).filter(x=>x.every(Number.isFinite)&&x[0]>=0&&x[1]>=0).sort((a,b)=>a[0]-b[0]),s=+$('#targetSpeed').value;if(pts.length<2)return setRes('resSpeedFuel','Need at least two measured points.','','caution');let a=pts[0],b=pts[1];for(let i=1;i<pts.length;i++){if(s<=pts[i][0]){a=pts[i-1];b=pts[i];break}a=pts[i-1];b=pts[i]}const f=a[1]+(s-a[0])/(b[0]-a[0]||1)*(b[1]-a[1]);setRes('resSpeedFuel',`${nf(f,2)} m³/day at ${nf(s,1)} kn`,`Linear interpolation between ${a[0]} kn / ${a[1]} and ${b[0]} kn / ${b[1]}.`)};
+ $('#calcSpeedFuel').onclick=()=>{const pts=$$('.speed-row',speedRows).map(r=>[inputNumber($('.sf-speed',r)),inputNumber($('.sf-cons',r))]).filter(x=>x.every(Number.isFinite)&&x[0]>=0&&x[1]>=0).sort((a,b)=>a[0]-b[0]),s=+$('#targetSpeed').value;if(pts.length<2||!Number.isFinite(s)||s<pts[0][0]||s>pts[pts.length-1][0])return setRes('resSpeedFuel','Target outside measured curve','Use a speed between the lowest and highest measured points.','caution');let a=pts[0],b=pts[1];for(let i=1;i<pts.length;i++){if(s<=pts[i][0]){a=pts[i-1];b=pts[i];break}a=pts[i-1];b=pts[i]}const f=a[1]+(s-a[0])/(b[0]-a[0]||1)*(b[1]-a[1]);setRes('resSpeedFuel',`${nf(f,2)} m³/day at ${nf(s,1)} kn`,`Linear interpolation between ${a[0]} kn / ${a[1]} and ${b[0]} kn / ${b[1]}.`)};
 
- $('#calcFuelDensity').onclick=()=>{const v=+$('#fuelVol').value,rho=+$('#fuelDensity').value,t=+$('#fuelTemp').value,tr=+$('#fuelRef').value,a=+$('#fuelAlpha').value,vr=v/(1+a*(t-tr)),mass=v*rho/1000;setRes('resFuelDensity',`${nf(vr,3)} m³ @ ${tr}°C · ${nf(mass,3)} t`,`Simple thermal-volume correction using user-supplied coefficient.`)};
- $('#calcTransfer').onclick=()=>{const cap=+$('#tankCap').value,n=+$('#tankNow').value,m=+$('#tankMove').value,r=+$('#tankRate').value,final=n+m,pct=final/cap*100,time=m/r;setRes('resTransfer',`${nf(final,2)} m³ · ${nf(pct,1)}% · ${formatHours(time)}`,pct>90?'Receiving tank exceeds 90% fill.':'Check tank-specific maximum fill and procedures.',pct>100?'alert':pct>90?'caution':'ok')};
- $('#calcBlend').onclick=()=>{const va=+$('#blendVA').value,da=+$('#blendDA').value,sa=+$('#blendSA').value,vb=+$('#blendVB').value,db=+$('#blendDB').value,sb=+$('#blendSB').value;if(!(va>=0&&vb>=0&&da>0&&db>0&&va+vb>0))return setRes('resBlend','Check blend inputs.','','caution');const ma=va*da,mb=vb*db,mt=ma+mb,vt=va+vb,rho=mt/vt,s=(ma*sa+mb*sb)/mt;setRes('resBlend',`${nf(vt,2)} m³ · ${nf(rho,1)} kg/m³ · ${nf(s,3)}% S`,`Mass basis: Fuel A ${nf(ma/1000,2)} t + Fuel B ${nf(mb/1000,2)} t. Compatibility/stability is not evaluated.`)};
+ $('#calcFuelDensity').onclick=()=>{const v=inputNumber('#fuelVol'),rho=inputNumber('#fuelDensity'),t=inputNumber('#fuelTemp'),tr=inputNumber('#fuelRef'),a=inputNumber('#fuelAlpha');if(![v,rho,t,tr,a].every(Number.isFinite)||v<0||rho<=0||1+a*(t-tr)<=0)return setRes('resFuelDensity','Check volume, density and temperature','All required inputs must be present and density positive.','caution');const vr=v/(1+a*(t-tr)),mass=v*rho/1000;setRes('resFuelDensity',`${nf(vr,3)} m³ @ ${tr}°C · ${nf(mass,3)} t`,`Simple thermal-volume correction using user-supplied coefficient. Density must be supplied at the observed volume temperature.`)};
+ $('#calcTransfer').onclick=()=>{const cap=inputNumber('#tankCap'),n=inputNumber('#tankNow'),m=inputNumber('#tankMove'),r=inputNumber('#tankRate');if(![cap,n,m,r].every(Number.isFinite)||cap<=0||n<0||n>cap||m<0||r<=0)return setRes('resTransfer','Check tank quantities','Capacity and rate must be positive; volumes cannot be negative or exceed capacity.','caution');const final=n+m,pct=final/cap*100,time=m/r;setRes('resTransfer',`${nf(final,2)} m³ · ${nf(pct,1)}% · ${formatHours(time)}`,pct>90?'Receiving tank exceeds 90% fill.':'Check tank-specific maximum fill and procedures.',pct>100?'alert':pct>90?'caution':'ok')};
+ $('#calcBlend').onclick=()=>{const va=inputNumber('#blendVA'),da=inputNumber('#blendDA'),sa=inputNumber('#blendSA'),vb=inputNumber('#blendVB'),db=inputNumber('#blendDB'),sb=inputNumber('#blendSB');if(![va,da,sa,vb,db,sb].every(Number.isFinite)||!(va>=0&&vb>=0&&da>0&&db>0&&va+vb>0&&sa>=0&&sa<=100&&sb>=0&&sb<=100))return setRes('resBlend','Check blend inputs.','','caution');const ma=va*da,mb=vb*db,mt=ma+mb,vt=va+vb,rho=mt/vt,s=(ma*sa+mb*sb)/mt;setRes('resBlend',`${nf(vt,2)} m³ · ${nf(rho,1)} kg/m³ · ${nf(s,3)}% S`,`Mass basis: Fuel A ${nf(ma/1000,2)} t + Fuel B ${nf(mb/1000,2)} t. Compatibility/stability is not evaluated.`)};
 
  $('#fuMode').onchange=()=>{$('#fuAmountText').textContent=$('#fuMode').value==='v2m'?'Volume m³':'Mass tonnes'};
- $('#calcFuelUrea').onclick=()=>{const amount=+$('#fuAmount').value,d=+$('#fuDensity').value,mode=$('#fuMode').value,product=$('#fuProduct').value;if(!(amount>=0&&d>0))return setRes('resFuelUrea','Check amount and density.','','caution');if(mode==='v2m'){const kg=amount*d,t=kg/1000;setRes('resFuelUrea',`${nf(t,3)} t · ${nf(kg,0)} kg`,`${nf(amount,3)} m³ ${product.toLowerCase()} at ${nf(d,1)} kg/m³.`)}else{const m3=amount*1000/d;setRes('resFuelUrea',`${nf(m3,3)} m³ · ${nf(m3*1000,0)} L`,`${nf(amount,3)} t ${product.toLowerCase()} at ${nf(d,1)} kg/m³.`)}};
+ $('#calcFuelUrea').onclick=()=>{const amount=inputNumber('#fuAmount'),d=inputNumber('#fuDensity'),mode=$('#fuMode').value,product=$('#fuProduct').value;if(!(amount>=0&&d>0))return setRes('resFuelUrea','Check amount and density.','','caution');if(mode==='v2m'){const kg=amount*d,t=kg/1000;setRes('resFuelUrea',`${nf(t,3)} t · ${nf(kg,0)} kg`,`${nf(amount,3)} m³ ${product.toLowerCase()} at ${nf(d,1)} kg/m³.`)}else{const m3=amount*1000/d;setRes('resFuelUrea',`${nf(m3,3)} m³ · ${nf(m3*1000,0)} L`,`${nf(amount,3)} t ${product.toLowerCase()} at ${nf(d,1)} kg/m³.`)}};
 
  const bunkRows=$('#bunkRows');
  $('#addBunkRow').onclick=()=>bunkRows.insertAdjacentHTML('beforeend','<div class="dynamic-row bunk-row"><label>Date<input class="bunk-date" type="date"></label><label>Volume m³<input class="bunk-vol" type="number" step=".01"></label><label>Density kg/m³<input class="bunk-dens" type="number" step=".1"></label><button type="button" class="btn small remove-row">Remove</button></div>');
@@ -937,10 +1051,10 @@ function renderVessel(){
 }
 function bindVessel(){
  $('#calcUkc').onclick=()=>{const dep=+$('#ukcDepth').value,dr=+$('#ukcDraft').value,s=+$('#ukcSpeed').value,cb=+$('#ukcCb').value,ch=+$('#ukcCh').value;const squat=ch*cb*s*s/100,ukc=dep-dr-squat,set=state.profile.minUKC||0;setRes('resUkc',`Squat ${nf(squat,2)} m · Dynamic UKC ${nf(ukc,2)} m`,`Simplified planning formula Cb × V² / 100 × channel factor. Vessel-specific squat data takes precedence.`,ukc<set?'alert':ukc<set*1.25?'caution':'ok')};
- $('#calcAnchor').onclick=()=>{const c=+$('#anchorChain').value,d=+$('#anchorDepth').value,l=+$('#anchorLoa').value,h=Math.sqrt(Math.max(0,c*c-d*d)),r=h+l;setRes('resAnchor',`${nf(r,0)} m maximum approximate swing radius`,`Geometric estimate only; add safety margin for catenary, tide, yaw, GPS antenna position and local requirements.`)};
+ $('#calcAnchor').onclick=()=>{const c=inputNumber('#anchorChain'),d=inputNumber('#anchorDepth'),l=inputNumber('#anchorLoa');if(![c,d,l].every(Number.isFinite)||c<d||d<0||l<=0)return setRes('resAnchor','Invalid anchor geometry','Chain length must reach the seabed and dimensions must be valid.','caution');const h=Math.sqrt(c*c-d*d),r=h+l;setRes('resAnchor',`${nf(r,0)} m maximum approximate swing radius`,`Geometric estimate only; add safety margin for catenary, tide, yaw, GPS antenna position and local requirements.`)};
  $('#calcStaticUkc').onclick=()=>{const u=+$('#staticDepth').value+ +$('#staticTide').value- +$('#staticDraft').value- +$('#staticAllow').value;setRes('resStaticUkc',`${nf(u,2)} m remaining UKC`,`After user-entered safety allowance.`,u<state.profile.minUKC?'alert':u<state.profile.minUKC*1.25?'caution':'ok')};
 
- $('#calcAirDraft').onclick=()=>{const pc=+$('#airPublished').value,wl=+$('#airWater').value,ad=+$('#airDraft').value,m=+$('#airMargin').value,remain=pc-wl-ad-m;setRes('resAirDraft',`${nf(remain,2)} m remaining clearance`,`Published ${nf(pc,2)} − water level ${nf(wl,2)} − air draft ${nf(ad,2)} − margin ${nf(m,2)}.`,remain<0?'alert':remain<1?'caution':'ok')};
+ $('#calcAirDraft').onclick=()=>{const pc=inputNumber('#airPublished'),wl=inputNumber('#airWater'),ad=inputNumber('#airDraft'),m=inputNumber('#airMargin');if(![pc,wl,ad,m].every(Number.isFinite)||pc<=0||ad<0||m<0)return setRes('resAirDraft','Complete valid clearance inputs required','Air draft must be explicitly entered.','caution');const remain=pc-wl-ad-m;setRes('resAirDraft',`${nf(remain,2)} m remaining clearance`,`Published ${nf(pc,2)} − water level ${nf(wl,2)} − air draft ${nf(ad,2)} − margin ${nf(m,2)}.`,remain<0?'alert':remain<1?'caution':'ok')};
 
  $('#calcFwa').onclick=()=>{const disp=+$('#fwaDisp').value,tpc=+$('#fwaTpc').value,rho=+$('#fwaDensity').value;if(!(disp>0&&tpc>0&&rho>0))return setRes('resFwa','Check inputs.','','caution');const fwa=disp/(4*tpc),ratio=(1.025-rho)/.025,dwa=fwa*ratio;setRes('resFwa',`FWA ${nf(fwa,1)} mm · DWA ${nf(dwa,1)} mm`,`Dock-water density ${nf(rho,3)} t/m³ · DWA is ${nf(ratio*100,0)}% of FWA.`)};
 }
@@ -976,11 +1090,11 @@ function bindEngineering(){
  $('#engView').onchange=applyEngView;applyEngView();
 
  $('#hydMode').onchange=()=>{$('#hydEffWrap').hidden=$('#hydMode').value!=='input'};$('#hydMode').onchange();
- $('#calcHyd').onclick=()=>{const p=+$('#hydP').value,q=+$('#hydQ').value,hyd=p*q/600;if($('#hydMode').value==='input'){const e=+$('#hydEff').value/100;if(!(e>0&&e<=1))return setRes('resHyd','Check efficiency.','','caution');const input=hyd/e;setRes('resHyd',`${nf(hyd,2)} kW hydraulic · ${nf(input,2)} kW estimated input`,`Based on P(kW)=bar×L/min÷600.`)}else setRes('resHyd',`${nf(hyd,2)} kW hydraulic`,`Based on P(kW)=bar×L/min÷600.`)};
+ $('#calcHyd').onclick=()=>{const p=inputNumber('#hydP'),q=inputNumber('#hydQ');if(![p,q].every(Number.isFinite)||p<0||q<0)return setRes('resHyd','Check pressure and flow','Both must be nonnegative, explicitly supplied values.','caution');const hyd=p*q/600;if($('#hydMode').value==='input'){const e=+$('#hydEff').value/100;if(!(e>0&&e<=1))return setRes('resHyd','Check efficiency.','','caution');const input=hyd/e;setRes('resHyd',`${nf(hyd,2)} kW hydraulic · ${nf(input,2)} kW estimated input`,`Based on P(kW)=bar×L/min÷600.`)}else setRes('resHyd',`${nf(hyd,2)} kW hydraulic`,`Based on P(kW)=bar×L/min÷600.`)};
 
  $('#calcAffinity').onclick=()=>{const n1=+$('#pumpN1').value,n2=+$('#pumpN2').value;if(!(n1>0&&n2>0))return setRes('resAffinity','Check RPM values.','','caution');const r=n2/n1,q=+$('#pumpQ1').value*r,h=+$('#pumpH1').value*r*r,w=+$('#pumpW1').value*r*r*r;setRes('resAffinity',`${nf(q,1)} m³/h · ${nf(h,1)} m head · ${nf(w,2)} kW`,`Ideal affinity-law estimate from ${nf(n1,0)} to ${nf(n2,0)} RPM.`)};
 
- $('#calcPipe').onclick=()=>{let q=+$('#pipeQ').value;if($('#pipeQUnit').value==='lmin')q=q*.06;const qm=q/3600,d=+$('#pipeD').value/1000,a=Math.PI*d*d/4,v=qm/a;setRes('resPipe',`${nf(v,2)} m/s`,`Flow ${nf(q,2)} m³/h · internal area ${nf(a,4)} m².`)};
+ $('#calcPipe').onclick=()=>{let q=inputNumber('#pipeQ'),diam=inputNumber('#pipeD');if(![q,diam].every(Number.isFinite)||q<0||diam<=0)return setRes('resPipe','Check flow and diameter','Flow must be nonnegative and diameter positive.','caution');if($('#pipeQUnit').value==='lmin')q=q*.06;const qm=q/3600,d=+$('#pipeD').value/1000,a=Math.PI*d*d/4,v=qm/a;setRes('resPipe',`${nf(v,2)} m/s`,`Flow ${nf(q,2)} m³/h · internal area ${nf(a,4)} m².`)};
 
  $('#calcTankInterp').onclick=()=>{const x1=+$('#tankLowX').value,v1=+$('#tankLowV').value,x=+$('#tankMeasure').value,x2=+$('#tankHighX').value,v2=+$('#tankHighV').value;if(![x1,v1,x,x2,v2].every(Number.isFinite)||x2===x1)return setRes('resTankInterp','Check the two surrounding table values.','','caution');if(x<Math.min(x1,x2)||x>Math.max(x1,x2))return setRes('resTankInterp','Measured value must lie between the lower and upper table values.','','caution');const v=v1+(x-x1)/(x2-x1)*(v2-v1);setRes('resTankInterp',`${nf(v,3)} m³`,`Interpolated between ${x1} → ${v1} m³ and ${x2} → ${v2} m³.`)};
 
@@ -992,7 +1106,7 @@ function bindEngineering(){
 
  $('#calcGenMargin').onclick=()=>{const c=+$('#genCap').value,l=+$('#genLoad').value;if(!(c>0&&l>=0))return setRes('resGenMargin','Check capacity and load.','','caution');const p=l/c*100,m=c-l;setRes('resGenMargin',`${nf(p,1)}% load · ${nf(m,0)} kW margin`,p>95?'Very little remaining margin.':p<30?'Low loading — check engine-specific operating guidance.':'Present online capacity and load shown above.',p>95?'alert':p<30?'caution':'ok')};
 
- $('#calcChemDose').onclick=()=>{const vol=+$('#chemVol').value,rate=+$('#chemRate').value,unit=$('#chemUnit').value;if(!(vol>=0&&rate>=0))return setRes('resChemDose','Enter a valid system volume and manufacturer dose rate.','','caution');let liters=0,detail='';if(unit==='mlm3'){liters=vol*rate/1000;detail=`${nf(rate,3)} mL/m³`}else if(unit==='lm3'){liters=vol*rate;detail=`${nf(rate,3)} L/m³`}else if(unit==='l100m3'){liters=vol*rate/100;detail=`${nf(rate,3)} L/100 m³`}else{liters=vol*1000*rate/100;detail=`${nf(rate,4)}% v/v`}setRes('resChemDose',liters<1?`${nf(liters*1000,1)} mL required`:`${nf(liters,3)} L required`,`${nf(vol,2)} m³ system at entered rate ${detail}. Verify against the product data sheet and vessel procedure.`)};
+ $('#calcChemDose').onclick=()=>{const vol=inputNumber('#chemVol'),rate=inputNumber('#chemRate'),unit=$('#chemUnit').value;if(!(vol>=0&&rate>=0))return setRes('resChemDose','Enter a valid system volume and manufacturer dose rate.','','caution');let liters=0,detail='';if(unit==='mlm3'){liters=vol*rate/1000;detail=`${nf(rate,3)} mL/m³`}else if(unit==='lm3'){liters=vol*rate;detail=`${nf(rate,3)} L/m³`}else if(unit==='l100m3'){liters=vol*rate/100;detail=`${nf(rate,3)} L/100 m³`}else{liters=vol*1000*rate/100;detail=`${nf(rate,4)}% v/v`}setRes('resChemDose',liters<1?`${nf(liters*1000,1)} mL required`:`${nf(liters,3)} L required`,`${nf(vol,2)} m³ system at entered rate ${detail}. Verify against the product data sheet and vessel procedure.`)};
 
  const noxRows=$('#noxRows');
  const noxRowHtml=(mode,name='',a='',b='',factor='')=>mode==='power'
@@ -1009,11 +1123,11 @@ function bindEngineering(){
    const mode=$('#noxMode').value,rows=$$('.nox-row',noxRows);
    let totalKg=0,basisTotal=0,basisLabel='',factorLabel='';
    if(mode==='power'){
-     const d=rows.map(r=>({name:$('.nox-name',r).value.trim(),h:+$('.nox-a',r).value,kw:+$('.nox-b',r).value,f:+$('.nox-factor',r).value})).filter(x=>x.name&&x.h>=0&&x.kw>=0&&x.f>=0);
+     const d=rows.map(r=>({name:$('.nox-name',r).value.trim(),h:inputNumber($('.nox-a',r)),kw:inputNumber($('.nox-b',r)),f:inputNumber($('.nox-factor',r))}));if(d.some(x=>!x.name||![x.h,x.kw,x.f].every(Number.isFinite)||x.h<0||x.kw<0||x.f<0))return setRes('resNox','Complete every active source','Hours, power and emission factors are required for all rows.','caution');
      if(!d.length)return setRes('resNox','Add at least one valid engine/source.','','caution');
      basisTotal=d.reduce((s,x)=>s+x.h*x.kw,0);totalKg=d.reduce((s,x)=>s+x.h*x.kw*x.f/1000,0);basisLabel=`${nf(basisTotal/1000,1)} MWh`;factorLabel=`${nf(basisTotal?totalKg*1000/basisTotal:0,2)} g/kWh weighted factor`;
    }else{
-     const d=rows.map(r=>({name:$('.nox-name',r).value.trim(),fuel:+$('.nox-a',r).value,f:+$('.nox-factor',r).value})).filter(x=>x.name&&x.fuel>=0&&x.f>=0);
+     const d=rows.map(r=>({name:$('.nox-name',r).value.trim(),fuel:inputNumber($('.nox-a',r)),f:inputNumber($('.nox-factor',r))}));if(d.some(x=>!x.name||![x.fuel,x.f].every(Number.isFinite)||x.fuel<0||x.f<0))return setRes('resNox','Complete every active source','Fuel amount and emission factor are required for all rows.','caution');
      if(!d.length)return setRes('resNox','Add at least one valid engine/source.','','caution');
      basisTotal=d.reduce((s,x)=>s+x.fuel,0);totalKg=d.reduce((s,x)=>s+x.fuel*x.f,0);basisLabel=`${nf(basisTotal,2)} t fuel`;factorLabel=`${nf(basisTotal?totalKg/basisTotal:0,2)} kg/t weighted factor`;
    }
@@ -1060,13 +1174,13 @@ function bindElectrical(){
  const applyElView=()=>{const v=$('#elView').value;$$('#electrical .tool-card[data-tool-group]').forEach(c=>c.hidden=v!=='all'&&c.dataset.toolGroup!==v)};
  $('#elView').onchange=applyElView;applyElView();
 
- $('#calc3p').onclick=()=>{const v=+$('#elV').value,a=+$('#elA').value,pf=+$('#elPf').value;if(!(v>0&&a>=0&&pf>0&&pf<=1))return setRes('res3p','Check voltage, current and power factor.','','caution');const kva=Math.sqrt(3)*v*a/1000,kw=kva*pf;setRes('res3p',`${nf(kw,1)} kW · ${nf(kva,1)} kVA`,`Electrical input power at power factor ${nf(pf,2)}.`)};
- $('#calcVD').onclick=()=>{const a=+$('#vdA').value,l=+$('#vdL').value,r=+$('#vdR').value,v=+$('#vdV').value;if(!(a>=0&&l>=0&&r>=0&&v>0))return setRes('resVD','Check current, length, resistance and system voltage.','System voltage must be above 0 V.','caution');const drop=Math.sqrt(3)*a*r*(l/1000),pct=drop/v*100;setRes('resVD',`${nf(drop,2)} V · ${nf(pct,2)}%`,`Simplified resistive 3-phase estimate; reactance, temperature and installation method are not included.`,pct>5?'caution':'ok')};
+ $('#calc3p').onclick=()=>{const v=inputNumber('#elV'),a=inputNumber('#elA'),pf=inputNumber('#elPf');if(!(v>0&&a>=0&&pf>0&&pf<=1))return setRes('res3p','Check voltage, current and power factor.','','caution');const kva=Math.sqrt(3)*v*a/1000,kw=kva*pf;setRes('res3p',`${nf(kw,1)} kW · ${nf(kva,1)} kVA`,`Electrical input power at power factor ${nf(pf,2)}.`)};
+ $('#calcVD').onclick=()=>{const a=inputNumber('#vdA'),l=inputNumber('#vdL'),r=inputNumber('#vdR'),v=inputNumber('#vdV');if(!(a>=0&&l>=0&&r>=0&&v>0))return setRes('resVD','Check current, length, resistance and system voltage.','System voltage must be above 0 V.','caution');const drop=Math.sqrt(3)*a*r*(l/1000),pct=drop/v*100;setRes('resVD',`${nf(drop,2)} V · ${nf(pct,2)}%`,`Simplified resistive 3-phase estimate; reactance, temperature and installation method are not included.`,pct>5?'caution':'ok')};
  $('#calcBat').onclick=()=>{const k=+$('#batKwh').value,s=+$('#batSoc').value,m=+$('#batMin').value,l=+$('#batLoad').value,ePct=+$('#batEff').value;if(!(k>0&&s>=0&&s<=100&&m>=0&&m<=100&&s>=m&&l>0&&ePct>0&&ePct<=100))return setRes('resBat','Check battery, SOC, load and efficiency.','Load must be above 0 kW, SOC must be 0–100%, and current SOC cannot be below minimum SOC.','caution');const e=ePct/100,usable=k*(s-m)/100*e,h=usable/l;setRes('resBat',`${nf(usable,1)} kWh usable · ${formatHours(h)}`,`From ${s}% to ${m}% SOC at constant ${l} kW load.`)};
- $('#calcMotor').onclick=()=>{const p=+$('#motKw').value,v=+$('#motV').value,pf=+$('#motPf').value,eff=+$('#motEff').value/100;if(!(p>=0&&v>0&&pf>0&&pf<=1&&eff>0&&eff<=1))return setRes('resMotor','Check voltage, power factor and efficiency.','','caution');const a=p*1000/(Math.sqrt(3)*v*pf*eff);setRes('resMotor',`${nf(a,1)} A estimated running current`,`For ${nf(p,1)} kW motor output at PF ${nf(pf,2)} and ${nf(eff*100,0)}% efficiency.`)};
- $('#calcPfCorr').onclick=()=>{const p=+$('#pfKw').value,p1=+$('#pfNow').value,p2=+$('#pfTarget').value;if(!(p>=0&&p1>0&&p1<=1&&p2>0&&p2<=1&&p2>p1))return setRes('resPfCorr','Target PF must be greater than present PF and both ≤ 1.','','caution');const q=p*(Math.tan(Math.acos(p1))-Math.tan(Math.acos(p2)));setRes('resPfCorr',`${nf(q,1)} kVAr correction`,`Approximate capacitor reactive power from PF ${nf(p1,2)} to ${nf(p2,2)}.`)};
- $('#calcTransformer').onclick=()=>{const kva=+$('#trKva').value,v1=+$('#trV1').value,v2=+$('#trV2').value;if(!(kva>0&&v1>0&&v2>0))return setRes('resTransformer','Check kVA and voltages.','','caution');const i1=kva*1000/(Math.sqrt(3)*v1),i2=kva*1000/(Math.sqrt(3)*v2);setRes('resTransformer',`Primary ${nf(i1,1)} A · Secondary ${nf(i2,1)} A`,`Nominal 3-phase currents at ${nf(kva,1)} kVA.`)};
- $('#calcImbalance').onclick=()=>{const a=[+$('#l1').value,+$('#l2').value,+$('#l3').value];if(a.some(x=>!Number.isFinite(x)||x<0))return setRes('resImbalance','Check phase currents.','Current values cannot be negative.','caution');const avg=a.reduce((x,y)=>x+y,0)/3;if(!(avg>0))return setRes('resImbalance','Average current must be above 0 A.','Imbalance percentage is undefined when all phase currents are zero.','caution');const max=Math.max(...a.map(x=>Math.abs(x-avg))),pct=max/avg*100;setRes('resImbalance',`${nf(avg,1)} A average · ${nf(pct,2)}% max imbalance`,`Calculated as maximum deviation from average / average.`)};
+ $('#calcMotor').onclick=()=>{const p=inputNumber('#motKw'),v=inputNumber('#motV'),pf=inputNumber('#motPf'),eff=inputNumber('#motEff')/100;if(!(p>=0&&v>0&&pf>0&&pf<=1&&eff>0&&eff<=1))return setRes('resMotor','Check voltage, power factor and efficiency.','','caution');const a=p*1000/(Math.sqrt(3)*v*pf*eff);setRes('resMotor',`${nf(a,1)} A estimated running current`,`For ${nf(p,1)} kW motor output at PF ${nf(pf,2)} and ${nf(eff*100,0)}% efficiency.`)};
+ $('#calcPfCorr').onclick=()=>{const p=inputNumber('#pfKw'),p1=inputNumber('#pfNow'),p2=inputNumber('#pfTarget');if(!(p>=0&&p1>0&&p1<=1&&p2>0&&p2<=1&&p2>p1))return setRes('resPfCorr','Target PF must be greater than present PF and both ≤ 1.','','caution');const q=p*(Math.tan(Math.acos(p1))-Math.tan(Math.acos(p2)));setRes('resPfCorr',`${nf(q,1)} kVAr correction`,`Approximate capacitor reactive power from PF ${nf(p1,2)} to ${nf(p2,2)}.`)};
+ $('#calcTransformer').onclick=()=>{const kva=inputNumber('#trKva'),v1=inputNumber('#trV1'),v2=inputNumber('#trV2');if(!(kva>0&&v1>0&&v2>0))return setRes('resTransformer','Check kVA and voltages.','','caution');const i1=kva*1000/(Math.sqrt(3)*v1),i2=kva*1000/(Math.sqrt(3)*v2);setRes('resTransformer',`Primary ${nf(i1,1)} A · Secondary ${nf(i2,1)} A`,`Nominal 3-phase currents at ${nf(kva,1)} kVA.`)};
+ $('#calcImbalance').onclick=()=>{const a=[inputNumber('#l1'),inputNumber('#l2'),inputNumber('#l3')];if(a.some(x=>!Number.isFinite(x)||x<0))return setRes('resImbalance','Check phase currents.','Current values cannot be negative.','caution');const avg=a.reduce((x,y)=>x+y,0)/3;if(!(avg>0))return setRes('resImbalance','Average current must be above 0 A.','Imbalance percentage is undefined when all phase currents are zero.','caution');const max=Math.max(...a.map(x=>Math.abs(x-avg))),pct=max/avg*100;setRes('resImbalance',`${nf(avg,1)} A average · ${nf(pct,2)}% max imbalance`,`Calculated as maximum deviation from average / average.`)};
 }
 
 function renderQuick(){
@@ -1078,15 +1192,25 @@ function renderQuick(){
  </div>`;bindQuick();
 }
 function bindQuick(){
- $('#calcDST').onclick=()=>{const d=+$('#qDist').value,s=+$('#qSpeed').value;if(!(d>=0&&s>0))return setRes('resDST','Check distance and speed.','Speed must be above 0 kn and distance cannot be negative.','caution');const h=d/s;setRes('resDST',`${formatHours(h)}`,`${nf(d,1)} NM at ${nf(s,1)} kn.`)};
- $('#calcBf').onclick=()=>{const k=+$('#bfKn').value;if(!(k>=0))return setRes('resBf','Check wind speed.','Wind speed cannot be negative.','caution');const b=beaufort(k);setRes('resBf',`Beaufort ${b.force} · ${b.desc}`,`${b.range} kn approximate range.`)};
- $('#calcUnit').onclick=()=>{const v=+$('#unitVal').value,t=$('#unitType').value,fn={"nm-km":x=>[x*1.852,'km'],"km-nm":x=>[x/1.852,'NM'],"kn-ms":x=>[x/1.943844,'m/s'],"ms-kn":x=>[x*1.943844,'kn'],"bar-kpa":x=>[x*100,'kPa'],"kw-hp":x=>[x*1.34102,'hp'],"c-f":x=>[x*9/5+32,'°F']}[t],r=fn(v);setRes('resUnit',`${nf(r[0],3)} ${r[1]}`,'')};
- $('#calcCompass').onclick=()=>{const c=+$('#compC').value,v=+$('#compVar').value,d=+$('#compDev').value,t=(c+v+d+360)%360;setRes('resCompass',`${nf(t,1)}° true`,`Uses signed east-positive corrections. Confirm convention against your vessel procedures.`)};
+ $('#calcDST').onclick=()=>{const d=inputNumber('#qDist'),s=inputNumber('#qSpeed');if(!(d>=0&&s>0))return setRes('resDST','Check distance and speed.','Speed must be above 0 kn and distance cannot be negative.','caution');const h=d/s;setRes('resDST',`${formatHours(h)}`,`${nf(d,1)} NM at ${nf(s,1)} kn.`)};
+ $('#calcBf').onclick=()=>{const k=inputNumber('#bfKn');if(!(k>=0))return setRes('resBf','Check wind speed.','Wind speed cannot be negative.','caution');const b=beaufort(k);setRes('resBf',`Beaufort ${b.force} · ${b.desc}`,`${b.range} kn approximate range.`)};
+ $('#calcUnit').onclick=()=>{const v=inputNumber('#unitVal');if(!Number.isFinite(v))return setRes('resUnit','Enter a value to convert.','','caution');const t=$('#unitType').value,fn={"nm-km":x=>[x*1.852,'km'],"km-nm":x=>[x/1.852,'NM'],"kn-ms":x=>[x/1.943844,'m/s'],"ms-kn":x=>[x*1.943844,'kn'],"bar-kpa":x=>[x*100,'kPa'],"kw-hp":x=>[x*1.34102,'hp'],"c-f":x=>[x*9/5+32,'°F']}[t],r=fn(v);setRes('resUnit',`${nf(r[0],3)} ${r[1]}`,'')};
+ $('#calcCompass').onclick=()=>{const c=inputNumber('#compC'),v=inputNumber('#compVar'),d=inputNumber('#compDev');if(![c,v,d].every(Number.isFinite))return setRes('resCompass','Complete course and corrections required.','','caution');const t=((c+v+d)%360+360)%360;setRes('resCompass',`${nf(t,1)}° true`,`Uses signed east-positive corrections. Confirm convention against your vessel procedures.`)};
 }
 function beaufort(k){const rows=[[1,'Light air','1–3'],[4,'Light breeze','4–6'],[7,'Gentle breeze','7–10'],[11,'Moderate breeze','11–16'],[17,'Fresh breeze','17–21'],[22,'Strong breeze','22–27'],[28,'Near gale','28–33'],[34,'Gale','34–40'],[41,'Strong gale','41–47'],[48,'Storm','48–55'],[56,'Violent storm','56–63'],[64,'Hurricane','64+']];if(k<1)return{force:0,desc:'Calm',range:'<1'};for(let i=0;i<rows.length;i++){const next=rows[i+1]?.[0]??Infinity;if(k<next)return{force:i+1,desc:rows[i][1],range:rows[i][2]}}return{force:12,desc:'Hurricane',range:'64+'}}
 
 function renderProfile(){const p=state.profile;$('#profile').innerHTML=pageTitle('Vessel Profile','Shared vessel values are used by route, fuel and operational-envelope calculations.')+`<article class="panel"><div class="panel-body"><div class="fields three"><label>Vessel name<input id="pName" value="${esc(p.name)}"></label><label>LOA m<input id="pLoa" type="number" step=".1" value="${p.loa}"></label><label>Draft m<input id="pDraft" type="number" step=".1" value="${p.draft}"></label><label>Service speed kn<input id="pSpeed" type="number" step=".1" value="${p.serviceSpeed}"></label><label>Fuel consumption m³/day<input id="pFuel" type="number" step=".1" value="${p.fuelDay}"></label><label>Max Hs m<input id="pHs" type="number" step=".1" value="${p.maxHs}"></label><label>Max wind kn<input id="pWind" type="number" value="${p.maxWind}"></label><label>Max current kn<input id="pCur" type="number" step=".1" value="${p.maxCurrent}"></label><label>Minimum UKC m<input id="pUkc" type="number" step=".1" value="${p.minUKC}"></label><label>CPA alert NM<input id="pCpa" type="number" step=".1" value="${p.cpaAlert}"></label><label>AIS route corridor NM<input id="pCorr" type="number" step=".1" value="${p.corridor}"></label></div><div class="actions"><button class="btn primary" id="saveProfile">Save profile</button></div><p class="helper">Operational limits are user-defined planning values. Marine Tools does not determine safe limits for your vessel.</p></div></article>`;$('#saveProfile').onclick=saveProfile}
-function saveProfile(){state.profile={name:$('#pName').value.trim(),loa:+$('#pLoa').value,draft:+$('#pDraft').value,serviceSpeed:+$('#pSpeed').value,fuelDay:+$('#pFuel').value,maxHs:+$('#pHs').value,maxWind:+$('#pWind').value,maxCurrent:+$('#pCur').value,minUKC:+$('#pUkc').value,cpaAlert:+$('#pCpa').value,corridor:+$('#pCorr').value};store.set(K.profile,state.profile);toast('Vessel profile saved.');renderEnvelope();updateHome()}
+function saveProfile(){
+ const previous=state.profile;
+ const field=(id,key)=>{const el=$(id);if(!el||el.value.trim()==='')return previous[key];const value=Number(el.value);return Number.isFinite(value)?value:previous[key]};
+ state.profile={
+  name:$('#pName')?.value.trim()??previous.name,loa:field('#pLoa','loa'),draft:field('#pDraft','draft'),
+  serviceSpeed:field('#pSpeed','serviceSpeed'),fuelDay:field('#pFuel','fuelDay'),
+  maxHs:field('#pHs','maxHs'),maxWind:field('#pWind','maxWind'),maxCurrent:field('#pCur','maxCurrent'),
+  minUKC:field('#pUkc','minUKC'),cpaAlert:field('#pCpa','cpaAlert'),corridor:field('#pCorr','corridor')
+ };
+ store.set(K.profile,state.profile);toast('Vessel profile saved.');renderEnvelope();updateHome();
+}
 
 function localDataStats(){
  const bytes=Object.keys(localStorage).filter(k=>k.startsWith('mt.')).reduce((n,k)=>n+(localStorage.getItem(k)?.length||0),0);
@@ -1113,11 +1237,11 @@ function renderSettings(){
  $('#importData').onclick=()=>$('#importDataFile').click();
  $('#importDataFile').onchange=e=>{const f=e.target.files?.[0];if(f)importDataBackup(f);e.target.value=''};
  $('#clearHistorySet').onclick=()=>{clearHistory();renderSettings()};
- $('#clearData').onclick=()=>{if(confirm('Clear all Marine Tools local data in this browser?')){Object.values(K).forEach(k=>localStorage.removeItem(k));location.reload()}}
+ $('#clearData').onclick=()=>{if(confirm('Clear all Marine Tools local data in this browser?')){Object.keys(localStorage).filter(k=>k.startsWith('mt.')).forEach(k=>localStorage.removeItem(k));location.reload()}}
 }
 
 function exportData(){
- const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),exported:new Date().toISOString()};
+ const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),extraLocal:Object.fromEntries([['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']].map(([n,k])=>[n,store.get(k,null)])),exported:new Date().toISOString()};
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=`marine-tools-backup-${localDateISO()}.json`;a.click();URL.revokeObjectURL(a.href);toast('Local backup downloaded.')
 }
 async function importDataBackup(file){
@@ -1126,7 +1250,7 @@ async function importDataBackup(file){
   if(!data||typeof data!=='object'||(!data.profile&&!data.consumption&&!data.bunkering&&!data.settings))return toast('This does not look like a Marine Tools backup.');
   if(!confirm('Restore this Marine Tools backup? Existing local values may be replaced.'))return;
   const mapping=[[K.profile,data.profile],[K.route,data.route],[K.lastAnalysis,data.lastAnalysis],[K.settings,data.settings],[K.theme,data.theme],[K.favorites,data.favorites],[K.recent,data.recent],[K.history,data.history],[K.consumption,data.consumption],[K.bunkHistory,data.bunkering],[K.weatherCache,data.weatherCache]];
-  for(const [key,value] of mapping)if(value!==undefined&&value!==null)store.set(key,value);
+  for(const [key,value] of mapping)if(value!==undefined&&value!==null)store.set(key,value);if(data.extraLocal&&typeof data.extraLocal==='object')for(const [n,k] of [['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']])if(data.extraLocal[n]!=null)store.set(k,data.extraLocal[n]);
   toast('Backup restored. Reloading…');setTimeout(()=>location.reload(),500)
  }catch{toast('Could not restore backup JSON.')}
 }
