@@ -95,6 +95,11 @@ ok(css.includes('[data-theme="bridge"]'),'Bridge Dark theme exists');
 ok(main.includes('href="/students/"')&&education.includes('href="../students/"'),'student entrypoints linked in main/education');
 ok(sw.includes("'./students/'")&&sw.includes("'./students/formulas-extension.js'")&&sw.includes("'./students/calculators-extension.js'")&&sw.includes("'./students/formulas-expansion-v1.js'")&&sw.includes("'./students/calculators-expansion-v1.js'")&&sw.includes("'./students/app.js'"),'student assets precached for PWA offline');
 ok(html.includes('www.nb.no/items/7dd9087d6a49416798fe7b2f6fdd86c2'),'Gyldendal/NB title linked as original source');
-ok(html.includes('Educational')||html.includes('EDUCATIONAL'),'educational-use limitation visible');
+ok(html.includes('<html lang="en"'),'student page language is English');
+ok(!html.includes('id="student-lang"')&&!srcApp.includes('student-lang'),'language selector and switching removed');
+ok(!srcApp.includes('state.lang')&&!srcApp.includes('tr.no'),'English-only script without stale language state');
+ok(!html.includes("Not a substitute for a vessel's approved loading software"),'requested calculator notice removed');
+ok(!html.includes('EDUCATIONAL USE ONLY')&&!html.includes('Kun til utdanning'),'requested generic safety section removed');
+ok(!css.includes('.safety{')&&!css.includes('.result-foot{'),'unused generic-warning styles removed');
 console.log(JSON.stringify({result:'PASS',checks:passed,formulas:formulas.length,calculators:calculators.length,exercises:exercises.length,
  note:'Isolated source smoke only; browser reflow, installed PWA and full editorial accuracy are still pending.'}));
