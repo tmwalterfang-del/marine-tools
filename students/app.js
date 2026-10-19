@@ -2,18 +2,21 @@
 (function(){
 "use strict";
 const formula=window.MT_FORMULAS||[],calc=window.MT_CALCULATORS||[],practice=window.MT_PRACTICE||[];
+const study=window.MT_STUDY||{groups:[],details:{},calculatorByFormula:{},topicChapters:{},figures:{}};
+const byFormula=new Map(formula.map(f=>[f.id,f]));
+const byCalculator=new Map(calc.map(c=>[c.id,c]));
 const el=id=>document.getElementById(id);
 const enc=v=>String(v==null?"":v).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const retrieve=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))||fallback}catch{return fallback}};
 const persist=(key,val)=>{try{localStorage.setItem(key,JSON.stringify(val))}catch{}};
 const state={
- tab:"formulas",query:"",topic:"All",favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
+ tab:"formulas",query:"",topic:"All",group:"All",practiceGroup:"All",practiceLevel:"All",attempted:false,favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
  completed:new Set(retrieve("mt-student-practice-v1",[])),savedOnly:false,
  display:48,calcid:calc[0]&&calc[0].id,examIndex:0,showSteps:true,
  theme:retrieve("mt-student-theme-v1","maritime")
 };
 const tr={
- en:{formulas:"Formulas",calculators:"Calculators",practice:"Exercises",resources:"Resources",
+ en:{formulas:"Formulas",calculators:"Calculators",practice:"Exercises",resources:"Resources",sheet:"My Formula Sheet",
  search:"Search: TPC, GM, trim, Ohm's law, electrical ...",all:"All subjects",savedOnly:"Saved only",
  loadMore:"Show more",noMatches:"No matches. Try a different term or subject.",copy:"Copy",save:"Save",saved:"Saved",
  openCalc:"Open calculator",working:"Show working",hideWorking:"Hide working",
@@ -46,27 +49,57 @@ function updateHeader(){
 function filtered(){
  const terms=norm(state.query).trim().split(/\s+/).filter(Boolean);
  return formula.filter(f=>{
+  if(state.group!=="All"&&!study.groups.find(g=>g.id===state.group)?.categories.includes(f.category))return false;
   if(state.topic!=="All"&&f.category!==state.topic)return false;
   if(state.savedOnly&&!state.favorites.has(f.id))return false;
   const txt=norm([f.name,f.formula,f.category,f.note,f.tags].join(" "));
   return terms.every(x=>txt.includes(x)||txt.includes(searchAliases[x]||"###"));
  });
 }
+function symbolsHtml(f){
+ const d=study.details[f.id];
+ if(!d?.symbols?.length)return '<p class="annotation-pending">Symbol definitions are under editorial review for this formula. Read the stated conditions and check the unit convention before applying it.</p>';
+ return '<div class="symbol-grid">'+d.symbols.map(row=>
+ '<div><code>'+enc(row.symbol)+'</code><span>'+enc(row.meaning)+'</span><small>'+enc(row.unit)+'</small></div>').join('')+'</div>';
+}
+function formulaMarkup(f,forSheet=false){
+ const saved=state.favorites.has(f.id),d=study.details[f.id]||{},
+       dest=study.calculatorByFormula[f.id],
+       candidate=dest&&byCalculator.get(dest),
+       chapter=study.topicChapters[f.category]||"Technical reference";
+ const figure=d.figure&&study.figures[d.figure]?
+  '<div class="study-diagram">'+study.figures[d.figure]+'</div>':"";
+ const actions=forSheet?"":'<div class="card-actions"><button type="button" data-copy="'+enc(f.id)+'">Copy</button>'+
+  (candidate?'<button type="button" data-open="'+enc(candidate.id)+'">Open '+enc(candidate.name)+' →</button>':"")+'</div>';
+ return '<article class="formula-card'+(forSheet?' sheet-card':'')+'"><div class="card-line"><span class="topic-pill">'+enc(f.category)+'</span>'+
+ (forSheet?"":'<button type="button" data-fav="'+enc(f.id)+'" aria-pressed="'+saved+'" aria-label="'+(saved?"Unsave":"Save")+' '+enc(f.name)+'">'+(saved?'★':'☆')+'</button>')+'</div>'+
+ '<h3>'+enc(f.name)+'</h3><div class="equation" role="math" aria-label="'+enc(f.formula)+'">'+enc(f.formula)+'</div>'+
+ '<p><strong>Conditions:</strong> '+enc(f.note)+'</p>'+
+ '<details class="formula-explanation"'+(forSheet?" open":"")+'><summary>Variables, units, diagram & source status</summary>'+
+ '<div class="explanation-body"><h4>Symbols and units</h4>'+symbolsHtml(f)+figure+
+ '<div class="source-status"><strong>Topic reference: </strong>'+enc(chapter)+'. <a href="'+enc(study.glossarySource)+'" target="_blank" rel="noopener noreferrer">Book catalogue ↗</a>'+
+ '<p>'+enc(study.chapterLabel)+' '+enc(study.reviewLabel)+'</p></div></div></details>'+actions+'</article>';
+}
 function renderFormulas(){
  const list=filtered();
  el("formula-count").textContent=fmt(list.length)+" / "+fmt(formula.length);
- el("formula-grid").innerHTML=list.slice(0,state.display).map(f=>{
- const fav=state.favorites.has(f.id);
- const candidate=calc.find(c=>c.category===f.category&&(norm(f.name).includes(norm(c.name).split(" ")[0])||norm(c.name).includes(norm(f.name).split(" ")[0])));
- return '<article class="formula-card"><div class="card-line"><span class="topic-pill">'+enc(f.category)+'</span>'+
- '<button type="button" data-fav="'+enc(f.id)+'" aria-pressed="'+fav+'" aria-label="'+tt(fav?"saved":"save")+'">'+(fav?"★":"☆")+'</button></div>'+
- '<h3>'+enc(f.name)+'</h3><div class="equation">'+enc(f.formula)+'</div><p>'+enc(f.note)+'</p>'+
- '<div class="card-actions"><button type="button" data-copy="'+enc(f.id)+'">'+tt("copy")+'</button>'+
- (candidate?'<button type="button" data-open="'+enc(candidate.id)+'">'+tt("openCalc")+' →</button>':"")+
- '</div></article>';
- }).join("")||'<p class="placeholder">'+tt("noMatches")+'</p>';
- el("load-more").hidden=state.display>=list.length;
- el("load-more").textContent=tt("loadMore");
+ el("formula-grid").innerHTML=list.slice(0,state.display).map(f=>formulaMarkup(f)).join("")||'<p class="placeholder">'+tt("noMatches")+'</p>';
+ el("load-more").hidden=state.display>=list.length;el("load-more").textContent=tt("loadMore");
+}
+function renderSheet(){
+ const saved=formula.filter(f=>state.favorites.has(f.id));
+ el("sheet-count").textContent=saved.length+' saved '+(saved.length===1?'formula':'formulas');
+ el("sheet-formulas").innerHTML=saved.map(f=>formulaMarkup(f,true)).join("")||
+ '<p class="placeholder">No formulas saved yet. Open the Formula Library and select the star on a formula.</p>';
+ el("print-sheet").disabled=!saved.length;
+}
+function refreshTopics(){
+ const current=state.topic;
+ const cats=state.group==="All"?categories:(study.groups.find(g=>g.id===state.group)?.categories||[]);
+ const selector=el("topic-filter");
+ selector.innerHTML='<option value="All">All subjects</option>';
+ cats.forEach(topic=>{const option=document.createElement("option");option.value=topic;option.textContent=topic;selector.append(option)});
+ state.topic=cats.includes(current)?current:"All";selector.value=state.topic;
 }
 function activeCalculator(){return calc.find(c=>c.id===state.calcid)||calc[0]}
 function renderCalculator(){
@@ -96,14 +129,36 @@ function calculate(){
  el("calc-steps").innerHTML=state.showSteps?'<ol>'+result.steps.map(step=>'<li>'+enc(step)+'</li>').join("")+'</ol>':"";
  el("working-toggle").textContent=tt(state.showSteps?"hideWorking":"working");
 }
+function levelFor(e){
+ if(["engine-otto","refrigeration","shaft","trim-1","energy-1"].includes(e.id))return "Advanced";
+ if(["gm-1","tpc-1","res-2","fuel-2","eng-1","therm-1","chem-ph","elect-dB","steam-enthalpy","econ-real","econ-pv"].includes(e.id))return "Intermediate";
+ return "Foundation";
+}
+function exerciseIndexes(){
+ return practice.map((e,i)=>({e,i})).filter(({e})=>
+ (state.practiceGroup==="All"||study.groups.find(g=>g.id===state.practiceGroup)?.categories.includes(e.category))&&
+ (state.practiceLevel==="All"||levelFor(e)===state.practiceLevel)).map(x=>x.i);
+}
+function moveExercise(direction){
+ const ids=exerciseIndexes();if(!ids.length)return;
+ const pos=ids.indexOf(state.examIndex);
+ state.examIndex=ids[(Math.max(0,pos)+direction+ids.length)%ids.length];renderPractice();
+}
 function renderPractice(){
- const e=practice[state.examIndex];if(!e)return;
- el("exercise-index").textContent=(state.examIndex+1)+" / "+practice.length;
+ const ids=exerciseIndexes(),e=practice[state.examIndex];
+ if(!ids.length){el("exercise-question").textContent="No exercises match these filters.";el("exercise-index").textContent="0 / 0";el("check-answer").disabled=true;el("show-hint").disabled=true;el("show-solution").disabled=true;return}
+ if(!ids.includes(state.examIndex)){state.examIndex=ids[0];return renderPractice()}
+ el("check-answer").disabled=false;el("show-hint").disabled=false;el("show-solution").disabled=true;
+ state.attempted=false;
+ el("exercise-index").textContent=(ids.indexOf(state.examIndex)+1)+" / "+ids.length;
+ el("exercise-level").textContent=levelFor(e);
  el("exercise-category").textContent=e.category;
  el("exercise-question").textContent=e.prompt;
  el("exercise-unit").textContent=e.unit;
  el("exercise-answer").value="";
  el("exercise-feedback").textContent="";el("exercise-feedback").className="";
+ el("exercise-hint").hidden=true;el("exercise-hint").textContent=e.steps[0]||"Start by identifying the known values and units.";
+ el("show-hint").textContent="Show hint";
  el("exercise-solution").hidden=true;
  el("exercise-solution").innerHTML='<ol>'+e.steps.map(step=>'<li>'+enc(step)+'</li>').join("")+'</ol>';
  el("show-solution").textContent=tt("solution");
@@ -113,6 +168,7 @@ function checkAnswer(){
  const e=practice[state.examIndex],input=el("exercise-answer").value.trim().replace(",","."),
  result=Number(input),feedback=el("exercise-feedback");
  if(!input||!Number.isFinite(result)){feedback.textContent=tt("invalid");feedback.className="error";return}
+ state.attempted=true;el("show-solution").disabled=false;
  const correct=Math.abs(result-e.expected)<=Math.max(e.tolerance,Math.abs(e.expected)*0.001);
  feedback.textContent=tt(correct?"good":"bad");
  feedback.className=correct?"correct":"error";
@@ -120,7 +176,7 @@ function checkAnswer(){
  el("exercise-progress").textContent=state.completed.size+" / "+practice.length;
 }
 function setTab(name){
- if(!["formulas","calculators","practice","resources"].includes(name))name="formulas";
+ if(!["formulas","calculators","practice","resources","sheet"].includes(name))name="formulas";
  state.tab=name;
  document.querySelectorAll("[data-tab]").forEach(b=>{
   const active=b.dataset.tab===name;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active));
@@ -131,21 +187,26 @@ function setTab(name){
  if(name==="formulas")renderFormulas();
  if(name==="calculators")renderCalculator();
  if(name==="practice")renderPractice();
+ if(name==="sheet")renderSheet();
 }
 function init(){
- const selector=el("topic-filter");
- categories.forEach(topic=>{const opt=document.createElement("option");opt.value=topic;opt.textContent=topic;selector.append(opt)});
+ const selector=el("topic-filter"),groupSelector=el("study-group");
+ study.groups.forEach(group=>{const option=document.createElement("option");option.value=group.id;option.textContent=group.label;groupSelector.append(option)});
+ refreshTopics();
+ const practiceSelect=el("practice-subject");
+ study.groups.forEach(group=>{const opt=document.createElement("option");opt.value=group.id;opt.textContent=group.label;practiceSelect.append(opt)});
  el("calc-selector").innerHTML=calc.map(c=>'<option value="'+enc(c.id)+'">'+enc(c.category)+' · '+enc(c.name)+'</option>').join("");
  updateHeader();
  el("formula-search").addEventListener("input",ev=>{state.query=ev.target.value;state.display=48;renderFormulas()});
  selector.addEventListener("change",ev=>{state.topic=ev.target.value;state.display=48;renderFormulas()});
+ groupSelector.addEventListener("change",ev=>{state.group=ev.target.value;state.display=48;refreshTopics();renderFormulas()});
  el("saved-only").addEventListener("change",ev=>{state.savedOnly=ev.target.checked;renderFormulas()});
  el("load-more").addEventListener("click",()=>{state.display+=48;renderFormulas()});
  el("formula-grid").addEventListener("click",ev=>{
  const b=ev.target.closest("button");if(!b)return;
  if(b.dataset.fav){
   state.favorites.has(b.dataset.fav)?state.favorites.delete(b.dataset.fav):state.favorites.add(b.dataset.fav);
-  persist("mt-student-formulas-fav-v1",[...state.favorites]);el("saved-total").textContent=state.favorites.size;renderFormulas();
+  persist("mt-student-formulas-fav-v1",[...state.favorites]);el("saved-total").textContent=state.favorites.size;renderFormulas();renderSheet();
  }else if(b.dataset.copy){
   const f=formula.find(f=>f.id===b.dataset.copy);
   if(f&&navigator.clipboard?.writeText)navigator.clipboard.writeText(f.name+"\n"+f.formula+"\n"+f.note).then(()=>{b.textContent="✓"}).catch(()=>{});
@@ -157,13 +218,28 @@ function init(){
  el("working-toggle").addEventListener("click",()=>{state.showSteps=!state.showSteps;calculate()});
  el("check-answer").addEventListener("click",checkAnswer);
  el("exercise-answer").addEventListener("keydown",ev=>{if(ev.key==="Enter")checkAnswer()});
- el("exercise-next").addEventListener("click",()=>{state.examIndex=(state.examIndex+1)%practice.length;renderPractice()});
- el("exercise-prev").addEventListener("click",()=>{state.examIndex=(state.examIndex-1+practice.length)%practice.length;renderPractice()});
- el("show-solution").addEventListener("click",()=>{
+ el("exercise-next").addEventListener("click",()=>moveExercise(1));
+ el("exercise-prev").addEventListener("click",()=>moveExercise(-1));
+ el("practice-subject").addEventListener("change",ev=>{state.practiceGroup=ev.target.value;state.examIndex=exerciseIndexes()[0]??0;renderPractice()});
+ el("practice-difficulty").addEventListener("change",ev=>{state.practiceLevel=ev.target.value;state.examIndex=exerciseIndexes()[0]??0;renderPractice()});
+ el("show-hint").addEventListener("click",()=>{
+ const hint=el("exercise-hint");hint.hidden=!hint.hidden;el("show-hint").textContent=hint.hidden?"Show hint":"Hide hint";
+ });
+ el("show-solution").addEventListener("click",()=>{if(!state.attempted)return;
  const node=el("exercise-solution");node.hidden=!node.hidden;el("show-solution").textContent=tt(node.hidden?"solution":"hideSolution");
  });
  el("reset-progress").addEventListener("click",()=>{if(!window.confirm("Reset local study progress?"))return;state.completed.clear();persist("mt-student-practice-v1",[]);renderPractice()});
  el("print-formulas").addEventListener("click",()=>window.print());
+ el("print-sheet").addEventListener("click",()=>{
+  if(!state.favorites.size)return;
+  document.body.classList.add("print-sheet");
+  window.print();
+ });
+ window.addEventListener("afterprint",()=>document.body.classList.remove("print-sheet"));
+ el("clear-sheet").addEventListener("click",()=>{
+  if(!state.favorites.size||!window.confirm("Clear all saved formulas from this device?"))return;
+  state.favorites.clear();persist("mt-student-formulas-fav-v1",[]);updateHeader();renderSheet();
+ });
  el("student-theme").addEventListener("change",ev=>{state.theme=ev.target.value;persist("mt-student-theme-v1",state.theme);updateHeader()});
  window.addEventListener("hashchange",()=>setTab(location.hash.slice(1)));
  setTab(location.hash.slice(1)||"formulas");
