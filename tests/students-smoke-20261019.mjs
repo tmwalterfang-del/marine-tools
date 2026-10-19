@@ -72,7 +72,7 @@ ok(byId('otto-efficiency').compute({ratio:1,kappa:1.4}).invalid!==null,'invalid 
 near(byId('sound-db').compute({out:100,input:10}).value,10,'sound power ratio is 10 dB');
 near(byId('rc-filter').compute({r:10,c:1}).value,1/(2*Math.PI*.01),'RC cutoff for 10 kΩ and 1µF');
 near(byId('fullwave-rectifier').compute({rms:24}).value,2*Math.SQRT2*24/Math.PI,'full-wave rectifier with RMS-to-peak');
-near(byId('engine-displacement').compute({bore:100,stroke:100,cyl:4}).value,Math.PI*10/1,'engine displacement four cylinders in litres');
+near(byId('engine-displacement').compute({bore:100,stroke:100,cyl:4}).value,Math.PI,'engine displacement four cylinders in litres');
 near(byId('mean-piston-speed').compute({stroke:0.5,rpm:600}).value,10,'mean piston speed');
 near(byId('steam-boiler-heat').compute({flow:3600,hout:2500,hin:500}).value,2000,'steam heat duty with kg/h to kg/s');
 near(byId('cooling-cop').compute({h1:400,h2:450,h4:250}).value,3,'cooling COP from enthalpies');
