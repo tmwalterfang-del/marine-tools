@@ -10,16 +10,9 @@ const state={
  tab:"formulas",query:"",topic:"All",favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
  completed:new Set(retrieve("mt-student-practice-v1",[])),savedOnly:false,
  display:48,calcid:calc[0]&&calc[0].id,examIndex:0,showSteps:true,
- theme:retrieve("mt-student-theme-v1","maritime"),lang:retrieve("mt-student-lang-v1","no")
+ theme:retrieve("mt-student-theme-v1","maritime")
 };
 const tr={
- no:{formulas:"Formler",calculators:"Kalkulatorer",practice:"Oppgaver",resources:"Kilder",
- search:"Søk: TPC, GM, trim, Ohms lov, elektro ...",all:"Alle fagområder",savedOnly:"Kun lagrede",
- loadMore:"Vis flere",noMatches:"Ingen treff. Prøv et annet søkeord eller fagområde.",copy:"Kopier",save:"Lagre",saved:"Lagret",
- openCalc:"Bruk kalkulator",working:"Vis mellomregning",hideWorking:"Skjul mellomregning",
- answer:"Kontroller svar",solution:"Vis fasit",hideSolution:"Skjul fasit",next:"Neste",previous:"Forrige",
- good:"Riktig svar innenfor toleransen.",bad:"Ikke helt riktig. Kontroller enheter og prøv igjen.",
- invalid:"Kontroller inntastede tall.",reset:"Nullstill progresjon"},
  en:{formulas:"Formulas",calculators:"Calculators",practice:"Exercises",resources:"Resources",
  search:"Search: TPC, GM, trim, Ohm's law, electrical ...",all:"All subjects",savedOnly:"Saved only",
  loadMore:"Show more",noMatches:"No matches. Try a different term or subject.",copy:"Copy",save:"Save",saved:"Saved",
@@ -28,7 +21,7 @@ const tr={
  good:"Correct within tolerance.",bad:"Not quite. Check units and try again.",
  invalid:"Check your input values.",reset:"Reset progress"}
 };
-const tt=id=>(tr[state.lang]||tr.no)[id]||id;
+const tt=id=>tr.en[id]||id;
 const categories=[...new Set(formula.map(f=>f.category))];
 const searchAliases={"stabilitet":"stability","laste":"cargo","last":"cargo","dypgang":"draft","deplasement":"displacement",
  "matematikk":"mathematics","elektro":"electrical","maskin":"machinery","fysikk":"mechanics",
@@ -36,15 +29,14 @@ const searchAliases={"stabilitet":"stability","laste":"cargo","last":"cargo","dy
  "bunkers":"fuel","densitet":"density","navigasjon":"navigation","varme":"heat","temperatur":"temperature",
  "tyngdepunkt":"gravity","krenge":"heel","trefase":"three-phase","motstand":"resistance"};
 const norm=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-const fmt=n=>Number(n).toLocaleString(state.lang==="no"?"nb-NO":"en-GB",{maximumFractionDigits:5});
+const fmt=n=>Number(n).toLocaleString("en-GB",{maximumFractionDigits:5});
 function updateHeader(){
- document.documentElement.lang=state.lang==="no"?"no":"en";
+ document.documentElement.lang="en";
  document.documentElement.dataset.theme=state.theme;
  el("formula-total").textContent=formula.length;
  el("calculator-total").textContent=calc.length;
  el("practice-total").textContent=practice.length;
  el("saved-total").textContent=state.favorites.size;
- el("student-lang").value=state.lang;
  el("student-theme").value=state.theme;
  el("formula-search").placeholder=tt("search");
  el("saved-only-text").textContent=tt("savedOnly");
@@ -172,7 +164,6 @@ function init(){
  });
  el("reset-progress").addEventListener("click",()=>{if(!window.confirm("Reset local study progress?"))return;state.completed.clear();persist("mt-student-practice-v1",[]);renderPractice()});
  el("print-formulas").addEventListener("click",()=>window.print());
- el("student-lang").addEventListener("change",ev=>{state.lang=ev.target.value;persist("mt-student-lang-v1",state.lang);updateHeader();setTab(state.tab)});
  el("student-theme").addEventListener("change",ev=>{state.theme=ev.target.value;persist("mt-student-theme-v1",state.theme);updateHeader()});
  window.addEventListener("hashchange",()=>setTab(location.hash.slice(1)));
  setTab(location.hash.slice(1)||"formulas");
