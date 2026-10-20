@@ -157,7 +157,8 @@ ok(symbolIndex.coverage.formulas===formulas.length,'symbol register indexes enti
 ok(symbolIndex.find('Q').filter(v=>v.symbol==='Q').some(v=>v.meaning.includes('Electric charge')),'Q electric charge is represented');
 ok(symbolIndex.find('Q').filter(v=>v.symbol==='Q').some(v=>v.meaning.includes('flow')),'Q volume flow is distinct from charge');
 ok(symbolIndex.find('Q').filter(v=>v.symbol==='Q').some(v=>v.meaning.includes('heat')),'Q heat is distinct from charge and flow');
-ok(symbolIndex.find('P').some(v=>v.meaning==='Proportional band'),'P proportional band remains independently interpreted');
+ok(symbolIndex.find('Proportional band').some(v=>v.symbol==='PB'&&v.meaning==='Proportional band'),'Proportional band links to the catalogued PB definition');
+ok(!symbolIndex.entries.some(v=>v.symbol==='P'&&v.meaning==='Proportional band'),'Unreferenced P alias is not invented for proportional band');
 ok(symbolIndex.entries.every(v=>v.symbol&&v.meaning&&v.unit&&v.quantityId&&v.status),'symbol entries contain subject-scoped meaning, unit, identity and review status');
 ok(symbolIndex.entries.filter(v=>v.formulaId).every(v=>formulas.some(f=>f.id===v.formulaId)),'all linked symbols resolve to existing formula IDs');
 ok(html.includes('src="symbol-index.js?v=students-draft-6"')&&sw.includes("'./students/symbol-index.js'"),'symbol metadata loads and is available offline');

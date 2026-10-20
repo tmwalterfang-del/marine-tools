@@ -66,6 +66,7 @@ jobs:
           node tests/students-study-export-20261020.cjs
           node tests/students-cargo-workspace-20261020.cjs
           node tests/students-example-workshops-20261020.cjs
+          node tests/students-symbol-navigation-20261020.cjs
           node tests/site-wide-source-audit-20261020.cjs
           timeout 45s node tests/site-core-dom-20261020.cjs
           node tests/students-explorers-dom-20261020.cjs

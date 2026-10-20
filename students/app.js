@@ -187,17 +187,21 @@ function checkAnswer(){
  if(correct){state.completed.add(e.id);persist("mt-student-practice-v1",[...state.completed])}
  el("exercise-progress").textContent=state.completed.size+" / "+practice.length;
 }
+let symbolLimit=60,pendingSymbolVariant=null;
+function openSymbolVariant(id){const variant=document.getElementById(id);if(!variant)return;for(let p=variant.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;variant.setAttribute('tabindex','-1');variant.scrollIntoView?.({block:'start'});variant.focus?.({preventScroll:true})}
+
 function renderSymbols(){
- const matches=symbolIndex.find(el("symbol-search").value.trim());
- el("symbol-count").textContent=matches.length+" symbol contexts shown · "+symbolIndex.coverage.withCuratedDefinitions+
- " of "+formula.length+" formulas currently have editorially curated variable tables. Additional definitions are being checked against the uploaded book.";
- el("symbol-results").innerHTML=matches.map(entry=>
- '<article class="symbol-context"><span class="symbol-glyph">'+enc(entry.symbol)+'</span><div class="symbol-context-body"><strong>'+enc(entry.meaning)+'</strong>'+
- '<p>'+enc(entry.subject)+' · '+enc(entry.unit)+'</p><small>'+enc(entry.formulaName)+'</small>'+
- '<p class="source-state">'+enc(entry.status)+'</p>'+
- (entry.formulaId?'<button type="button" data-symbol-formula="'+enc(entry.formulaId)+'" class="outline-btn">See formula →</button>':"")+
- '</div></article>').join("")||'<p class="placeholder">No symbol meanings currently indexed for this search. Formula-by-formula review is ongoing.</p>';
+ const matches=symbolIndex.findConcepts(el("symbol-search").value.trim(),el("symbol-discipline").value),shown=matches.slice(0,symbolLimit);
+ el("symbol-count").textContent=shown.length+" of "+matches.length+" distinct meanings shown · "+matches.reduce((n,c)=>n+c.contexts.length,0)+" formula contexts. Equivalent definitions are grouped; different meanings and units stay separate.";
+ el("symbol-results").innerHTML=shown.map(entry=>
+ '<article class="symbol-context"><span class="symbol-glyph">'+enc(entry.symbol)+'</span><div class="symbol-context-body"><h4>'+enc(entry.meaning)+'</h4>'+
+ '<p>'+enc(entry.unit)+' · '+enc(entry.subjects.join(' · '))+'</p>'+
+ '<details class="symbol-references"><summary>Used in '+entry.references.length+' '+(entry.references.length===1?'formula':'formulas')+' · '+entry.contexts.length+' '+(entry.contexts.length===1?'definition':'definitions')+'</summary><ul>'+entry.references.map(ref=>
+ '<li><button type="button" data-symbol-formula="'+enc(ref.formulaId)+'" class="symbol-formula-link">'+enc(ref.name)+' →</button><ul>'+ref.contexts.map(c=>'<li>'+(c.variantId?'<button type="button" class="symbol-variant-link" data-symbol-formula="'+enc(c.formulaId)+'" data-symbol-variant="'+enc(c.variantId)+'">'+enc(c.variantName===c.familyName?'Source expression'+(c.page?' · p. '+c.page:''):c.variantName)+' →</button>':'<span>Primary formula</span>')+'<small>'+enc(c.meaning)+' · '+enc(c.unit)+'</small><small class="source-state">'+enc(c.status)+'</small></li>').join('')+'</ul></li>').join('')+'</ul></details>'+
+ '</div></article>').join("")||'<p class="placeholder">No matching symbols. Try another word or discipline.</p>';
+ el("symbol-more").hidden=shown.length>=matches.length;
 }
+
 function setTab(name){
  if(!["formulas","symbols","calculators","practice","resources","sheet"].includes(name))name="formulas";
  state.tab=name;
@@ -219,11 +223,16 @@ function route(){
  if(el("chapter-filter"))el("chapter-filter").value=state.chapter;
  if(match){state.group="All";state.topic="All";state.query="";state.savedOnly=false;state.display=48;el("study-group").value="All";el("formula-search").value="";el("saved-only").checked=false;refreshTopics()}
  setTab(match?"formulas":location.hash.slice(1)||"formulas");
+ if(pendingSymbolVariant){openSymbolVariant(pendingSymbolVariant);pendingSymbolVariant=null}else if(location.hash)el("workspace").scrollIntoView?.({block:'start'});
 }
 function init(){
  const chapterSelect=el("chapter-filter");
  if(chapterSelect){for(const c of study.chapters||[]){const o=document.createElement("option");o.value=String(c.number);o.textContent=c.number+" · "+c.title;chapterSelect.append(o)}chapterSelect.addEventListener("change",e=>{state.chapter=e.target.value;state.display=48;renderFormulas()})}
 
+ for(const id of ['library-home-link','library-browse'])el(id).addEventListener('click',()=>{
+  pendingSymbolVariant=null;state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.display=48;
+  el('chapter-filter').value='All';el('study-group').value='All';el('formula-search').value='';el('saved-only').checked=false;refreshTopics();location.hash='formulas';setTab('formulas');el('workspace').scrollIntoView?.({block:'start'});
+ });
  const selector=el("topic-filter"),groupSelector=el("study-group");
  study.groups.forEach(group=>{const option=document.createElement("option");option.value=group.id;option.textContent=group.label;groupSelector.append(option)});
  refreshTopics();
@@ -231,13 +240,19 @@ function init(){
  study.groups.forEach(group=>{const opt=document.createElement("option");opt.value=group.id;opt.textContent=group.label;practiceSelect.append(opt)});
  el("calc-selector").innerHTML=calc.map(c=>'<option value="'+enc(c.id)+'">'+enc(c.category)+' · '+enc(c.name)+'</option>').join("");
  updateHeader();
- el("symbol-search").addEventListener("input",renderSymbols);
+ const symbolSubject=el("symbol-discipline");
+ study.groups.forEach(group=>{const option=document.createElement("option");option.value=group.id;option.textContent=group.label;symbolSubject.append(option)});
+ el("symbol-search").addEventListener("input",()=>{symbolLimit=60;renderSymbols()});
+ symbolSubject.addEventListener("change",()=>{symbolLimit=60;renderSymbols()});
+ el("symbol-more").addEventListener("click",()=>{symbolLimit+=60;renderSymbols()});
  el("symbol-results").addEventListener("click",ev=>{
   const b=ev.target.closest("button[data-symbol-formula]");if(!b)return;
   const f=byFormula.get(b.dataset.symbolFormula);if(!f)return;
   state.chapter="All";if(el("chapter-filter"))el("chapter-filter").value="All";state.group="All";state.topic="All";state.savedOnly=false;state.query=f.name;state.display=48;
   el("study-group").value="All";refreshTopics();el("saved-only").checked=false;el("formula-search").value=f.name;
+  pendingSymbolVariant=b.dataset.symbolVariant||null;
   location.hash="formulas";setTab("formulas");
+  if(pendingSymbolVariant)openSymbolVariant(pendingSymbolVariant);else el("workspace").scrollIntoView?.({block:'start'});
  });
  el("formula-search").addEventListener("input",ev=>{state.query=ev.target.value;state.display=48;renderFormulas()});
  selector.addEventListener("change",ev=>{state.topic=ev.target.value;state.display=48;renderFormulas()});

@@ -187,3 +187,18 @@ footer a{font-size:11px;text-decoration:none;color:var(--muted)}
 @media print{[data-pane="symbols"]{display:none!important}}
 
 .related-equations{margin:18px 0;padding:12px;border:1px solid var(--border,#29495e);border-radius:10px}.related-expression{padding:14px 0;border-bottom:1px solid var(--border,#29495e)}.related-expression:last-child{border:0}.related-expression h5{font-size:14px;margin:4px 0 10px}.source-correction{border-left:3px solid #f8ce81;padding-left:10px}.related-expression .equation{overflow-wrap:anywhere}
+
+/* Consolidated symbol meanings with formula-local evidence underneath. */
+.symbol-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.4fr);gap:14px;align-items:end}
+.symbol-filters>label:last-child{font-size:12px;color:var(--muted)}
+.symbol-filters select{display:block;width:100%;margin-top:6px;background:var(--raised);color:var(--text);border:1px solid var(--border);padding:12px;border-radius:10px}
+.symbol-context-body{width:100%}.symbol-context-body h4{font-size:16px;margin:1px 0 9px;line-height:1.4}
+.symbol-references{margin-top:15px;border-top:1px solid var(--border);padding-top:12px}
+.symbol-references summary{cursor:pointer;color:var(--accent);font-weight:600}
+.symbol-references ul{list-style:none;padding:0;margin:12px 0 0}.symbol-references>ul>li{padding:12px 0;border-top:1px solid var(--border)}
+.symbol-references li li{padding:9px 0 9px 12px;border-left:2px solid var(--border);margin:8px 0}
+.symbol-references small{display:block;line-height:1.5;overflow-wrap:anywhere}
+.symbol-formula-link,.symbol-variant-link{border:0;border-radius:0;padding:0;text-align:left;background:transparent;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.symbol-context-body .symbol-formula-link{font-size:13px;font-weight:700}.symbol-context-body .symbol-variant-link{font-size:12px}
+.symbol-context{align-self:start}.related-expression[tabindex="-1"]{scroll-margin-top:25px}
+@media(max-width:600px){.symbol-filters{grid-template-columns:1fr}.symbol-context{padding:14px;gap:10px}.symbol-glyph{min-width:44px}}

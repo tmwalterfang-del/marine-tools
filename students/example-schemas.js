@@ -2,7 +2,7 @@
   "lifting": {
     "title": "Heavy lift & counterballast",
     "description": "Move an existing deck load to a suspension point, then explore outreach and transverse ballast transfer.",
-    "chapter": 13,
+    "chapter": 14,
     "fields": [
       [
         "delta",
@@ -70,7 +70,7 @@
   "trim": {
     "title": "Trim & draft changes",
     "description": "Load, discharge or shift a mass and compare forward and aft drafts using constant study hydrostatics.",
-    "chapter": 13,
+    "chapter": 14,
     "fields": [
       [
         "length",
@@ -147,7 +147,7 @@
   "tank": {
     "title": "Tank filling & free surface",
     "description": "Add liquid to an ideal rectangular tank. Compare changes in weight, KG and free-surface correction, with isolated longitudinal compartments.",
-    "chapter": 13,
+    "chapter": 14,
     "fields": [
       [
         "delta",
@@ -210,7 +210,7 @@
   "pump": {
     "title": "Pump & system curves",
     "description": "Move the operating point by changing speed, static head and pipe resistance. Compare flow, head and estimated shaft input.",
-    "chapter": 10,
+    "chapter": 11,
     "fields": [
       [
         "h0",
@@ -301,7 +301,7 @@
   "faults": {
     "title": "Cooling-system fault tree",
     "description": "Change six observations and follow a transparent example decision tree. Review every flagged observation, including simultaneous faults.",
-    "chapter": 10,
+    "chapter": 11,
     "fields": [
       [
         "running",

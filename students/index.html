@@ -41,16 +41,15 @@
  <script defer src="chapter-15-audit-20261020.js?v=chapters-1"></script>
  <script defer src="chapter-16-audit-20261020.js?v=chapters-1"></script>
  <script defer src="chapter-index.js?v=chapters-1"></script>
+ <script defer src="symbol-review-20261020.js?v=symbols-review-1"></script>
  <script defer src="symbol-index.js?v=students-draft-6"></script>
  <script defer src="app.js?v=students-draft-11"></script>
-</head>
+<link rel="stylesheet" href="navigation.css?v=1"></head>
 <body>
 <a class="skip-link" href="#workspace">Skip to content</a>
 <header class="topbar">
- <a class="brand" href="../education/"><img src="../assets/icon-192.png" width="43" height="43" alt=""><span><strong>MARINE TOOLS</strong><small>EDUCATION / STUDENTS</small></span></a>
- <nav class="toplinks" aria-label="Main navigation">
-  <a href="../education/">Education</a><a href="../">Marine Tools ↗</a>
- </nav>
+ <a class="brand" href="./"><img src="../assets/icon-192.png" width="43" height="43" alt=""><span><strong>MARINE TOOLS</strong><small>EDUCATION / STUDENTS</small></span></a>
+ <nav class="student-nav" aria-label="Student navigation"><a id="library-home-link" href="./#formulas" aria-current="page">Formula library</a><a href="interactive.html">Interactive modules</a><a href="chapters.html">Chapters</a><a class="main-site-link" href="../">Main site ↗</a></nav>
 </header>
 <main id="workspace">
  <section class="hero" aria-labelledby="hero-title">
@@ -58,7 +57,7 @@
    <span class="eyebrow"><span class="status-dot"></span> MARITIME STUDY WORKSPACE · DEVELOPMENT PREVIEW</span>
    <h1 id="hero-title">Technical formulas made practical.</h1>
    <p>Find the formula, understand its assumptions, test values and practice with worked solutions — from ship stability to electricity and thermodynamics.</p>
-   <div class="hero-buttons"><a class="main-btn" href="interactive.html">All 15 interactive modules →</a><a href="#formulas" class="main-btn">Explore Formula Library <span aria-hidden="true">→</span></a><a class="outline-btn" href="#practice">Try practice mode</a><a class="outline-btn" href="labs.html">Interactive learning labs ↗</a><a class="outline-btn" href="explorers.html">Engineering explorers ↗</a><a class="outline-btn" href="chapters.html">All 16 chapters →</a><a class="outline-btn" href="mollier.html">Interactive Mollier chart ↗</a></div>
+   <div class="hero-buttons"><a id="library-browse" href="#formulas" class="main-btn">Browse the formula library →</a><a class="outline-btn" href="interactive.html">Explore 15 interactive modules →</a></div>
    <p class="preview-note">This page is an experimental educational reference. Formula coverage and academic validation are still being expanded.</p>
   </div>
   <div class="hero-aside" aria-label="Study workspace overview">
@@ -100,10 +99,11 @@
    <div class="load-row"><button id="load-more" type="button" class="outline-btn">Show more</button></div>
   </section>
   <section data-pane="symbols" aria-label="Context-aware symbol index" hidden>
-   <div class="section-intro"><h3>Symbol Lookup</h3><p>The same notation can describe different quantities. Meanings below are attached to their formula and subject. Unreviewed formulas are still being indexed.</p></div>
-   <label class="search-field"><span aria-hidden="true">⌕</span><input type="search" id="symbol-search" placeholder="Search Q, P, pressure, charge, units…" aria-label="Search symbol meanings"></label>
+   <div class="section-intro"><h3>Symbol Lookup</h3><p>One card per symbol, meaning and unit. Open “Used in…” to see every formula and source-specific definition. Grouping removes repeated cards; it does not certify the underlying equations.</p></div>
+   <div class="symbol-filters"><label class="search-field"><span aria-hidden="true">⌕</span><input type="search" id="symbol-search" placeholder="Search Q, P, pressure, charge, units…" aria-label="Search symbol meanings"></label><label>Discipline<select id="symbol-discipline"><option value="All">All disciplines</option></select></label></div>
    <p id="symbol-count" class="symbol-review-count" aria-live="polite"></p>
    <div id="symbol-results" class="symbol-results"></div>
+   <div class="load-row"><button id="symbol-more" type="button" class="outline-btn">Show 60 more meanings</button></div>
   </section>
   <section data-pane="calculators" aria-label="Interactive calculators" hidden>
    <div class="section-intro"><h3>Learn the method. Check the arithmetic.</h3><p>Transparent educational computations with visible units and working steps. Every calculation is performed in your browser.</p></div>
@@ -151,7 +151,7 @@
   <section data-pane="resources" aria-label="Academic references" hidden>
    <div class="section-intro"><h3>Reference books and further reading</h3><p>References are linked to their original publishers and libraries. Copyrighted textbook pages, original publisher tables and artwork are not reproduced here.</p></div>
    <div class="resource-grid">
-    <article class="resource-card"><span class="topic-pill">Steam Engineering</span><h3>Interactive Mollier h–s Lab</h3><p>Plot saturated steam quality and compare two enthalpy–entropy state points. Self-contained offline educational chart.</p><a href="mollier.html">Open interactive Mollier diagram ↗</a><small>IAPWS-IF97 solver within the stated phase and pressure/temperature envelope; unsupported states are rejected.</small></article>
+    <article class="resource-card"><span class="topic-pill">Steam Engineering</span><h3>Interactive Mollier h–s Lab</h3><p>Plot saturated steam quality and compare two enthalpy–entropy state points. Self-contained offline educational chart.</p><a href="interactive.html#mollier">Open interactive Mollier diagram ↗</a><small>IAPWS-IF97 solver within the stated phase and pressure/temperature envelope; unsupported states are rejected.</small></article>
     <article class="resource-card"><span class="topic-pill">Technical handbook</span><h3>Teknisk formelsamling med tabeller</h3><p>Svein Erik Pedersen, Jan Gustavsen, Svein Kaasa og Oddmund Olsen. Gyldendal Undervisning.</p><a href="https://www.nb.no/items/7dd9087d6a49416798fe7b2f6fdd86c2" target="_blank" rel="noopener noreferrer">View catalogue at Nasjonalbiblioteket ↗</a><small>Digital reading access and reproduction rights depend on the library/publisher. This app does not distribute a copy.</small></article>
     <article class="resource-card"><span class="topic-pill">Maritime references</span><h3>MARFAG formula collections</h3><p>Maritime F1 navigation, F2/F3 cargo and stability, mathematics, physics and technical training materials.</p><a href="https://www.marfag.no/formelsamlinger" target="_blank" rel="noopener noreferrer">Explore original formula booklets ↗</a><small>Check original editions and school requirements. Do not use older instructional excerpts as a current regulatory source.</small></article>
     <article class="resource-card"><span class="topic-pill">For instructors</span><h3>Original learning content</h3><p>Marine Tools formulas are independently explained and illustrated with synthetic exercises. Use this resource to complement, not replace, your own curriculum and approved training material.</p><a href="../education/">Education landing page →</a><small>Formula inclusion does not imply permission to use the site as an examination aid.</small></article>

@@ -1,38 +1,20 @@
-/* Marine Tools student symbol disambiguation; each term is scoped to its formula.
- No copyrighted images, book tables, or copied descriptions; verification status stays explicit. */
-(function(){
-"use strict";
-const formulas=window.MT_FORMULAS||[],study=window.MT_STUDY||{details:{}},byId=new Map(formulas.map(f=>[f.id,f]));
-const examples=[
- ["Q","Electric charge","C","capacitor-charge","electric.charge"],
- ["Q","Volumetric flow rate","m³/s","volumetric-flow","fluids.volume_flow"],
- ["Q","Sensible heat energy","J","heat-transfer-sensible","thermal.heat_energy"],
- ["P","Active electrical power","W","dc-power","electric.active_power"],
- ["P","Mechanical power","W","power","mechanics.power"],
- ["p","Hydrostatic pressure","Pa","hydrostatic-pressure","fluids.pressure"],
- ["p","Pressure","Pa","pressure-from-force","fluids.pressure"],
- ["P","Active power component","W","power-factor","electric.active_power"],
- ["P","Proportional band","%",null,"control.proportional_band"]
-];
-const registry=new Map(), status="Draft definition — independent equation-level verification pending.";
-const key=(id,symbol)=>(id||"pending")+":"+symbol;
-for(const f of formulas){
- for(const v of study.details[f.id]?.symbols||[]){
-  registry.set(key(f.id,v.symbol),{formulaId:f.id,formulaName:f.name,subject:f.category,symbol:v.symbol,meaning:v.meaning,unit:v.unit,quantityId:"formula."+f.id+"."+v.symbol,status});
- }
-}
-for(const f of formulas){for(const variant of f.related||[]){for(const v of variant.symbols){
- const id=variant.id+":"+v.symbol;
- registry.set(id,{formulaId:f.id,variantId:variant.id,formulaName:f.name+" / "+variant.name,subject:f.category,symbol:v.symbol,meaning:v.meaning,unit:v.unit,quantityId:"variant."+id,status:variant.symbolicStatus==="PENDING"?"Source expression read; numerical verification pending.":(variant.numericChecks?.length?"Symbolic check and "+variant.numericChecks.length+" numerical samples passed under test assumptions.":"Symbolic rule checked under test assumptions; numerical specialisations pending.")});
-}}}
-for(const [symbol,meaning,unit,id,quantityId] of examples){
- const f=id?byId.get(id):null;
- if(id&&!f)throw Error("Unknown formula reference "+id);
- const formulaId=f?.id||null;
- registry.set(key(formulaId,symbol),{formulaId,formulaName:f?.name||"Proportional band (not yet catalogued)",subject:f?.category||"Instrumentation & Control",symbol,meaning,unit,quantityId,status});
-}
+/* Context records remain formula-local; the browse view groups explicitly equivalent definitions. */
+(function(){'use strict';
+const formulas=window.MT_FORMULAS||[],study=window.MT_STUDY||{details:{}},byId=new Map(formulas.map(f=>[f.id,f])),review=window.MT_SYMBOL_REVIEW;
+const examples=[['Q','Electric charge','C','capacitor-charge','electric.charge'],['Q','Volumetric flow rate','m³/s','volumetric-flow','fluids.volume_flow'],['Q','Sensible heat energy','J','heat-transfer-sensible','thermal.heat_energy'],['P','Active electrical power','W','dc-power','electric.active_power'],['P','Mechanical power','W','power','mechanics.power'],['p','Hydrostatic pressure','Pa','hydrostatic-pressure','fluids.pressure'],['p','Pressure','Pa','pressure-from-force','fluids.pressure'],['P','Active power component','W','power-factor','electric.active_power']];
+const registry=new Map(),status='Definition recorded; independent equation-level verification remains separate.';
+const key=(id,symbol)=>id+':'+symbol;
+function variantStatus(v){if(v.symbolicStatus==='NOT_APPLICABLE')return['CHEMICAL_PATTERN','REACTION'].includes(v.kind)?'Source pattern read; structural and stoichiometric checks remain separate.':'Source relationship read; model-specific validation remains separate.';if(v.symbolicStatus==='PENDING')return v.numericStatus==='REFERENCE_CASE_COVERED'?'Source expression read; selected numerical case tested. Full domain review remains separate.':'Source expression read; numerical verification pending.';return v.numericChecks?.length?'Symbolic check and '+v.numericChecks.length+' numerical samples passed under test assumptions.':'Symbolic rule checked under test assumptions; numerical specialisations pending.'}
+for(const f of formulas){for(const v of study.details[f.id]?.symbols||[])registry.set(key(f.id,v.symbol),{formulaId:f.id,formulaName:f.name,familyName:f.name,subject:f.category,symbol:v.symbol,meaning:v.meaning,unit:v.unit,quantityId:'formula.'+f.id+'.'+v.symbol,status});
+ for(const variant of f.related||[])for(const v of variant.symbols||[]){const id=variant.id+':'+v.symbol;registry.set(id,{formulaId:f.id,variantId:variant.id,variantName:variant.name,page:variant.page,formulaName:f.name+' / '+variant.name,familyName:f.name,subject:f.category,symbol:v.symbol,meaning:v.meaning,unit:v.unit,quantityId:'variant.'+id,status:variantStatus(variant)})}}
+for(const[symbol,meaning,unit,id,quantityId]of examples){const f=byId.get(id);if(!f)throw Error('Unknown formula reference '+id);registry.set(key(id,symbol),{formulaId:id,formulaName:f.name,familyName:f.name,subject:f.category,symbol,meaning,unit,quantityId,status})}
 const entries=[...registry.values()].sort((a,b)=>a.symbol.localeCompare(b.symbol)||a.subject.localeCompare(b.subject));
-window.MT_SYMBOLS={entries,coverage:{formulas:formulas.length,withCuratedDefinitions:formulas.filter(f=>(study.details[f.id]?.symbols||[]).length).length},
- find(term){const q=String(term||"").trim().toLowerCase();return entries.filter(e=>!q||[e.symbol,e.meaning,e.unit,e.subject,e.formulaName].some(s=>String(s||"").toLowerCase().includes(q)))}
+const normal=s=>String(s).normalize('NFC').trim().replace(/\s+/g,' '),grouped=new Map();
+function references(contexts){const refs=new Map();for(const c of contexts){if(!refs.has(c.formulaId))refs.set(c.formulaId,{formulaId:c.formulaId,name:c.familyName,contexts:[]});refs.get(c.formulaId).contexts.push(c)}return[...refs.values()].sort((a,b)=>a.name.localeCompare(b.name))}
+for(const e of entries){const c=review?review.canonical(e):{symbol:normal(e.symbol),meaning:normal(e.meaning),unit:normal(e.unit)},id=JSON.stringify([c.symbol,c.unit,c.meaning.toLowerCase()]);if(!grouped.has(id))grouped.set(id,{...c,id,contexts:[],aliases:[]});const g=grouped.get(id);g.contexts.push(e);if(!g.aliases.includes(e.meaning))g.aliases.push(e.meaning)}
+const concepts=[...grouped.values()].map(g=>({...g,subjects:[...new Set(g.contexts.map(c=>c.subject))].sort(),references:references(g.contexts),searchText:[g.symbol,g.meaning,g.unit,...g.contexts.flatMap(c=>[c.meaning,c.subject,c.formulaName])].join(' ').toLowerCase()})).sort((a,b)=>a.symbol.localeCompare(b.symbol)||a.meaning.localeCompare(b.meaning)||a.unit.localeCompare(b.unit));
+window.MT_SYMBOLS={entries,concepts,coverage:{formulas:formulas.length,withCuratedDefinitions:formulas.filter(f=>(study.details[f.id]?.symbols||[]).length).length,contexts:entries.length,concepts:concepts.length},
+ find(term){const q=String(term||'').trim().toLowerCase();return entries.filter(e=>!q||[e.symbol,e.meaning,e.unit,e.subject,e.formulaName].some(s=>String(s||'').toLowerCase().includes(q)))},
+ findConcepts(term,discipline='All'){const q=String(term||'').trim(),exact=q&&concepts.some(c=>c.symbol===q),group=study.groups?.find(g=>g.id===discipline);return concepts.filter(c=>!q||(exact?c.symbol===q:c.searchText.includes(q.toLowerCase()))).flatMap(c=>{if(!group)return[c];const contexts=c.contexts.filter(e=>group.categories.includes(e.subject));return contexts.length?[{...c,contexts,references:references(contexts),subjects:[...new Set(contexts.map(e=>e.subject))].sort()}]:[]})}
 };
 })();

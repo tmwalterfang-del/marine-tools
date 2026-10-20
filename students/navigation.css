@@ -1,0 +1,12 @@
+/* Same three study destinations on every student page. */
+.student-nav{display:flex!important;align-items:center;gap:8px!important;flex-wrap:wrap}
+.student-nav a{padding:9px 12px;border-radius:8px;text-decoration:none;font-size:13px;color:var(--muted,#a8c2d3);border:1px solid transparent}
+.student-nav a:hover,.student-nav a:focus-visible{color:var(--text,#ecf5fa);border-color:var(--border,var(--line,#28465a))}
+.student-nav a[aria-current="page"]{background:var(--raised,#173146);color:var(--accent,var(--blue,#63daed));border-color:var(--border,var(--line,#28465a));font-weight:700}
+.student-nav .main-site-link{font-size:12px;text-decoration:underline;text-underline-offset:4px}
+.module-picker{min-width:0}.module-picker>label{margin-bottom:16px}.module-picker input{width:100%}
+#module-list h3{font-size:11px;line-height:1.5;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:20px 0 1px;grid-column:1/-1}
+#module-list h3:first-child{margin-top:0}#module-list a{font-size:13px;line-height:1.4}
+.module-no-results{font-size:13px;color:var(--muted)}
+@media(max-width:650px){.student-nav{width:100%;gap:4px!important}.student-nav a{padding:8px;font-size:12px}.student-nav .main-site-link{margin-left:auto}header .brand{font-size:14px}.module-picker>label{margin-bottom:10px}}
+@media print{.student-nav,.module-picker{display:none!important}}
