@@ -13,6 +13,7 @@ const srcCalculatorsExt=read('students/calculators-extension.js');
 const srcCalculatorsExpand=read('students/calculators-expansion-v1.js');
 const srcApp=read('students/app.js');
 const studySource=read('students/learning-data.js');
+const symbolSource=read('students/symbol-index.js');
 const sw=read('sw.js');
 const main=read('index.html');
 const education=read('education/index.html');
@@ -24,6 +25,7 @@ new Function('window',srcCalculators)(sandbox);
 new Function('window',srcCalculatorsExt)(sandbox);
 new Function('window',srcCalculatorsExpand)(sandbox);
 new Function('window',studySource)(sandbox);
+new Function('window',symbolSource)(sandbox);
 new Function(srcApp);
 const formulas=sandbox.MT_FORMULAS,calculators=sandbox.MT_CALCULATORS,exercises=sandbox.MT_PRACTICE;
 let passed=0;
@@ -126,6 +128,19 @@ ok(srcApp.includes('if(!state.attempted)return')&&srcApp.includes('state.attempt
 ok(srcApp.includes('mt-student-formulas-fav-v1')&&srcApp.includes('print-sheet'),'saved selections drive printable sheet');
 ok(css.includes('body.print-sheet .sheet-formulas')&&css.includes('.symbol-grid'),'print stylesheet and symbol legend styles present');
 ok(!srcApp.includes('fetch(')&&!srcApp.includes('sendBeacon'),'student resources remain local-only');
+
+const symbolIndex=sandbox.MT_SYMBOLS;
+ok(symbolIndex.entries.length>=65,'symbol register contains curated contextual entries');
+ok(symbolIndex.coverage.formulas===formulas.length,'symbol register indexes entire formula catalogue without claiming completeness');
+ok(symbolIndex.find('Q').filter(v=>v.symbol==='Q').some(v=>v.meaning.includes('Electric charge')),'Q electric charge is represented');
+ok(symbolIndex.find('Q').filter(v=>v.symbol==='Q').some(v=>v.meaning.includes('flow')),'Q volume flow is distinct from charge');
+ok(symbolIndex.find('Q').filter(v=>v.symbol==='Q').some(v=>v.meaning.includes('heat')),'Q heat is distinct from charge and flow');
+ok(symbolIndex.find('P').some(v=>v.meaning==='Proportional band'),'P proportional band remains independently interpreted');
+ok(symbolIndex.entries.every(v=>v.symbol&&v.meaning&&v.unit&&v.quantityId&&v.status),'symbol entries contain subject-scoped meaning, unit, identity and review status');
+ok(symbolIndex.entries.filter(v=>v.formulaId).every(v=>formulas.some(f=>f.id===v.formulaId)),'all linked symbols resolve to existing formula IDs');
+ok(html.includes('src="symbol-index.js?v=students-draft-6"')&&sw.includes("'./students/symbol-index.js'"),'symbol metadata loads and is available offline');
+ok((html.match(/src="learning-data.js/g)||[]).length===1,'curriculum loader is not duplicated');
+ok(html.includes('data-tab="symbols"')&&html.includes('id="symbol-search"'),'context-aware symbol lookup tab and search exist');
 
 console.log(JSON.stringify({result:'PASS',checks:passed,formulas:formulas.length,calculators:calculators.length,exercises:exercises.length,
  note:'Isolated source smoke only; browser reflow, installed PWA and full editorial accuracy are still pending.'}));
