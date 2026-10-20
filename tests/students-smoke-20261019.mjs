@@ -14,6 +14,7 @@ const srcCalculatorsExpand=read('students/calculators-expansion-v1.js');
 const srcApp=read('students/app.js');
 const studySource=read('students/learning-data.js');
 const photoSource=read('students/book-photos-20261020.js');
+const mathSource=read('students/math-chapter-20261020.js');
 const symbolSource=read('students/symbol-index.js');
 const sw=read('sw.js');
 const main=read('index.html');
@@ -27,13 +28,14 @@ new Function('window',srcCalculatorsExt)(sandbox);
 new Function('window',srcCalculatorsExpand)(sandbox);
 new Function('window',studySource)(sandbox);
 new Function('window',photoSource)(sandbox);
+new Function('window',mathSource)(sandbox);
 new Function('window',symbolSource)(sandbox);
 new Function(srcApp);
 const formulas=sandbox.MT_FORMULAS,calculators=sandbox.MT_CALCULATORS,exercises=sandbox.MT_PRACTICE;
 let passed=0;
 function ok(condition,label){assert.ok(condition,label);passed++;console.log('PASS '+label)}
 function near(value,expected,label){ok(Math.abs(value-expected)<1e-6,label)}
-ok(formulas.length>=372,'reconciled formula catalogue has at least 366 entries');
+ok(formulas.length>=409,'reconciled formula catalogue has at least 366 entries');
 ok(new Set(formulas.map(f=>f.id)).size===formulas.length,'formula IDs unique');
 ok(new Set(formulas.map(f=>f.category)).size===28,'all 28 subject areas present');
 ok(new Set(formulas.map(f=>f.name.toLowerCase())).size===formulas.length,'formula names not duplicated across expansion packs');
@@ -144,12 +146,22 @@ ok(html.includes('src="symbol-index.js?v=students-draft-6"')&&sw.includes("'./st
 ok((html.match(/src="learning-data.js/g)||[]).length===1,'curriculum loader is not duplicated');
 ok(html.includes('data-tab="symbols"')&&html.includes('id="symbol-search"'),'context-aware symbol lookup tab and search exist');
 
-ok(formulas.length===372,'photo-review expansion brings full catalogue to 372 formulas');
+ok(formulas.length>=372,'photo-review expansion retains original photographed formulas');
 ok(Object.keys(sandbox.MT_STUDY.photoReview).length===13,'13 context symbol tables tied to photographed pages');
-ok(Object.keys(sandbox.MT_STUDY.details).length>=32,'at least 32 curated contextual formula guides');
+ok(Object.keys(sandbox.MT_STUDY.details).length>=90,'at least 32 curated contextual formula guides');
 ok(['79','150','197'].every(n=>Object.values(sandbox.MT_STUDY.photoReview).some(x=>String(x.page)===n)),'all three photographed printed pages represented');
 ok(html.includes('book-photos-20261020.js')&&sw.includes("'./students/book-photos-20261020.js'"),'photo metadata loads and caches');
 ok(formulas.some(f=>f.id==='photo-20261020-multistream-boiler-efficiency'),'five-stream boiler balance included');
 ok(!formulas.some(f=>f.id==='bookphoto-20261020-density-displacement'),'ambiguous density correction excluded until physical review');
+const mathAudit=sandbox.MT_STUDY.mathChapter20261020;
+ok(mathAudit.sourcePrintedPages[0]===7&&mathAudit.sourcePrintedPages[1]===22,'mathematics chapter photo range confirmed 7–22');
+ok(mathAudit.reviewedFormulaIds.length===59,'59 existing and new mathematics formula contexts annotated');
+ok(formulas.length===409,'409 independently written formula catalogue entries loaded');
+ok(html.includes('math-chapter-20261020.js')&&sw.includes("'./students/math-chapter-20261020.js'"),'mathematics chapter referenced and offline precached');
+ok(formulas.some(f=>f.name==='Spherical sine law'&&f.category==='Geometry & Trigonometry'),'spherical sine law available with domain limits');
+ok(formulas.some(f=>f.name==='Probability of union'),'union probability formula included');
+ok(formulas.some(f=>f.name==='Derivative product rule'),'derivative product rule included');
+ok(sandbox.MT_SYMBOLS.entries.length>=180,'symbol index regenerated for mathematics formula contexts');
+ok(sandbox.MT_STUDY.details[formulas.find(f=>f.name==='Sample variance').id].symbols.length>=4,'statistical notation has formula-specific explanations');
 console.log(JSON.stringify({result:'PASS',checks:passed,formulas:formulas.length,calculators:calculators.length,exercises:exercises.length,
  note:'Isolated source smoke only; browser reflow, installed PWA and full editorial accuracy are still pending.'}));
