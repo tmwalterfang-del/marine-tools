@@ -28,6 +28,6 @@ near(displayed('physics-audit-20261020-luminous-flux',{I_v:100,Ω:2}),200,'unifo
 near(displayed('physics-audit-20261020-luminance',{I_v:300,A_projected:2}),150,'luminance uses projected area');
 const rows=w.MT_STUDY.physicsEquationAudit;ok(rows.length===82,'82 separately identified physics relationships');ok(new Set(rows.map(r=>r.page)).size===7,'seven physics pages mapped');
 for(const r of rows)ok(byId.has(r.formulaId)&&r.symbols.every(v=>v.symbol&&v.meaning&&v.unit)&&r.conditions,'complete captured expression '+r.id);
-ok(w.MT_STUDY.sourceEquationRegister.length===671,'262 math plus 82 physics plus 204 mechanics and 53 machine-element and 70 chemistry relationships remain distinct from 529 app cards');
+ok(w.MT_STUDY.sourceEquationRegister.length===1498,'1498 source relationships remain distinct from575 primary formula families');
 const c=w.MT_CALCULATORS.find(c=>c.id==='classical-doppler');near(c.compute({fs:1000,c:340,vo:0,vs:34}).value,10000/9,'mapped calculator follows source speed convention');ok(!!c.compute({fs:1000,c:340,vo:0,vs:340}).invalid,'calculator surfaces sonic-boundary error');
 console.log(JSON.stringify({status:'PASS',checks,numericReferenceCases:numeric,capturedPhysicsExpressions:rows.length,scope:'selected independent arithmetic and boundary cases; not numerical verification of all 82 expressions'}));

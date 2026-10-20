@@ -2,7 +2,7 @@
 'use strict';
 const M=window.MT_LABS,$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
 const f=(v,d=2)=>v.toLocaleString('en-GB',{maximumFractionDigits:d,minimumFractionDigits:d});
-const datasets={};
+const datasets={},invalid={};
 const formIds=['stability','signal','pid','engine'];
 function values(form){const out={};for(const input of form.elements){if(!input.name)continue;if(input.type==='checkbox'){out[input.name]=input.checked;continue}if(input.type==='number'){if(!input.value.trim())throw RangeError('Complete every numerical input.');out[input.name]=Number(input.value)}else out[input.name]=input.value}return out}
 function persist(){try{const state={version:1};for(const id of formIds)state[id]=values($(id+'-form'));localStorage.setItem('mt-student-labs-v1',JSON.stringify(state))}catch{}}
@@ -44,15 +44,30 @@ function engine(){const a=values($('engine-form'));a.cycles=Number(a.cycles);con
  $('engine-working').textContent='Total swept volume '+f(z.volume,6)+' m³. Brake power '+f(z.brake,2)+' kW; indicated power '+f(z.indicated,2)+' kW; mechanical loss '+f(z.mechanicalLoss,2)+' kW. Thermal input '+f(z.thermal,2)+' kW at the entered brake efficiency. Fuel mass '+f(z.fuel,2)+' kg/h using LHV '+f(a.lhv,2)+' MJ/kg.';
 }
 const run={stability,signal,pid,engine};
-function update(id){try{run[id]();$(id+'-error').hidden=true;persist()}catch(e){$(id+'-error').textContent=e.message+' The displayed result is from the last valid inputs.';$(id+'-error').hidden=false}}
+function update(id){try{run[id]();invalid[id]=false;$(id+'-error').hidden=true;persist()}catch(e){invalid[id]=true;$(id+'-error').textContent=e.message+' The displayed result is from the last valid inputs.';$(id+'-error').hidden=false}}
 for(const id of formIds){$(id+'-form').addEventListener('submit',e=>{e.preventDefault();update(id)});$(id+'-form').addEventListener('change',()=>update(id));update(id)}
 function choose(){const requested=location.hash.slice(1),active=['stability','controls','engine'].includes(requested)?requested:'stability';for(const id of ['stability','controls','engine'])$(id).hidden=id!==active;for(const a of document.querySelectorAll('.lab-nav a')){if(a.getAttribute('href')==='#'+active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}document.title={stability:'Stability & GZ',controls:'4–20 mA & PID',engine:'Engines & fuel'}[active]+' · Marine Tools Labs'}
 window.addEventListener('hashchange',choose);choose();
 $('signal-check').addEventListener('click',()=>{const input=$('signal-answer').value;if(!input.trim()){$('signal-feedback').textContent='Enter your answer first.';return}const value=Number(input);$('signal-feedback').textContent=Math.abs(value-5)<.01?'Correct: (12 − 4)/16 × 10 = 5 bar.':'Try again: subtract the 4 mA live zero, then divide by the 16 mA span and multiply by 10 bar.'});
-for(const button of document.querySelectorAll('[data-export]'))button.addEventListener('click',()=>{const id=button.dataset.export;if(!datasets[id])return;
- const quote=v=>'"'+String(v).replace(/"/g,'""')+'"';const csv=datasets[id].map(r=>r.map(quote).join(',')).join('\r\n')+'\r\n';
- const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='marine-tools-'+id+'-lab.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-});
+function activeLab(){return ['stability','controls','engine'].find(id=>!$(id).hidden)||'stability'}
+function validated(id){const ids=id==='controls'?['signal','pid']:[id];for(const key of ids){if(invalid[key])throw RangeError('Correct the current '+key+' inputs before exporting.');run[key]()}return ids}
+function snapshot(id){const E=window.MT_STUDY_EXPORT,ids=validated(id),inputs={};for(const key of ids){const form=$(key+'-form');for(const input of form.elements){if(!input.name)continue;const label=input.closest('label')?.textContent.trim().replace(/\s+/g,' ')||input.name;inputs[key+' · '+label]=input.type==='checkbox'?input.checked:input.value}}
+ const node=$(id),charts=[...node.querySelectorAll('svg')].map(svg=>({svg:E.svgSnapshot(svg),caption:svg.querySelector('title')?.textContent||svg.id}));
+ const results={};for(const key of ids){const n=$(key+'-results')||$(key+'-result');if(n)results[key]=n.textContent.trim()}
+ const notes=[...node.querySelectorAll('details.panel p')].map(n=>n.textContent.trim()).filter(Boolean);if(id==='controls')notes.push('Synthetic positive-gain plant: dy/dt=(20+u−y)/tau. SP steps at 10 s; sample step 0.1 s; output 0–100%. Derivative acts on filtered PV, integral anti-windup is conditional. Direct action gives positive feedback for this plant.');
+ const data=datasets[id],sample=id==='controls'?data.filter((_,i)=>i===0||(i-1)%100===0):data;
+ return {model:'labs-'+id,title:{stability:'Stability, GZ and free surface',controls:'4–20 mA and PID response',engine:'Engine power and illustrative fuel comparison'}[id],inputs,results,notes,charts,tables:data?[{title:id==='controls'?'Response at 10-second intervals':'Calculated numerical results',rows:sample}]:[]};
+}
+function exportAction(fn){try{fn();$('export-feedback').textContent='Export prepared from the current valid calculation.'}catch(e){$('export-feedback').textContent=e.message}}
+for(const button of document.querySelectorAll('[data-export]'))button.addEventListener('click',()=>exportAction(()=>{const id=button.dataset.export;validated(id);window.MT_STUDY_EXPORT.download('marine-tools-'+id+'-lab.csv',window.MT_STUDY_EXPORT.csv(datasets[id]),'text/csv;charset=utf-8')}));
+$('report-html').addEventListener('click',()=>exportAction(()=>{const id=activeLab(),E=window.MT_STUDY_EXPORT;E.download('marine-tools-'+id+'-report.html',E.report(snapshot(id)),'text/html;charset=utf-8')}));
+$('report-svg').addEventListener('click',()=>exportAction(()=>{const id=activeLab(),s=snapshot(id),E=window.MT_STUDY_EXPORT;E.download('marine-tools-'+id+'-graph.svg',s.charts[0].svg,'image/svg+xml;charset=utf-8')}));
+$('report-json').addEventListener('click',()=>exportAction(()=>{const id=activeLab(),E=window.MT_STUDY_EXPORT,ids=validated(id),inputs={};for(const key of ids)inputs[key]=values($(key+'-form'));E.download('marine-tools-'+id+'-scenario.json',E.scenario('labs-'+id,inputs),'application/json')}));
+$('scenario-file').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{const id=activeLab(),ids=id==='controls'?['signal','pid']:[id],data=window.MT_STUDY_EXPORT.parseScenario(await file.text(),'labs-'+id,ids),backup={};for(const key of ids){backup[key]=Object.fromEntries([...$(key+'-form').elements].filter(x=>x.name).map(x=>[x.name,x.type==='checkbox'?x.checked:x.value]));const allowed=[...$(key+'-form').elements].filter(x=>x.name).map(x=>x.name);if(Object.keys(data[key]||{}).length!==allowed.length||allowed.some(k=>!Object.hasOwn(data[key],k)))throw TypeError('Scenario input fields do not match this module.');for(const x of $(key+'-form').elements){if(!x.name)continue;const v=data[key][x.name];if(x.type==='number'&&(typeof v!=='number'||!Number.isFinite(v))||x.type==='checkbox'&&typeof v!=='boolean'||x.tagName==='SELECT'&&![...x.options].some(o=>o.value===v))throw TypeError('Invalid scenario value for '+x.name+'.')}}
+ function apply(all){for(const key of ids)for(const input of $(key+'-form').elements){if(!input.name)continue;const value=all[key][input.name];if(input.type==='checkbox')input.checked=value===true;else input.value=String(value)}}
+ try{apply(data);for(const key of ids)run[key]();for(const key of ids)update(key);$('export-feedback').textContent='Scenario restored and recalculated.'}catch(err){apply(backup);for(const key of ids)update(key);throw err}
+ }catch(err){$('export-feedback').textContent=err.message}e.target.value=''});
+window.MT_LAB_SNAPSHOT=id=>snapshot(id);
 $('print-labs').addEventListener('click',()=>window.print());
 if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{});
 })();

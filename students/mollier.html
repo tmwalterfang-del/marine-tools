@@ -9,11 +9,12 @@
 <link rel="stylesheet" href="mollier.css?v=20261020-2">
 <script defer charset="utf-8" src="vendor/neutrium-if97.min.js?v=20261020-if97-2"></script>
 <script defer src="mollier-if97.js?v=20261020-if97-2"></script>
+<script defer src="study-export.js?v=20261020-1"></script>
 <script defer src="mollier.js?v=20261020-if97-2"></script>
 </head>
 <body>
 <a class="skip" href="#mollier-main">Skip to Mollier plot</a>
-<header class="top"><a class="brand" href="./"><img src="../assets/icon-192.png" width="42" height="42" alt=""><span><strong>MARINE TOOLS</strong><small>FOR STUDENTS / STEAM ENGINEERING</small></span></a><nav><a href="./">← Formula Library</a><a href="../education/">Education</a><a href="../">Main site ↗</a></nav></header>
+<header class="top"><a class="brand" href="./"><img src="../assets/icon-192.png" width="42" height="42" alt=""><span><strong>MARINE TOOLS</strong><small>FOR STUDENTS / STEAM ENGINEERING</small></span></a><nav><a href="./">← Formula Library</a><a href="../education/">Education</a><a href="../">Main site ↗</a><a href="chapters.html">All chapters</a><a href="explorers.html">Engineering explorers</a></nav></header>
 <main id="mollier-main">
 <section class="hero">
 <div><p class="eyebrow">INTERACTIVE THERMODYNAMICS LAB</p><h1>Mollier <em>h–s</em> diagram</h1><p>Explore saturated and superheated steam, compare state points and view isobars and isotherms in the h–s plane. All calculations run in this browser.</p></div>
@@ -40,6 +41,7 @@
 <div class="summary"><h2>State comparison</h2><div class="compare-cards"><article><strong>State A</strong><div id="state-a-details">—</div></article><article><strong>State B</strong><div id="state-b-details">—</div></article><article><strong>From A → B</strong><div id="state-delta">—</div></article></div><p>The dashed A–B connector compares endpoints; it is not a calculated thermodynamic process path.</p><p><strong>Remember:</strong> An h difference is a specific enthalpy change. Treat it as shaft work only after stating the first-law assumptions and signs for your device.</p></div>
 <div class="support"><h2>Learning points</h2><ul><li><strong>Inside the dome:</strong> wet steam with vapour quality 0 ≤ x ≤ 1.</li><li><strong>At x = 0:</strong> saturated liquid. At x = 1: saturated vapour.</li><li><strong>At fixed pressure:</strong> h = h<sub>f</sub> + x(h<sub>g</sub> − h<sub>f</sub>), and s = s<sub>f</sub> + x(s<sub>g</sub> − s<sub>f</sub>).</li><li><strong>Superheated region:</strong> use measured pressure and temperature; vapour quality is not defined.</li><li><strong>Domain limit:</strong> saturation above 160 bar(a) and the critical point are not plotted; Region 3 is not implemented.</li></ul><p>See <a href="https://www.iapws.org/relguide/IF97-Rev.pdf" target="_blank" rel="noopener noreferrer">IAPWS-IF97</a> for the authoritative industrial water/steam formulation. IF97 regional property calls are calculated locally using the Neutrium implementation, with no tabular fallback when the solver is unavailable. This is not a complete Region 1–5 solver.</p><p><small>IF97 engine © Native Dynamics / Neutrium, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. <a href="IF97_ATTRIBUTION.md">Implementation attribution and limits</a>. No endorsement implied.</small></p><button id="export" type="button" class="outline">Export A/B values (CSV)</button></div>
 </section>
+<section class="explanation" aria-label="Portable study report"><h2>Export this state comparison</h2><p>The report keeps both states, the h–s graph, enthalpy/entropy differences, phase assumptions and the IF97 limits. Open the HTML file and use Print / Save as PDF.</p><button id="export-report" type="button">Export report (HTML / PDF)</button> <button id="export-graph" type="button">Export chart (SVG)</button> <button id="export-scenario" type="button">Save scenario (JSON)</button> <label>Reopen scenario <input id="mollier-scenario" type="file" accept=".json,application/json"></label><p id="report-feedback" role="status"></p></section>
 </main>
 <footer><span>Marine Tools for Students · Experimental steam study lab</span><a href="./">Back to formulas</a></footer>
 </body></html>

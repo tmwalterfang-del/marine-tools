@@ -32,7 +32,7 @@ const $=id=>document.getElementById(id),svg=$("hs-chart");if(!svg)return;
 if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{});
 if(!if97){
  $("model-status").textContent="IF97 engine unavailable. Reload online to restore the local solver; no state values are calculated.";
- for(const id of ["phase-mode","pressure","pressure-number","quality","superheat-temp","save-a","save-b","isentropic","export","reset"]){$(id).disabled=true}
+ for(const id of ["phase-mode","pressure","pressure-number","quality","superheat-temp","save-a","save-b","isentropic","export","reset","export-report","export-graph","export-scenario","mollier-scenario"]){if($(id))$(id).disabled=true}
  return;
 }
 const NS="http://www.w3.org/2000/svg",W=980,H=580,left=86,right=37,top=28,bottom=66,pw=W-left-right,ph=H-top-bottom;
@@ -151,11 +151,15 @@ svg.addEventListener("click",event=>{
  // Chart picking represents a saturated mixture, irrespective of the previous mode.
  try{states[active]=at(closest.p,closest.x);fail("");update()}catch(error){fail(error.message)}
 });
-$("export").addEventListener("click",()=>{
- const csv=["state,p_bar_abs,T_C,phase,quality,enthalpy_kJ_per_kg,entropy_kJ_per_kgK,interpolated,source",
- ...["a","b"].map(id=>{const z=states[id];return[id.toUpperCase(),z.p,z.T,z.phase||"wet",z.x??"",z.h,z.s,z.interpolated,z.source||""].join(",")})].join("\n")+"\n";
- const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"})),a=document.createElement("a");
- a.href=url;a.download="marine-tools-mollier-states.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
-});
+$("export").addEventListener("click",()=>{try{const E=window.MT_STUDY_EXPORT,s=studySnapshot();E.download('marine-tools-mollier-states.csv',E.csv(s.tables[0].rows),'text/csv;charset=utf-8')}catch(e){if($('report-feedback'))$('report-feedback').textContent=e.message}});
+function studySnapshot(){if(!$("input-error").hidden)throw RangeError('Correct the current state inputs before exporting.');const E=window.MT_STUDY_EXPORT,labels=['a','b'],inputs={},results={};for(const id of labels){const z=states[id];inputs['State '+id.toUpperCase()+' · pressure (bar absolute)']=z.p;inputs['State '+id.toUpperCase()+' · phase']=z.phase;inputs['State '+id.toUpperCase()+' · '+(z.phase==='superheated'?'temperature (°C)':'vapour mass fraction')]=z.phase==='superheated'?z.T:z.x;results['State '+id.toUpperCase()+' · h (kJ/kg)']=z.h;results['State '+id.toUpperCase()+' · s (kJ/kg/K)']=z.s;results['State '+id.toUpperCase()+' · T (°C)']=z.T}results['h_A − h_B (kJ/kg)']=states.a.h-states.b.h;results['s_B − s_A (kJ/kg/K)']=states.b.s-states.a.s;return {model:'mollier-if97',title:'Mollier steam state comparison',inputs,results,notes:['Local IAPWS-IF97 adapter, saturation 0.01–160 bar(a); superheated Region 2: 0.01–100 bar(a), T above saturation +0.5 °C through 400 °C. Subcooled water, Region 3 and the critical point are omitted.','A straight line joining A and B is a comparison connector, not a solved thermodynamic process.','h_A−h_B is an enthalpy difference. It equals ideal specific turbine work only under the applicable steady-flow, adiabatic and negligible kinetic/potential-energy assumptions.','Quality is vapour MASS fraction in two-phase equilibrium. Superheated steam has no two-phase quality.'],charts:[{svg:E.svgSnapshot(svg),caption:'Enthalpy h (kJ/kg) against entropy s (kJ/kg/K); state connector is not a process path.'}],tables:[{title:'State properties',rows:[['State','p (bar abs)','T (°C)','Phase','Quality','h (kJ/kg)','s (kJ/kg/K)'],...labels.map(id=>{const z=states[id];return[id.toUpperCase(),z.p,z.T,z.phase,z.x??'',z.h,z.s]})]}]}}
+for(const [id,kind] of [['export-report','html'],['export-graph','svg']])$(id)?.addEventListener('click',()=>{try{const E=window.MT_STUDY_EXPORT,s=studySnapshot();E.download('marine-tools-mollier.'+kind,kind==='html'?E.report(s):s.charts[0].svg,kind==='html'?'text/html;charset=utf-8':'image/svg+xml;charset=utf-8');$('report-feedback').textContent='Export prepared from the current valid states.'}catch(e){$('report-feedback').textContent=e.message}});
+function scenarioInputs(){const out={};for(const id of ['a','b']){const z=states[id];out[id]=z.phase==='superheated'?{phase:'superheated',p:z.p,T:z.T}:{phase:'wet',p:z.p,x:z.x}}return out}
+function restoreScenario(text){const data=window.MT_STUDY_EXPORT.parseScenario(text,'mollier-if97',['a','b']),next={};for(const id of ['a','b']){const z=data[id];if(!z||typeof z!=='object'||!['wet','superheated'].includes(z.phase)||Object.keys(z).length!==3||!Object.hasOwn(z,'p')||!Object.hasOwn(z,z.phase==='wet'?'x':'T'))throw TypeError('Invalid state inputs in scenario.');next[id]=z.phase==='wet'?at(z.p,z.x):superheated(z.p,z.T)}states.a=next.a;states.b=next.b;fail('');update()}
+$('export-scenario')?.addEventListener('click',()=>{try{studySnapshot();const E=window.MT_STUDY_EXPORT;E.download('marine-tools-mollier-scenario.json',E.scenario('mollier-if97',scenarioInputs()),'application/json')}catch(e){$('report-feedback').textContent=e.message}});
+$('mollier-scenario')?.addEventListener('change',async e=>{try{const file=e.target.files?.[0];if(file){restoreScenario(await file.text());$('report-feedback').textContent='Both states restored and recalculated with the local IF97 solver.'}}catch(err){$('report-feedback').textContent=err.message}e.target.value=''});
+window.MT_MOLLIER_RESTORE=restoreScenario;
+window.MT_MOLLIER_INPUTS=scenarioInputs;
+window.MT_MOLLIER_SNAPSHOT=studySnapshot;
 update();
 })();

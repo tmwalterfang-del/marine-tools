@@ -8,7 +8,7 @@ const html=read('students/index.html'),app=read('students/app.js');
 const src=[
 'students/formulas.js','students/formulas-extension.js','students/formulas-expansion-v1.js',
 'students/calculators.js','students/calculators-extension.js','students/calculators-expansion-v1.js',
-'students/learning-data.js','students/book-photos-20261020.js','students/math-chapter-20261020.js','students/physics-chapter-20261020.js','students/applied-controls-20261020.js','students/chapter-topics-a-20261020.js','students/chapter-topics-b-20261020.js','students/mechanics-p42-20261020.js','students/symbol-definitions-20261020.js','students/physics-equation-audit-20261020.js','students/math-equation-audit-20261020.js','students/mechanics-equation-audit-20261020.js','students/machine-elements-audit-20261020.js','students/chemistry-equation-audit-20261020.js','students/symbol-index.js'
+'students/learning-data.js','students/book-photos-20261020.js','students/math-chapter-20261020.js','students/physics-chapter-20261020.js','students/applied-controls-20261020.js','students/chapter-topics-a-20261020.js','students/chapter-topics-b-20261020.js','students/mechanics-p42-20261020.js','students/symbol-definitions-20261020.js','students/physics-equation-audit-20261020.js','students/math-equation-audit-20261020.js','students/mechanics-equation-audit-20261020.js','students/machine-elements-audit-20261020.js','students/chemistry-equation-audit-20261020.js','students/chapter-6-audit-20261020.js','students/chapter-7-audit-20261020.js','students/chapter-8-audit-20261020.js','students/chapter-9-audit-20261020.js','students/chapter-10-audit-20261020.js','students/chapter-11-audit-20261020.js','students/chapter-12-audit-20261020.js','students/chapter-13-audit-20261020.js','students/chapter-14-audit-20261020.js','students/chapter-15-audit-20261020.js','students/chapter-16-audit-20261020.js','students/chapter-index.js','students/symbol-index.js'
 ];
 const win={};
 src.forEach(path=>new Function('window',read(path))(win));
@@ -61,7 +61,7 @@ new Function('window','document','location','localStorage','navigator','confirm'
 function verify(condition,label){assert.ok(condition,label);messages.push(label)}
 function switchTab(name){tabs.find(x=>x.dataset.tab===name).listeners.click()}
 verify(element('formula-grid').innerHTML.includes('formula-card'),'initial form cards render');
-verify(element('formula-total').textContent===529,'correct formula count');
+verify(element('formula-total').textContent===575,'correct formula count');
 element('formula-search').listeners.input({target:{value:'Ohm'}});
 verify(element('formula-grid').innerHTML.includes('Ohm'),'text search finds Ohm');
 verify(element('formula-grid').innerHTML.includes('Symbols and units'),'formula details are present');

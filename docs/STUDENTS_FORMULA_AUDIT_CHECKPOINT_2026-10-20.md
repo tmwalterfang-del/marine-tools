@@ -1,8 +1,45 @@
-# Formelgjennomgang – arbeidsstatus 20. oktober 2026
+# Formelkapitler og interaktive moduler – leveranse 20. oktober 2026
 
-Arbeidet fortsetter i Draft PR #35. Dette dokumentet gjelder leveransen etter labmodulene på `c704c277080b535800e7459b526183c9320e1aa1`, og er **ikke en ferdigmelding for alle bokkapitlene**.
+Alle **16 formelkapitler, trykte sider 7–224 (218 sider)** er visuelt gjennomlest og registrert. Dette avslutter kapittelregistreringen. Det er ikke en påstand om full numerisk bevisføring for hvert uttrykk, eller sertifisering av empiriske tabeller. Vedleggssider 225–284 er utenfor dette formelkapittelomfanget.
 
-## Gjeldende kontrollpunkt etter kjemi
+## Gjeldende leveranse
+
+- **575 primære formelfamilier**, alle med eksplisitte lokale symboltabeller; alle **499 opprinnelige ID-er er bevart**. **1498 kildeuttrykk/relasjoner** knyttet til **334 familier**, fra **201 sider med registrerte uttrykk**. De øvrige 17 sidene i området er lest, men inneholder referansedata, definisjoner eller gjentatt oppsummering. **8035 kontekstuelle symbolrader**, **60 kalkulatorer** og **36 øvingsoppgaver**. Antall relasjoner er ikke antall fullstendig verifiserte formler.
+- Kapitteloversikt på `/students/chapters.html`, kapittelfilter og direktelenker `/students/#chapter-1` … `#chapter-16`. Uttrykkene vises som varianter under formelfamilier med sidehenvisning, egne enheter og forutsetninger.
+- **Åtte interaktive moduler:** GZ/fri overflate, signal/PID, motor/energi, IF97 Mollier, serie-RLC, varmeveksler, kurs/strøm og investering/kontantstrøm. De fire siste ligger på `/students/explorers.html`.
+- Alle modulene støtter **selvstendig HTML-rapport** (åpnes og skrives til PDF i nettleser), **SVG-graf**, **CSV-data** og **JSON-scenario** som gjenåpnes og beregnes på nytt. Rapporten beholder enheter, resultater, modellforutsetninger og datatabell. Ingen direkte PDF-generator er lagt inn i nettstedet.
+- Eksport blokkeres ved ugyldige aktuelle inndata. Scenarioimport kontrollerer modell/versjon/felt og validerer beregningen. Mollier-import oppdaterer begge tilstander først når begge er gyldige. HTML/SVG/CSV eksport håndterer tekstescaping og aktive SVG-elementer; scenariofiler kjører ikke kode.
+
+## Verifikasjon og faktiske grenser
+
+- Alle eksisterende regresjonstester passerte sammen med nye kapittel-, navigasjons-, modell- og eksporttester. Kapitteltesten kontrollerer **87 numeriske tilfeller fra faktisk vist formeltekst** og **136 boolske tildelinger** (17 identiteter × 8). **102 forskjellige kildeuttrykk** har dette nye, utvalgte testgrunnlaget. Dette er ikke en full domenekontroll av 1498 relasjoner.
+- De nye modellene har **222 referanse-/grensekontroller**, blant annet resonans og halvering av effekt, UA–LMTD mot ε–NTU, energibalanse og temperaturprofil for begge strømretninger, hastighetsvektorer samt end-års diskontering/nullrente. Eksport-, Mollier- og kapittelnavigasjon er integrasjonstestet i jsdom.
+- Tidligere matematikkgrunnlag er **65 CAS-identiteter/177 numeriske prøver**; **197 matematikkrelasjoner har fortsatt ikke et symbolsk bevis i dette registeret**. Tidligere mekanikk/maskinelementer har **249 dimensjonskontroller** og **71 numeriske referanser**. Kjemi har **32 utvalgte numeriske referanser**. Disse kontrolltypene og antallene skal ikke summeres til «verifiserte formler».
+- Ingen ekte nettleser-, mobil-, installert offline- eller PDF-utskriftskontroll er gjennomført for denne leveransen. Preview er fortsatt bak eksisterende Cloudflare Access. jsdom gir DOM-/logikkontroll, ikke visuell layoutgaranti.
+- Empiriske koeffisienter, material-/drivstoffdata, standardtabeller og kurver har egne private unntaksregistreringer. Ingen originalskanninger, forlagstabeller eller forlagsfigurer er publisert. Kapittelregistrering betyr normaliserte, forklarte relasjoner, ikke sertifisert uttømmende transkripsjon av alle gjentakelser og tabellverdier.
+
+## Viktige presiseringer i de siste kapitlene
+
+- Temperaturkoeffisientens fortegn, sinusmiddel mot RMS, linje-/fasespenning og rev/s mot rpm er skilt. Transformerrefererte komponenter er ekvivalente belastninger; de er ikke fysiske parasittverdier.
+- All-pass-forsterkning og Wien-periodens dimensjon er eksplisitte. Inverterende forsterkere/DAC har riktig fortegn for den erklærte polariteten; boolske identiteter testes uttømmende.
+- Likeretterens last-/ledningsregime, én mot to pulser, seks-pulsers intervallgrenser, termisk motstand i K/W og ikkeisolert buck–boost mot flyback er skilt.
+- Motorenes arbeidssykluser, luftens masse-/molfraksjoner, drivstoffbasis og fortegnet til treghetsreaksjonen er erklært. Empiriske CCAI/CII-data er ikke gjort til en uverifisert kalkulator.
+- Damplegemets massefraksjon, entalpibasis J/kJ, faktisk mot isentropisk tilstand og turbinens hastighetstrekanter har egne forutsetninger. Fuktig luft blandes på tørrluftbasis. Entropi Q/T krever reversibel, isoterm overføring. Filmtemperatur er middeltemperatur, og Rayleigh-tallet inkluderer Prandtl.
+- Varmevekslere har korrekt lik-temperaturdifferansegrense. Kjølekapasitet skilles fra kompressorens elektriske effekt, og tapsgrenser hindrer dobbel virkningsgradskorreksjon.
+- Navigasjon bruker fortegn, vinkelomslag og atan2 for kvadranter. Rute-/strømmodulen er et lokalt planeksperiment. Laste-/løftetilfeller oppdaterer masse og massemomenter, opphengspunkt og hydrostatisk referanse; syntetisk GZ er ikke fartøyets godkjente stabilitetsgrunnlag.
+- Økonomi skiller prosent fra brøk, betalingsdato og rentesatsperiode. Dypgangskorreksjoner bruker signerte koordinater og samsvarende lengde-/trimgrunnlag; tredels- og quarter-mean-modellene blandes ikke.
+
+## Reproduserbare kontroller
+
+`tests/students-all-chapters-20261020.mjs`, `tests/students-explorers-20261020.mjs`, `tests/students-chapter-navigation-20261020.cjs`, `tests/students-study-export-20261020.cjs`, `tests/students-mollier-export-20261020.cjs` og `tests/students-explorers-dom-20261020.cjs`. CI-workflowen kjører disse sammen med det tidligere testgrunnlaget. Matrisen V4 og 218-sidersmatrisen viser gjeldende registreringsomfang.
+
+Arbeidet ligger på eksisterende previewgren og Draft PR #35. Produksjon, API, main og Access er uendret.
+
+---
+
+Tall og gjenstående arbeid under denne linjen er historikk fra tidligere kontrollpunkter.
+
+## Historisk kontrollpunkt etter kjemi
 
 - **529 appoppføringer** med komplette lokale symboltabeller, **671 registrerte uttrykk/mønstre**, **164 appfamilier** med kildevarianter, **5685 kontekstuelle symbolrader**. Kalkulatorer og øvingsoppgaver er fortsatt 60 og 36. Alle 499 baseline-ID-er er bevart.
 - Kjemiens trykte sider **55–78 er visuelt lest**. **70 relasjoner** er registrert fra 19 av disse sidene: **48 aritmetiske relasjoner** og **22 strukturmønstre/reaksjonsskjemaer**. Fem sider med tabeller/gjentatt oppsummering har ingen nye registrerte uttrykk. Tabellenes data er ikke faglig sertifisert. Totalt har **67 sider** minst ett registrert uttrykk, mens **72 sider (7–78)** er visuelt lest i denne gjennomgangen.

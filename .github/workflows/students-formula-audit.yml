@@ -7,6 +7,7 @@ on:
     paths:
       - 'students/**'
       - 'tests/students-*.mjs'
+      - 'tests/students-*.cjs'
       - 'docs/STUDENTS_*'
       - '.github/workflows/students-formula-audit.yml'
   workflow_dispatch:
@@ -50,6 +51,21 @@ jobs:
         run: node tests/students-chemistry-audit-20261020.mjs
       - name: Complete symbol and source-expression integrity
         run: node tests/students-symbol-completion-20261020.mjs
+      - name: All sixteen chapter registers and displayed expressions
+        run: node tests/students-all-chapters-20261020.mjs
+      - name: Engineering explorer independent reference cases
+        run: node tests/students-explorers-20261020.mjs
+      - name: Install DOM integration test dependency
+        run: npm install --prefix /tmp/students-dom --no-audit --no-fund jsdom@26.1.0
+      - name: Export and interactive DOM integration
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: |
+          node tests/students-labs-dom-20261020.cjs
+          node tests/students-chapter-navigation-20261020.cjs
+          node tests/students-study-export-20261020.cjs
+          node tests/students-explorers-dom-20261020.cjs
+          node tests/students-mollier-export-20261020.cjs
       - name: Install symbolic mathematics test dependency
         run: python3 -m pip install sympy==1.14.0
       - name: Independently check selected mathematical identities

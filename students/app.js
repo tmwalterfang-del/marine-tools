@@ -11,7 +11,7 @@ const enc=v=>String(v==null?"":v).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;
 const retrieve=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))||fallback}catch{return fallback}};
 const persist=(key,val)=>{try{localStorage.setItem(key,JSON.stringify(val))}catch{}};
 const state={
- tab:"formulas",query:"",topic:"All",group:"All",practiceGroup:"All",practiceLevel:"All",attempted:false,favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
+ tab:"formulas",chapter:"All",query:"",topic:"All",group:"All",practiceGroup:"All",practiceLevel:"All",attempted:false,favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
  completed:new Set(retrieve("mt-student-practice-v1",[])),savedOnly:false,
  display:48,calcid:calc[0]&&calc[0].id,examIndex:0,showSteps:true,
  theme:retrieve("mt-student-theme-v1","maritime")
@@ -50,6 +50,7 @@ function updateHeader(){
 function filtered(){
  const terms=norm(state.query).trim().split(/\s+/).filter(Boolean);
  return formula.filter(f=>{
+  if(state.chapter!=="All"&&!study.chapters?.find(c=>String(c.number)===state.chapter)?.formulaIds.includes(f.id))return false;
   if(state.group!=="All"&&!study.groups.find(g=>g.id===state.group)?.categories.includes(f.category))return false;
   if(state.topic!=="All"&&f.category!==state.topic)return false;
   if(state.savedOnly&&!state.favorites.has(f.id))return false;
@@ -68,7 +69,7 @@ function relatedHtml(f){
  return '<details class="related-equations"><summary>Related expressions and variants ('+related.length+')</summary>'+related.map(r=>
  '<article class="related-expression" id="'+enc(r.id)+'"><h5>'+enc(r.name)+'</h5><div class="equation" role="math" aria-label="'+enc(r.formula)+'">'+enc(r.formula)+'</div><p><strong>Conditions:</strong> '+enc(r.conditions)+'</p><div class="symbol-grid">'+r.symbols.map(v=>'<div><code>'+enc(v.symbol)+'</code><span>'+enc(v.meaning)+'</span><small>'+enc(v.unit)+'</small></div>').join('')+'</div>'+
  (r.sourceIssue?'<p class="source-correction"><strong>Source interpretation:</strong> '+enc(r.sourceIssue)+'</p>':"")+
- '<p class="photo-review">Printed p. '+r.page+' · '+enc(r.symbolicStatus==='NOT_APPLICABLE'?'Source pattern read; structural and stoichiometric verification remains separate.':r.symbolicStatus==='PENDING'?(r.numericStatus==='REFERENCE_CASE_COVERED'?'Source expression read; selected numerical reference case covered by automated tests. Full domain validation pending.':'Source expression read; numerical validation pending.'):(r.numericChecks?.length?'Source expression read; symbolic check and '+r.numericChecks.length+' numerical samples passed under test assumptions.':'Symbolic rule checked under test assumptions; numerical specialisations pending.'))+'</p></article>').join('')+'</details>';
+ '<p class="photo-review">Printed p. '+r.page+' · '+enc(r.symbolicStatus==='NOT_APPLICABLE'?(['CHEMICAL_PATTERN','REACTION'].includes(r.kind)?'Source pattern read; structural and stoichiometric verification remains separate.':'Source relationship read; its stated model and validation scope must be checked separately.'):r.symbolicStatus==='PENDING'?(r.numericStatus==='REFERENCE_CASE_COVERED'?'Source expression read; selected numerical reference case covered by automated tests. Full domain validation pending.':'Source expression read; numerical validation pending.'):(r.numericChecks?.length?'Source expression read; symbolic check and '+r.numericChecks.length+' numerical samples passed under test assumptions.':'Symbolic rule checked under test assumptions; numerical specialisations pending.'))+'</p></article>').join('')+'</details>';
 }
 function formulaMarkup(f,forSheet=false){
  const saved=state.favorites.has(f.id),d=study.details[f.id]||{},
@@ -212,7 +213,17 @@ function setTab(name){
  if(name==="practice")renderPractice();
  if(name==="sheet")renderSheet();
 }
+function route(){
+ const match=location.hash.match(/^#chapter-(\d+)$/);
+ state.chapter=match&&study.chapters?.some(c=>c.number===Number(match[1]))?match[1]:"All";
+ if(el("chapter-filter"))el("chapter-filter").value=state.chapter;
+ if(match){state.group="All";state.topic="All";state.query="";state.savedOnly=false;state.display=48;el("study-group").value="All";el("formula-search").value="";el("saved-only").checked=false;refreshTopics()}
+ setTab(match?"formulas":location.hash.slice(1)||"formulas");
+}
 function init(){
+ const chapterSelect=el("chapter-filter");
+ if(chapterSelect){for(const c of study.chapters||[]){const o=document.createElement("option");o.value=String(c.number);o.textContent=c.number+" · "+c.title;chapterSelect.append(o)}chapterSelect.addEventListener("change",e=>{state.chapter=e.target.value;state.display=48;renderFormulas()})}
+
  const selector=el("topic-filter"),groupSelector=el("study-group");
  study.groups.forEach(group=>{const option=document.createElement("option");option.value=group.id;option.textContent=group.label;groupSelector.append(option)});
  refreshTopics();
@@ -224,7 +235,7 @@ function init(){
  el("symbol-results").addEventListener("click",ev=>{
   const b=ev.target.closest("button[data-symbol-formula]");if(!b)return;
   const f=byFormula.get(b.dataset.symbolFormula);if(!f)return;
-  state.group="All";state.topic="All";state.savedOnly=false;state.query=f.name;state.display=48;
+  state.chapter="All";if(el("chapter-filter"))el("chapter-filter").value="All";state.group="All";state.topic="All";state.savedOnly=false;state.query=f.name;state.display=48;
   el("study-group").value="All";refreshTopics();el("saved-only").checked=false;el("formula-search").value=f.name;
   location.hash="formulas";setTab("formulas");
  });
@@ -272,8 +283,8 @@ function init(){
   state.favorites.clear();persist("mt-student-formulas-fav-v1",[]);updateHeader();renderSheet();
  });
  el("student-theme").addEventListener("change",ev=>{state.theme=ev.target.value;persist("mt-student-theme-v1",state.theme);updateHeader()});
- window.addEventListener("hashchange",()=>setTab(location.hash.slice(1)));
- setTab(location.hash.slice(1)||"formulas");
+ window.addEventListener("hashchange",route);
+ route();
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();

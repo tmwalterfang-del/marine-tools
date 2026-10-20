@@ -45,13 +45,15 @@ new Function('window',read('students/math-equation-audit-20261020.js'))(sandbox)
 new Function('window',read('students/mechanics-equation-audit-20261020.js'))(sandbox);
 new Function('window',read('students/machine-elements-audit-20261020.js'))(sandbox);
 new Function('window',read('students/chemistry-equation-audit-20261020.js'))(sandbox);
+for(let n=6;n<=16;n++)new Function('window',read('students/chapter-'+n+'-audit-20261020.js'))(sandbox);
+new Function('window',read('students/chapter-index.js'))(sandbox);
 new Function('window',symbolSource)(sandbox);
 new Function(srcApp);
 const formulas=sandbox.MT_FORMULAS,calculators=sandbox.MT_CALCULATORS,exercises=sandbox.MT_PRACTICE;
 let passed=0;
 function ok(condition,label){assert.ok(condition,label);passed++;console.log('PASS '+label)}
 function near(value,expected,label){ok(Math.abs(value-expected)<1e-6,label)}
-ok(formulas.length===529,'reconciled formula catalogue has exactly 529 entries');
+ok(formulas.length===575,'reconciled formula catalogue has exactly 575 entries');
 ok(new Set(formulas.map(f=>f.id)).size===formulas.length,'formula IDs unique');
 ok(new Set(formulas.map(f=>f.category)).size===29,'all 29 subject areas present');
 ok(new Set(formulas.map(f=>f.name.toLowerCase())).size===formulas.length,'formula names not duplicated across expansion packs');
@@ -130,7 +132,7 @@ const study=sandbox.MT_STUDY;
 ok(study.groups.length===8,'eight cross-discipline groups defined');
 ok(study.groups.flatMap(g=>g.categories).length===29,'29 subject categories mapped to study groups');
 ok(new Set(study.groups.flatMap(g=>g.categories)).size===29,'study subject grouping unambiguous');
-ok(formulas.every(f=>study.groups.some(g=>g.categories.includes(f.category))),'all 529 formula entries have a study discipline');
+ok(formulas.every(f=>study.groups.some(g=>g.categories.includes(f.category))),'all 575 formula entries have a study discipline');
 ok(Object.keys(study.calculatorByFormula).length>=50,'at least fifty explicit formula-to-calculator mappings');
 ok(Object.entries(study.calculatorByFormula).every(([id,cid])=>formulas.some(f=>f.id===id)&&calculators.some(c=>c.id===cid)),'all explicit formula-to-calculator IDs valid');
 ok(Object.keys(study.details).length>=20,'curated symbol definitions for core formulas');
@@ -138,7 +140,7 @@ ok(Object.entries(study.details).every(([id,d])=>formulas.some(f=>f.id===id)&&Ar
 ok(Object.keys(study.figures).length===5,'five original SVG learning diagrams');
 ok(Object.values(study.figures).every(fig=>fig.includes('<svg')&&fig.includes('role="img"')&&fig.includes('aria-label')),'SVG diagrams accessible via descriptive labels');
 ok(formulas.every(f=>Boolean(study.topicChapters[f.category])),'all formula categories have topical source mapping');
-ok(study.chapterLabel.includes('not evidence'),'topic mapping clearly marked unverified at equation level');
+ok(study.reviewLabel.includes('do not prove every expression'),'topic mapping clearly marked unverified at equation level');
 ok(html.includes('id="study-group"')&&html.includes('id="practice-subject"')&&html.includes('id="practice-difficulty"'),'subject and difficulty controls present');
 ok(html.includes('id="show-hint"')&&html.includes('id="exercise-hint"'),'hint view present');
 ok(html.includes('id="sheet-formulas"')&&html.includes('id="print-sheet"'),'saved formula sheet and export control present');
@@ -187,7 +189,7 @@ ok(formulas.some(x=>x.name==='Latent heat of vaporization'),'phase change vapori
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('273.15')),'exact Kelvin/Celsius offset note preserved');
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('Doppler')),'Doppler approximation warning preserved');
 ok(html.includes('physics-chapter-20261020.js')&&sw.includes("'./students/physics-chapter-20261020.js'"),'physics pack included in preview and offline cache');
-ok(formulas.length===529,'full chapter expansion contains 529 unique formula entries');
+ok(formulas.length===575,'full chapter expansion contains 575 unique formula entries');
 ok(calculators.length===60,'eight independently authored applied engineering calculators loaded');
 ok(exercises.length===36,'six applied engineering exercises loaded');
 ok(formulas.filter(x=>x.category==='Instrumentation & Control').length>=5,'instrumentation domain formulas included');
@@ -203,7 +205,7 @@ ok(!!byId('loop-scaling').compute({ma:2,low:0,high:100}).invalid,'non-nominal tr
 ok(!!byId('turbine-drop').compute({inlet:2500,outlet:2600}).invalid,'invalid turbine work case rejected');
 ok(study.chapterSupplement20261020.length===2,'two chapter supplement packs loaded');
 ok(study.chapterSupplement20261020.reduce((n,x)=>n+x.formulaIds.length,0)===55,'55 nonduplicated independently authored chapter topic formulas');
-ok(formulas.length===529,'full catalogue reaches 529 entries');
+ok(formulas.length===575,'full catalogue reaches 575 entries');
 ok(new Set(formulas.map(f=>f.id)).size===formulas.length,'unique formula identifiers after source expansion');
 ok(study.chapterSupplement20261020.every(x=>x.sourceStatus.includes('not')||x.sourceStatus.includes('pending')),'source status clearly not blanket verified');
 ok(Object.keys(study.details).length>=180,'individual variable tables cover at least 180 entries');
