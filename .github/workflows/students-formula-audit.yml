@@ -65,8 +65,26 @@ jobs:
           node tests/students-chapter-navigation-20261020.cjs
           node tests/students-study-export-20261020.cjs
           node tests/students-cargo-workspace-20261020.cjs
+          node tests/students-example-workshops-20261020.cjs
+          node tests/site-wide-source-audit-20261020.cjs
           node tests/students-explorers-dom-20261020.cjs
           node tests/students-mollier-export-20261020.cjs
+      - name: Existing whole-site regressions with simulated providers
+        run: |
+          node tests/navigation-smoke.mjs
+          node tests/qa-aging-reflow-20261016.mjs
+          node tests/qa-ais-comparison-20261018.mjs
+          node tests/qa-ais-provider-status-20261018.mjs
+          node tests/qa-preview-isolation-20261016.mjs
+          node tests/qa-release-metadata-20261018.mjs
+          node tests/qa-six-fixes-20261016.mjs
+      - name: Upload whole-site audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-wide-source-audit
+          path: site-wide-source-audit.json
+          if-no-files-found: warn
       - name: Install symbolic mathematics test dependency
         run: python3 -m pip install sympy==1.14.0
       - name: Independently check selected mathematical identities
