@@ -176,3 +176,12 @@ footer a{font-size:11px;text-decoration:none;color:var(--muted)}
  body.print-sheet .symbol-grid>div{color:#000!important}
  body.print-sheet .source-status,body.print-sheet .symbol-grid span,body.print-sheet .symbol-grid small,body.print-sheet .formula-explanation summary{color:#111!important}
 }
+
+/* Context-aware symbol index; meaning and units remain tied to formula identity. */
+.symbol-review-count{font-size:12px;color:var(--muted);line-height:1.6;margin:14px 0}
+.symbol-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.symbol-context{display:flex;align-items:flex-start;gap:14px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:17px;min-width:0}
+.symbol-glyph{display:flex;align-items:center;justify-content:center;flex:none;min-width:58px;min-height:52px;padding:5px 8px;border-radius:9px;background:var(--raised);color:var(--accent);font:700 23px "Cambria Math",serif}
+.symbol-context-body{min-width:0;font-size:13px}.symbol-context-body strong{font-size:14px}.symbol-context-body p{color:var(--muted);margin:6px 0}.symbol-context-body small{font-size:11px;color:var(--text)}.symbol-context-body .source-state{font-size:11px;color:var(--muted);line-height:1.55;margin:10px 0}.symbol-context-body button{font-size:11px;margin-top:3px}
+@media(max-width:740px){.symbol-results{grid-template-columns:1fr}}
+@media print{[data-pane="symbols"]{display:none!important}}
