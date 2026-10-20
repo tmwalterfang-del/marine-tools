@@ -179,7 +179,7 @@ ok(formulas.some(x=>x.name==='Latent heat of vaporization'),'phase change vapori
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('273.15')),'exact Kelvin/Celsius offset note preserved');
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('Doppler')),'Doppler approximation warning preserved');
 ok(html.includes('physics-chapter-20261020.js')&&sw.includes("'./students/physics-chapter-20261020.js'"),'physics pack included in preview and offline cache');
-ok(formulas.length===493,'full chapter expansion contains 493 unique formula entries');
+ok(formulas.length===492,'full chapter expansion contains 492 unique formula entries');
 ok(calculators.length===59,'seven independently authored applied engineering calculators loaded');
 ok(exercises.length===36,'six applied engineering exercises loaded');
 ok(formulas.filter(x=>x.category==='Instrumentation & Control').length>=5,'instrumentation domain formulas included');
@@ -194,8 +194,8 @@ near(byId('fuel-input-power').compute({flow:180,lhv:42600}).value,2130,'fuel the
 ok(!!byId('loop-scaling').compute({ma:2,low:0,high:100}).invalid,'non-nominal transmitter current rejected');
 ok(!!byId('turbine-drop').compute({inlet:2500,outlet:2600}).invalid,'invalid turbine work case rejected');
 ok(study.chapterSupplement20261020.length===2,'two chapter supplement packs loaded');
-ok(study.chapterSupplement20261020.reduce((n,x)=>n+x.formulaIds.length,0)===56,'56 independently authored chapter topic formulas');
-ok(formulas.length===493,'full catalogue reaches 493 entries');
+ok(study.chapterSupplement20261020.reduce((n,x)=>n+x.formulaIds.length,0)===55,'55 nonduplicated independently authored chapter topic formulas');
+ok(formulas.length===492,'full catalogue reaches 492 entries');
 ok(new Set(formulas.map(f=>f.id)).size===formulas.length,'unique formula identifiers after source expansion');
 ok(study.chapterSupplement20261020.every(x=>x.sourceStatus.includes('not')||x.sourceStatus.includes('pending')),'source status clearly not blanket verified');
 ok(Object.keys(study.details).length>=180,'individual variable tables cover at least 180 entries');
