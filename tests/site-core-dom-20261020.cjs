@@ -6,7 +6,7 @@ if(d.readyState==='loading')await new Promise(r=>d.addEventListener('DOMContentL
 const errors=[];w.addEventListener('error',e=>{errors.push(e.message);e.preventDefault()});
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.HTMLElement.prototype.scrollTo=()=>{};
 w.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});
-w.fetch=async()=>({ok:false,status:503,json:async()=>({error:'Synthetic unavailable service'}),text:async()=>'',headers:new w.Headers()});
+w.fetch=async()=>({ok:false,status:503,json:async()=>({error:'Synthetic unavailable service'}),text:async()=>'',headers:new Headers()});
 w.__MARINE_TOOLS_PREVIEW_ISOLATED=true;
 for(const p of ['voyage-estimate-v861.js','voyage-planning-draft-v1.js','app.js'])w.eval(read(p));
 d.dispatchEvent(new w.Event('DOMContentLoaded'));
@@ -15,5 +15,6 @@ for(const id of pages){w.__marineToolsOpenPage(id);const host=d.getElementById(i
 for(const id of ['fuel','vessel-calcs','engineering','electrical','quick','navigation']){
  w.__marineToolsOpenPage(id);const host=d.getElementById(id);for(const button of host.querySelectorAll('.calc-action')){const card=button.closest('.tool-card');if(!card)continue;const output=card.querySelector('.result');if(!output)continue;const count=errors.length;button.click();assert.equal(errors.length,count,'Calculator error '+button.id);assert(output.textContent.trim().length>0,'No feedback from '+button.id);assert(!/\bNaN\b|\bInfinity\b/.test(output.textContent),'Non-finite displayed result '+button.id);report.calculators.push({page:id,button:button.id,result:output.textContent.slice(0,180)});}
 }
+for(let i=0;i<3;i++)await new Promise(resolve=>setImmediate(resolve));
 assert.equal(errors.length,0,'Core DOM runtime errors');console.log(JSON.stringify(report,null,2));fs.writeFileSync(path.join(root,'site-core-dom-audit.json'),JSON.stringify(report,null,2));w.close();
 })().catch(e=>{console.error(e);process.exitCode=1});
