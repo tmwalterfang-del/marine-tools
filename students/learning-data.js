@@ -54,6 +54,16 @@ const rawLinks={
 };
 const S=(symbol,meaning,unit)=>({symbol,meaning,unit});
 const details={
+ "first-law-closed-system":{symbols:[
+  S("ΔU","Change in internal energy of the closed system","J"),
+  S("Q","Net heat transferred to the system; positive inward","J"),
+  S("W","Net work performed by the system; positive outward","J")
+ ]},
+ "specific-fuel-oil-consumption":{symbols:[
+  S("SFOC","Specific fuel oil consumption","g/kWh"),
+  S("fuel mass","Fuel consumed over the observation interval","g"),
+  S("shaft energy","Shaft energy delivered over the same observation interval","kWh")
+ ]},
  "weight-displacement":{symbols:[S("Δ","Displacement mass","t"),S("ρwater","Water density","t/m³"),S("∇","Submerged volume","m³")]},
  "deadweight":{symbols:[S("DWT","Deadweight","t"),S("Δ","Loaded mass displacement","t"),S("lightship","Lightship mass","t")]},
  "initial-gm":{symbols:[S("GM","Initial transverse metacentric height","m"),S("KM","Keel to transverse metacentre","m"),S("KG","Keel to centre of gravity","m")],figure:"stability"},
