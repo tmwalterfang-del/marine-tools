@@ -202,3 +202,5 @@ footer a{font-size:11px;text-decoration:none;color:var(--muted)}
 .symbol-context-body .symbol-formula-link{font-size:13px;font-weight:700}.symbol-context-body .symbol-variant-link{font-size:12px}
 .symbol-context{align-self:start}.related-expression[tabindex="-1"]{scroll-margin-top:25px}
 @media(max-width:600px){.symbol-filters{grid-template-columns:1fr}.symbol-context{padding:14px;gap:10px}.symbol-glyph{min-width:44px}}
+
+.symbol-evidence{margin-top:8px}.symbol-evidence>summary{font-size:11px;color:var(--muted);font-weight:400}.symbol-results>.symbol-context:only-child{grid-column:1/-1;max-width:900px;width:100%}
