@@ -26,7 +26,7 @@ function wet(pBar,x){
 }
 function superheated(pBar,tC){
  if(!isFiniteN(pBar)||pBar<.01||pBar>100)throw RangeError("IF97 superheated mode supports 0.01–100 bar absolute.");
- if(!isFiniteN(tC)||tC>550)throw RangeError("Superheated temperature must not exceed 550 °C.");
+ if(!isFiniteN(tC)||tC>400)throw RangeError("Superheated temperature must not exceed 400 °C.");
  const saturationTemperature=vendor.PT.r4_P_Tsat(pBar/10)-273.15;
  if(tC<=saturationTemperature+.5)throw RangeError("Temperature must exceed saturation by more than 0.5 °C.");
  const result=vendor.PT.solve(pBar/10,tC+273.15);
