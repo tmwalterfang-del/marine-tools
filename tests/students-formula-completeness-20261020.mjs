@@ -4,7 +4,8 @@
  */
 import fs from 'node:fs';
 import vm from 'node:vm';
-import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const order=[
  'students/formulas.js','students/formulas-extension.js','students/formulas-expansion-v1.js',
@@ -17,6 +18,11 @@ const order=[
 const win={};const ctx=vm.createContext({window:win,console});
 for(const path of order)vm.runInContext(read(path),ctx,{filename:path});
 const formulas=win.MT_FORMULAS,study=win.MT_STUDY;
+assert.equal(study.details['first-law-closed-system']?.symbols?.length,3,'Closed-system first law must have three symbols');
+assert.equal(study.details['specific-fuel-oil-consumption']?.symbols?.length,3,'SFOC must have three symbol definitions');
+assert.ok(study.details['first-law-closed-system'].symbols.every(s=>s.unit==='J'),'First-law energies must be joules');
+assert.ok(study.details['specific-fuel-oil-consumption'].symbols.some(s=>s.unit==='g/kWh'),'SFOC must have g/kWh unit');
+
 if(formulas.length!==499)throw Error('Expected 499 formulas, got '+formulas.length);
 const found=new Set();const rows=[];
 for(const f of formulas){
