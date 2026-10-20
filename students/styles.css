@@ -56,7 +56,7 @@ select option{background:var(--panel);color:var(--text)}
 .tabs button:hover{color:var(--text)}
 .controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:26px 0 22px}
 .filter-select{display:flex;flex:1 1 205px;min-width:0;flex-direction:column;gap:5px;color:var(--muted);font-size:12px}
-.filter-select select{width:100%;max-width:none!important;min-height:44px}
+.filter-select select{width:100%;max-width:none!important;min-height:44px;flex:0 0 auto!important}
 .controls .search-field{align-self:end}
 .controls .saved-check{align-self:end;min-height:44px}
 .chapter-context{padding:10px 14px;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}

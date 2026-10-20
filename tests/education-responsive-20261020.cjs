@@ -16,6 +16,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  browser=await pw[engine].launch({headless:true});
  for(const [device,width,height]of sizes){
+  console.log('VIEWPORT '+engine+'/'+device);
   const scope=engine+'/'+device,context=await browser.newContext({viewport:{width,height},hasTouch:width<900,isMobile:engine!=='firefox'&&width<=430,acceptDownloads:true,reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',route=>route.request().url().startsWith(base)||route.request().url().startsWith('blob:')||route.request().url().startsWith('file://'+output+path.sep)?route.continue():route.abort());
   await context.addInitScript(()=>localStorage.setItem('mt.lastSeenReleaseBuild','20261019-v8-7-0'));
@@ -31,6 +32,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   await page.goto(base+'/education/');await page.waitForURL('**/students/');await page.waitForSelector('#formula-grid .formula-card');
   check(await page.title()==='Education · Marine Tools','Education alias opens the shared workspace',{scope});
   check(await page.locator('#chapter-filter').count()===0,'chapter dropdown removed',{scope});
+  const filterHeights=await page.locator('#formula-controls select').evaluateAll(xs=>xs.map(x=>x.getBoundingClientRect().height));check(filterHeights.every(h=>h>=44&&h<=60),'filters keep compact touch-friendly height',{scope,filterHeights});
   for(const theme of ['maritime','bridge']){
    await page.selectOption('#student-theme',theme);
    for(const tab of ['formulas','symbols','calculators','practice','sheet']){await page.locator('[data-tab="'+tab+'"]').click();await metrics(page,'library/'+tab+'/'+theme,scope);}
@@ -43,10 +45,12 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   check(modules.length===15,'fifteen modules selectable',{scope});
   check(await page.locator('#module-quick').isVisible()===(width<=800),'compact selector follows viewport',{scope});
   for(const {id,name}of modules){
+   console.log('MODULE '+scope+'/'+id);
    if(width<=800)await page.selectOption('#module-quick',id);else await page.locator('#module-list a[href="#'+id+'"]').click();
    await page.waitForFunction(name=>document.getElementById('selected-title').textContent===name,name);
    const handle=await page.locator('#frames iframe:not([hidden])').elementHandle(),frame=await handle.contentFrame();
-   await frame.waitForSelector('svg path,svg polyline,svg rect',{timeout:15000});
+   await frame.waitForSelector('svg path,svg polyline,svg rect',{state:'attached',timeout:15000});
+   await frame.locator('svg:visible').first().waitFor({timeout:15000});
    const z=await frame.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,bad:[...document.querySelectorAll('svg path,svg polyline,svg rect')].some(x=>/NaN|Infinity/.test(x.getAttribute('d')||x.getAttribute('points')||''))}));
    check(z.scroll<=z.client+2&&!z.bad,'module/'+id,{scope,...z});await metrics(page,'workspace/'+id,scope);
   }
@@ -56,7 +60,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   await page.waitForFunction(()=>document.getElementById('selected-title').textContent==='Trim & draft changes');
   await page.screenshot({path:path.join(output,'workspace-'+device+'.png'),fullPage:true});
   if(device==='desktop'){
-   await page.goto(base+'/students/mollier.html');await page.waitForSelector('#hs-chart path');
+   await page.goto(base+'/students/mollier.html');await page.waitForSelector('#hs-chart path',{state:'attached'});
    const pending=page.waitForEvent('download');await page.locator('#export-report').click();const download=await pending,reportPath=path.join(output,'mollier-report.html');await download.saveAs(reportPath);
    const report=fs.readFileSync(reportPath,'utf8');check(report.includes('study-snapshot')&&report.includes('<svg'),'actual HTML download',{scope});
    const reportPage=await context.newPage();await reportPage.goto('file://'+reportPath);await reportPage.waitForSelector('svg');await reportPage.emulateMedia({media:'print'});await reportPage.screenshot({path:path.join(output,'report-print.png'),fullPage:true});
