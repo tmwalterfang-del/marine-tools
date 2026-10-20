@@ -1,0 +1,45 @@
+name: Students formula and source audit
+
+on:
+  push:
+    branches: ['feature/for-students-formula-library-20261019']
+  pull_request:
+    paths:
+      - 'students/**'
+      - 'tests/students-*.mjs'
+      - 'docs/STUDENTS_*'
+      - '.github/workflows/students-formula-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Formula and catalogue integrity
+        run: node tests/students-smoke-20261019.mjs
+      - name: Student interface logic
+        run: node tests/students-ui-smoke-20261019.mjs
+      - name: Mathematics and physics
+        run: node tests/students-chapters-math-physics-20261020.mjs
+      - name: Mechanics and Mollier
+        run: node tests/students-mechanics-mollier-20261020.mjs
+      - name: Mollier
+        run: node tests/students-mollier-20261020.mjs
+      - name: IF97 reference points
+        run: node tests/students-if97-reference-20261020.mjs
+      - name: Generate complete editorial status report
+        run: node tests/students-formula-completeness-20261020.mjs students-formula-completeness.csv
+      - name: Upload editorial report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-formula-completeness
+          path: students-formula-completeness.csv
+          if-no-files-found: warn
