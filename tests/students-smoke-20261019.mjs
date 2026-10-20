@@ -147,7 +147,7 @@ ok((html.match(/src="learning-data.js/g)||[]).length===1,'curriculum loader is n
 ok(html.includes('data-tab="symbols"')&&html.includes('id="symbol-search"'),'context-aware symbol lookup tab and search exist');
 
 ok(formulas.length>=372,'photo-review expansion retains original photographed formulas');
-ok(Object.keys(sandbox.MT_STUDY.photoReview).length===13,'13 context symbol tables tied to photographed pages');
+ok(Object.keys(sandbox.MT_STUDY.photoReview).length>=72,'context symbol tables cover photographed pages and reviewed mathematics contexts');
 ok(Object.keys(sandbox.MT_STUDY.details).length>=90,'at least 32 curated contextual formula guides');
 ok(['79','150','197'].every(n=>Object.values(sandbox.MT_STUDY.photoReview).some(x=>String(x.page)===n)),'all three photographed printed pages represented');
 ok(html.includes('book-photos-20261020.js')&&sw.includes("'./students/book-photos-20261020.js'"),'photo metadata loads and caches');
