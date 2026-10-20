@@ -54,6 +54,16 @@ const rawLinks={
 };
 const S=(symbol,meaning,unit)=>({symbol,meaning,unit});
 const details={
+ "cylinder-volume":{symbols:[
+  S("V","Volume of right circular cylinder","m³"),
+  S("r","Radius of circular base","m"),
+  S("h","Perpendicular cylinder height","m")
+ ]},
+ "cone-volume":{symbols:[
+  S("V","Volume of right circular cone","m³"),
+  S("r","Radius of circular base","m"),
+  S("h","Perpendicular cone height","m")
+ ]},
  "first-law-closed-system":{symbols:[
   S("ΔU","Change in internal energy of the closed system","J"),
   S("Q","Net heat transferred to the system; positive inward","J"),
