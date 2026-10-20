@@ -8,7 +8,7 @@ const html=read('students/index.html'),app=read('students/app.js');
 const src=[
 'students/formulas.js','students/formulas-extension.js','students/formulas-expansion-v1.js',
 'students/calculators.js','students/calculators-extension.js','students/calculators-expansion-v1.js',
-'students/learning-data.js'
+'students/learning-data.js','students/symbol-index.js'
 ];
 const win={};
 src.forEach(path=>new Function('window',read(path))(win));
@@ -32,7 +32,7 @@ function element(id){
  }
  return elements[id];
 }
-const tabs=['formulas','calculators','practice','sheet','resources'].map(tab=>({
+const tabs=['formulas','symbols','calculators','practice','sheet','resources'].map(tab=>({
  dataset:{tab},listeners:{},classList:{toggle(){}},setAttribute(){},
  addEventListener(type,fn){this.listeners[type]=fn}
 }));
@@ -91,4 +91,17 @@ element('formula-search').listeners.input({target:{value:''}});
 element('study-group').listeners.change({target:{value:'navigation'}});
 verify(element('formula-grid').innerHTML.includes('Navigation'),'study area filter updates visible formulas');
 verify(element('topic-filter').options.length>1,'subject dropdown reflects selected group');
+switchTab('symbols');
+element('symbol-search').value='Q';
+element('symbol-search').listeners.input();
+verify(element('symbol-results').innerHTML.includes('Electric charge')&&element('symbol-results').innerHTML.includes('Volumetric flow rate'),'Q query distinguishes electrical charge from fluid flow');
+verify(element('symbol-results').innerHTML.includes('Sensible heat energy'),'Q query includes thermal heat energy');
+element('symbol-search').value='Proportional band';
+element('symbol-search').listeners.input();
+verify(element('symbol-results').innerHTML.includes('Instrumentation &amp; Control'),'P proportional band is recognized with a distinct subject');
+element('symbol-search').value='Volumetric flow rate';
+element('symbol-search').listeners.input();
+element('symbol-results').listeners.click({target:{closest:()=>({dataset:{symbolFormula:'volumetric-flow'}})}});
+verify(element('formula-search').value==='Volumetric flow','symbol lookup opens precisely related formula');
+
 console.log(JSON.stringify({status:'PASS',checks:messages.length,details:messages}));
