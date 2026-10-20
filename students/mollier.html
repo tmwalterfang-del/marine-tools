@@ -32,7 +32,7 @@
 <div class="field" id="superheat-field" hidden><label for="superheat-temp">Superheated steam temperature (°C)</label><input id="superheat-temp" type="number" inputmode="decimal" min="0" max="400" step="1" value="250"><small>Above T_sat + 0.5 °C; 0.01–100 bar(a), up to 400 °C.</small></div>
 <div class="field" id="quality-field"><label for="quality">Vapour quality <strong id="quality-display">100%</strong></label><input id="quality" type="range" min="0" max="100" value="100" step="1"><div class="endpoints"><span>0 = saturated liquid</span><span>1 = dry saturated vapour</span></div></div>
 <p class="model-status" id="model-status" aria-live="polite">Checking local IF97 implementation…</p><div class="metrics"><div><small>Temperature</small><b id="t-sat">—</b></div><div><small>Specific enthalpy, h</small><b id="h-state">—</b></div><div><small>Specific entropy, s</small><b id="s-state">—</b></div><div><small>Vapour quality, x</small><b id="x-state">—</b></div></div>
-<div class="actions"><button id="save-a" type="button">Save current as A</button><button id="save-b" type="button">Save current as B</button><button id="reset" type="button" class="outline">Reset states</button></div>
+<div class="actions"><button id="save-a" type="button">Save current as A</button><button id="save-b" type="button">Save current as B</button><button id="isentropic" type="button" class="outline">Set B: isentropic from A</button><button id="reset" type="button" class="outline">Reset states</button></div>
 <p id="input-error" class="field-error" role="alert" hidden></p>
 </aside>
 </div>
