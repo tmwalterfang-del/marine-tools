@@ -7,6 +7,7 @@ const errors=[];w.addEventListener('error',e=>{errors.push(e.message);e.preventD
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.HTMLElement.prototype.scrollTo=()=>{};
 w.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});
 w.fetch=async()=>({ok:false,status:503,json:async()=>({error:'Synthetic unavailable service'}),text:async()=>'',headers:new Headers()});
+Object.defineProperty(w.navigator,'onLine',{value:false,configurable:true});
 w.__MARINE_TOOLS_PREVIEW_ISOLATED=true;
 for(const p of ['voyage-estimate-v861.js','voyage-planning-draft-v1.js','app.js'])w.eval(read(p));
 d.dispatchEvent(new w.Event('DOMContentLoaded'));
