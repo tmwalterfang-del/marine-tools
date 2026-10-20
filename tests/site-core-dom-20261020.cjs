@@ -4,6 +4,8 @@ const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p
 (async()=>{const dom=new JSDOM(read('index.html'),{url:'https://qa-test.marine-tools-frontend-preview.pages.dev/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()}),w=dom.window,d=w.document;
 if(d.readyState==='loading')await new Promise(r=>d.addEventListener('DOMContentLoaded',r,{once:true}));
 const errors=[];w.addEventListener('error',e=>{errors.push(e.message);e.preventDefault()});
+// Background timers, idle work and layout are outside this deterministic DOM test.
+w.setTimeout=()=>0;w.setInterval=()=>0;w.requestIdleCallback=()=>0;w.requestAnimationFrame=()=>0;
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.HTMLElement.prototype.scrollTo=()=>{};
 w.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});
 w.fetch=async()=>({ok:false,status:503,json:async()=>({error:'Synthetic unavailable service'}),text:async()=>'',headers:new Headers()});
