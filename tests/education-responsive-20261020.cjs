@@ -63,6 +63,8 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
     check(await page.locator('body').evaluate(x=>x.classList.contains('presentation-view'))&&await frame.locator('body').evaluate(x=>x.classList.contains('presentation-view')),'presentation mode reaches active module',{scope});
     await metrics(page,'presentation/'+id,scope);
     await frame.waitForFunction(()=>[...document.querySelectorAll('.teaching-results svg')].filter(x=>x.getBoundingClientRect().width).every(x=>x.style.getPropertyValue('--teaching-chart-height')));
+    // Measure after the scheduled sizing and the resulting browser layout.
+    await frame.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     const fitting=await frame.evaluate(()=>{
      const charts=[...document.querySelectorAll('.teaching-results svg')].filter(x=>x.getBoundingClientRect().width);
      return {height:innerHeight,charts:charts.map(x=>{const b=x.getBoundingClientRect();return {top:b.top,bottom:b.bottom,height:b.height,overflow:getComputedStyle(x).overflow}}),hiddenMeaning:[...document.querySelectorAll('#module-title,#module-description,.heading')].filter(x=>!x.closest('[hidden]')).some(x=>getComputedStyle(x).display==='none')};
@@ -97,6 +99,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    await page.waitForSelector('#chart path, #chart polyline',{state:'attached'});
    await page.locator('#presentation-toggle').click();
    await page.waitForFunction(()=>document.getElementById('chart').style.getPropertyValue('--teaching-chart-height'));
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
    const m=await page.locator('#chart').evaluate(x=>({bottom:x.getBoundingClientRect().bottom,height:x.getBoundingClientRect().height,viewport:innerHeight}));
    if(width>=801&&height>=650)check(m.bottom<=m.viewport+2,'standalone presentation includes lower axis/'+id,{scope,...m});
    check(await page.locator('#module-description').isVisible(),'standalone description remains available/'+id,{scope});
