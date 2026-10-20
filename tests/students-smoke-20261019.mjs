@@ -168,7 +168,7 @@ ok(sandbox.MT_STUDY.details[formulas.find(f=>f.name==='Sample variance').id].sym
 ok(formulas.length===429,'mathematics and physics independent catalogue reaches 429 formulas');
 ok(sandbox.MT_STUDY.physicsChapter20261020.pages[0]===23&&sandbox.MT_STUDY.physicsChapter20261020.pages[1]===29,'physics chapter pages 23 through 29 audited topically');
 ok(sandbox.MT_STUDY.physicsChapter20261020.reviewedFormulaIds.length===28,'physics selected formula/symbol context records count correct');
-ok(formulas.some(x=>x.name==='Latent heat of melting')===false,'phase change heat entry uses renamed standard name');
+ok(formulas.some(x=>x.name==='Latent heat of melting'),'phase change fusion formula is included');
 ok(formulas.some(x=>x.name==='Latent heat of vaporization'),'phase change vaporization included');
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('273.15')),'exact Kelvin/Celsius offset note preserved');
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('Doppler')),'Doppler approximation warning preserved');
