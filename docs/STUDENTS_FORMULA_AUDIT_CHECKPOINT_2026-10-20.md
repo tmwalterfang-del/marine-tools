@@ -2,7 +2,21 @@
 
 Arbeidet fortsetter i Draft PR #35. Dette dokumentet gjelder leveransen etter labmodulene på `c704c277080b535800e7459b526183c9320e1aa1`, og er **ikke en ferdigmelding for alle bokkapitlene**.
 
-## Gjeldende kontrollpunkt etter mekanikk og maskinelementer
+## Gjeldende kontrollpunkt etter kjemi
+
+- **529 appoppføringer** med komplette lokale symboltabeller, **671 registrerte uttrykk/mønstre**, **164 appfamilier** med kildevarianter, **5685 kontekstuelle symbolrader**. Kalkulatorer og øvingsoppgaver er fortsatt 60 og 36. Alle 499 baseline-ID-er er bevart.
+- Kjemiens trykte sider **55–78 er visuelt lest**. **70 relasjoner** er registrert fra 19 av disse sidene: **48 aritmetiske relasjoner** og **22 strukturmønstre/reaksjonsskjemaer**. Fem sider med tabeller/gjentatt oppsummering har ingen nye registrerte uttrykk. Tabellenes data er ikke faglig sertifisert. Totalt har **67 sider** minst ett registrert uttrykk, mens **72 sider (7–78)** er visuelt lest i denne gjennomgangen.
+- **32 numeriske kjemireferanser** og semantiske kontroller passerte. Strukturmønstre er merket som ikke-numeriske og vises ikke som symbolsk beviste. Matematikkens CAS-omfang og mekanikkens dimensjonskontroller er uendret.
+- **15 Node-testfiler passerte**, inkludert 30 UI-logikkontroller. Tidligere CAS- og jsdom-verifikasjon er fortsatt separat fra ekte nettleser-/mobil-/offline-test.
+- Konkrete presiseringer: gjeldende moldefinisjon med eksakt Avogadrokonstant; aktivitet mot konsentrasjon og eksplisitt standardkonsentrasjon; temperaturavhengig pH+pOH=pKw; nøytral pH=pKw/2; ingen universell 0–14-grense; fortynning med endelig løsningsvolum; korrekt minimum antall karbonatomer/ring- og bindingsvilkår; en heksosedisakkaridreaksjon er ikke en universell formel for alle disakkarider; polymerens repeterende enhet er ikke alltid en endekorrigert molekylformel. Betahenfall/elektroninnfanging har forklaringer som inkluderer nøytrinoer.
+- Ingen originaltabeller, isotopfordelinger, potensial-/løselighets-/syrekonstanttabeller, kokepunktdata eller figurer er gjengitt. Et privat unntaksregister angir kontrollbehov for disse kildedelene. Foreldede elementnavn på den historiske tabellsiden tas ikke inn som gjeldende data.
+- Alle **284 originale JPG-filer** er dekodet lokalt uten feil. Én mellomlagret lesekopi var avkortet; kjemiens lesekopier ble regenerert fra originalene før visuell vurdering. OCR alene brukes fortsatt ikke som kildeverifikasjon.
+
+Primærreferanser for presiseringene: IUPAC Gold Book pH (P04524), syredissosiasjonskonstant (15441), og BIPM SI-moldefinisjonen. Referanselenker finnes i appens fagmodul. Dette er **ikke en ferdigmelding for hele formelgjennomgangen**. Elektrofag og senere kapitler, tabellgrunnlag, uttømmende kildesammenstilling og full numerisk/domene-/strukturkontroll gjenstår.
+
+Reproduserbar kjemikontroll: `node tests/students-chemistry-audit-20261020.mjs`.
+
+## Tidligere kontrollpunkt etter mekanikk og maskinelementer
 
 - **523 appoppføringer**, alle med eksplisitte symboltabeller; alle **499 baseline-ID-er** er bevart. **60 kalkulatorer**, **36 øvingsoppgaver**, **5406 kontekstuelle symbolrader**.
 - **601 registrerte kildeuttrykk** fordelt på matematikk 262, fysikk 82, mekanikk 204 og maskinelementer 53. Uttrykkene representerer **48 trykte sider (7–54)** og er knyttet til **148 appoppføringer**. Ingen av sidene er sertifisert som uttømmende registrert eller fullstendig faglig verifisert.

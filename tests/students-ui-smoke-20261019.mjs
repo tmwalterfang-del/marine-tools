@@ -8,7 +8,7 @@ const html=read('students/index.html'),app=read('students/app.js');
 const src=[
 'students/formulas.js','students/formulas-extension.js','students/formulas-expansion-v1.js',
 'students/calculators.js','students/calculators-extension.js','students/calculators-expansion-v1.js',
-'students/learning-data.js','students/book-photos-20261020.js','students/math-chapter-20261020.js','students/physics-chapter-20261020.js','students/applied-controls-20261020.js','students/chapter-topics-a-20261020.js','students/chapter-topics-b-20261020.js','students/mechanics-p42-20261020.js','students/symbol-definitions-20261020.js','students/physics-equation-audit-20261020.js','students/math-equation-audit-20261020.js','students/mechanics-equation-audit-20261020.js','students/machine-elements-audit-20261020.js','students/symbol-index.js'
+'students/learning-data.js','students/book-photos-20261020.js','students/math-chapter-20261020.js','students/physics-chapter-20261020.js','students/applied-controls-20261020.js','students/chapter-topics-a-20261020.js','students/chapter-topics-b-20261020.js','students/mechanics-p42-20261020.js','students/symbol-definitions-20261020.js','students/physics-equation-audit-20261020.js','students/math-equation-audit-20261020.js','students/mechanics-equation-audit-20261020.js','students/machine-elements-audit-20261020.js','students/chemistry-equation-audit-20261020.js','students/symbol-index.js'
 ];
 const win={};
 src.forEach(path=>new Function('window',read(path))(win));
@@ -61,7 +61,7 @@ new Function('window','document','location','localStorage','navigator','confirm'
 function verify(condition,label){assert.ok(condition,label);messages.push(label)}
 function switchTab(name){tabs.find(x=>x.dataset.tab===name).listeners.click()}
 verify(element('formula-grid').innerHTML.includes('formula-card'),'initial form cards render');
-verify(element('formula-total').textContent===523,'correct formula count');
+verify(element('formula-total').textContent===529,'correct formula count');
 element('formula-search').listeners.input({target:{value:'Ohm'}});
 verify(element('formula-grid').innerHTML.includes('Ohm'),'text search finds Ohm');
 verify(element('formula-grid').innerHTML.includes('Symbols and units'),'formula details are present');
@@ -118,4 +118,8 @@ element('formula-search').listeners.input({target:{value:'Roller bearing basic r
 verify(element('formula-grid').innerHTML.includes('1000000')&&element('formula-grid').innerHTML.includes('10/3'),'roller variant and explicit revolution scaling render');
 switchTab('symbols');element('symbol-search').value='MINIMUM FILM thickness';element('symbol-search').listeners.input();
 verify(element('symbol-results').innerHTML.includes('radial clearance'),'local film-fraction quantity is searchable');
+switchTab('formulas');element('formula-search').listeners.input({target:{value:'Ketone pattern'}});
+verify(element('formula-grid').innerHTML.includes('Source pattern read; structural and stoichiometric verification remains separate.')&&!element('formula-grid').innerHTML.includes('Symbolic rule checked'),'chemical patterns render without claiming symbolic proof');
+element('formula-search').listeners.input({target:{value:'Ideal dilute concentration pH'}});
+verify(element('formula-grid').innerHTML.includes('c_H/c°'),'pH variant shows standard-state concentration ratio');
 console.log(JSON.stringify({status:'PASS',checks:messages.length,details:messages}));

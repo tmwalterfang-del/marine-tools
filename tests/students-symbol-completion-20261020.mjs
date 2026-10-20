@@ -2,7 +2,7 @@ import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:asser
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8'),win={},ctx=vm.createContext({window:win});
 for(const m of read('students/index.html').matchAll(/src="([^"?]+\.js)/g)){if(m[1]==='app.js')break;vm.runInContext(read('students/'+m[1]),ctx)}
 const F=win.MT_FORMULAS,S=win.MT_STUDY,byId=new Map(F.map(f=>[f.id,f]));let checks=0;const ok=(v,m)=>{assert.ok(v,m);checks++};
-ok(F.length===523,'499 baseline entries plus four physics and sixteen mechanics and four machine-element families');
+ok(F.length===529,'499 baseline entries plus four physics and sixteen mechanics and four machine-element and six chemistry families');
 const baseline=JSON.parse(read('tests/fixtures/students-baseline-499-ids.json'));ok(baseline.every(id=>byId.has(id)),'every baseline ID preserved');
 for(const f of F){const vars=S.details[f.id]?.symbols;ok(vars?.length>0&&vars.every(v=>v.symbol&&v.meaning&&v.unit),'local variable meanings and units for '+f.id)}
 const unit=(id,glyph)=>S.details[id].symbols.find(v=>v.symbol===glyph)?.unit;
