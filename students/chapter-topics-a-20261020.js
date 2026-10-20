@@ -9,6 +9,8 @@ if(!Array.isArray(library)||!study?.details)throw Error('Formula library and stu
 const seen=new Set(library.map(f=>f.id));const added=[];
 const slug=x=>x.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 for(const v of rows){
+ const matching=library.find(f=>f.name===v.name);
+ if(matching){study.details[matching.id]={...(study.details[matching.id]||{}),symbols:v.symbols.map(([symbol,meaning,unit])=>({symbol,meaning,unit}))};continue}
  const id='source-expansion-20261020-'+slug(v.name);
  if(seen.has(id))throw Error('Duplicate supplementary formula '+id);
  seen.add(id);
