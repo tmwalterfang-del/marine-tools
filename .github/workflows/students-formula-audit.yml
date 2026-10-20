@@ -71,6 +71,7 @@ jobs:
           node tests/students-cargo-workspace-20261020.cjs
           node tests/students-example-workshops-20261020.cjs
           node tests/students-symbol-navigation-20261020.cjs
+          node tests/students-education-navigation-20261020.cjs
           node tests/site-wide-source-audit-20261020.cjs
           timeout 45s node tests/site-core-dom-20261020.cjs
           node tests/students-explorers-dom-20261020.cjs
@@ -106,4 +107,32 @@ jobs:
         with:
           name: student-formula-completeness
           path: students-formula-completeness.csv
+          if-no-files-found: warn
+
+  education-browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser test runner
+        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.62.1
+      - name: Install rendering engine and Linux dependencies
+        run: node /tmp/education-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
+      - name: Responsive Education and whole-site browser checks
+        env:
+          NODE_PATH: /tmp/education-browser/node_modules
+        run: node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
+      - name: Save screenshots, browser results and report exports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: education-browser-${{ matrix.browser }}
+          path: qa-education-${{ matrix.browser }}/
           if-no-files-found: warn

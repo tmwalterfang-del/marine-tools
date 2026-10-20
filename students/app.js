@@ -205,6 +205,7 @@ function renderSymbols(){
 function setTab(name){
  if(!["formulas","symbols","calculators","practice","sheet"].includes(name))name="formulas";
  state.tab=name;
+ renderChapterContext();
  document.querySelectorAll("[data-tab]").forEach(b=>{
   const active=b.dataset.tab===name;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active));
  });
@@ -217,21 +218,24 @@ function setTab(name){
  if(name==="practice")renderPractice();
  if(name==="sheet")renderSheet();
 }
+function renderChapterContext(){
+ const c=study.chapters?.find(c=>String(c.number)===state.chapter);
+ el("chapter-context").hidden=!c||state.tab!=="formulas";
+ el("chapter-context-label").textContent=c?"Opened from chapter "+c.number+" · "+c.title:"";
+}
 function route(){
  const match=location.hash.match(/^#chapter-(\d+)$/);
  state.chapter=match&&study.chapters?.some(c=>c.number===Number(match[1]))?match[1]:"All";
- if(el("chapter-filter"))el("chapter-filter").value=state.chapter;
+ renderChapterContext();
  if(match){state.group="All";state.topic="All";state.query="";state.savedOnly=false;state.display=48;el("study-group").value="All";el("formula-search").value="";el("saved-only").checked=false;refreshTopics()}
  setTab(match?"formulas":location.hash.slice(1)||"formulas");
  if(pendingSymbolVariant){openSymbolVariant(pendingSymbolVariant);pendingSymbolVariant=null}else if(location.hash)el("study-tools").scrollIntoView?.({block:'start'});
 }
 function init(){
- const chapterSelect=el("chapter-filter");
- if(chapterSelect){for(const c of study.chapters||[]){const o=document.createElement("option");o.value=String(c.number);o.textContent=c.number+" · "+c.title;chapterSelect.append(o)}chapterSelect.addEventListener("change",e=>{state.chapter=e.target.value;state.display=48;renderFormulas()})}
-
+ el("clear-chapter").addEventListener("click",()=>{state.chapter="All";renderChapterContext();location.hash="formulas";renderFormulas()});
  for(const id of ['library-home-link','library-browse'])el(id).addEventListener('click',()=>{
   pendingSymbolVariant=null;state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.display=48;
-  el('chapter-filter').value='All';el('study-group').value='All';el('formula-search').value='';el('saved-only').checked=false;refreshTopics();location.hash='formulas';setTab('formulas');el('study-tools').scrollIntoView?.({block:'start'});
+  renderChapterContext();el('study-group').value='All';el('formula-search').value='';el('saved-only').checked=false;refreshTopics();location.hash='formulas';setTab('formulas');el('study-tools').scrollIntoView?.({block:'start'});
  });
  const selector=el("topic-filter"),groupSelector=el("study-group");
  study.groups.forEach(group=>{const option=document.createElement("option");option.value=group.id;option.textContent=group.label;groupSelector.append(option)});
@@ -248,15 +252,15 @@ function init(){
  el("symbol-results").addEventListener("click",ev=>{
   const b=ev.target.closest("button[data-symbol-formula]");if(!b)return;
   const f=byFormula.get(b.dataset.symbolFormula);if(!f)return;
-  state.chapter="All";if(el("chapter-filter"))el("chapter-filter").value="All";state.group="All";state.topic="All";state.savedOnly=false;state.query=f.name;state.display=48;
+  state.chapter="All";renderChapterContext();state.group="All";state.topic="All";state.savedOnly=false;state.query=f.name;state.display=48;
   el("study-group").value="All";refreshTopics();el("saved-only").checked=false;el("formula-search").value=f.name;
   pendingSymbolVariant=b.dataset.symbolVariant||null;
   location.hash="formulas";setTab("formulas");
   if(pendingSymbolVariant)openSymbolVariant(pendingSymbolVariant);else el("study-tools").scrollIntoView?.({block:'start'});
  });
  el("formula-search").addEventListener("input",ev=>{state.query=ev.target.value;state.display=48;renderFormulas()});
- selector.addEventListener("change",ev=>{state.topic=ev.target.value;state.display=48;renderFormulas()});
- groupSelector.addEventListener("change",ev=>{state.group=ev.target.value;state.display=48;refreshTopics();renderFormulas()});
+ selector.addEventListener("change",ev=>{state.chapter="All";renderChapterContext();state.topic=ev.target.value;state.display=48;renderFormulas()});
+ groupSelector.addEventListener("change",ev=>{state.chapter="All";renderChapterContext();state.group=ev.target.value;state.display=48;refreshTopics();renderFormulas()});
  el("saved-only").addEventListener("change",ev=>{state.savedOnly=ev.target.checked;renderFormulas()});
  el("load-more").addEventListener("click",()=>{state.display+=48;renderFormulas()});
  el("formula-grid").addEventListener("click",ev=>{

@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <meta name="theme-color" content="#071725">
  <meta name="robots" content="noindex,nofollow">
- <title>For Students · Marine Tools</title>
+ <title>Education · Marine Tools</title>
  <meta name="description" content="Searchable maritime and technical formulas, interactive calculators, and student practice exercises.">
  <link rel="icon" href="../assets/icon-192.png" type="image/png">
  <link rel="stylesheet" href="styles.css?v=students-draft-10">
@@ -48,15 +48,15 @@
 <body>
 <a class="skip-link" href="#study-tools">Skip to content</a>
 <header class="topbar">
- <a class="brand" href="./"><img src="../assets/icon-192.png" width="43" height="43" alt=""><span><strong>MARINE TOOLS</strong><small>EDUCATION / STUDENTS</small></span></a>
+ <a class="brand" href="./"><img src="../assets/icon-192.png" width="43" height="43" alt=""><span><strong>MARINE TOOLS</strong><small>EDUCATION · LEARN & TEACH</small></span></a>
  <nav class="student-nav" aria-label="Student navigation"><a id="library-home-link" href="./#formulas" aria-current="page">Formula library</a><a href="interactive.html">Interactive modules</a><a href="chapters.html">Chapters</a><a class="main-site-link" href="../">Main site ↗</a></nav>
 </header>
 <main id="workspace">
  <section class="hero" aria-labelledby="hero-title">
   <div class="hero-copy">
-   <span class="eyebrow"><span class="status-dot"></span> MARITIME STUDY WORKSPACE · DEVELOPMENT PREVIEW</span>
-   <h1 id="hero-title">Technical formulas made practical.</h1>
-   <p>Find the formula, understand its assumptions, test values and practice with worked solutions — from ship stability to electricity and thermodynamics.</p>
+   <span class="eyebrow"><span class="status-dot"></span> LEARNING & TEACHING · DEVELOPMENT PREVIEW</span>
+   <h1 id="hero-title">Explore formulas. Explain the method.</h1>
+   <p>For learners and teachers: find the formula, understand its assumptions and explore worked examples — from ship stability to electricity and thermodynamics.</p>
    <div class="hero-buttons"><a id="library-browse" href="#formulas" class="main-btn">Browse the formula library →</a><a class="outline-btn" href="interactive.html">Explore 15 interactive modules →</a></div>
    <p class="preview-note">This page is an experimental educational reference. Formula coverage and academic validation are still being expanded.</p>
   </div>
@@ -68,7 +68,7 @@
     <div><b id="practice-total">—</b><small>EXERCISES</small></div>
     <div><b id="saved-total">—</b><small>BOOKMARKS</small></div>
    </div>
-   <div class="aside-foot"><span class="tiny-dot"></span> No account required · works with your own calculations</div>
+   <div class="aside-foot"><span class="tiny-dot"></span> Calculations and saved selections stay in your browser.</div>
   </div>
  </section>
  <section id="study-tools" class="workspace" aria-label="Student tools">
@@ -87,11 +87,11 @@
   </div>
   <div id="formula-controls" class="controls">
    <label class="search-field"><span aria-hidden="true">⌕</span><input id="formula-search" type="search" placeholder="Search: GM, TPC, electrical, trim ..." autocomplete="off" aria-label="Search formulas"></label>
-   <select id="chapter-filter" aria-label="Book chapter"><option value="All">All chapters</option></select>
-   <select id="study-group" aria-label="Study discipline"><option value="All">All disciplines</option></select>
-   <select id="topic-filter" aria-label="Subject area"><option value="All">All subjects</option></select>
+   <label class="filter-select">Discipline<select id="study-group" aria-label="Study discipline"><option value="All">All disciplines</option></select></label>
+   <label class="filter-select">Subject<select id="topic-filter" aria-label="Subject area"><option value="All">All subjects</option></select></label>
    <label class="saved-check"><input id="saved-only" type="checkbox"><span id="saved-only-text">Saved only</span></label>
   </div>
+  <p id="chapter-context" class="chapter-context" hidden><span id="chapter-context-label"></span> <button id="clear-chapter" type="button" class="quiet-button">Show all formulas</button></p>
   <section data-pane="formulas" aria-label="Formula catalogue">
    <div class="section-line"><p><span id="formula-count">—</span> formulas matching</p><button type="button" id="print-formulas" class="quiet-button">⎙ Print / Save PDF</button></div>
    <div id="formula-grid" class="formula-grid" aria-live="polite"></div>
@@ -149,6 +149,6 @@
   </section>
  </section>
 </main>
-<footer><span>Marine Tools by Walterfang Design · For Students preview</span><a href="../education/">Education</a><a href="../">Main application</a></footer>
+<footer><span>Marine Tools by Walterfang Design · Education preview</span><a href="../education/">Education</a><a href="../">Main application</a></footer>
 </body>
 </html>
