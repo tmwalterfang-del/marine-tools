@@ -91,6 +91,21 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    if(engine==='chromium'){await reportPage.pdf({path:path.join(output,'mollier-report.pdf'),format:'A4',printBackground:true});check(fs.statSync(path.join(output,'mollier-report.pdf')).size>10000,'actual Chromium PDF',{scope});}
    await reportPage.close();
   }
+  // Reproduce the user's full-window examples as well as the embedded workspace.
+  for(const id of ['trim','crank']){
+   await page.goto(base+'/students/examples.html#'+id);
+   await page.waitForSelector('#chart path, #chart polyline',{state:'attached'});
+   await page.locator('#presentation-toggle').click();
+   await page.waitForFunction(()=>document.getElementById('chart').style.getPropertyValue('--teaching-chart-height'));
+   const m=await page.locator('#chart').evaluate(x=>({bottom:x.getBoundingClientRect().bottom,height:x.getBoundingClientRect().height,viewport:innerHeight}));
+   if(width>=801&&height>=650)check(m.bottom<=m.viewport+2,'standalone presentation includes lower axis/'+id,{scope,...m});
+   check(await page.locator('#module-description').isVisible(),'standalone description remains available/'+id,{scope});
+   if(device==='wide-short')await page.screenshot({path:path.join(output,'standalone-'+id+'-'+device+'.png')});
+   await page.locator('#chart').scrollIntoViewIfNeeded();
+   const reached=await page.locator('#chart').evaluate(x=>({top:x.getBoundingClientRect().top,bottom:x.getBoundingClientRect().bottom,viewport:innerHeight}));
+   check(reached.top>=-2&&reached.bottom<=reached.viewport+2,'whole standalone chart reachable/'+id,{scope,...reached});
+   await page.locator('#presentation-toggle').press('Escape');
+  }
   await context.close();
  }
 })().catch(e=>{errors.push({scope:engine,message:e.stack||String(e)});}).finally(async()=>{
