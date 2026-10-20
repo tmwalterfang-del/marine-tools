@@ -79,7 +79,9 @@ function formulaMarkup(f,forSheet=false){
  '<details class="formula-explanation"'+(forSheet?" open":"")+'><summary>Variables, units, diagram & source status</summary>'+
  '<div class="explanation-body"><h4>Symbols and units</h4>'+symbolsHtml(f)+figure+
  '<div class="source-status"><strong>Topic reference: </strong>'+enc(chapter)+'. <a href="'+enc(study.glossarySource)+'" target="_blank" rel="noopener noreferrer">Book catalogue ↗</a>'+
- '<p>'+enc(study.chapterLabel)+' '+enc(study.reviewLabel)+'</p></div></div></details>'+actions+'</article>';
+ '<p>'+enc(study.chapterLabel)+' '+enc(study.reviewLabel)+'</p>'+
+ (study.photoReview?.[f.id]?'<p class="photo-review">Printed source p. '+enc(study.photoReview[f.id].page)+': '+enc(study.photoReview[f.id].status)+'</p>':"")+
+ '</div></div></details>'+actions+'</article>';
 }
 function renderFormulas(){
  const list=filtered();
