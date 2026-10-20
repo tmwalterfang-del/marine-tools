@@ -108,7 +108,8 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    await page.locator('#presentation-toggle').click();
    await page.waitForFunction(()=>document.getElementById('chart').style.getPropertyValue('--teaching-chart-height'));
    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-   const m=await page.locator('#chart').evaluate(x=>({bottom:x.getBoundingClientRect().bottom,height:x.getBoundingClientRect().height,viewport:innerHeight}));
+   const m=await page.locator('#chart').evaluate(x=>({bottom:x.getBoundingClientRect().bottom,height:x.getBoundingClientRect().height,viewport:innerHeight,metricsBottom:Math.max(...[...document.querySelectorAll('.metric')].map(v=>v.getBoundingClientRect().bottom))}));
+   if(width>=1600&&height>=650)check(m.metricsBottom<=m.viewport+2,'wide presentation includes every key result/'+id,{scope,...m});
    if(width>=1600&&height>=650)check(m.height>=300,'wide presentation keeps diagram large/'+id,{scope,...m});
    if(width>=801&&height>=650)check(m.bottom<=m.viewport+2,'standalone presentation includes lower axis/'+id,{scope,...m});
    check(await page.locator('#module-description').isVisible(),'standalone description remains available/'+id,{scope});

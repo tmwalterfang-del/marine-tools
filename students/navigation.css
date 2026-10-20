@@ -81,3 +81,11 @@ body.presentation-view .metric strong.teaching-text-result{display:block;font-si
  body.presentation-view .two-col>.teaching-results>.legend{grid-column:2;grid-row:2;margin:0}
  body.presentation-view .two-col>.teaching-results>*:not(.metrics):not(svg):not(.legend){grid-column:1/-1}
 }
+@media(min-width:1600px) and (min-height:650px){
+ body.presentation-view .two-col>.teaching-results>.metrics>.metric{padding:8px}
+ body.presentation-view .two-col>.teaching-results>.metrics .metric strong{font-size:clamp(20px,1.5vw,28px);line-height:1.25}
+ body.presentation-view .two-col>.teaching-results>.metrics .metric strong.teaching-text-result{font-size:16px;line-height:1.35}
+ body.presentation-view .teaching-inputs .fields{gap:10px}
+ body.presentation-view .teaching-inputs label{line-height:1.35}
+ body.presentation-view .teaching-inputs input,body.presentation-view .teaching-inputs select{padding:8px}
+}
