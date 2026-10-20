@@ -64,6 +64,7 @@ jobs:
           node tests/students-labs-dom-20261020.cjs
           node tests/students-chapter-navigation-20261020.cjs
           node tests/students-study-export-20261020.cjs
+          node tests/students-cargo-workspace-20261020.cjs
           node tests/students-explorers-dom-20261020.cjs
           node tests/students-mollier-export-20261020.cjs
       - name: Install symbolic mathematics test dependency
