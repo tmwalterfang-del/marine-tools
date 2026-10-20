@@ -31,7 +31,7 @@ function fitPresentation(){
   const top=svg.getBoundingClientRect().top+(window.scrollY||0);
   const legend=svg.nextElementSibling?.classList.contains('legend')?svg.nextElementSibling.getBoundingClientRect().height:0;
   const available=window.innerHeight-top-legend-32;
-  const height=Math.max(180,Math.min(svg.parentElement.clientWidth*box.height/box.width,available));
+  const height=Math.max(180,Math.min(svg.getBoundingClientRect().width*box.height/box.width,available));
   const value=Math.round(height)+'px';if(svg.style.getPropertyValue('--teaching-chart-height')!==value)svg.style.setProperty('--teaching-chart-height',value);
  }
 }
