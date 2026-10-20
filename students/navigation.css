@@ -52,14 +52,22 @@ body.presentation-view>header,body.presentation-view .hero,body.presentation-vie
 body.presentation-view main{max-width:none;padding:20px 24px 48px}
 body.presentation-view .workspace{grid-template-columns:minmax(0,1fr)}
 body.presentation-view #workbench>h2{font-size:clamp(28px,3vw,42px)}
-body.presentation-view iframe{height:calc(100vh - 180px);min-height:600px}
-body.presentation-view .teaching-toolbar{position:sticky;top:0;z-index:50;padding:10px;background:var(--bg,#071725)}
-body.presentation-view .teaching-results{font-size:18px}body.presentation-view .teaching-results svg{max-height:76vh}
+body.presentation-view iframe{height:calc(100dvh - 190px);min-height:240px}
+body.presentation-view .teaching-toolbar{position:relative;padding:10px;background:var(--bg,#071725)}
+body.presentation-view .teaching-results{font-size:18px}body.presentation-view .teaching-results svg{height:var(--teaching-chart-height,45dvh);max-height:none;max-width:100%;overflow:visible}
 body.presentation-view .metric strong,body.presentation-view .metrics b{font-size:clamp(20px,2.1vw,32px)}
 body.presentation-view .teaching-results .tick{font-size:16px}
 body.presentation-view .teaching-grid{grid-template-columns:minmax(240px,.65fr) minmax(0,1.8fr)}
 @media print{.teaching-toolbar,.teaching-inputs>summary{display:none!important}}
 body.presentation-view .layout.teaching-grid{grid-template-columns:minmax(0,1.8fr) minmax(240px,.65fr)}
 body.presentation-view #workbench>h2{margin:8px 0 14px}
-body.presentation-view #workbench>p{display:none}
-body.presentation-view iframe{height:calc(100vh - 140px)}
+/* Assumptions, captions and the full-window link remain available in presentation. */
+body.presentation-view main{padding:12px 16px 24px}
+body.presentation-view .teaching-toolbar{margin-bottom:12px}
+body.presentation-view #workbench>h2{font-size:clamp(22px,3vw,32px);margin:4px 0}
+body.presentation-view #workbench>p{margin:4px 0 10px}
+body.presentation-view .panel{padding:16px}
+body.presentation-view .heading{margin:12px 0}
+body.presentation-view .teaching-grid{align-items:start}
+@media(max-width:800px){body.presentation-view main{padding:10px}body.presentation-view .teaching-toolbar span{flex:1 1 140px}}
+@media(max-height:650px) and (min-width:801px){body.presentation-view .metric strong,body.presentation-view .metrics b{font-size:20px}body.presentation-view .metric{padding:8px}}

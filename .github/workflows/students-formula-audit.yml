@@ -27,6 +27,10 @@ jobs:
         run: node tests/students-smoke-20261019.mjs
       - name: Independent circuit node balances
         run: node tests/students-source-circuits-20261020.mjs
+      - name: Qualified heat-transfer model references
+        run: |
+          node tests/students-heat-model-resolution-20261020.mjs
+          node tests/students-draft-model-resolution-20261020.mjs
       - name: Per-expression review context
         run: node tests/students-expression-review-ledger-20261020.mjs
       - name: Student interface logic

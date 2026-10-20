@@ -67,7 +67,7 @@ function symbolsHtml(f){
 function analyticalReviewHtml(r){
  const v=r.analyticalReview;if(!v)return '';
  const open=v.decision==='OPEN_MODEL_OR_SOURCE_LIMIT';
- return '<p class="'+(open?'source-open-model':'photo-review')+'"><strong>'+(open?'Unresolved model/source limit: ':'Analytical review: ')+'</strong>'+enc(open?v.finding:'Reviewed under the stated assumptions; this is separate from numerical validation.')+'</p>';
+ return '<p class="'+(open?'source-open-model':'photo-review')+'"><strong>'+(open?'Reference only — unresolved model/source limit: ':'Analytical review: ')+'</strong>'+enc(open?'Do not apply this model until its stated evidence gap is resolved. '+v.finding:'Reviewed under the stated assumptions; this is separate from numerical validation.')+'</p>';
 }
 function numericReviewText(r){
  if(r.numericStatus==='INDEPENDENT_COMPLEX_KCL_REFERENCE_CASES')return 'Displayed expression checked against independent ideal-circuit node balances; real-component limits remain separate.';

@@ -4,7 +4,7 @@ Dato: 20. oktober 2026. Gjelder preview i Draft PR #35. Ingen merge eller produk
 
 ## Resultat
 
-**Alle de 1 498 registrerte, normaliserte kildeuttrykkene er gjennomlest analytisk i denne runden, kapittel for kapittel.** 1 470 er vurdert som konsistente under de oppgitte vilkårene; 18 har fått rettet uttrykk, presisert topologi/vilkår eller korrigert lokal symboldefinisjon; 10 har uavklarte modell-/kildebegrensninger. En gjennomført vurdering er ikke det samme som en godkjenning av alle uttrykkene.
+**Alle de 1 498 registrerte, normaliserte kildeuttrykkene er gjennomlest analytisk i denne runden, kapittel for kapittel.** 1 470 er vurdert som konsistente under de oppgitte vilkårene; 22 har fått rettet uttrykk, presisert topologi/vilkår eller korrigert lokal symboldefinisjon; 6 har uavklarte modell-/kildebegrensninger. En gjennomført vurdering er ikke det samme som en godkjenning av alle uttrykkene.
 
 Kontrollen omfatter matematisk/fysisk sammenheng, fortegn, enhetsgrunnlag, lokale symboldefinisjoner og gyldighetsvilkår. Numeriske og symbolske testbevis beholdes som egne felt. Ikke-testede uttrykk blir ikke omklassifisert til numerisk bestått.
 
@@ -12,7 +12,7 @@ Kontrollen omfatter matematisk/fysisk sammenheng, fortegn, enhetsgrunnlag, lokal
 
 Registeret inneholder normaliserte relasjoner, grupperte varianter og enkelte selvstendige erstatninger for problematiske bokuttrykk. Det er ikke en ordrett, uttømmende transkripsjon av hver trykte likning, empiriske tabell og kurve i boken. Den tidligere sideoversikten har derfor fortsatt ikke sertifisert at hver trykte side er uttømmende dekket. Denne rapporten hevder ikke at alle bokens mulige kildeuttrykk er ferdigverifisert.
 
-Alle registrerte formler og vilkår ble lest i denne runden. Tidligere visuelle kildeavlesninger er beholdt som tidligere bevis. Originalsidene 109, 110, 111, 161 og 163 ble åpnet på nytt for konkrete krets-/korrelasjonskontroller; øvrige originalsider er ikke visuelt lest på nytt i denne runden. Den automatiske dimensjonskontrollen dekker 1 011 uttrykk, mens 487 ikke kan parses av denne kontrollen. Dimensjonslikhet alene beviser ikke koeffisient, skala, domene eller fysisk anvendelighet.
+Alle registrerte formler og vilkår ble lest i denne runden. Tidligere visuelle kildeavlesninger er beholdt som tidligere bevis. Originalsidene 48, 50, 51, 52, 109, 110, 111, 161, 163, 212 og 223 ble åpnet på nytt for konkrete krets-/korrelasjonskontroller; øvrige originalsider er ikke visuelt lest på nytt i denne runden. Den automatiske dimensjonskontrollen dekker 1 011 uttrykk, mens 487 ikke kan parses av denne kontrollen. Dimensjonslikhet alene beviser ikke koeffisient, skala, domene eller fysisk anvendelighet.
 
 ## Kapittelvis dekning
 
@@ -28,12 +28,12 @@ Alle registrerte formler og vilkår ble lest i denne runden. Tidligere visuelle 
 | 8. Kraftelektronikk | 51 | 0 | 0 |
 | 9. Motorteori | 107 | 0 | 0 |
 | 10. Dampteori | 35 | 1 | 0 |
-| 11. Varme og strømning | 143 | 6 | 2 |
+| 11. Varme og strømning | 143 | 8 | 0 |
 | 12. Kjøleteknikk | 26 | 0 | 0 |
 | 13. Navigasjon | 50 | 0 | 0 |
 | 14. Last og stabilitet | 121 | 2 | 1 |
 | 15. Økonomi | 14 | 0 | 0 |
-| 16. Korrigert deplasement | 10 | 0 | 2 |
+| 16. Korrigert deplasement | 10 | 2 | 0 |
 
 ## Konkrete rettinger
 
@@ -49,20 +49,16 @@ Alle registrerte formler og vilkår ble lest i denne runden. Tidligere visuelle 
 - GZ=KN−KGsinθ krever TCG=0; sideforskjøvet tyngdepunkt gir et ekstra cosθ-ledd.
 - Krengningspendel: tangensformelen bruker den faste avstanden til måleplanet, ikke lengden av den skrå pendeltråden.
 
-## Ti uavklarte modell-/kildeforhold
+## Seks gjenværende modell-/kildeforhold
 
 | Uttrykks-ID | Hva som fortsatt mangler |
 |---|---|
 | book-mechanics-p48-r02 | Historical dished-head stress approximation has no independently established modern geometry/design applicability. Requires an applicable validated head model; not accepted as design thickness. |
 | book-machine-p50-r07 | Allowable weld multiplier v lacks a specified validated material/joint/design assessment. Arithmetic is coherent; resistance calibration is not established. |
 | book-machine-p50-r11 | Historical effective-weld-length end deduction is not tied to a stated applicable assessment rule; do not use as a universal rule. |
-| book-machine-p51-r09 | Journal-bearing K1 chart/model data and its geometry/film regime are absent; coefficient calibration cannot be confirmed. |
-| book-machine-p52-r02 | Journal-bearing K2 chart/model data and its geometry/film regime are absent; friction calibration cannot be confirmed. |
-| book-c11-p161-r04 | Printed turbulent Sieder-Tate length condition is corrupt. The fit structure is recognizable, but its exact source validity condition is not recoverable from this line. |
-| book-c11-p163-r04 | Source coefficient 1.13 has no independent film-regime calibration here and differs from classical smooth-film 0.943. Retained as legacy, not validated heat-transfer prediction. |
+| book-machine-p51-r09 | Original K₁ chart is available on p.52 and has been reread. Its independent calibration, operating assumptions and applicability remain unverified. |
+| book-machine-p52-r02 | Original K₂ chart is available on p.52 and has been reread. Its independent calibration, operating assumptions and applicability remain unverified. |
 | book-c14-p212-r04 | Historical grain effective-GM coefficient 1/5 is not tied to an independently established grain geometry/approved heeling model. |
-| book-c16-p223-r04 | Historical one-third hull-deflection correction is not independently validated for a specified hull/procedure; differs from quarter-mean rule. |
-| book-c16-p223-r05 | Depends on the unresolved one-third deflection model in the preceding expression; signed addition itself is correct. |
 
 Disse forholdene er merket i previewen ved de aktuelle kildevariantene. Ingen universell koeffisient, original diagramkalibrering eller moderne dimensjoneringsgodkjenning er konstruert for å få listen til å se ferdig ut.
 
@@ -70,7 +66,7 @@ Disse forholdene er merket i previewen ved de aktuelle kildevariantene. Ingen un
 
 - `STUDENTS_EXPRESSION_REVIEW_2026-10-20.csv`: én rad per registrert uttrykk, med uttrykk, vilkår, beslutning, individuelt avvik, teststatus og kontrollsum for uttrykk/vilkår/symboler.
 - `STUDENTS_EXPRESSION_REVIEW_BASIS_2026-10-20.json`: analytisk begrunnelse per kapittel og side; hver CSV-rad peker til én begrunnelse.
-- `STUDENTS_EXPRESSION_CHANGES_2026-10-20.json`: nøyaktig før/etter for de 18 endrede uttrykkskontekstene.
+- `STUDENTS_EXPRESSION_CHANGES_2026-10-20.json`: nøyaktig før/etter for alle endrede uttrykkskontekster.
 - `tests/students-expression-review-ledger-20261020.mjs`: avviser en foreldet vurdering dersom uttrykk, vilkår eller lokale symboler endres uten oppdatert kontrolljournal.
 
 ## Visuelle endringer
@@ -84,9 +80,9 @@ Disse forholdene er merket i previewen ved de aktuelle kildevariantene. Ingen un
 
 Kretskontrollen løser uavhengige komplekse nodebalanser i 176 komponent-/frekvenstilfeller med 416 sammenligninger for ti registrerte uttrykk. Dette er idealiserte op-amp-modeller, ikke validering av en fysisk komponent med begrenset båndbredde eller utgangssving.
 
-Nettlesermatrisen omfatter Chromium, Firefox og WebKit med seks størrelser fra 320×568 til 1440×900, alle femten moduler, undervisningsvisning, mobilkontroller og rapporteksport. Resultatlogg, skjermbilder og faktiske eksportfiler lagres i GitHub Actions for denne revisjonen. Nettleseremulering på Linux er ikke fysisk iOS-/Android-/Windows-/macOS-testing.
+Nettlesermatrisen omfatter Chromium, Firefox og WebKit med åtte størrelser, inkludert 320×568, 844×390 og 2048×774, alle femten moduler, undervisningsvisning, mobilkontroller og rapporteksport. Resultatlogg, skjermbilder og faktiske eksportfiler lagres i GitHub Actions for denne revisjonen. Nettleseremulering på Linux er ikke fysisk iOS-/Android-/Windows-/macOS-testing.
 
-Før produksjonsgodkjenning gjenstår lukking eller produktmessig avgrensning av de ti åpne modellforholdene, vurdering av uregistrert bokinnhold dersom full bokdekning kreves, fysisk enhetstest, installert offline/PWA-bruk og live dataleverandører. Ingen av disse er automatisk bestått gjennom en grønn testkjøring.
+Før produksjonsgodkjenning gjenstår lukking eller produktmessig avgrensning av de seks åpne modellforholdene, vurdering av uregistrert bokinnhold dersom full bokdekning kreves, fysisk enhetstest, installert offline/PWA-bruk og live dataleverandører. Ingen av disse er automatisk bestått gjennom en grønn testkjøring.
 
 ## Referansegrunnlag
 
@@ -99,3 +95,20 @@ Primært grunnlag er brukerens tekniske formelsamling og de eksisterende individ
 - IAPWS IF97, med eksisterende tester mot publiserte referanseverdier: https://iapws.org/technical-guidance/release/IF97-Rev
 
 Forsøk på å hente MITs varmeoverføringsbok i denne runden ga tidsavbrudd og brukes ikke som nytt verifikasjonsbevis. Historiske korrelasjoner får ikke en ny kalibreringsgodkjenning på det grunnlaget.
+
+## Oppfølging: skjermtilpasning og to varmeoverføringsmodeller
+
+Begge brukerens skjermbilder (trim og veivakseldefleksjon) ble åpnet. Brede, lave skjermer ga en graf som fortsatte under skjermkanten. Presentasjon måler nå tilgjengelig høyde og setter hele SVG-visningsflaten med bevart viewBox-format. Resultater, akser, bildetekster, modulbeskrivelser og modellvilkår skjules ikke. På små skjermer og ved mye tekst brukes rulling; det loves ikke at et helt undervisningsopplegg får plass samtidig på enhver skjerm. Escape inne i en innebygd modul avslutter også den ytre presentasjonen. Skjemaene beholdes.
+
+- `book-c11-p161-r04`: den korrupte lengdebetingelsen er ikke rekonstruert. Undervisningsversjonen bruker den dokumenterte 0.027-korrelasjonen og krever uttrykkelig fullt utviklet strømning, med Re>10000, det konservative kildeintervallet 0.7<Pr<700 og korrekte bulk-/veggviskositeter. Innløpseffekter må vurderes separat. Referanse: https://ht.readthedocs.io/en/latest/ht.conv_internal.html#ht.conv_internal.turbulent_Sieder_Tate . Referansen opplyser også om historiske attribusjons-/koeffisientvarianter.
+- `book-c11-p163-r04`: historisk 1.13 er erstattet av en tydelig selvstendig Nusselt-modell med avrundet 0.943 for glatt laminær film på vertikal isoterm plate. Den opprinnelige 1.13 er ikke faglig godkjent. Geometri, midlet filmkoeffisient, egenskapsnivå og utelatte effekter står ved uttrykket. Referanse: https://ht.readthedocs.io/en/latest/ht.condensation.html#ht.condensation.Nusselt_laminar .
+- Ny test kontrollerer tre publiserte referansepunkter og ni uavhengige filmstrømningsbalanser. Forskjellen mellom avrundet 0.943 og eksakt 2√2/3 håndteres uttrykkelig i toleransen. Dette er ikke en full empirisk domenekalibrering.
+- De seks øvrige forholdene forblir åpne og er merket «Reference only» med en eksplisitt beskjed om at modellen ikke skal anvendes før dokumentasjonsgapet er lukket. K₁/K₂-kurvene finnes i originalen på s.52 og er nå gjenåpnet; gapet gjelder uavhengig kalibrering og anvendelighet. Material-/sveiseforutsetninger og historiske hode-/kornkoeffisienter har heller ikke tilstrekkelig grunnlag for generell anvendelse.
+
+E-post til ekstern underviser skal presentere dette som en utviklingspreview for avgrenset undervisningsutprøving og faglige tilbakemeldinger, ikke som en ferdig faglig sertifisering. Brukeren har bedt om et e-postutkast; ingen e-post sendes.
+
+## Oppfølging: én-tredels skrogmodell
+
+To ytterligere punkter (`book-c16-p223-r04/r05`) er avgrenset til en selvstendig utledet undervisningsmodell: konstant langskips vannlinjebredde, små volumendringer og kvadratisk dypgangsprofil. Integrasjon gir T_equiv=(T_F+4T_M+T_A)/6 og dermed δT=(T_mean−T_M)/3. Dette gjør samme algebra faglig etterprøvbar under klart angitte forutsetninger; det godkjenner ikke den historiske regelen for et vilkårlig skip. Testen integrerer 18 profiler uavhengig og viser med et moteksempel at varierende vannlinjebredde bryter den uvektede én-tredelsregelen.
+
+Sluttstatus i registeret: 1 470 vurdert under oppgitte forutsetninger, 22 rettet/presisert og 6 fortsatt åpne. Fire av de opprinnelige ti åpne punktene har dermed fått selvstendige, avgrensede undervisningsmodeller. Den tidligere bokteksten/koeffisienten er fortsatt ikke sertifisert som universell.

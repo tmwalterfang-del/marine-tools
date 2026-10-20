@@ -50,8 +50,8 @@
   "4": {
     "49": "Lead angle and raising/lowering thread torque follow the inclined-helix model, with collar torque separate. Half V-angle correction and uniform-wear approximate collar radius are explicit.",
     "50": "Core/tensile area, same-point von Mises and friction-joint load sharing are distinguished. Historical weld allowable multiplier and end deduction need an applicable design method and are model-dependent.",
-    "51": "Weld-group nominal force/moment stress requires its actual geometry. Journal clearance is diametral ratio; film fraction is 1-e/c rather than eccentricity. K1 correlation cannot be calibrated without its original validated chart/model.",
-    "52": "Film-thickness and clearance identities are algebraically consistent. K2 friction correlation remains model-dependent. Thrust-bearing mean radius (D+d)/4 is uniform wear, not uniform pressure.",
+    "51": "Weld-group nominal force/moment stress requires its actual geometry. Journal clearance is diametral ratio; film fraction is 1-e/c rather than eccentricity. K1 correlation cannot be calibrated without its original validated chart/model. Follow-up: The original p.52 K₁ chart exists and has been reread. Its independent calibration, operating assumptions and design applicability remain unverified; no curve interpolation is implemented.",
+    "52": "Film-thickness and clearance identities are algebraically consistent. K2 friction correlation remains model-dependent. Thrust-bearing mean radius (D+d)/4 is uniform wear, not uniform pressure. Follow-up: The original p.52 K₂ chart exists and has been reread. Its independent calibration, operating assumptions and design applicability remain unverified; no curve interpolation is implemented.",
     "53": "Bearing heat balance conserves power; manufacturer's X/Y load factors remain external inputs. Basic L10 exponent is 3 for balls and 10/3 for rollers; revolutions/hour/rpm scaling checked against SKF rating-life definition.",
     "54": "Elastic circular torsion and engineering shear strain distinguished from total twist; von Mises combines one normal and one shear stress at the same physical point."
   },
@@ -164,9 +164,9 @@
     "158": "Compressibility factor uses matching specific volume/R and absolute T. Reduced pressure/temperature are dimensionless, not Pa/K.",
     "159": "Molecular mass, Avogadro and gas constants use consistent molar units. Nu/Re/Pe/Pr/St definitions distinguish thermal diffusivity, kinematic viscosity and film coefficient.",
     "160": "Polytropic formulas derive from pV^n plus ideal-gas law and first law. n=1 is a separate reversible isothermal work limit. Equal-temperature endpoint entropy needs T2=T1 even for irreversible paths; missing individual qualifications corrected.",
-    "161": "Source reread. Emitted radiation is not net radiation. Sieder-Tate fits are empirical, geometry/property/entrance limits apply; the damaged printed turbulent length condition remains explicitly unresolved.",
+    "161": "Source reread. Emitted radiation is not net radiation. Sieder-Tate fits are empirical, geometry/property/entrance limits apply; the damaged printed turbulent length condition remains explicitly unresolved. Follow-up: Replaced unrecoverable printed length condition with an independently documented, explicitly fully developed teaching correlation. Original source inequality remains unreconstructed; entrance regime must be established separately.",
     "162": "Dittus-Boelter uses smooth developed turbulent tube flow and different heated/cooled Pr exponents; source-specific range is retained without claiming calibration for other fluids.",
-    "163": "Source reread. Vertical plate and horizontal-cylinder fit geometry/length were missing locally and are now explicit. Legacy 1.13 condensation coefficient lacks established smooth-film calibration and remains open; 0.725 horizontal-tube law has a separate draining-film model.",
+    "163": "Source reread. Vertical plate and horizontal-cylinder fit geometry/length were missing locally and are now explicit. Legacy 1.13 condensation coefficient lacks established smooth-film calibration and remains open; 0.725 horizontal-tube law has a separate draining-film model. Follow-up: Replaced uncalibrated legacy coefficient 1.13 with independent classical smooth-film coefficient 0.943, with geometry, averaging, property states and exclusions explicit. This does not validate the legacy coefficient.",
     "164": "Rayleigh denominator is nu*alpha, not nu^2, and film absolute temperature is arithmetic mean. Morgan/McAdams coefficients must come from matching geometry/range; they are external fit parameters.",
     "165": "Vertical-plate power-law and Churchill-Chu correlations are empirical heat-transfer models with specified Rayleigh ranges and positive Pr.",
     "166": "Gray-surface radiation assumes full enclosure/view factor one. Supply temperature effectiveness is not total enthalpy effectiveness. Degree-day heating energy needs 24 hours/day.",
@@ -229,7 +229,7 @@
   },
   "16": {
     "222": "Port/starboard averages remove only first-order list. Draft-mark conversion uses the actual mark baseline and signed station offsets, not automatically Lpp.",
-    "223": "Perpendicular/end/midship/LCF drafts are distinct. The historical one-third deflection correction remains an unvalidated empirical alternative to quarter-mean, with its sign applied once.",
+    "223": "Perpendicular/end/midship/LCF drafts are distinct. The historical one-third deflection correction remains an unvalidated empirical alternative to quarter-mean, with its sign applied once. Follow-up: One-third algebra independently derived by integrating a quadratic draft profile over a constant-breadth waterplane. Restricted teaching assumptions replace the unqualified empirical claim; arbitrary hull applicability remains excluded.",
     "224": "Density conversion follows fixed submerged volume using the table read at already corrected draft/trim, with actual and table densities on one basis."
   }
 }

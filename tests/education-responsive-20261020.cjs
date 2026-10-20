@@ -5,7 +5,7 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const pw=require('playwright'),root=path.resolve(__dirname,'..'),engine=process.argv[2]||'chromium';
 const output=path.resolve(process.env.QA_OUTPUT||('qa-education-'+engine));fs.mkdirSync(output,{recursive:true});
-const sizes=[['desktop',1440,900],['laptop',1280,720],['tablet-portrait',768,1024],['tablet-landscape',1080,810],['phone',390,844],['small-phone',320,568]];
+const sizes=[['desktop',1440,900],['laptop',1280,720],['tablet-portrait',768,1024],['tablet-landscape',1080,810],['phone',390,844],['small-phone',320,568],['wide-short',2048,774],['phone-landscape',844,390]];
 const pages=['home','fuel','energy-log','engineering','electrical','vessel-calcs','voyage-estimate','quick','weather','navigation','live-experimental','profile','settings','survey','suggestions','support','contact','about','privacy'];
 const results=[],errors=[];let browser;
 const mime={'.html':'text/html','.css':'text/css','.js':'application/javascript','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.jpg':'image/jpeg','.webmanifest':'application/manifest+json'};
@@ -57,13 +57,23 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    check(layout.wrapped,'module has collapsible inputs/'+id,{scope});
    if(width<=800){const d=frame.locator('details.teaching-inputs:visible').first();await d.locator(':scope > summary').click();check(await d.getAttribute('open')!==null,'mobile input disclosure opens/'+id,{scope});await d.locator(':scope > summary').click();}
    if(width<=800)check(!layout.open&&layout.resultY<=layout.inputsY,'mobile results before collapsed inputs/'+id,{scope,...layout});
-   if(id===modules[0].id){
+   {
     const before=await frame.locator('input:not([type=file])').evaluateAll(xs=>xs.map(x=>x.value));
     await page.locator('#presentation-toggle').click();
     check(await page.locator('body').evaluate(x=>x.classList.contains('presentation-view'))&&await frame.locator('body').evaluate(x=>x.classList.contains('presentation-view')),'presentation mode reaches active module',{scope});
-    await metrics(page,'presentation',scope);
-    if(device==='desktop'){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,'presentation-desktop.png'),fullPage:true});}
-    await page.keyboard.press('Escape');
+    await metrics(page,'presentation/'+id,scope);
+    await frame.waitForFunction(()=>[...document.querySelectorAll('.teaching-results svg')].filter(x=>x.getBoundingClientRect().width).every(x=>x.style.getPropertyValue('--teaching-chart-height')));
+    const fitting=await frame.evaluate(()=>{
+     const charts=[...document.querySelectorAll('.teaching-results svg')].filter(x=>x.getBoundingClientRect().width);
+     return {height:innerHeight,charts:charts.map(x=>{const b=x.getBoundingClientRect();return {top:b.top,bottom:b.bottom,height:b.height,overflow:getComputedStyle(x).overflow}}),hiddenMeaning:[...document.querySelectorAll('#module-title,#module-description,.heading')].filter(x=>!x.closest('[hidden]')).some(x=>getComputedStyle(x).display==='none')};
+    });
+    check(!fitting.hiddenMeaning,'presentation retains module description/'+id,{scope});
+    check(fitting.charts.every(x=>x.height<=Math.max(180,fitting.height*.7)+1),'presentation caps complete chart height/'+id,{scope,...fitting});
+    if(height>=700&&['trim','crank'].includes(id))check(fitting.charts.every(x=>x.bottom<=fitting.height+2),'presentation chart axes fit viewport/'+id,{scope,...fitting});
+    if(['desktop','wide-short','phone-landscape'].includes(device)&&['trim','crank'].includes(id))await page.screenshot({path:path.join(output,'presentation-'+id+'-'+device+'.png')});
+
+    if(device==='desktop'&&id===modules[0].id){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,'presentation-desktop.png'),fullPage:true});}
+    await frame.locator('details.teaching-inputs:visible > summary').first().press('Escape');
     check(await page.locator('#presentation-toggle').getAttribute('aria-pressed')==='false','Escape exits presentation',{scope});
     check(JSON.stringify(before)===JSON.stringify(await frame.locator('input:not([type=file])').evaluateAll(xs=>xs.map(x=>x.value))),'presentation preserves inputs',{scope});
    }
