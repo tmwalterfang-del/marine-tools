@@ -16,6 +16,7 @@ const studySource=read('students/learning-data.js');
 const photoSource=read('students/book-photos-20261020.js');
 const mathSource=read('students/math-chapter-20261020.js');
 const physicsSource=read('students/physics-chapter-20261020.js');
+const appliedSource=read('students/applied-controls-20261020.js');
 const symbolSource=read('students/symbol-index.js');
 const sw=read('sw.js');
 const main=read('index.html');
@@ -31,23 +32,24 @@ new Function('window',studySource)(sandbox);
 new Function('window',photoSource)(sandbox);
 new Function('window',mathSource)(sandbox);
 new Function('window',physicsSource)(sandbox);
+new Function('window',appliedSource)(sandbox);
 new Function('window',symbolSource)(sandbox);
 new Function(srcApp);
 const formulas=sandbox.MT_FORMULAS,calculators=sandbox.MT_CALCULATORS,exercises=sandbox.MT_PRACTICE;
 let passed=0;
 function ok(condition,label){assert.ok(condition,label);passed++;console.log('PASS '+label)}
 function near(value,expected,label){ok(Math.abs(value-expected)<1e-6,label)}
-ok(formulas.length>=429,'reconciled formula catalogue has at least 366 entries');
+ok(formulas.length>=437,'reconciled formula catalogue has at least 366 entries');
 ok(new Set(formulas.map(f=>f.id)).size===formulas.length,'formula IDs unique');
-ok(new Set(formulas.map(f=>f.category)).size===28,'all 28 subject areas present');
+ok(new Set(formulas.map(f=>f.category)).size===29,'all 29 subject areas present');
 ok(new Set(formulas.map(f=>f.name.toLowerCase())).size===formulas.length,'formula names not duplicated across expansion packs');
 ok(formulas.every(f=>f.name&&f.formula&&f.note&&f.category&&f.tags),'each formula has name, expression, context and tags');
 ok(formulas.some(f=>f.formula.includes('TPC')),'waterplane TPC included');
 ok(formulas.some(f=>f.name.includes('Simpson')),'Simpson integration included');
 ok(formulas.some(f=>f.name.includes('three-phase')||f.name.includes('Three-phase')),'three-phase electrical included');
 ok(formulas.some(f=>f.name.includes('longitudinal')||f.name.includes('Trim')),'trim included');
-ok(calculators.length>=52,'at least 52 educational calculators');
-ok(exercises.length>=30,'at least 20 original exercises');
+ok(calculators.length>=59,'at least 52 educational calculators');
+ok(exercises.length>=36,'at least 20 original exercises');
 ok(new Set(calculators.map(c=>c.id)).size===calculators.length,'calculator IDs unique');
 ok(new Set(exercises.map(e=>e.id)).size===exercises.length,'exercise IDs unique');
 for(const calc of calculators){
@@ -114,8 +116,8 @@ ok(!css.includes('.safety{')&&!css.includes('.result-foot{'),'unused generic-war
 
 const study=sandbox.MT_STUDY;
 ok(study.groups.length===8,'eight cross-discipline groups defined');
-ok(study.groups.flatMap(g=>g.categories).length===28,'28 subject categories mapped to study groups');
-ok(new Set(study.groups.flatMap(g=>g.categories)).size===28,'study subject grouping unambiguous');
+ok(study.groups.flatMap(g=>g.categories).length===29,'29 subject categories mapped to study groups');
+ok(new Set(study.groups.flatMap(g=>g.categories)).size===29,'study subject grouping unambiguous');
 ok(formulas.every(f=>study.groups.some(g=>g.categories.includes(f.category))),'all 366 formula entries have a study discipline');
 ok(Object.keys(study.calculatorByFormula).length>=50,'at least fifty explicit formula-to-calculator mappings');
 ok(Object.entries(study.calculatorByFormula).every(([id,cid])=>formulas.some(f=>f.id===id)&&calculators.some(c=>c.id===cid)),'all explicit formula-to-calculator IDs valid');
@@ -165,7 +167,7 @@ ok(formulas.some(f=>f.name==='Probability of union'),'union probability formula 
 ok(formulas.some(f=>f.name==='Derivative product rule'),'derivative product rule included');
 ok(sandbox.MT_SYMBOLS.entries.length>=180,'symbol index regenerated for mathematics formula contexts');
 ok(sandbox.MT_STUDY.details[formulas.find(f=>f.name==='Sample variance').id].symbols.length>=4,'statistical notation has formula-specific explanations');
-ok(formulas.length===429,'mathematics and physics independent catalogue reaches 429 formulas');
+ok(formulas.length>=429,'mathematics and physics base catalogue preserved');
 ok(sandbox.MT_STUDY.physicsChapter20261020.pages[0]===23&&sandbox.MT_STUDY.physicsChapter20261020.pages[1]===29,'physics chapter pages 23 through 29 audited topically');
 ok(sandbox.MT_STUDY.physicsChapter20261020.reviewedFormulaIds.length===28,'physics selected formula/symbol context records count correct');
 ok(formulas.some(x=>x.name==='Latent heat of melting'),'phase change fusion formula is included');
@@ -173,5 +175,19 @@ ok(formulas.some(x=>x.name==='Latent heat of vaporization'),'phase change vapori
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('273.15')),'exact Kelvin/Celsius offset note preserved');
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('Doppler')),'Doppler approximation warning preserved');
 ok(html.includes('physics-chapter-20261020.js')&&sw.includes("'./students/physics-chapter-20261020.js'"),'physics pack included in preview and offline cache');
+ok(formulas.length===437,'applied tools catalogue has 437 unique formula IDs');
+ok(calculators.length===59,'seven independently authored applied engineering calculators loaded');
+ok(exercises.length===36,'six applied engineering exercises loaded');
+ok(formulas.filter(x=>x.category==='Instrumentation & Control').length>=5,'instrumentation domain formulas included');
+ok(sandbox.MT_STUDY.groups.some(g=>g.categories.includes('Instrumentation & Control')),'instrumentation subject discoverable');
+ok(html.includes('applied-controls-20261020.js')&&sw.includes("'./students/applied-controls-20261020.js'"),'supplementary module cached offline');
+near(byId('loop-scaling').compute({ma:12,low:0,high:100}).value,50,'4–20 mA 12mA midspan');
+near(byId('loop-current').compute({value:25,low:0,high:100}).value,8,'inverse transmitter 8mA');
+near(byId('p-controller').compute({sp:60,pv:50,kp:2,bias:50}).value,70,'proportional control convention');
+near(byId('npsha').compute({surface:101.325,vapour:2.34,rho:998,level:2,loss:.5}).value,(101.325-2.34)*1000/(998*9.80665)+1.5,'NPSH available');
+near(byId('turbine-drop').compute({inlet:3200,outlet:2600}).value,600,'turbine specific enthalpy drop');
+near(byId('fuel-input-power').compute({flow:180,lhv:42600}).value,2130,'fuel thermal input kW');
+ok(!!byId('loop-scaling').compute({ma:2,low:0,high:100}).invalid,'non-nominal transmitter current rejected');
+ok(!!byId('turbine-drop').compute({inlet:2500,outlet:2600}).invalid,'invalid turbine work case rejected');
 console.log(JSON.stringify({result:'PASS',checks:passed,formulas:formulas.length,calculators:calculators.length,exercises:exercises.length,
  note:'Isolated source smoke only; browser reflow, installed PWA and full editorial accuracy are still pending.'}));
