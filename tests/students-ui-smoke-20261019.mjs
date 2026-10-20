@@ -108,5 +108,5 @@ element('symbol-search').value='α';
 element('symbol-search').listeners.input();
 verify(element('symbol-results').innerHTML.includes('Input angles')||element('symbol-results').innerHTML.includes('Angle'),'Greek letter lookup remains searchable after mathematics expansion');
 switchTab('calculators');
-verify(element('calc-selector').options.length>=59,'applied controls calculators included in global selector');
+verify(element('calc-selector').innerHTML.includes('fuel-input-power')&&element('calc-selector').innerHTML.includes('loop-scaling'),'applied controls calculators included in global selector');
 console.log(JSON.stringify({status:'PASS',checks:messages.length,details:messages}));
