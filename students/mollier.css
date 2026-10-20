@@ -14,3 +14,8 @@
 .super-isotherm{stroke:#bca8ea9b;stroke-width:1;stroke-dasharray:2 5;fill:none}
 .legend .line-isobar{background:#a9d2eb}.legend .line-isotherm{background:#bca8ea}
 @media print{.tick,.axis{fill:#222}.super-isobar{stroke:#467}.super-isotherm{stroke:#647}.hero p,.lab-note span,.compare-cards article>div,.summary>p{color:#222}.hero,.lab-note,.plot-card,.summary{background:white!important;color:black!important;box-shadow:none}.process{stroke:#222}.point-label{fill:#222}}
+
+/* Keep numeric controls usable in the narrow embedded/mobile workspace. */
+.layout>*,.lower>*{min-width:0}
+.explanation input[type=file]{max-width:100%}
+@media(max-width:390px){.field-row{flex-direction:column;align-items:stretch;gap:5px}.field-row input{width:100%}.endpoints{flex-wrap:wrap}.compare-cards{grid-template-columns:minmax(0,1fr)}.field>label{flex-wrap:wrap}}

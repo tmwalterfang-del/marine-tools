@@ -51,7 +51,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    const handle=await page.locator('#frames iframe:not([hidden])').elementHandle(),frame=await handle.contentFrame();
    await frame.waitForSelector('svg path,svg polyline,svg rect',{state:'attached',timeout:15000});
    await frame.locator('svg:visible').first().waitFor({timeout:15000});
-   const z=await frame.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,bad:[...document.querySelectorAll('svg path,svg polyline,svg rect')].some(x=>/NaN|Infinity/.test(x.getAttribute('d')||x.getAttribute('points')||''))}));
+   const z=await frame.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.body.querySelectorAll('*')].filter(x=>x.getBoundingClientRect().right>document.documentElement.clientWidth+2).slice(0,12).map(x=>({tag:x.tagName,id:x.id,cls:x.className?.baseVal??x.className,right:x.getBoundingClientRect().right})),bad:[...document.querySelectorAll('svg path,svg polyline,svg rect')].some(x=>/NaN|Infinity/.test(x.getAttribute('d')||x.getAttribute('points')||''))}));
    check(z.scroll<=z.client+2&&!z.bad,'module/'+id,{scope,...z});await metrics(page,'workspace/'+id,scope);
   }
   // Save representative screenshots, including the compact picker and embedded chart.
