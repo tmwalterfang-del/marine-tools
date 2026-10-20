@@ -28,6 +28,8 @@ jobs:
         run: node tests/students-ui-smoke-20261019.mjs
       - name: Mathematics and physics
         run: node tests/students-chapters-math-physics-20261020.mjs
+      - name: Printed page 12 geometry reference points
+        run: node tests/students-book-page12-20261020.mjs
       - name: Mechanics and Mollier
         run: node tests/students-mechanics-mollier-20261020.mjs
       - name: Mollier
