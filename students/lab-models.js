@@ -49,6 +49,7 @@ function engine({bore,stroke,cylinders,rpm,cycles,mep,basis,mechanicalEfficiency
  number(rpm,'Speed (rpm)',1,6000);number(mep,'Mean effective pressure (bar)',.1,40);if(![1,2].includes(cycles))throw RangeError('Cycles must be 1 (two-stroke) or 2 (four-stroke).');
  if(!['brake','indicated'].includes(basis))throw RangeError('Choose brake or indicated pressure.');
  number(mechanicalEfficiency,'Mechanical efficiency',.1,1);number(brakeEfficiency,'Brake thermal efficiency',.05,.65);number(lhv,'Fuel LHV (MJ/kg)',5,150);
+ if(brakeEfficiency>mechanicalEfficiency)throw RangeError('Brake thermal efficiency cannot exceed mechanical efficiency: the implied indicated thermal efficiency would exceed 100%.');
  const volume=Math.PI*bore*bore/4*stroke*cylinders,power=mep*100000*volume*rpm/(60*cycles)/1000;
  const brake=basis==='brake'?power:power*mechanicalEfficiency,indicated=basis==='indicated'?power:power/mechanicalEfficiency;
  const thermal=brake/brakeEfficiency,fuel=thermal*3.6/lhv,sfoc=fuel*1000/brake;

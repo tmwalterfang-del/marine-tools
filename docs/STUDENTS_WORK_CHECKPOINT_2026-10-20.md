@@ -17,7 +17,7 @@ Alle 11 `tests/students-*.mjs`-skript passerte lokalt etter endringene. Dette om
 
 | Kontroll | Resultat | Avgrensning |
 |---|---|---|
-| Nye labmodeller | 59/59 | Uavhengige regneeksempler, grenser og statisk integrasjon |
+| Nye labmodeller | 60/60 | Uavhengige regneeksempler, grenser og statisk integrasjon |
 | IAPWS publiserte testverdier | 18/18 | h/s i Region 1/2, metningstrykk og -temperatur i Region 4; noen vendor-tester ligger utenfor UI-området |
 | IF97-adapter/regresjon | 39/39 | Utvalg punkter, fase- og domenegrenser |
 | Mollier modell/integrasjon | 37/37 | Faktisk IF97 lastes i stedet for gammel tabellmodell |
