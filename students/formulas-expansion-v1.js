@@ -545,7 +545,7 @@ const extra = [
   "category": "Refrigeration & Heat Pumps",
   "name": "Log-mean temperature difference",
   "formula": "LMTD = (ΔT1−ΔT2)/ln(ΔT1/ΔT2)",
-  "note": "Counterflow/coflow with positive endpoint differences",
+  "note": "Counterflow/coflow with positive terminal temperature differences. If ΔT1=ΔT2, the continuous limit is LMTD=ΔT1; do not evaluate the 0/0 expression. A temperature crossing requires a different physical model.",
   "tags": "heat exchanger"
  },
  {

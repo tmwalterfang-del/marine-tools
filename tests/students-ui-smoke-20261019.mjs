@@ -32,7 +32,7 @@ function element(id){
  }
  return elements[id];
 }
-const tabs=['formulas','symbols','calculators','practice','sheet','resources'].map(tab=>({
+const tabs=['formulas','symbols','calculators','practice','sheet'].map(tab=>({
  dataset:{tab},listeners:{},classList:{toggle(){}},setAttribute(){},
  addEventListener(type,fn){this.listeners[type]=fn}
 }));
@@ -123,3 +123,6 @@ verify(element('formula-grid').innerHTML.includes('Source pattern read; structur
 element('formula-search').listeners.input({target:{value:'Ideal dilute concentration pH'}});
 verify(element('formula-grid').innerHTML.includes('c_H/c°'),'pH variant shows standard-state concentration ratio');
 console.log(JSON.stringify({status:'PASS',checks:messages.length,details:messages}));
+
+location.hash="#resources";win.hashchange();
+verify(element("section-title").textContent==="Formulas","removed Resources bookmark opens the formula library");

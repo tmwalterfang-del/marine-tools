@@ -392,7 +392,7 @@ window.MT_FORMULAS = [
   "category": "Mechanics",
   "name": "Sliding friction model",
   "formula": "Ff = μN",
-  "note": "Basic Coulomb friction model",
+  "note": "Sliding kinetic friction magnitude uses kinetic μ. Static friction instead satisfies |Ff|≤μsN, reaching equality only at impending slip.",
   "tags": "friction"
  },
  {
@@ -528,7 +528,7 @@ window.MT_FORMULAS = [
   "category": "Fluids & Hydraulics",
   "name": "Pump shaft power",
   "formula": "Pshaft = ρgQH/η",
-  "note": "Efficiency η from 0 to 1",
+  "note": "Positive pump efficiency 0<η≤1; Q in m³/s, density kg/m³ and head m give watts.",
   "tags": "pump"
  },
  {
@@ -560,7 +560,7 @@ window.MT_FORMULAS = [
   "category": "Fluids & Hydraulics",
   "name": "Ideal hydraulic cylinder force",
   "formula": "F = pA",
-  "note": "Ideal no-loss single-area force",
+  "note": "Pressure DIFFERENCE across the effective piston area, not absolute pressure. No-loss single-area model; unequal rod/cap areas require separate pressure-force terms.",
   "tags": "hydraulics"
  },
  {
@@ -1040,7 +1040,7 @@ window.MT_FORMULAS = [
   "category": "Navigation",
   "name": "CPA of linear relative motion",
   "formula": "tCPA = max(0, −r·vrel/|vrel|²)",
-  "note": "Relative position r, relative velocity vrel; t in matching time units",
+  "note": "Future-only CPA for constant planar relative motion. Requires |vrel|>0. If relative velocity is zero, separation stays |r| and no unique CPA time exists. For an unconstrained signed TCPA omit max(0,...); time units must match position and velocity.",
   "tags": "ais cpa"
  },
  {

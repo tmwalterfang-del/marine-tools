@@ -32,7 +32,7 @@ for(const p of [0,-1,160.001,220.64,Infinity,NaN]){let failed=false;try{M.satura
 ok(html.includes('id="hs-chart"')&&html.includes('id="pressure-number"')&&html.includes('id="quality"'),"interactive accessible chart");
 ok(html.includes('id="export"')&&src.includes('text/csv'),"local CSV export");
 ok(html.includes("IAPWS-IF97")&&html.includes("Region 3"),"limitations and authoritative reference");
-ok(home.includes('href="interactive.html#mollier"')&&read('students/interactive.js').includes("'mollier.html'"),"main student entry reaches Mollier through the shared workspace");
+ok(home.includes('href="interactive.html"')&&read('students/interactive.js').includes("'mollier.html'"),"main student entry reaches Mollier through the shared workspace");
 ok(["mollier.html","mollier.js","mollier.css"].every(p=>sw.includes("'./students/"+p+"'")),"three assets offline precached");
 ok(css.includes("@media(max-width:690px)")&&css.includes(":focus-visible"),"mobile and keyboard styles");
 ok(!/fetch\s*\(|sendBeacon|XMLHttpRequest/.test(src),"no API or analytics network calls");

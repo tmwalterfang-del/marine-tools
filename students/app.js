@@ -17,7 +17,7 @@ const state={
  theme:retrieve("mt-student-theme-v1","maritime")
 };
 const tr={
- en:{formulas:"Formulas",symbols:"Symbols",calculators:"Calculators",practice:"Exercises",resources:"Resources",sheet:"My Formula Sheet",
+ en:{formulas:"Formulas",symbols:"Symbols",calculators:"Calculators",practice:"Exercises",sheet:"My Formula Sheet",
  search:"Search: TPC, GM, trim, Ohm's law, electrical ...",all:"All subjects",savedOnly:"Saved only",
  loadMore:"Show more",noMatches:"No matches. Try a different term or subject.",copy:"Copy",save:"Save",saved:"Saved",
  openCalc:"Open calculator",working:"Show working",hideWorking:"Hide working",
@@ -203,7 +203,7 @@ function renderSymbols(){
 }
 
 function setTab(name){
- if(!["formulas","symbols","calculators","practice","resources","sheet"].includes(name))name="formulas";
+ if(!["formulas","symbols","calculators","practice","sheet"].includes(name))name="formulas";
  state.tab=name;
  document.querySelectorAll("[data-tab]").forEach(b=>{
   const active=b.dataset.tab===name;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active));

@@ -53,6 +53,10 @@ jobs:
         run: node tests/students-symbol-completion-20261020.mjs
       - name: All sixteen chapter registers and displayed expressions
         run: node tests/students-all-chapters-20261020.mjs
+      - name: Expanded dimensional and physical conservation review
+        run: |
+          node tests/students-dimensional-review-20261020.mjs students-dimensional-review.json
+          node tests/students-model-conservation-20261020.mjs
       - name: Engineering explorer independent reference cases
         run: node tests/students-explorers-20261020.mjs
       - name: Install DOM integration test dependency
@@ -88,6 +92,7 @@ jobs:
           path: |
             site-wide-source-audit.json
             site-core-dom-audit.json
+            students-dimensional-review.json
           if-no-files-found: warn
       - name: Install symbolic mathematics test dependency
         run: python3 -m pip install sympy==1.14.0
