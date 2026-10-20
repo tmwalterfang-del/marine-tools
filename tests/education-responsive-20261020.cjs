@@ -55,7 +55,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    check(z.scroll<=z.client+2&&!z.bad,'module/'+id,{scope,...z});await metrics(page,'workspace/'+id,scope);
    const layout=await frame.evaluate(()=>{const r=[...document.querySelectorAll('.teaching-results')].find(x=>x.getBoundingClientRect().height>0),d=[...document.querySelectorAll('.teaching-inputs')].find(x=>x.getBoundingClientRect().height>0);return {wrapped:!!d,open:d?.open,resultY:r?.getBoundingClientRect().top,inputsY:d?.getBoundingClientRect().top}});
    check(layout.wrapped,'module has collapsible inputs/'+id,{scope});
-   if(width<=800){const d=frame.locator('details.teaching-inputs:visible').first();await d.locator('summary').click();check(await d.getAttribute('open')!==null,'mobile input disclosure opens/'+id,{scope});await d.locator('summary').click();}
+   if(width<=800){const d=frame.locator('details.teaching-inputs:visible').first();await d.locator(':scope > summary').click();check(await d.getAttribute('open')!==null,'mobile input disclosure opens/'+id,{scope});await d.locator(':scope > summary').click();}
    if(width<=800)check(!layout.open&&layout.resultY<=layout.inputsY,'mobile results before collapsed inputs/'+id,{scope,...layout});
    if(id===modules[0].id){
     const before=await frame.locator('input:not([type=file])').evaluateAll(xs=>xs.map(x=>x.value));
