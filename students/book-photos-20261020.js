@@ -15,4 +15,10 @@ for(const [id,definitions] of Object.entries(symbols)){
  study.details[id]={...(study.details[id]||{}),symbols:definitions.map(([symbol,meaning,unit])=>({symbol,meaning,unit}))};
  study.photoReview[id]={page:pages[id],status:'Source photo read: notation, variables and units. General applicability and computational validation pending.'};
 }
+// Original screenshot 008: printed page 11, independently reviewed geometry notation.
+for(const id of ['cylinder-volume','cone-volume']){
+ if(!ids.has(id))throw Error('Missing reviewed geometry formula '+id);
+ study.photoReview[id]={page:11,status:'Printed page 11 inspected in original image 008; expression, symbol meanings and dimensional consistency compared. Worked examples recorded separately; full domain review is ongoing.'};
+}
+
 })();
