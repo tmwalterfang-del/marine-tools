@@ -2,7 +2,7 @@
 
 ## Navigation
 
-All eight student pages now share Formula library, Interactive modules and Chapters, with Main site as the exit link. The landing page has two starting actions rather than seven overlapping module/library links. Chapter links open modules in the shared workspace; standalone module URLs remain usable. The fifteen modules are grouped into five subject areas and can be searched. Embedded modules hide their duplicate headers and experiment selectors so the workspace menu stays authoritative. Formula links return to the full library; exact source-variant links open the matching expression and its disclosure panels.
+All eight student pages now share a persistent header with Formula library, Interactive modules and Chapters, with Main site as the exit link. The landing page has two starting actions rather than seven overlapping module/library links. Chapter links open modules in the shared workspace; standalone module URLs remain usable. The fifteen modules are grouped into five subject areas and can be searched. Embedded modules hide their duplicate headers and experiment selectors so the workspace menu stays authoritative. Formula links return to the full library; exact source-variant links open the matching expression and its disclosure panels.
 
 ## Symbol findings and changes
 
@@ -18,4 +18,6 @@ This is a full structural pass over the symbol register, selected editorial corr
 
 The focused DOM test checks lossless grouping, unit separation, every reference count, the screenshot examples, Q/PB disambiguation, corrected definitions, honest source status, pagination, discipline filtering, precise source-variant navigation after hash routing, shared navigation, module search and embedded controls. Existing student, full-site source and core DOM regression tests are rerun. The public preview and browser checks are reported separately from these automated checks.
 
-Local verification: all 35 test files passed. The source audit covered 12 HTML pages, 111 JS files and 97 local resource references with no issues or warnings. The focused symbol/navigation suite passed 6,640 structural/DOM checks; these are not 6,640 independent scientific proofs.
+Local verification: all 35 test files passed. The source audit covered 12 HTML pages, 111 JS files and 97 local resource references with no issues or warnings. The focused symbol/navigation suite passed 6,642 structural/DOM checks; these are not 6,642 independent scientific proofs.
+
+Browser checks confirmed one card for ∇, one card for the derivative prime, four formula families under displacement volume, precise source-variant navigation with disclosure panels open, module-search filtering, and hidden duplicate module headers/selectors. Chapter/library links inside an embedded module now navigate to the main study workspace.

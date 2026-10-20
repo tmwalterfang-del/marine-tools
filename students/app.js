@@ -223,7 +223,7 @@ function route(){
  if(el("chapter-filter"))el("chapter-filter").value=state.chapter;
  if(match){state.group="All";state.topic="All";state.query="";state.savedOnly=false;state.display=48;el("study-group").value="All";el("formula-search").value="";el("saved-only").checked=false;refreshTopics()}
  setTab(match?"formulas":location.hash.slice(1)||"formulas");
- if(pendingSymbolVariant){openSymbolVariant(pendingSymbolVariant);pendingSymbolVariant=null}else if(location.hash)el("workspace").scrollIntoView?.({block:'start'});
+ if(pendingSymbolVariant){openSymbolVariant(pendingSymbolVariant);pendingSymbolVariant=null}else if(location.hash)el("study-tools").scrollIntoView?.({block:'start'});
 }
 function init(){
  const chapterSelect=el("chapter-filter");
@@ -231,7 +231,7 @@ function init(){
 
  for(const id of ['library-home-link','library-browse'])el(id).addEventListener('click',()=>{
   pendingSymbolVariant=null;state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.display=48;
-  el('chapter-filter').value='All';el('study-group').value='All';el('formula-search').value='';el('saved-only').checked=false;refreshTopics();location.hash='formulas';setTab('formulas');el('workspace').scrollIntoView?.({block:'start'});
+  el('chapter-filter').value='All';el('study-group').value='All';el('formula-search').value='';el('saved-only').checked=false;refreshTopics();location.hash='formulas';setTab('formulas');el('study-tools').scrollIntoView?.({block:'start'});
  });
  const selector=el("topic-filter"),groupSelector=el("study-group");
  study.groups.forEach(group=>{const option=document.createElement("option");option.value=group.id;option.textContent=group.label;groupSelector.append(option)});
@@ -252,7 +252,7 @@ function init(){
   el("study-group").value="All";refreshTopics();el("saved-only").checked=false;el("formula-search").value=f.name;
   pendingSymbolVariant=b.dataset.symbolVariant||null;
   location.hash="formulas";setTab("formulas");
-  if(pendingSymbolVariant)openSymbolVariant(pendingSymbolVariant);else el("workspace").scrollIntoView?.({block:'start'});
+  if(pendingSymbolVariant)openSymbolVariant(pendingSymbolVariant);else el("study-tools").scrollIntoView?.({block:'start'});
  });
  el("formula-search").addEventListener("input",ev=>{state.query=ev.target.value;state.display=48;renderFormulas()});
  selector.addEventListener("change",ev=>{state.topic=ev.target.value;state.display=48;renderFormulas()});
