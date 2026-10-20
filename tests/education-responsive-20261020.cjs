@@ -53,12 +53,25 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    await frame.locator('svg:visible').first().waitFor({timeout:15000});
    const z=await frame.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.body.querySelectorAll('*')].filter(x=>x.getBoundingClientRect().right>document.documentElement.clientWidth+2).slice(0,12).map(x=>({tag:x.tagName,id:x.id,cls:x.className?.baseVal??x.className,right:x.getBoundingClientRect().right})),bad:[...document.querySelectorAll('svg path,svg polyline,svg rect')].some(x=>/NaN|Infinity/.test(x.getAttribute('d')||x.getAttribute('points')||''))}));
    check(z.scroll<=z.client+2&&!z.bad,'module/'+id,{scope,...z});await metrics(page,'workspace/'+id,scope);
+   const layout=await frame.evaluate(()=>{const r=[...document.querySelectorAll('.teaching-results')].find(x=>x.getBoundingClientRect().height>0),d=[...document.querySelectorAll('.teaching-inputs')].find(x=>x.getBoundingClientRect().height>0);return {wrapped:!!d,open:d?.open,resultY:r?.getBoundingClientRect().top,inputsY:d?.getBoundingClientRect().top}});
+   check(layout.wrapped,'module has collapsible inputs/'+id,{scope});
+   if(width<=800)check(!layout.open&&layout.resultY<=layout.inputsY,'mobile results before collapsed inputs/'+id,{scope,...layout});
+   if(id===modules[0].id){
+    const before=await frame.locator('input:not([type=file])').evaluateAll(xs=>xs.map(x=>x.value));
+    await page.locator('#presentation-toggle').click();
+    check(await page.locator('body').evaluate(x=>x.classList.contains('presentation-view'))&&await frame.locator('body').evaluate(x=>x.classList.contains('presentation-view')),'presentation mode reaches active module',{scope});
+    await metrics(page,'presentation',scope);
+    if(device==='desktop'){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,'presentation-desktop.png'),fullPage:true});}
+    await page.keyboard.press('Escape');
+    check(await page.locator('#presentation-toggle').getAttribute('aria-pressed')==='false','Escape exits presentation',{scope});
+    check(JSON.stringify(before)===JSON.stringify(await frame.locator('input:not([type=file])').evaluateAll(xs=>xs.map(x=>x.value))),'presentation preserves inputs',{scope});
+   }
   }
   // Save representative screenshots, including the compact picker and embedded chart.
   if(width<=800)await page.selectOption('#module-quick','trim');
   else await page.locator('#module-list a[href="#trim"]').click();
   await page.waitForFunction(()=>document.getElementById('selected-title').textContent==='Trim & draft changes');
-  await page.screenshot({path:path.join(output,'workspace-'+device+'.png'),fullPage:true});
+  await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,'workspace-'+device+'.png'),fullPage:true});
   if(device==='desktop'){
    await page.goto(base+'/students/mollier.html');await page.waitForSelector('#hs-chart path',{state:'attached'});
    const pending=page.waitForEvent('download');await page.locator('#export-report').click();const download=await pending,reportPath=path.join(output,'mollier-report.html');await download.saveAs(reportPath);

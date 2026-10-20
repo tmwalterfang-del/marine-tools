@@ -25,6 +25,10 @@ jobs:
           node-version: '22'
       - name: Formula and catalogue integrity
         run: node tests/students-smoke-20261019.mjs
+      - name: Independent circuit node balances
+        run: node tests/students-source-circuits-20261020.mjs
+      - name: Per-expression review context
+        run: node tests/students-expression-review-ledger-20261020.mjs
       - name: Student interface logic
         run: node tests/students-ui-smoke-20261019.mjs
       - name: Mathematics and physics
@@ -72,6 +76,7 @@ jobs:
           node tests/students-example-workshops-20261020.cjs
           node tests/students-symbol-navigation-20261020.cjs
           node tests/students-education-navigation-20261020.cjs
+          node tests/students-teaching-view-20261020.cjs
           node tests/site-wide-source-audit-20261020.cjs
           timeout 45s node tests/site-core-dom-20261020.cjs
           node tests/students-explorers-dom-20261020.cjs

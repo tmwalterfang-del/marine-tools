@@ -38,3 +38,25 @@ body>header{position:sticky;top:0;z-index:30;background:var(--bg,#071321)}
  .controls .saved-check{flex-basis:100%}
 }
 @media(max-width:380px){.controls .filter-select{flex-basis:100%}}
+
+/* Teaching layouts preserve the actual forms, outputs and scenarios. */
+.teaching-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 22px}
+.teaching-toolbar button{margin:0;min-height:44px}.teaching-toolbar span{font-size:12px;color:var(--muted)}
+.teaching-inputs{min-width:0}.teaching-inputs>summary{padding:12px 14px;border:1px solid var(--line,var(--border));border-radius:9px;margin-bottom:12px;cursor:pointer;font-weight:650}
+@media(min-width:801px){.teaching-inputs>summary{font-size:12px;padding:5px 10px;margin-bottom:8px}}
+@media(max-width:800px){
+ .teaching-grid{display:flex;flex-direction:column}.teaching-grid>.teaching-results{order:0;width:100%}.teaching-grid>.teaching-inputs{order:1;width:100%}
+ body>header{position:static}.teaching-results svg{margin-top:12px}
+}
+body.presentation-view>header,body.presentation-view .hero,body.presentation-view .module-picker,body.presentation-view .lab-nav{display:none!important}
+body.presentation-view main{max-width:none;padding:20px 24px 48px}
+body.presentation-view .workspace{grid-template-columns:minmax(0,1fr)}
+body.presentation-view #workbench>h2{font-size:clamp(28px,3vw,42px)}
+body.presentation-view iframe{height:calc(100vh - 180px);min-height:600px}
+body.presentation-view .teaching-toolbar{position:sticky;top:0;z-index:50;padding:10px;background:var(--bg,#071725)}
+body.presentation-view .teaching-results{font-size:18px}body.presentation-view .teaching-results svg{max-height:76vh}
+body.presentation-view .metric strong,body.presentation-view .metrics b{font-size:clamp(20px,2.1vw,32px)}
+body.presentation-view .teaching-results .tick{font-size:16px}
+body.presentation-view .teaching-grid{grid-template-columns:minmax(240px,.65fr) minmax(0,1.8fr)}
+@media print{.teaching-toolbar,.teaching-inputs>summary{display:none!important}}
+body.presentation-view .layout.teaching-grid{grid-template-columns:minmax(0,1.8fr) minmax(240px,.65fr)}

@@ -64,12 +64,25 @@ function symbolsHtml(f){
  return '<div class="symbol-grid">'+d.symbols.map(row=>
  '<div><code>'+enc(row.symbol)+'</code><span>'+enc(row.meaning)+'</span><small>'+enc(row.unit)+'</small></div>').join('')+'</div>';
 }
+function analyticalReviewHtml(r){
+ const v=r.analyticalReview;if(!v)return '';
+ const open=v.decision==='OPEN_MODEL_OR_SOURCE_LIMIT';
+ return '<p class="'+(open?'source-open-model':'photo-review')+'"><strong>'+(open?'Unresolved model/source limit: ':'Analytical review: ')+'</strong>'+enc(open?v.finding:'Reviewed under the stated assumptions; this is separate from numerical validation.')+'</p>';
+}
+function numericReviewText(r){
+ if(r.numericStatus==='INDEPENDENT_COMPLEX_KCL_REFERENCE_CASES')return 'Displayed expression checked against independent ideal-circuit node balances; real-component limits remain separate.';
+ if(r.symbolicStatus==='NOT_APPLICABLE')return ['CHEMICAL_PATTERN','REACTION'].includes(r.kind)?'Source pattern read; structural and stoichiometric verification remains separate.':'Source relationship read; its stated model and validation scope must be checked separately.';
+ if(r.numericStatus==='REFERENCE_CASE_COVERED')return 'Source expression read; selected numerical reference case covered by automated tests. Full domain validation pending.';
+ if(r.numericChecks?.length)return 'Symbolic evidence and '+r.numericChecks.length+' numerical samples recorded under test assumptions.';
+ if(r.symbolicStatus?.startsWith('PASS'))return 'Symbolic rule checked under stated assumptions; numerical evidence is recorded separately.';
+ return 'No individual numerical test recorded; analytical review is not a numerical test.';
+}
 function relatedHtml(f){
  const related=f.related||[];if(!related.length)return "";
  return '<details class="related-equations"><summary>Related expressions and variants ('+related.length+')</summary>'+related.map(r=>
  '<article class="related-expression" id="'+enc(r.id)+'"><h5>'+enc(r.name)+'</h5><div class="equation" role="math" aria-label="'+enc(r.formula)+'">'+enc(r.formula)+'</div><p><strong>Conditions:</strong> '+enc(r.conditions)+'</p><div class="symbol-grid">'+r.symbols.map(v=>'<div><code>'+enc(v.symbol)+'</code><span>'+enc(v.meaning)+'</span><small>'+enc(v.unit)+'</small></div>').join('')+'</div>'+
  (r.sourceIssue?'<p class="source-correction"><strong>Source interpretation:</strong> '+enc(r.sourceIssue)+'</p>':"")+
- '<p class="photo-review">Printed p. '+r.page+' · '+enc(r.symbolicStatus==='NOT_APPLICABLE'?(['CHEMICAL_PATTERN','REACTION'].includes(r.kind)?'Source pattern read; structural and stoichiometric verification remains separate.':'Source relationship read; its stated model and validation scope must be checked separately.'):r.symbolicStatus==='PENDING'?(r.numericStatus==='REFERENCE_CASE_COVERED'?'Source expression read; selected numerical reference case covered by automated tests. Full domain validation pending.':'Source expression read; numerical validation pending.'):(r.numericChecks?.length?'Source expression read; symbolic check and '+r.numericChecks.length+' numerical samples passed under test assumptions.':'Symbolic rule checked under test assumptions; numerical specialisations pending.'))+'</p></article>').join('')+'</details>';
+ analyticalReviewHtml(r)+'<p class="photo-review">Printed p. '+r.page+' · '+enc(numericReviewText(r))+'</p></article>').join('')+'</details>';
 }
 function formulaMarkup(f,forSheet=false){
  const saved=state.favorites.has(f.id),d=study.details[f.id]||{},
@@ -84,6 +97,7 @@ function formulaMarkup(f,forSheet=false){
  (forSheet?"":'<button type="button" data-fav="'+enc(f.id)+'" aria-pressed="'+saved+'" aria-label="'+(saved?"Unsave":"Save")+' '+enc(f.name)+'">'+(saved?'★':'☆')+'</button>')+'</div>'+
  '<h3>'+enc(f.name)+'</h3><div class="equation" role="math" aria-label="'+enc(f.formula)+'">'+enc(f.formula)+'</div>'+
  '<p><strong>Conditions:</strong> '+enc(f.note)+'</p>'+
+ ((f.related||[]).some(r=>r.analyticalReview?.decision==='OPEN_MODEL_OR_SOURCE_LIMIT')?'<p class="source-open-model">Some related source models remain unresolved. Read their individual review notes before using them.</p>':'')+
  '<details class="formula-explanation"'+(forSheet?" open":"")+'><summary>Variables, units, diagram & source status</summary>'+
  '<div class="explanation-body"><h4>Symbols and units</h4>'+symbolsHtml(f)+figure+relatedHtml(f)+
  (d.metadataStatus?'<p class="annotation-pending">'+enc(d.metadataStatus)+'</p>':"")+
