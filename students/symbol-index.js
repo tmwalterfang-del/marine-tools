@@ -21,6 +21,10 @@ for(const f of formulas){
   registry.set(key(f.id,v.symbol),{formulaId:f.id,formulaName:f.name,subject:f.category,symbol:v.symbol,meaning:v.meaning,unit:v.unit,quantityId:"formula."+f.id+"."+v.symbol,status});
  }
 }
+for(const f of formulas){for(const variant of f.related||[]){for(const v of variant.symbols){
+ const id=variant.id+":"+v.symbol;
+ registry.set(id,{formulaId:f.id,variantId:variant.id,formulaName:f.name+" / "+variant.name,subject:f.category,symbol:v.symbol,meaning:v.meaning,unit:v.unit,quantityId:"variant."+id,status:variant.symbolicStatus==="PENDING"?"Source expression read; numerical verification pending.":(variant.numericChecks?.length?"Symbolic check and "+variant.numericChecks.length+" numerical samples passed under test assumptions.":"Symbolic rule checked under test assumptions; numerical specialisations pending.")});
+}}}
 for(const [symbol,meaning,unit,id,quantityId] of examples){
  const f=id?byId.get(id):null;
  if(id&&!f)throw Error("Unknown formula reference "+id);

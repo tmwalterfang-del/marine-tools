@@ -53,7 +53,7 @@ function filtered(){
   if(state.group!=="All"&&!study.groups.find(g=>g.id===state.group)?.categories.includes(f.category))return false;
   if(state.topic!=="All"&&f.category!==state.topic)return false;
   if(state.savedOnly&&!state.favorites.has(f.id))return false;
-  const txt=norm([f.name,f.formula,f.category,f.note,f.tags].join(" "));
+  const txt=norm([f.name,f.formula,f.category,f.note,f.tags,...(f.related||[]).flatMap(r=>[r.name,r.formula,r.conditions])].join(" "));
   return terms.every(x=>txt.includes(x)||txt.includes(searchAliases[x]||"###"));
  });
 }
@@ -62,6 +62,13 @@ function symbolsHtml(f){
  if(!d?.symbols?.length)return '<p class="annotation-pending">Symbol definitions are under editorial review for this formula. Read the stated conditions and check the unit convention before applying it.</p>';
  return '<div class="symbol-grid">'+d.symbols.map(row=>
  '<div><code>'+enc(row.symbol)+'</code><span>'+enc(row.meaning)+'</span><small>'+enc(row.unit)+'</small></div>').join('')+'</div>';
+}
+function relatedHtml(f){
+ const related=f.related||[];if(!related.length)return "";
+ return '<details class="related-equations"><summary>Related expressions and variants ('+related.length+')</summary>'+related.map(r=>
+ '<article class="related-expression" id="'+enc(r.id)+'"><h5>'+enc(r.name)+'</h5><div class="equation" role="math" aria-label="'+enc(r.formula)+'">'+enc(r.formula)+'</div><p><strong>Conditions:</strong> '+enc(r.conditions)+'</p><div class="symbol-grid">'+r.symbols.map(v=>'<div><code>'+enc(v.symbol)+'</code><span>'+enc(v.meaning)+'</span><small>'+enc(v.unit)+'</small></div>').join('')+'</div>'+
+ (r.sourceIssue?'<p class="source-correction"><strong>Source interpretation:</strong> '+enc(r.sourceIssue)+'</p>':"")+
+ '<p class="photo-review">Printed p. '+r.page+' · '+enc(r.symbolicStatus==='PENDING'?'Source expression read; numerical validation pending.':(r.numericChecks?.length?'Source expression read; symbolic check and '+r.numericChecks.length+' numerical samples passed under test assumptions.':'Symbolic rule checked under test assumptions; numerical specialisations pending.'))+'</p></article>').join('')+'</details>';
 }
 function formulaMarkup(f,forSheet=false){
  const saved=state.favorites.has(f.id),d=study.details[f.id]||{},
@@ -77,7 +84,8 @@ function formulaMarkup(f,forSheet=false){
  '<h3>'+enc(f.name)+'</h3><div class="equation" role="math" aria-label="'+enc(f.formula)+'">'+enc(f.formula)+'</div>'+
  '<p><strong>Conditions:</strong> '+enc(f.note)+'</p>'+
  '<details class="formula-explanation"'+(forSheet?" open":"")+'><summary>Variables, units, diagram & source status</summary>'+
- '<div class="explanation-body"><h4>Symbols and units</h4>'+symbolsHtml(f)+figure+
+ '<div class="explanation-body"><h4>Symbols and units</h4>'+symbolsHtml(f)+figure+relatedHtml(f)+
+ (d.metadataStatus?'<p class="annotation-pending">'+enc(d.metadataStatus)+'</p>':"")+
  '<div class="source-status"><strong>Topic reference: </strong>'+enc(chapter)+'. <a href="'+enc(study.glossarySource)+'" target="_blank" rel="noopener noreferrer">Book catalogue ↗</a>'+
  '<p>'+enc(study.chapterLabel)+' '+enc(study.reviewLabel)+'</p>'+
  (study.photoReview?.[f.id]?'<p class="photo-review">Printed source p. '+enc(study.photoReview[f.id].page)+': '+enc(study.photoReview[f.id].status)+'</p>':"")+

@@ -42,6 +42,14 @@ jobs:
         run: node tests/students-mollier-ui-20261020.mjs
       - name: Interactive lab independent reference cases
         run: node tests/students-labs-20261020.mjs
+      - name: Physics source and Doppler reference cases
+        run: node tests/students-physics-audit-20261020.mjs
+      - name: Complete symbol and source-expression integrity
+        run: node tests/students-symbol-completion-20261020.mjs
+      - name: Install symbolic mathematics test dependency
+        run: python3 -m pip install sympy==1.14.0
+      - name: Independently check selected mathematical identities
+        run: python3 tests/students-math-equations-20261020.py
       - name: Generate complete editorial status report
         run: node tests/students-formula-completeness-20261020.mjs students-formula-completeness.csv
       - name: Upload editorial report
