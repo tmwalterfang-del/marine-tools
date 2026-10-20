@@ -67,6 +67,7 @@ jobs:
           node tests/students-cargo-workspace-20261020.cjs
           node tests/students-example-workshops-20261020.cjs
           node tests/site-wide-source-audit-20261020.cjs
+          node tests/site-core-dom-20261020.cjs
           node tests/students-explorers-dom-20261020.cjs
           node tests/students-mollier-export-20261020.cjs
       - name: Existing whole-site regressions with simulated providers
@@ -83,7 +84,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: site-wide-source-audit
-          path: site-wide-source-audit.json
+          path: |
+            site-wide-source-audit.json
+            site-core-dom-audit.json
           if-no-files-found: warn
       - name: Install symbolic mathematics test dependency
         run: python3 -m pip install sympy==1.14.0
