@@ -27,7 +27,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   const menu=page.locator('.nav-project');await menu.locator('summary').click();
   check(await menu.getByRole('link',{name:/Education/}).count()===1,'one Education entry',{scope});
   check(await menu.getByText('For Students',{exact:true}).count()===0&&await menu.getByText('For professionals',{exact:true}).count()===0,'audience split removed',{scope});
-  if(touchDrawer)await drawer.click();
+  if(touchDrawer){await page.keyboard.press('Escape');check(await page.locator('#sidebar').evaluate(x=>!x.classList.contains('open')),'drawer closes with Escape',{scope});}
   for(const id of pages){await page.evaluate(id=>window.__marineToolsOpenPage(id),id);await metrics(page,'root/'+id,scope);}
   await page.goto(base+'/education/');await page.waitForURL('**/students/');await page.waitForSelector('#formula-grid .formula-card');
   check(await page.title()==='Education · Marine Tools','Education alias opens the shared workspace',{scope});
