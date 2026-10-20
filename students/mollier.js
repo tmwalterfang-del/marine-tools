@@ -88,7 +88,7 @@ function draw(){
  for(const id of ["a","b"]){const z=states[id],x=X(z.s),y=Y(z.h);
  element("circle",{cx:x,cy:y,r:12,class:"halo-"+id});
  element("circle",{cx:x,cy:y,r:6,class:"mark-"+id});
- element("text",{x:x+12,y:y-12,class:"point-label"},id.toUpperCase())}
+ element("text",{x:x+12,y:y-25,class:"point-label"},id.toUpperCase())}
 }
 function update(){
  const z=states[active];
