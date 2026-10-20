@@ -8,7 +8,7 @@
  <title>For Students · Marine Tools</title>
  <meta name="description" content="Searchable maritime and technical formulas, interactive calculators, and student practice exercises.">
  <link rel="icon" href="../assets/icon-192.png" type="image/png">
- <link rel="stylesheet" href="styles.css?v=students-draft-5">
+ <link rel="stylesheet" href="styles.css?v=students-draft-6">
  <script defer src="formulas.js?v=students-draft-1"></script>
  <script defer src="formulas-extension.js?v=students-draft-2"></script>
  <script defer src="formulas-expansion-v1.js?v=students-draft-3"></script>
@@ -16,8 +16,8 @@
  <script defer src="calculators-extension.js?v=students-draft-2"></script>
  <script defer src="calculators-expansion-v1.js?v=students-draft-3"></script>
  <script defer src="learning-data.js?v=students-draft-5"></script>
- <script defer src="learning-data.js?v=students-draft-5"></script>
- <script defer src="app.js?v=students-draft-5"></script>
+ <script defer src="symbol-index.js?v=students-draft-6"></script>
+ <script defer src="app.js?v=students-draft-6"></script>
 </head>
 <body>
 <a class="skip-link" href="#workspace">Skip to content</a>
@@ -56,6 +56,7 @@
   </div>
   <div class="tabs" role="tablist" aria-label="Student tools">
    <button role="tab" aria-selected="true" data-tab="formulas" data-label="formulas">Formulas</button>
+   <button role="tab" aria-selected="false" data-tab="symbols" data-label="symbols">Symbols</button>
    <button role="tab" aria-selected="false" data-tab="calculators" data-label="calculators">Calculators</button>
    <button role="tab" aria-selected="false" data-tab="practice" data-label="practice">Exercises</button>
    <button role="tab" aria-selected="false" data-tab="sheet" data-label="sheet">My Formula Sheet</button>
@@ -71,6 +72,12 @@
    <div class="section-line"><p><span id="formula-count">—</span> formulas matching</p><button type="button" id="print-formulas" class="quiet-button">⎙ Print / Save PDF</button></div>
    <div id="formula-grid" class="formula-grid" aria-live="polite"></div>
    <div class="load-row"><button id="load-more" type="button" class="outline-btn">Show more</button></div>
+  </section>
+  <section data-pane="symbols" aria-label="Context-aware symbol index" hidden>
+   <div class="section-intro"><h3>Symbol Lookup</h3><p>The same notation can describe different quantities. Meanings below are attached to their formula and subject. Unreviewed formulas are still being indexed.</p></div>
+   <label class="search-field"><span aria-hidden="true">⌕</span><input type="search" id="symbol-search" placeholder="Search Q, P, pressure, charge, units…" aria-label="Search symbol meanings"></label>
+   <p id="symbol-count" class="symbol-review-count" aria-live="polite"></p>
+   <div id="symbol-results" class="symbol-results"></div>
   </section>
   <section data-pane="calculators" aria-label="Interactive calculators" hidden>
    <div class="section-intro"><h3>Learn the method. Check the arithmetic.</h3><p>Transparent educational computations with visible units and working steps. Every calculation is performed in your browser.</p></div>
