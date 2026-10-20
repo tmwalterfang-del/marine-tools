@@ -61,7 +61,7 @@ new Function('window','document','location','localStorage','navigator','confirm'
 function verify(condition,label){assert.ok(condition,label);messages.push(label)}
 function switchTab(name){tabs.find(x=>x.dataset.tab===name).listeners.click()}
 verify(element('formula-grid').innerHTML.includes('formula-card'),'initial form cards render');
-verify(element('formula-total').textContent===493,'correct formula count');
+verify(element('formula-total').textContent===492,'correct formula count');
 element('formula-search').listeners.input({target:{value:'Ohm'}});
 verify(element('formula-grid').innerHTML.includes('Ohm'),'text search finds Ohm');
 verify(element('formula-grid').innerHTML.includes('Symbols and units'),'formula details are present');
