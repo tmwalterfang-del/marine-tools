@@ -8,7 +8,7 @@ const html=read('students/index.html'),app=read('students/app.js');
 const src=[
 'students/formulas.js','students/formulas-extension.js','students/formulas-expansion-v1.js',
 'students/calculators.js','students/calculators-extension.js','students/calculators-expansion-v1.js',
-'students/learning-data.js','students/book-photos-20261020.js','students/math-chapter-20261020.js','students/physics-chapter-20261020.js','students/applied-controls-20261020.js','students/symbol-index.js'
+'students/learning-data.js','students/book-photos-20261020.js','students/math-chapter-20261020.js','students/physics-chapter-20261020.js','students/applied-controls-20261020.js','students/chapter-topics-a-20261020.js','students/chapter-topics-b-20261020.js','students/symbol-index.js'
 ];
 const win={};
 src.forEach(path=>new Function('window',read(path))(win));
@@ -61,7 +61,7 @@ new Function('window','document','location','localStorage','navigator','confirm'
 function verify(condition,label){assert.ok(condition,label);messages.push(label)}
 function switchTab(name){tabs.find(x=>x.dataset.tab===name).listeners.click()}
 verify(element('formula-grid').innerHTML.includes('formula-card'),'initial form cards render');
-verify(element('formula-total').textContent===437,'correct formula count');
+verify(element('formula-total').textContent===493,'correct formula count');
 element('formula-search').listeners.input({target:{value:'Ohm'}});
 verify(element('formula-grid').innerHTML.includes('Ohm'),'text search finds Ohm');
 verify(element('formula-grid').innerHTML.includes('Symbols and units'),'formula details are present');
