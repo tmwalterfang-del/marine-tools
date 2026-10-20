@@ -24,12 +24,13 @@ function fitPresentation(){
   const top=f.getBoundingClientRect().top+(window.scrollY||0);
   f.style.height=Math.max(240,window.innerHeight-top-16)+'px';
  }
+ for(const value of document.querySelectorAll('.metric strong'))value.classList.toggle('teaching-text-result',value.textContent.trim().length>32);
  for(const svg of document.querySelectorAll('.teaching-results svg')){
   if(!svg.getBoundingClientRect().width)continue;
   const box=svg.viewBox?.baseVal;if(!box?.width||!box.height)continue;
   const top=svg.getBoundingClientRect().top+(window.scrollY||0);
   const legend=svg.nextElementSibling?.classList.contains('legend')?svg.nextElementSibling.getBoundingClientRect().height:0;
-  const available=window.innerHeight-Math.min(top,window.innerHeight*.55)-legend-32;
+  const available=window.innerHeight-top-legend-32;
   const height=Math.max(180,Math.min(svg.parentElement.clientWidth*box.height/box.width,available));
   const value=Math.round(height)+'px';if(svg.style.getPropertyValue('--teaching-chart-height')!==value)svg.style.setProperty('--teaching-chart-height',value);
  }

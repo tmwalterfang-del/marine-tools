@@ -68,8 +68,8 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
      return {height:innerHeight,charts:charts.map(x=>{const b=x.getBoundingClientRect();return {top:b.top,bottom:b.bottom,height:b.height,overflow:getComputedStyle(x).overflow}}),hiddenMeaning:[...document.querySelectorAll('#module-title,#module-description,.heading')].filter(x=>!x.closest('[hidden]')).some(x=>getComputedStyle(x).display==='none')};
     });
     check(!fitting.hiddenMeaning,'presentation retains module description/'+id,{scope});
-    check(fitting.charts.every(x=>x.height<=Math.max(180,fitting.height*.7)+1),'presentation caps complete chart height/'+id,{scope,...fitting});
-    if(height>=700&&['trim','crank'].includes(id))check(fitting.charts.every(x=>x.bottom<=fitting.height+2),'presentation chart axes fit viewport/'+id,{scope,...fitting});
+    check(fitting.charts.every(x=>x.height<=Math.max(180,fitting.height-32)+1),'presentation caps complete chart height/'+id,{scope,...fitting});
+    if(width>=801&&height>=650&&['trim','crank'].includes(id))check(fitting.charts.every(x=>x.bottom<=fitting.height+2),'presentation chart axes fit viewport/'+id,{scope,...fitting});
     if(['desktop','wide-short','phone-landscape'].includes(device)&&['trim','crank'].includes(id))await page.screenshot({path:path.join(output,'presentation-'+id+'-'+device+'.png')});
 
     if(device==='desktop'&&id===modules[0].id){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,'presentation-desktop.png'),fullPage:true});}

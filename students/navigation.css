@@ -71,3 +71,4 @@ body.presentation-view .heading{margin:12px 0}
 body.presentation-view .teaching-grid{align-items:start}
 @media(max-width:800px){body.presentation-view main{padding:10px}body.presentation-view .teaching-toolbar span{flex:1 1 140px}}
 @media(max-height:650px) and (min-width:801px){body.presentation-view .metric strong,body.presentation-view .metrics b{font-size:20px}body.presentation-view .metric{padding:8px}}
+body.presentation-view .metric strong.teaching-text-result{display:block;font-size:16px;line-height:1.35}
