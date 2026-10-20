@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-theme="maritime">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Interactive Mollier h–s Diagram · Marine Tools</title>
+<meta name="description" content="Interactive educational steam h-s diagram with saturation dome, quality lines, thermodynamic state points and enthalpy comparison.">
+<link rel="icon" href="../assets/icon-192.png" type="image/png">
+<link rel="stylesheet" href="mollier.css?v=20261020-1">
+<script defer src="mollier.js?v=20261020-1"></script>
+</head>
+<body>
+<a class="skip" href="#mollier-main">Skip to Mollier plot</a>
+<header class="top"><a class="brand" href="./"><img src="../assets/icon-192.png" width="42" height="42" alt=""><span><strong>MARINE TOOLS</strong><small>FOR STUDENTS / STEAM ENGINEERING</small></span></a><nav><a href="./">← Formula Library</a><a href="../education/">Education</a><a href="../">Main site ↗</a></nav></header>
+<main id="mollier-main">
+<section class="hero">
+<div><p class="eyebrow">INTERACTIVE THERMODYNAMICS LAB</p><h1>Mollier <em>h–s</em> diagram</h1><p>Explore saturated water and steam. Set the pressure and vapour quality, compare two states, and examine enthalpy and entropy changes. Calculations stay in this browser.</p></div>
+<div class="lab-note"><strong>Data model: saturation properties only</strong><span>The saturation dome is based on selected public numerical reference points and interpolated between them. It does not calculate general superheated or compressed-liquid states. Interpolated values are approximations, not an IAPWS-IF97 solver.</span></div>
+</section>
+<div class="layout">
+<section class="plot-card" aria-label="Interactive enthalpy–entropy diagram">
+<div class="chart-heading"><div><h2>Steam Mollier chart</h2><p>Specific enthalpy <strong>h</strong> versus specific entropy <strong>s</strong></p></div><div class="legend"><span><i class="line-liquid"></i>Saturated liquid</span><span><i class="line-vapour"></i>Saturated vapour</span><span><i class="point-a"></i>State A</span><span><i class="point-b"></i>State B</span></div></div>
+<div class="chart-container"><svg id="hs-chart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 580" role="img" aria-labelledby="chart-title chart-desc" tabindex="0"><title id="chart-title">Interactive h-s water and steam diagram</title><desc id="chart-desc">The saturation dome, quality curves and two user-selected thermodynamic states in enthalpy and entropy coordinates. Use the pressure and quality controls for precise interaction.</desc></svg></div>
+<p id="chart-description" class="chart-foot" aria-live="polite">Use the sliders or enter numerical values to update the state points. Click near the saturation dome to estimate a point.</p>
+</section>
+<aside class="controls">
+<div class="control-top"><h2>State explorer</h2><label for="active-state">Editing<select id="active-state"><option value="a">State A</option><option value="b">State B</option></select></label></div>
+<div class="field"><label for="pressure">Saturation pressure <strong id="pressure-display">1.00 bar</strong></label><input id="pressure" type="range" min="0" max="1000" value="500" step="1"><div class="field-row"><label>Pressure (bar abs)<input id="pressure-number" inputmode="decimal" type="number" min="0.01" max="220.64" step="any" value="1"></label><small>0.01–220.64 bar(a)</small></div></div>
+<div class="field"><label for="quality">Vapour quality <strong id="quality-display">100%</strong></label><input id="quality" type="range" min="0" max="100" value="100" step="1"><div class="endpoints"><span>0 = saturated liquid</span><span>1 = dry saturated vapour</span></div></div>
+<div class="metrics"><div><small>Saturation temperature</small><b id="t-sat">—</b></div><div><small>Specific enthalpy, h</small><b id="h-state">—</b></div><div><small>Specific entropy, s</small><b id="s-state">—</b></div><div><small>Vapour quality, x</small><b id="x-state">—</b></div></div>
+<div class="actions"><button id="save-a" type="button">Save current as A</button><button id="save-b" type="button">Save current as B</button><button id="reset" type="button" class="outline">Reset states</button></div>
+<p id="input-error" class="field-error" role="alert" hidden></p>
+</aside>
+</div>
+<section class="lower">
+<div class="summary"><h2>State comparison</h2><div class="compare-cards"><article><strong>State A</strong><div id="state-a-details">—</div></article><article><strong>State B</strong><div id="state-b-details">—</div></article><article><strong>From A → B</strong><div id="state-delta">—</div></article></div><p><strong>Remember:</strong> An h difference is a specific enthalpy change. Treat it as shaft work only after stating the first-law assumptions and signs for your device.</p></div>
+<div class="support"><h2>Learning points</h2><ul><li><strong>Inside the dome:</strong> wet steam with vapour quality 0 ≤ x ≤ 1.</li><li><strong>At x = 0:</strong> saturated liquid. At x = 1: saturated vapour.</li><li><strong>At fixed pressure:</strong> h = h<sub>f</sub> + x(h<sub>g</sub> − h<sub>f</sub>), and s = s<sub>f</sub> + x(s<sub>g</sub> − s<sub>f</sub>).</li><li><strong>Outside the dome:</strong> this model does not calculate superheated or subcooled states.</li></ul><p>See <a href="https://www.iapws.org/relguide/IF97-Rev.pdf" target="_blank" rel="noopener noreferrer">IAPWS-IF97</a> for the authoritative industrial water/steam formulation. The educational saturation points below are an interpolated subset of publicly reported reference values, not the full formulation.</p><p><a href="https://pressbooks.pub/thermo/chapter/saturation-properties-pressure-table/" target="_blank" rel="noopener noreferrer">Reference for selected saturation values and units ↗</a></p><button id="export" type="button" class="outline">Export A/B values (CSV)</button></div>
+</section>
+</main>
+<footer><span>Marine Tools for Students · Experimental steam study lab</span><a href="./">Back to formulas</a></footer>
+</body></html>
