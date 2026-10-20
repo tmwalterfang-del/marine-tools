@@ -33,11 +33,19 @@ function at(p,x){
  const z=saturation(p);
  return{...z,x,h:z.hf+x*(z.hg-z.hf),s:z.sf+x*(z.sg-z.sf),phase:"wet",source:z.source||(z.interpolated?"Reference interpolation":"Reference anchor")};
 }
+function isentropicWetState(inlet,targetP){
+ if(!inlet||!finite(inlet.s))throw TypeError("An inlet state with finite entropy is required.");
+ const q=saturation(targetP),delta=q.sg-q.sf;
+ if(delta<=1e-10)throw RangeError("A two-phase quality cannot be determined at the critical limit.");
+ const x=(inlet.s-q.sf)/delta;
+ if(x<0||x>1)throw RangeError("Isentropic endpoint is outside the saturated mixture domain. Use a validated IF97 single-phase solver.");
+ return at(targetP,x);
+}
 const fromSlider=v=>lo*Math.pow(hi/lo,clamp(v,0,1000)/1000);
 const toSlider=p=>1000*Math.log(p/lo)/Math.log(hi/lo);
 const f=(v,n=2)=>Number(v).toLocaleString("en-GB",{minimumFractionDigits:n,maximumFractionDigits:n});
 function superheated(p,tC){if(!if97)throw RangeError("IF97 engine is not ready.");return {...if97.superheated(p,tC),interpolated:false}}
-window.MT_MOLLIER_MODEL={anchors:rows,saturation,stateAt:at,superheated,pressureFromSlider:fromSlider,sliderFromPressure:toSlider,if97Ready:!!if97};
+window.MT_MOLLIER_MODEL={anchors:rows,saturation,stateAt:at,superheated,pressureFromSlider:fromSlider,sliderFromPressure:toSlider,isentropicWetState,if97Ready:!!if97};
 if(typeof document==="undefined")return;
 const $=id=>document.getElementById(id),svg=$("hs-chart");if(!svg)return;
 const NS="http://www.w3.org/2000/svg",W=980,H=580,left=86,right=37,top=28,bottom=66,pw=W-left-right,ph=H-top-bottom;
@@ -135,6 +143,12 @@ $("quality").addEventListener("input",e=>set(states[active].p,Number(e.target.va
 $("save-a").addEventListener("click",()=>{states.a={...states[active]};active="a";$("active-state").value=active;update()});
 $("save-b").addEventListener("click",()=>{states.b={...states[active]};active="b";$("active-state").value=active;update()});
 $("reset").addEventListener("click",()=>{states.a=at(10,1);states.b=at(1,.84);active="a";$("active-state").value=active;fail("");update()});
+$("isentropic").addEventListener("click",()=>{
+ try{
+  const z=isentropicWetState(states.a,states.b.p);
+  states.b=z;active="b";$("active-state").value="b";fail("");update();
+ }catch(error){fail(error.message)}
+});
 svg.addEventListener("click",event=>{
  const rect=svg.getBoundingClientRect(),scale=Math.min(rect.width/W,rect.height/H);
  const px=(event.clientX-rect.left-(rect.width-W*scale)/2)/scale,py=(event.clientY-rect.top-(rect.height-H*scale)/2)/scale;
