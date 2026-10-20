@@ -14,7 +14,7 @@ let checks=0;
 const seen=win.MT_FORMULAS;
 assert.equal(seen.length,429);checks++;
 for(const name of ['Spherical sine law','Derivative product rule','Binomial theorem','Specific weight',
-'Latent heat of vaporization','Speed of sound in ideal gas']){
+'Latent heat of vaporization','Ideal gas acoustic speed']){
  // All selected relationships should exist with scoped unit metadata.
  const f=find(name);
  assert.ok(win.MT_STUDY.details[f.id]?.symbols?.length,'Missing symbol metadata '+name);checks++;
