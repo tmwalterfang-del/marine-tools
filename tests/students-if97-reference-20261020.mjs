@@ -42,5 +42,6 @@ reject(()=>IF.superheated(10,100),'Reject sub-saturation temperature');
 reject(()=>IF.superheated(10,401),'Reject unplotted T >400 Celsius');
 reject(()=>IF.wet(1,-.01),'Reject x below 0');
 reject(()=>IF.wet(1,1.01),'Reject x above 1');
-const high=M.saturation(200);ok(high.interpolated===true&&high.source.includes('interpolation'),'High pressure fallback must state interpolation');
+reject(()=>M.saturation(200),'No high-pressure fallback in Mollier model');
+reject(()=>M.stateAt(160.001,.5),'No wet state outside supported IF97 domain');
 console.log(JSON.stringify({status:'PASS',assertions,source:'NeutriumJS IAPWS-IF97 Regions 1/2/4; no independent Region 3 solver'}));

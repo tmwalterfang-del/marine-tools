@@ -7,3 +7,10 @@
 .super-isobar{fill:none;stroke:#7bb5c7;stroke-width:1.3;opacity:.67;stroke-dasharray:3 5}
 .super-isotherm{fill:none;stroke:#e5b980;stroke-width:1;opacity:.65;stroke-dasharray:6 6}
 #quality-field[hidden],#superheat-field[hidden]{display:none!important}
+
+/* Match the SVG text classes and distinguish all property curves. */
+.tick,.axis{fill:var(--muted);font-size:13px}.axis{font-size:15px}
+.super-isobar{stroke:#a9d2eb9b;stroke-width:1.1;fill:none}
+.super-isotherm{stroke:#bca8ea9b;stroke-width:1;stroke-dasharray:2 5;fill:none}
+.legend .line-isobar{background:#a9d2eb}.legend .line-isotherm{background:#bca8ea}
+@media print{.tick,.axis{fill:#222}.super-isobar{stroke:#467}.super-isotherm{stroke:#647}.hero p,.lab-note span,.compare-cards article>div,.summary>p{color:#222}.hero,.lab-note,.plot-card,.summary{background:white!important;color:black!important;box-shadow:none}.process{stroke:#222}.point-label{fill:#222}}

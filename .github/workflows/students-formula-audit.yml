@@ -36,6 +36,12 @@ jobs:
         run: node tests/students-mollier-20261020.mjs
       - name: IF97 reference points
         run: node tests/students-if97-reference-20261020.mjs
+      - name: Published IAPWS reference values
+        run: node tests/students-if97-published-20261020.mjs
+      - name: Mollier phase and solver-failure interactions
+        run: node tests/students-mollier-ui-20261020.mjs
+      - name: Interactive lab independent reference cases
+        run: node tests/students-labs-20261020.mjs
       - name: Generate complete editorial status report
         run: node tests/students-formula-completeness-20261020.mjs students-formula-completeness.csv
       - name: Upload editorial report

@@ -1,8 +1,10 @@
 // Mechanics p.42 and extended Mollier wet-isentropic tests.
 import fs from "node:fs";
 import assert from "node:assert/strict";
+import vm from "node:vm";
 const read=p=>fs.readFileSync(new URL("../"+p,import.meta.url),"utf8");
-const win={};
+const win={}; win.window=win; vm.createContext(win);
+for(const file of ["students/vendor/neutrium-if97.min.js","students/mollier-if97.js"])vm.runInContext(read(file),win);
 for(const p of ["students/formulas.js","students/formulas-extension.js","students/formulas-expansion-v1.js",
 "students/calculators.js","students/calculators-extension.js","students/calculators-expansion-v1.js","students/learning-data.js","students/book-photos-20261020.js","students/math-chapter-20261020.js",
 "students/physics-chapter-20261020.js","students/mechanics-p42-20261020.js",
