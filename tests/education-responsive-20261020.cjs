@@ -40,7 +40,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   await page.locator('[data-tab="formulas"]').click();await page.selectOption('#study-group','stability');await page.selectOption('#topic-filter','Ship Stability');
   check(await page.locator('#formula-grid .formula-card').count()>0,'discipline and subject yield formulas',{scope});
   check((await page.locator('#formula-grid .topic-pill').allTextContents()).every(t=>t==='Ship Stability'),'subject results match the visible filter',{scope});
-  await page.goto(base+'/students/interactive.html');await page.waitForSelector('#module-list a');
+  await page.goto(base+'/students/interactive.html');await page.waitForSelector('#module-list a',{state:'attached'});
   const modules=await page.locator('#module-list a').evaluateAll(xs=>xs.map(x=>({id:x.hash.slice(1),name:x.textContent})));
   check(modules.length===15,'fifteen modules selectable',{scope});
   check(await page.locator('#module-quick').isVisible()===(width<=800),'compact selector follows viewport',{scope});
