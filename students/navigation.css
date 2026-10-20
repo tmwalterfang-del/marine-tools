@@ -60,3 +60,6 @@ body.presentation-view .teaching-results .tick{font-size:16px}
 body.presentation-view .teaching-grid{grid-template-columns:minmax(240px,.65fr) minmax(0,1.8fr)}
 @media print{.teaching-toolbar,.teaching-inputs>summary{display:none!important}}
 body.presentation-view .layout.teaching-grid{grid-template-columns:minmax(0,1.8fr) minmax(240px,.65fr)}
+body.presentation-view #workbench>h2{margin:8px 0 14px}
+body.presentation-view #workbench>p{display:none}
+body.presentation-view iframe{height:calc(100vh - 140px)}
