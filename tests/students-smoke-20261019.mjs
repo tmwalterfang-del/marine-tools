@@ -15,6 +15,7 @@ const srcApp=read('students/app.js');
 const studySource=read('students/learning-data.js');
 const photoSource=read('students/book-photos-20261020.js');
 const mathSource=read('students/math-chapter-20261020.js');
+const physicsSource=read('students/physics-chapter-20261020.js');
 const symbolSource=read('students/symbol-index.js');
 const sw=read('sw.js');
 const main=read('index.html');
@@ -29,13 +30,14 @@ new Function('window',srcCalculatorsExpand)(sandbox);
 new Function('window',studySource)(sandbox);
 new Function('window',photoSource)(sandbox);
 new Function('window',mathSource)(sandbox);
+new Function('window',physicsSource)(sandbox);
 new Function('window',symbolSource)(sandbox);
 new Function(srcApp);
 const formulas=sandbox.MT_FORMULAS,calculators=sandbox.MT_CALCULATORS,exercises=sandbox.MT_PRACTICE;
 let passed=0;
 function ok(condition,label){assert.ok(condition,label);passed++;console.log('PASS '+label)}
 function near(value,expected,label){ok(Math.abs(value-expected)<1e-6,label)}
-ok(formulas.length>=409,'reconciled formula catalogue has at least 366 entries');
+ok(formulas.length>=429,'reconciled formula catalogue has at least 366 entries');
 ok(new Set(formulas.map(f=>f.id)).size===formulas.length,'formula IDs unique');
 ok(new Set(formulas.map(f=>f.category)).size===28,'all 28 subject areas present');
 ok(new Set(formulas.map(f=>f.name.toLowerCase())).size===formulas.length,'formula names not duplicated across expansion packs');
@@ -156,12 +158,20 @@ ok(!formulas.some(f=>f.id==='bookphoto-20261020-density-displacement'),'ambiguou
 const mathAudit=sandbox.MT_STUDY.mathChapter20261020;
 ok(mathAudit.sourcePrintedPages[0]===7&&mathAudit.sourcePrintedPages[1]===22,'mathematics chapter photo range confirmed 7–22');
 ok(mathAudit.reviewedFormulaIds.length===59,'59 existing and new mathematics formula contexts annotated');
-ok(formulas.length===409,'409 independently written formula catalogue entries loaded');
+ok(formulas.length>=409,'mathematics expansion remains included');
 ok(html.includes('math-chapter-20261020.js')&&sw.includes("'./students/math-chapter-20261020.js'"),'mathematics chapter referenced and offline precached');
 ok(formulas.some(f=>f.name==='Spherical sine law'&&f.category==='Geometry & Trigonometry'),'spherical sine law available with domain limits');
 ok(formulas.some(f=>f.name==='Probability of union'),'union probability formula included');
 ok(formulas.some(f=>f.name==='Derivative product rule'),'derivative product rule included');
 ok(sandbox.MT_SYMBOLS.entries.length>=180,'symbol index regenerated for mathematics formula contexts');
 ok(sandbox.MT_STUDY.details[formulas.find(f=>f.name==='Sample variance').id].symbols.length>=4,'statistical notation has formula-specific explanations');
+ok(formulas.length===429,'mathematics and physics independent catalogue reaches 429 formulas');
+ok(sandbox.MT_STUDY.physicsChapter20261020.pages[0]===23&&sandbox.MT_STUDY.physicsChapter20261020.pages[1]===29,'physics chapter pages 23 through 29 audited topically');
+ok(sandbox.MT_STUDY.physicsChapter20261020.reviewedFormulaIds.length===28,'physics selected formula/symbol context records count correct');
+ok(formulas.some(x=>x.name==='Latent heat of melting')===false,'phase change heat entry uses renamed standard name');
+ok(formulas.some(x=>x.name==='Latent heat of vaporization'),'phase change vaporization included');
+ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('273.15')),'exact Kelvin/Celsius offset note preserved');
+ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('Doppler')),'Doppler approximation warning preserved');
+ok(html.includes('physics-chapter-20261020.js')&&sw.includes("'./students/physics-chapter-20261020.js'"),'physics pack included in preview and offline cache');
 console.log(JSON.stringify({result:'PASS',checks:passed,formulas:formulas.length,calculators:calculators.length,exercises:exercises.length,
  note:'Isolated source smoke only; browser reflow, installed PWA and full editorial accuracy are still pending.'}));
