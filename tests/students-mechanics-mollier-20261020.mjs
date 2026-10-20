@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 const read=p=>fs.readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const win={};
 for(const p of ["students/formulas.js","students/formulas-extension.js","students/formulas-expansion-v1.js",
-"students/learning-data.js","students/book-photos-20261020.js","students/math-chapter-20261020.js",
+"students/calculators.js","students/calculators-extension.js","students/calculators-expansion-v1.js","students/learning-data.js","students/book-photos-20261020.js","students/math-chapter-20261020.js",
 "students/physics-chapter-20261020.js","students/mechanics-p42-20261020.js",
 "students/applied-controls-20261020.js","students/symbol-index.js","students/mollier.js"]){
  new Function("window",read(p))(win);
