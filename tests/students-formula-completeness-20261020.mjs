@@ -13,7 +13,7 @@ const order=[
  'students/learning-data.js','students/book-photos-20261020.js','students/math-chapter-20261020.js',
  'students/physics-chapter-20261020.js','students/applied-controls-20261020.js',
  'students/chapter-topics-a-20261020.js','students/chapter-topics-b-20261020.js',
- 'students/mechanics-p42-20261020.js','students/symbol-definitions-20261020.js','students/physics-equation-audit-20261020.js','students/math-equation-audit-20261020.js','students/symbol-index.js'
+ 'students/mechanics-p42-20261020.js','students/symbol-definitions-20261020.js','students/physics-equation-audit-20261020.js','students/math-equation-audit-20261020.js','students/mechanics-equation-audit-20261020.js','students/machine-elements-audit-20261020.js','students/symbol-index.js'
 ];
 const win={};const ctx=vm.createContext({window:win,console});
 for(const path of order)vm.runInContext(read(path),ctx,{filename:path});
@@ -23,7 +23,7 @@ assert.equal(study.details['specific-fuel-oil-consumption']?.symbols?.length,3,'
 assert.ok(study.details['first-law-closed-system'].symbols.every(s=>s.unit==='J'),'First-law energies must be joules');
 assert.ok(study.details['specific-fuel-oil-consumption'].symbols.some(s=>s.unit==='g/kWh'),'SFOC must have g/kWh unit');
 
-if(formulas.length!==503)throw Error('Expected 503 formulas, got '+formulas.length);
+if(formulas.length!==523)throw Error('Expected 523 formulas, got '+formulas.length);
 const found=new Set();const rows=[];
 const sourceRegister=study.sourceEquationRegister||[];
 for(const f of formulas){

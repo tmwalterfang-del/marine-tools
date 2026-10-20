@@ -44,6 +44,8 @@ jobs:
         run: node tests/students-labs-20261020.mjs
       - name: Physics source and Doppler reference cases
         run: node tests/students-physics-audit-20261020.mjs
+      - name: Mechanics source expressions, dimensions and independent reference cases
+        run: node tests/students-mechanics-audit-20261020.mjs
       - name: Complete symbol and source-expression integrity
         run: node tests/students-symbol-completion-20261020.mjs
       - name: Install symbolic mathematics test dependency

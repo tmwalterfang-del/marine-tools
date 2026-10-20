@@ -2,7 +2,22 @@
 
 Arbeidet fortsetter i Draft PR #35. Dette dokumentet gjelder leveransen etter labmodulene på `c704c277080b535800e7459b526183c9320e1aa1`, og er **ikke en ferdigmelding for alle bokkapitlene**.
 
-## Gjennomført i denne arbeidsrunden
+## Gjeldende kontrollpunkt etter mekanikk og maskinelementer
+
+- **523 appoppføringer**, alle med eksplisitte symboltabeller; alle **499 baseline-ID-er** er bevart. **60 kalkulatorer**, **36 øvingsoppgaver**, **5406 kontekstuelle symbolrader**.
+- **601 registrerte kildeuttrykk** fordelt på matematikk 262, fysikk 82, mekanikk 204 og maskinelementer 53. Uttrykkene representerer **48 trykte sider (7–54)** og er knyttet til **148 appoppføringer**. Ingen av sidene er sertifisert som uttømmende registrert eller fullstendig faglig verifisert.
+- Mekanikk og maskinelementer har **249 maskinelt dimensjonskontrollerte uttrykk** (196+53). Kontrollen parser den faktiske viste formelteksten og lokale symbolenheter. Numeriske omregningsfaktorer kontrolleres separat; en konsistent dimensjon beviser ikke en fysisk modell. Åtte sumuttrykk trenger en egen indeksert grammatikk.
+- **71 numeriske referansekontroller** for mekanikk/maskinelementer passerte, inkludert noen innebygde referanser og en uavhengig girbalanse. Dette er testtilfeller, ikke 71 forskjellige fullstendig verifiserte formler. Geometriske sentroider, treghetsmoment og bjelkenedbøyninger har uavhengige integrasjonsreferanser. Euler-lasten kontrolleres med en Rayleigh-kvotient.
+- **14 Node-testfiler** passerte, sammen med matematikkens **65 symbolske identiteter/177 numeriske prøver** og labbenes **19 jsdom-kontroller**. Nettleser-, mobil- og installert offline-test er fortsatt ikke gjennomført.
+- Nye faglige presiseringer: generelle kastposisjoner er skilt fra rekkevidde og maksimal høyde; fortegn i planetgir og senking av skruelast er eksplisitte; masse- og arealtreghet skilles; bjelkenes fordelte last oppgis som total kraft G med q=G/L; bolters kjerneareal skilles fra standardisert spenningsareal; oljefilmfraksjon skilles fra eksentrisitetsforhold; lagerlevetid oppgis eksplisitt i omdreininger og timer.
+- Historiske Tetmajer-/sveisefaktortabeller, NS 3472-kurver og lagerfaktordiagrammer er ikke gjengitt eller gjort om til gjeldende dimensjoneringsdata. Enkelte historiske relasjoner vises med presise modellbegrensninger og uavklart anvendelighet. Ytterligere kilde-/domeneavklaring gjenstår.
+- Mollier-lenken under References beskriver nå IF97-løseren og det avgrensede gyldighetsområdet; gammel tekst om interpolerte tabeller er fjernet.
+
+Reproduserbar mekanikk-/maskinelementkontroll: `node tests/students-mechanics-audit-20261020.mjs`. Nye datafiler ligger i serviceworker-skallet, med økt cacheversjon. Produksjon, API, main og Cloudflare Access er ikke endret.
+
+## Tidligere kontrollpunkt – matematikk, fysikk og symboltabeller
+
+Tallene nedenfor beskriver forrige leveranse på `1326dc0d64c56535adf201cde954e8858ed154e8`; gjeldende totaler står over.
 
 - Alle **499 opprinnelige app-ID-er er bevart**, kontrollert mot en egen baseline-fixture. De **309 oppføringene uten symboltabell** har fått eksplisitte, formelspesifikke definisjoner og enheter. Dette er innholds-/metadatadekning, ikke en generell numerisk godkjenning.
 - Fire nye, selvstendige fysikkoppføringer: klassisk akustisk Doppler, molekylært gasstrykk med RMS-hastighet, lysfluks og luminans med projisert areal. Totalt **503 appoppføringer**, alle med symboltabeller.
@@ -46,6 +61,6 @@ Uavhengig Doppler-grunnlag: OpenStax, University Physics Vol. 1, §17.7: https:/
 ## Fortsatt åpent
 
 - **197 registrerte matematikkuttrykk** står fortsatt uten den symbolske/numeriske evidensen som er etablert for de 65 øvrige. Generelle funksjonsregler og full domene-/randtilfelledekning krever videre kontroll. Alle 82 fysikkrader beholder foreløpig konservativ individuell numerisk status; de 11 testeksemplene dekker bare et utvalg.
-- Registrering av uttrykk på 23 sider er **ikke sertifisert som uttømmende transkripsjon av hvert tegn/alle grafiske uttrykk på disse sidene**. Detaljer og kildeavvik kontrolleres videre. De resterende bokkapitlene og referansedelen er ikke ferdig gjennomgått.
+- Registrering av uttrykk på 23 sider er **ikke sertifisert som uttømmende transkripsjon av hvert tegn/alle grafiske uttrykk på disse sidene**. Detaljer og kildeavvik kontrolleres videre. Mekanikk og maskinelementer er videreført i kontrollpunktet over. De resterende bokkapitlene og referansedelen er fortsatt ikke ferdig gjennomgått.
 - Privat kildeinventar, bokbilder og eventuelle private fag-/fartøysdokumenter skal fortsatt holdes utenfor offentlig repo.
 - Ekte desktop-/mobil-, tastatur-/skjermleser-, CSV-nedlastings-, utskrifts- og installert offline-/oppgraderingstest av siste appversjon gjenstår. Previewen er beskyttet med eksisterende Cloudflare Access. Ingen tilgangskontroll eller produksjon er endret.
