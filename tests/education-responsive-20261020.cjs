@@ -18,7 +18,15 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
  for(const [device,width,height]of sizes){
   console.log('VIEWPORT '+engine+'/'+device);
   const scope=engine+'/'+device,context=await browser.newContext({viewport:{width,height},hasTouch:width<900,isMobile:engine!=='firefox'&&width<=430,acceptDownloads:true,reducedMotion:'reduce',serviceWorkers:'block'});
-  await context.route('**/*',route=>route.request().url().startsWith(base)||route.request().url().startsWith('blob:')||route.request().url().startsWith('file://'+output+path.sep)?route.continue():route.abort());
+  await context.route('**/*',route=>{
+   const request=route.request(),url=request.url();
+   if(url.startsWith(base)||url.startsWith('blob:')||url.startsWith('file://'+output+path.sep))return route.continue();
+   // Exercise a deliberately unavailable provider without WebKit's synthetic
+   // CORS page errors from aborting cross-origin API requests during navigation.
+   // No live provider is contacted or treated as a successful integration test.
+   if(new URL(url).hostname==='api.marinetools.app')return route.fulfill({status:request.method()==='OPTIONS'?204:503,headers:{'access-control-allow-origin':base,'access-control-allow-credentials':'true','access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':request.headers()['access-control-request-headers']||'content-type','content-type':'application/json'},body:request.method()==='OPTIONS'?'':JSON.stringify({status:'unavailable',error:'QA provider deliberately unavailable'})});
+   return route.abort();
+  });
   await context.addInitScript(()=>localStorage.setItem('mt.lastSeenReleaseBuild','20261019-v8-7-0'));
   const page=await context.newPage();page.on('pageerror',e=>errors.push({scope,message:e.message}));
   await page.goto(base+'/');await page.waitForFunction(()=>typeof window.__marineToolsOpenPage==='function');
@@ -108,6 +116,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    const reached=await page.locator('#chart').evaluate(x=>({top:x.getBoundingClientRect().top,bottom:x.getBoundingClientRect().bottom,viewport:innerHeight}));
    check(reached.top>=-2&&reached.bottom<=reached.viewport+2,'whole standalone chart reachable/'+id,{scope,...reached});
    await page.locator('#presentation-toggle').press('Escape');
+   check(await page.locator('#presentation-toggle').getAttribute('aria-pressed')==='false','standalone Escape exits/'+id,{scope});
   }
   await context.close();
  }
