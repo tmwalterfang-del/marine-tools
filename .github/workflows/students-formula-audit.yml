@@ -9,6 +9,8 @@ on:
       - 'tests/students-*.mjs'
       - 'tests/students-*.cjs'
       - 'tests/education-*.cjs'
+      - 'tests/analytics-*'
+      - 'worker/**'
       - 'docs/STUDENTS_*'
       - '.github/workflows/students-formula-audit.yml'
   workflow_dispatch:
@@ -86,6 +88,7 @@ jobs:
           timeout 45s node tests/site-core-dom-20261020.cjs
           node tests/students-explorers-dom-20261020.cjs
           node tests/students-mollier-export-20261020.cjs
+          node tests/analytics-dashboard-20261021.mjs
       - name: Existing whole-site regressions with simulated providers
         run: |
           node tests/navigation-smoke.mjs
@@ -139,6 +142,7 @@ jobs:
         env:
           NODE_PATH: /tmp/education-browser/node_modules
         run: |
+          node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}
           node tests/education-acceptance-20261021.cjs ${{ matrix.browser }}
           node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
       - name: Save screenshots, browser results and report exports
