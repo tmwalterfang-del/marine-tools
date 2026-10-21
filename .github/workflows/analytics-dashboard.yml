@@ -1,0 +1,64 @@
+name: Analytics dashboard acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'worker/**'
+      - 'tests/analytics-*'
+      - 'docs/ANALYTICS_*'
+      - '.github/workflows/analytics-dashboard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - 'tests/analytics-*'
+      - '.github/workflows/analytics-dashboard.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install DOM test dependency
+        run: npm install --prefix /tmp/analytics-dom --no-audit --no-fund jsdom@26.1.0
+      - name: Worker, loading and failure acceptance with synthetic SQL
+        env:
+          NODE_PATH: /tmp/analytics-dom/node_modules
+        run: |
+          node tests/analytics-dashboard-20261021.mjs
+          node tests/qa-preview-isolation-20261016.mjs
+          node tests/qa-release-metadata-20261018.mjs
+
+  browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runner
+        run: npm install --prefix /tmp/analytics-browser --no-audit --no-fund playwright@1.62.1
+      - name: Install rendering engine
+        run: node /tmp/analytics-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
+      - name: Dashboard browser acceptance with synthetic SQL
+        env:
+          NODE_PATH: /tmp/analytics-browser/node_modules
+        run: node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}
+      - name: Save fixture screenshots and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-dashboard-${{ matrix.browser }}
+          path: qa-education-${{ matrix.browser }}/analytics/
