@@ -75,12 +75,13 @@ function enhance(html){
   html=html.replace("document.getElementById('mtTechP95').textContent=sec(h.p95LatencySeconds)","document.getElementById('mtTechP95').textContent=n(h.requests)?sec(h.p95LatencySeconds):'—'");
   html=html.replace("document.getElementById('mtEndpointHealth').innerHTML='<div class=\"error\">Technical-health data unavailable.</div>'","document.getElementById('mtTechState').textContent='Unavailable';document.getElementById('mtTechState').className='mt-health-state';document.getElementById('mtSourceHealth').textContent='Source observations are unavailable.';document.getElementById('mtEndpointHealth').innerHTML='<div class=\"error\">Technical-health data unavailable.</div>'");
   html=html.replace('<div class="banner">','<div id="mtAnalyticsLoadState" class="banner" role="status" aria-live="polite">Loading analytics…</div><div class="banner">');
-  html=html.replace('<script>','<script id="mtAnalyticsTransport">('+dashboardTransport.toString()+')();</script><script>');
+  html=html.replace('<script>','<script id="mtAnalyticsTransport">'+dashboardTransportScript()+'</script><script>');
   html=html.replace('</style>','.status{min-width:0;max-width:100%;overflow-x:auto}.error{overflow-wrap:anywhere}</style>');
   return html;
 }
 
-function dashboardTransport(){
+// Keep browser code literal: bundlers inject server-only helpers into functions.
+function dashboardTransportScript(){return String.raw`(function(){
  'use strict';
  var state=window.MT_DASHBOARD_STATE={version:0},entry=null;
  var nativeFetch=window.fetch.bind(window);
@@ -131,7 +132,7 @@ function dashboardTransport(){
   return(await entry.promise).clone();
  };
  reset();
-}
+})();`;}
 
 // A binding query cannot be cancelled. Stop awaiting it after a bounded time,
 // and share one absolute deadline across the sequential enrichment layers.

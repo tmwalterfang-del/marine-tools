@@ -1,6 +1,6 @@
 # Analytics dashboard review — 21 October 2026
 
-Preview branch only. No production deployment or merge. Tests use synthetic SQL data and never write analytics events.
+Isolated analytics update prepared from main. The user explicitly authorized publishing this dashboard update on 21 October. Education PR #35 is excluded. Tests use synthetic SQL data and never write analytics events.
 
 ## Confirmed findings and changes
 
@@ -13,11 +13,17 @@ Preview branch only. No production deployment or merge. Tests use synthetic SQL 
 
 ## Verification
 
+### Production packaging regression
+
+The first release passed source-level fixtures but failed after Wrangler bundled it. Serializing the browser initializer with `Function.toString()` also serialized injected `__name` calls, whose helper only exists in the Worker bundle. The browser consequently threw `__name is not defined`; panel loaders then reported `MT_DASHBOARD_REQUEST is not a function`. This was reproduced against a real Wrangler 4.151.3 dry-run bundle.
+
+The initializer is now an explicit browser-script literal, so bundling cannot insert Worker-only helper references into it. CI builds once with pinned Wrangler and runs both Worker/DOM acceptance and Chromium/Firefox/WebKit against that exact artifact. Transport initialization is checked explicitly. Authentication and the existing analytics collection are unchanged.
+
 `tests/analytics-dashboard-20261021.mjs` exercises the actual Worker chain and DOM using a fake SQL binding: schema, query count, shared periods, authentication, preview isolation, missing bindings, SQL failures, real SQL timeout, bounded retry, failed/empty/partial states, four-renderer request sharing, accelerated browser HTTP timeout and stale-period races.
 
 `tests/analytics-dashboard-browser-20261021.cjs` uses real Chromium, Firefox and WebKit with the same Worker-generated HTML and synthetic SQL results. It covers panel rendering, request sharing, four ranges, desktop/mobile/landscape widths, Access HTML/401 responses, network/SQL failure, partial data, empty data, recovery and period switching. All external requests are blocked. Screenshots are clearly labelled TEST FIXTURE.
 
-Live data and account configuration were not verified: Google sign-in could not be completed. The user will check the live version once a production release is separately approved. Preview's admin endpoints intentionally remain disabled against the production analytics dataset. Browser fixture checks cannot verify the account's actual SQL entitlement, binding or Access policy.
+Live data and account configuration were not verified: Google sign-in could not be completed. The user will check the live version after this isolated analytics release. Preview's admin endpoints intentionally remain disabled against the production analytics dataset. Browser fixture checks cannot verify the account's actual SQL entitlement, binding or Access policy.
 
 ## Recommended measurement priorities
 
@@ -35,4 +41,4 @@ Keep calculation inputs, results, vessel names/profiles, positions, raw search t
 
 ## Manual release acceptance
 
-After a separately approved Worker release: sign into the private dashboard, verify 24h/7d/30d/90d and Refresh, confirm one analytics HTTP request per action, inspect the live binding/error status, and compare one selected time range against Cloudflare's own SQL results. No production release is included in this work.
+After the isolated Worker release: sign into the private dashboard, verify 24h/7d/30d/90d and Refresh, confirm one analytics HTTP request per action, inspect the live binding/error status, and compare one selected time range against Cloudflare's own SQL results. Only the isolated analytics update is authorized; Education remains in preview.
