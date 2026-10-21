@@ -42,4 +42,14 @@ const b=await dom('https://feature.marine-tools-frontend-preview.pages.dev/');ch
 const c=await dom('https://www.marinetools.app/',{usageAnalytics:false});check(!c.sent.length,'existing opt-out suppresses legacy and new events');c.close();
 check(!a.sent.some(x=>x.event==='calculation_completed'),'new collector does not mislabel click as completed');a.close();
 for(const flags of [{dnt:true},{automation:true}]){const x=await dom('https://www.marinetools.app/',{},flags);check(x.sent.length===0,'tracking suppressed for '+JSON.stringify(flags));x.close()}
+const eduEvents=[],edu=new JSDOM('<select id="module-quick"><option value="trim">Trim</option><option value="tank">Tank</option></select><select id="topic-filter"><option>Thermodynamics</option></select><article data-formula-id="heat-1"><details><summary>Show formula</summary></details></article>',{url:'https://www.marinetools.app/students/interactive.html#trim',runScripts:'outside-only',pretendToBeVisual:true});
+edu.window.fetch=async(u,init)=>{eduEvents.push(JSON.parse(init.body));return new Response('{}')};edu.window.eval(js);await new Promise(r=>setTimeout(r,20));
+check(eduEvents.filter(x=>x.event==='education_module').length===1&&eduEvents.some(x=>x.event==='active_usage'),'Education initial module counts active use');
+const select=edu.window.document.getElementById('module-quick');select.value='tank';select.dispatchEvent(new edu.window.Event('change',{bubbles:true}));edu.window.location.hash='tank';await new Promise(r=>setTimeout(r,20));
+check(eduEvents.filter(x=>x.event==='education_module').length===2,'module dropdown and hash change do not duplicate selection');
+edu.window.document.getElementById('topic-filter').dispatchEvent(new edu.window.Event('change',{bubbles:true}));
+check(eduEvents.some(x=>x.event==='education_filter'&&x.tool==='topic-filter-thermodynamics'),'Education subject selection is recorded with a fixed option label');
+edu.window.document.querySelector('summary').click();check(eduEvents.some(x=>x.event==='education_formula'&&x.tool==='heat-1'),'formula details record stable formula ID');
+edu.window.document.dispatchEvent(new edu.window.CustomEvent('mt-presentation-change',{detail:{presenting:true}}));check(eduEvents.some(x=>x.event==='education_presentation'),'presentation activation is recorded');
+edu.window.close();
 console.log(JSON.stringify({result:'PASS',checks,scope:'New event collector, real calculator validation, storage exclusions and audience queries'}));

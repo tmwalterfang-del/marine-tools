@@ -45,11 +45,11 @@ function observeTools(){
  function scan(){document.querySelectorAll('.page.active .tool-card').forEach(card=>{if(!observed.has(card)){observed.add(card);observer.observe(card)}})}
  new MutationObserver(scan).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});scan();
 }
-function boot(){ensureVisit();observeTools();
+function boot(){if(page()==='education'&&window.parent!==window)return;ensureVisit();observeTools();
  if(page()==='education'){
   if(window.parent!==window)return; // Workspace frames must not duplicate page/module counts.
   report('education_page',location.pathname.split('/').pop()?.replace(/\.html$/,'')||'index');
-  const module=()=>{const id=document.getElementById('module-quick')?.value||document.getElementById('module')?.value||(['lifting','trim','tank','pump','crank','faults','cargo','stability','controls','engine','mollier','rlc','heat','current','finance'].includes(location.hash.slice(1))?location.hash.slice(1):'');if(id&&/^[a-z0-9-]{1,50}$/i.test(id))report('education_module',id)};
+  let lastModule='';const module=()=>{const id=document.getElementById('module-quick')?.value||document.getElementById('module')?.value||(['lifting','trim','tank','pump','crank','faults','cargo','stability','controls','engine','mollier','rlc','heat','current','finance'].includes(location.hash.slice(1))?location.hash.slice(1):'');if(id&&id!==lastModule&&/^[a-z0-9-]{1,50}$/i.test(id)){lastModule=id;report('education_module',id)}};
   module();window.addEventListener('hashchange',module);
   document.addEventListener('change',e=>{if(['module','module-quick'].includes(e.target.id))module();else if(e.target.matches('select')&&/discipline|subject|study-group|topic-filter/i.test(e.target.id))report('education_filter',(e.target.id+'-'+e.target.value).toLowerCase().replace(/[^a-z0-9_-]/g,'-').slice(0,80))});
   document.addEventListener('click',e=>{const card=e.target.closest('[data-formula-id]');if(card&&e.target.closest('summary,[data-open]'))report('education_formula',card.dataset.formulaId)});
