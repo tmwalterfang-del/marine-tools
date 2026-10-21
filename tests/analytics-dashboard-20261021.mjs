@@ -11,7 +11,7 @@ const preview=await worker.fetch(new Request('https://qa.api.marinetools.app/adm
 check(preview.status===403&&calls.length===0,'QA preview cannot access production analytics');
 const response=await worker.fetch(req('/admin/api/analytics?range=90d'),env,{}),data=await response.json();
 check(response.status===200&&data.current.sessions===10&&data.topTools[0].uses===15&&data.search.used===3,'canonical endpoint provides complete dashboard schema');
-check(calls.length===14,'one full dashboard request uses fourteen SQL queries');
+check(calls.length===21,'one shared dashboard request uses twenty-one bounded SQL queries including audience metrics');
 check(calls.every(x=>x.params.end===data.period.end||x.params.end===data.period.start),'all panels use the same period boundaries');
 check(data.technicalHealth.requests===2&&data.runtimeSmoke.error===1&&data.productActions.totals.calculation_completed===7,'technical, scheduled and product sections preserved');
 const missing=await worker.fetch(req('/admin/api/analytics'),{},{});

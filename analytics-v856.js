@@ -14,7 +14,7 @@ const nativeFetch=window.fetch.bind(window);
 function settings(){
   try{return JSON.parse(localStorage.getItem('mt.settings')||'{}')||{}}catch{return{}}
 }
-function enabled(){return !/\.pages\.dev$/i.test(location.hostname)&&settings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function enabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/\.pages\.dev$/i.test(location.hostname)&&settings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
 function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
 function currentPage(){return document.querySelector('.page.active')?.id||'home'}
 function clean(v,max){return String(v??'').replace(/[\u0000-\u001f]/g,' ').trim().slice(0,max)}
