@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import worker from '../worker/worker-v860-dashboard.js';
-import {fixtureBinding,fixtureHtml,fixtureResponse,headers} from './analytics-fixture-20261021.mjs';
+import {worker,fixtureBinding,fixtureHtml,fixtureResponse,headers} from './analytics-fixture-20261021.mjs';
 const require=createRequire(import.meta.url),{JSDOM,VirtualConsole}=require('jsdom');
 let checks=0;function check(condition,label){assert.ok(condition,label);checks++;console.log('PASS '+label)}
 const req=(path,auth=true)=>new Request('https://api.marinetools.app'+path,{headers:auth?headers:{}});
@@ -32,6 +31,7 @@ dom=new JSDOM(await fixtureHtml(),{url:'https://dashboard.example.invalid/admin/
  w.fetch=async url=>{fetches++;const range=new URL(url,w.location.href).searchParams.get('range');if(delayOld===range){delayOld=null;await new Promise(resolve=>{releaseOld=resolve})}if(mode==='client-hang')return new Promise(()=>{});if(mode==='html')return new Response('<html>Sign in</html>',{headers:{'content-type':'text/html'}});if(mode==='denied')return new Response('{}',{status:401,headers:{'content-type':'application/json'}});if(mode==='unconfigured')return new Response(JSON.stringify({error:'Unavailable',code:'ANALYTICS_NOT_CONFIGURED'}),{status:503,headers:{'content-type':'application/json'}});return fixtureResponse(mode,range)};
 }});
 const w=dom.window,d=w.document;
+check(typeof w.MT_DASHBOARD_REQUEST==='function','deployable Worker initializes the browser transport without server-only helpers');
 async function wait(test,label){for(let i=0;i<150;i++){if(test())return;await new Promise(r=>setTimeout(r,20))}throw Error('Timeout: '+label)}
 const text=id=>d.getElementById(id).textContent;
 async function loaded(){await wait(()=>!text('mtAnalyticsLoadState').startsWith('Loading'),'dashboard status');await new Promise(r=>setTimeout(r,180))}

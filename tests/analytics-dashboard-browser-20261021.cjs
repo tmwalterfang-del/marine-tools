@@ -21,7 +21,7 @@ function check(ok,label){checks.push({ok:!!ok,label});assert.ok(ok,label)}
  });
  const text=id=>page.locator('#'+id).textContent();
  async function loaded(){await page.waitForFunction(()=>!document.getElementById('mtAnalyticsLoadState').textContent.startsWith('Loading'));await page.waitForTimeout(200)}
- await page.goto('https://dashboard.example.invalid/admin/analytics');await loaded();
+ await page.goto('https://dashboard.example.invalid/admin/analytics');check(await page.evaluate(()=>typeof window.MT_DASHBOARD_REQUEST==='function'),'deployable bundle initializes browser transport');await loaded();
  check(requests===1&&(await text('sessions'))==='10'&&(await text('v860Calc'))==='7','one request fills all panel renderers');
  check((await text('v860Offline'))==='—'&&(await page.locator('#mtV860Product').textContent()).includes('Calculation clicks'),'honest click and offline labels');
  check((await text('searches'))==='3'&&(await text('mtRuntimeSmokeBody')).includes('ERROR'),'complete search schema and actual scheduled failure are rendered');
