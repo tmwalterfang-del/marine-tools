@@ -8,6 +8,7 @@ on:
       - 'students/**'
       - 'tests/students-*.mjs'
       - 'tests/students-*.cjs'
+      - 'tests/education-*.cjs'
       - 'docs/STUDENTS_*'
       - '.github/workflows/students-formula-audit.yml'
   workflow_dispatch:
@@ -137,7 +138,9 @@ jobs:
       - name: Responsive Education and whole-site browser checks
         env:
           NODE_PATH: /tmp/education-browser/node_modules
-        run: node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
+        run: |
+          node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
+          node tests/education-acceptance-20261021.cjs ${{ matrix.browser }}
       - name: Save screenshots, browser results and report exports
         if: always()
         uses: actions/upload-artifact@v4
