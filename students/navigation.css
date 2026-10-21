@@ -72,6 +72,7 @@ body.presentation-view .teaching-grid{align-items:start}
 @media(max-width:800px){body.presentation-view main{padding:10px}body.presentation-view .teaching-toolbar span{flex:1 1 140px}}
 @media(max-height:650px) and (min-width:801px){body.presentation-view .metric strong,body.presentation-view .metrics b{font-size:20px}body.presentation-view .metric{padding:8px}}
 body.presentation-view .metric strong.teaching-text-result{display:block;font-size:16px;line-height:1.35}
+body.presentation-view .metric strong.teaching-numeric-result{display:block;white-space:nowrap;overflow-wrap:normal;word-break:normal}
 /* On wide, shallow teaching screens, place metrics beside the plot instead of
    spending the available height on two rows of result cards above it. */
 @media(min-width:1600px) and (min-height:650px){

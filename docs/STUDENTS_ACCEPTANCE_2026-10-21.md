@@ -15,6 +15,8 @@ Kun preview i Draft PR #35. Ingen merge eller produksjonsutgivelse.
 
 ## Funn fra kildegjennomgangen
 
+Visuell kontroll ved 200 % CSS-zoom avdekket at et desimaltall kunne deles over to linjer i resultatkortet. Numeriske presentasjonsresultater holdes nå på én linje, og skriftstørrelsen tilpasses kortets bredde. En egen kontroll krever at tallene både forblir samlet og holder seg innenfor kortet ved alle tre zoomnivåer i trim- og veivakselmodulene.
+
 Den tidligere service workeren hadde samme offline-cache på privat preview og offentlig app. Dessuten manglet `teaching-view.js` og `source-review-20261020.js` i precache-listen. Ny worker bruker nettverk uten offline-fallback på Pages-preview, aktiveres straks der, og rydder tidligere Marine Tools-cacher. Lokal brukerdata i localStorage fjernes ikke. Offentlig app beholder offline-modus og får de manglende ressursene og ny cacheversjon.
 
 Dette stanser service workerens gjenbruk av beskyttet innhold uten nett. Det beviser ikke at en bruker som allerede har lastet en side, mister innholdet fra en åpen fane, eller at filer brukeren bevisst har lastet ned kan tilbakekalles.

@@ -47,6 +47,7 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
   await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   const m=await page.evaluate(()=>({w:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));check(m.scroll<=m.w+2,'CSS zoom horizontal reflow/'+id+'/'+zoom,m);
   await page.locator('#chart').scrollIntoViewIfNeeded();check(await page.locator('#module-description').isVisible()&&await page.locator('#chart').isVisible(),'zoom preserves description and chart/'+id+'/'+zoom);
+  const numbers=await page.locator('.metric strong.teaching-numeric-result').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent.trim(),width:n.clientWidth,scroll:n.scrollWidth,nowrap:getComputedStyle(n).whiteSpace==='nowrap'})));check(numbers.length>0&&numbers.every(n=>n.nowrap&&n.scroll<=n.width+1),'zoom keeps numeric results intact and inside cards/'+id+'/'+zoom,{numbers});
   await page.screenshot({path:path.join(out,'zoom-'+id+'-'+zoom+'.png')});await page.locator('#presentation-toggle').press('Escape');check(await page.locator('#presentation-toggle').getAttribute('aria-pressed')==='false','keyboard Escape after zoom/'+id+'/'+zoom);
   await page.evaluate(()=>document.documentElement.style.zoom='1');
  }

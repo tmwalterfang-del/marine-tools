@@ -24,7 +24,18 @@ function fitPresentation(){
   const top=f.getBoundingClientRect().top+(window.scrollY||0);
   f.style.height=Math.max(240,window.innerHeight-top-16)+'px';
  }
- for(const value of document.querySelectorAll('.metric strong'))value.classList.toggle('teaching-text-result',value.textContent.trim().length>32);
+ for(const value of document.querySelectorAll('.metric strong')){
+  const text=value.textContent.trim(),numeric=/^[+−-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(text);
+  value.classList.toggle('teaching-text-result',text.length>32);
+  value.classList.toggle('teaching-numeric-result',numeric);
+  value.style.removeProperty('font-size');
+  // A line break inside a decimal changes how a teaching result is read.
+  // Keep numeric results intact and fit their type to the available card.
+  if(numeric&&value.clientWidth&&value.scrollWidth>value.clientWidth){
+   const size=parseFloat(getComputedStyle(value).fontSize);
+   value.style.fontSize=(size*value.clientWidth/value.scrollWidth*.98)+'px';
+  }
+ }
  for(const svg of document.querySelectorAll('.teaching-results svg')){
   if(!svg.getBoundingClientRect().width)continue;
   const box=svg.viewBox?.baseVal;if(!box?.width||!box.height)continue;
@@ -43,6 +54,7 @@ if(window.ResizeObserver)new ResizeObserver(scheduleFit).observe(main);
 function setPresentation(on){if(!!on===presenting){scheduleFit();return}presenting=!!on;if(presenting)previousScroll=window.scrollY||0;document.body.classList.toggle('presentation-view',presenting);toggle.textContent=presenting?'Exit presentation':'Presentation view';toggle.setAttribute('aria-pressed',String(presenting));
  for(const f of document.querySelectorAll('#frames iframe')){try{f.contentWindow.MT_TEACHING_VIEW?.setPresentation(presenting)}catch{}}
  if(!presenting)for(const f of document.querySelectorAll('#frames iframe'))f.style.removeProperty('height');
+ if(!presenting)for(const value of document.querySelectorAll('.metric strong'))value.style.removeProperty('font-size');
  scheduleFit();
  if(typeof window.scrollTo==='function')window.scrollTo({top:presenting?0:previousScroll,behavior:'instant'});
 }
