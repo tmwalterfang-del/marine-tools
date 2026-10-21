@@ -23,17 +23,17 @@ function source(){
  try{const h=new URL(document.referrer).hostname;if(hosts.has(h))return 'internal';if(/(^|\.)(google\.[a-z.]+|bing\.com|duckduckgo\.com)$/.test(h))return 'search';if(/(^|\.)linkedin\.com$/.test(h))return 'linkedin';return 'other-referral'}catch{return 'direct'}
 }
 function page(){return location.pathname.startsWith('/students')?'education':document.querySelector('.page.active')?.id||'home'}
-function send(event,tool='',pageId=page()){
+function send(event,tool='',pageId=page(),label=''){
  const meta=context();if(!meta||!navigator.onLine)return;
- fetch('https://api.marinetools.app/api/analytics/event',{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},keepalive:true,cache:'no-store',body:JSON.stringify({event,page:pageId,tool,device:innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop',version:window.__MARINE_TOOLS_RELEASE?.version||'8.7.0',label:document.getElementById(tool)?.closest('.tool-card')?.dataset.toolTitle||'',...meta})}).catch(()=>{});
+ fetch('https://api.marinetools.app/api/analytics/event',{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},keepalive:true,cache:'no-store',body:JSON.stringify({event,page:pageId,tool,device:innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop',version:window.__MARINE_TOOLS_RELEASE?.version||'8.7.0',label:label||document.getElementById(tool)?.closest('.tool-card')?.dataset.toolTitle||document.getElementById(tool)?.closest('.tool-card')?.querySelector('h3')?.textContent||'',...meta})}).catch(()=>{});
 }
 let seenVisit='',attempt=null;
 function ensureVisit(){const meta=context();if(meta&&navigator.onLine&&seenVisit!==meta.session){seenVisit=meta.session;send('visit_started');if(meta.visitorKind==='returning')send('return_visit')}}
-window.MT_USAGE={enabled,context,send,exclude(on){localStorage.setItem('mt.analytics.exclude',on?'1':'0');if(on){localStorage.removeItem(key);sessionStorage.removeItem(sessionKey);browser=null;seenVisit=''}else ensureVisit()}};
-function report(event,tool,pageId){ensureVisit();send(event,tool,pageId);if(['calculation_succeeded','education_module'].includes(event))send('active_usage','',pageId)}
+window.MT_USAGE={enabled,context,send,record:report,exclude(on){localStorage.setItem('mt.analytics.exclude',on?'1':'0');if(on){localStorage.removeItem(key);sessionStorage.removeItem(sessionKey);browser=null;seenVisit=''}else ensureVisit()}};
+function report(event,tool,pageId,label){ensureVisit();send(event,tool,pageId,label);if(['calculation_succeeded','education_module'].includes(event))send('active_usage','',pageId)}
 document.addEventListener('mt-calculation-result',e=>{if(attempt&&attempt.card?.contains(e.target))attempt.outcome=e.detail.valid?'calculation_succeeded':'calculation_invalid'},true);
 document.addEventListener('click',e=>{
- const button=e.target.closest('.calc-action');if(!button)return;
+ const button=e.target.closest('.calc-action,[data-usage-action]');if(!button)return;
  ensureVisit();const card=button.closest('.tool-card'),tool=button.id;if(!tool)return;
  const pending=attempt={card,tool,page:page(),outcome:null};send('calculation_attempt',tool,pending.page);
  setTimeout(()=>{if(pending.outcome)report(pending.outcome,tool,pending.page);if(attempt===pending)attempt=null},0);
@@ -41,7 +41,7 @@ document.addEventListener('click',e=>{
 let observed=new WeakSet();
 function observeTools(){
  if(!window.IntersectionObserver)return;
- const observer=new IntersectionObserver(entries=>{for(const x of entries){if(!x.isIntersecting||x.target.hidden)continue;const button=x.target.querySelector('.calc-action[id]');if(button){report('tool_opened',button.id,x.target.closest('.page')?.id||page());observer.unobserve(x.target)}}},{threshold:.35});
+ const observer=new IntersectionObserver(entries=>{for(const x of entries){if(!x.isIntersecting||x.target.hidden)continue;const button=x.target.querySelector('.calc-action[id],[data-usage-action][id]');if(button){report('tool_opened',button.id,x.target.closest('.page')?.id||page());observer.unobserve(x.target)}}},{threshold:.35});
  function scan(){document.querySelectorAll('.page.active .tool-card').forEach(card=>{if(!observed.has(card)){observed.add(card);observer.observe(card)}})}
  new MutationObserver(scan).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});scan();
 }
