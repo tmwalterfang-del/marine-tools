@@ -64,7 +64,7 @@ function summarizeSmoke(rows){
 }
 async function addRuntimeSmoke(request,env,response){
   let body;try{body=await response.clone().json()}catch{return response}
-  const p=analyticsRange(new URL(request.url).searchParams.get("range")||"24h");
+  const p=body.period?{start:body.period.start,end:body.period.end}:analyticsRange(new URL(request.url).searchParams.get("range")||"24h");
   try{
     const q=`SELECT blob1 AS event_name, blob3 AS tool, blob6 AS error, double2 AS duration, timestamp FROM ${ANALYTICS_DATASET} WHERE timestamp >= $start AND timestamp < $end AND blob1 IN ('runtime_smoke_ok','runtime_smoke_error') ORDER BY timestamp DESC LIMIT 2000`;
     const r=await analyticsSql(env,q,p);body.runtimeSmoke=summarizeSmoke(r.data||[]);

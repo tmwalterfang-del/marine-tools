@@ -40,7 +40,7 @@ function technicalHealth(rows){
 }
 async function enrichAnalytics(request,env,baseResponse){
   let base;try{base=await baseResponse.clone().json()}catch{return baseResponse}
-  const url=new URL(request.url),p=period(url.searchParams.get("range")||"24h");
+  const url=new URL(request.url),p=base.period?{start:base.period.start,end:base.period.end}:period(url.searchParams.get("range")||"24h");
   try{
     const q=`SELECT blob1 AS event_name, blob3 AS tool, double2 AS duration, timestamp FROM ${ANALYTICS_DATASET} WHERE timestamp >= $start AND timestamp < $end AND blob1 IN ('live_request_ok','live_request_error','data_source') ORDER BY timestamp DESC LIMIT 5000`;
     const r=await analyticsSql(env,q,p);base.technicalHealth=technicalHealth(r.data||[]);
@@ -111,7 +111,10 @@ export default{async fetch(request,env){
   if(url.pathname==="/api/release")return json({version:VERSION,build:BUILD,released:RELEASED,worker:"worker-v857"});
   if(url.pathname==="/api/health")return health(request,env);
   if(url.pathname==="/admin/api/analytics"){
-    const base=await previousWorker.fetch(request,env);if(!base.ok)return base;return enrichAnalytics(request,env,base);
+    // The current dashboard needs the v2 summary (search, trends and live data).
+    // The unversioned base endpoint still returns the original, smaller schema.
+    const summaryUrl=new URL(request.url);summaryUrl.pathname="/admin/api/analytics-v2";
+    const base=await previousWorker.fetch(new Request(summaryUrl,request),env);if(!base.ok)return base;return enrichAnalytics(request,env,base);
   }
   if(url.pathname==="/admin/analytics"){
     const base=await previousWorker.fetch(request,env);return enrichDashboard(base);
