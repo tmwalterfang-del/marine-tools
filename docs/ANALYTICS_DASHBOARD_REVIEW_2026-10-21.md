@@ -13,6 +13,12 @@ Isolated analytics update prepared from main. The user explicitly authorized pub
 
 ## Verification
 
+### Production packaging regression
+
+The first release passed source-level fixtures but failed after Wrangler bundled it. Serializing the browser initializer with `Function.toString()` also serialized injected `__name` calls, whose helper only exists in the Worker bundle. The browser consequently threw `__name is not defined`; panel loaders then reported `MT_DASHBOARD_REQUEST is not a function`. This was reproduced against a real Wrangler 4.151.3 dry-run bundle.
+
+The initializer is now an explicit browser-script literal, so bundling cannot insert Worker-only helper references into it. CI builds once with pinned Wrangler and runs both Worker/DOM acceptance and Chromium/Firefox/WebKit against that exact artifact. Transport initialization is checked explicitly. Authentication and the existing analytics collection are unchanged.
+
 `tests/analytics-dashboard-20261021.mjs` exercises the actual Worker chain and DOM using a fake SQL binding: schema, query count, shared periods, authentication, preview isolation, missing bindings, SQL failures, real SQL timeout, bounded retry, failed/empty/partial states, four-renderer request sharing, accelerated browser HTTP timeout and stale-period races.
 
 `tests/analytics-dashboard-browser-20261021.cjs` uses real Chromium, Firefox and WebKit with the same Worker-generated HTML and synthetic SQL results. It covers panel rendering, request sharing, four ranges, desktop/mobile/landscape widths, Access HTML/401 responses, network/SQL failure, partial data, empty data, recovery and period switching. All external requests are blocked. Screenshots are clearly labelled TEST FIXTURE.
