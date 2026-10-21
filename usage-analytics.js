@@ -23,14 +23,14 @@ function source(){
  try{const h=new URL(document.referrer).hostname;if(hosts.has(h))return 'internal';if(/(^|\.)(google\.[a-z.]+|bing\.com|duckduckgo\.com)$/.test(h))return 'search';if(/(^|\.)linkedin\.com$/.test(h))return 'linkedin';return 'other-referral'}catch{return 'direct'}
 }
 function page(){return location.pathname.startsWith('/students')?'education':document.querySelector('.page.active')?.id||'home'}
-function send(event,tool='',pageId=page()){
+function send(event,tool='',pageId=page(),label=''){
  const meta=context();if(!meta||!navigator.onLine)return;
- fetch('https://api.marinetools.app/api/analytics/event',{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},keepalive:true,cache:'no-store',body:JSON.stringify({event,page:pageId,tool,device:innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop',version:window.__MARINE_TOOLS_RELEASE?.version||'8.7.0',label:document.getElementById(tool)?.closest('.tool-card')?.dataset.toolTitle||'',...meta})}).catch(()=>{});
+ fetch('https://api.marinetools.app/api/analytics/event',{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},keepalive:true,cache:'no-store',body:JSON.stringify({event,page:pageId,tool,device:innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop',version:window.__MARINE_TOOLS_RELEASE?.version||'8.7.0',label:label||document.getElementById(tool)?.closest('.tool-card')?.dataset.toolTitle||document.getElementById(tool)?.closest('.tool-card')?.querySelector('h3')?.textContent||'',...meta})}).catch(()=>{});
 }
 let seenVisit='',attempt=null;
 function ensureVisit(){const meta=context();if(meta&&navigator.onLine&&seenVisit!==meta.session){seenVisit=meta.session;send('visit_started');if(meta.visitorKind==='returning')send('return_visit')}}
-window.MT_USAGE={enabled,context,send,exclude(on){localStorage.setItem('mt.analytics.exclude',on?'1':'0');if(on){localStorage.removeItem(key);sessionStorage.removeItem(sessionKey);browser=null;seenVisit=''}else ensureVisit()}};
-function report(event,tool,pageId){ensureVisit();send(event,tool,pageId);if(['calculation_succeeded','education_module'].includes(event))send('active_usage','',pageId)}
+window.MT_USAGE={enabled,context,send,record:report,exclude(on){localStorage.setItem('mt.analytics.exclude',on?'1':'0');if(on){localStorage.removeItem(key);sessionStorage.removeItem(sessionKey);browser=null;seenVisit=''}else ensureVisit()}};
+function report(event,tool,pageId,label){ensureVisit();send(event,tool,pageId,label);if(['calculation_succeeded','education_module'].includes(event))send('active_usage','',pageId)}
 document.addEventListener('mt-calculation-result',e=>{if(attempt&&attempt.card?.contains(e.target))attempt.outcome=e.detail.valid?'calculation_succeeded':'calculation_invalid'},true);
 document.addEventListener('click',e=>{
  const button=e.target.closest('.calc-action');if(!button)return;

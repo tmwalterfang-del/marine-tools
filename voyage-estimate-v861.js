@@ -322,18 +322,20 @@ function renderEstimate(from,to,route,preferences){
   $('#veEstimateDetails').innerHTML=detailsRows(from,to,route,preferences,speed).map(([k,v])=>'<div><dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd></div>').join('');
   try{localStorage.setItem('mt.voyageEstimate.last',JSON.stringify({from:from.name,to:to.name,distanceNm:m.distanceNm,speedKnots:speed,hours:m.hours,fuelEstimateM3:fuel,routeBasis:basis,savedAt:new Date().toISOString()}))}catch{}
   $('#veResultArea').hidden=false;
-  window.__marineToolsAnalyticsV2?.send?.('calculation_completed',{page:'voyage-estimate',tool:'Port Distance & Sea Time'});
+  window.MT_USAGE?.record('calculation_succeeded','veCalculateRoute','voyage-estimate','Port Distance & Sea Time');
   $('#veResultArea').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function calculate(){
+  window.MT_USAGE?.record('calculation_attempt','veCalculateRoute','voyage-estimate','Port Distance & Sea Time');
+  const invalid=(kind,message)=>{window.MT_USAGE?.record('calculation_invalid','veCalculateRoute','voyage-estimate','Port Distance & Sea Time');showAlert(kind,message)};
   showAlert(null,null);
-  if(!state.ready){showAlert('warn','<b>Estimator is still loading.</b> Try again when the status shows Ready.');return}
+  if(!state.ready){invalid('warn','<b>Estimator is still loading.</b> Try again when the status shows Ready.');return}
   const from=resolveLocation($('#veFromPort').value),to=resolveLocation($('#veToPort').value);
   const speed=Number($('#veSpeedKnots').value),draftRaw=$('#veDraftM').value.trim(),draft=draftRaw===''?null:Number(draftRaw);
-  if(!from||!to){showAlert('error','<b>Invalid location.</b> Select a port, Norwegian offshore field/facility, or enter latitude,longitude.');return}
-  if(from.code===to.code){showAlert('error','<b>Choose two different locations.</b>');return}
-  if(!(speed>=1&&speed<=40)){showAlert('error','<b>Check speed.</b> Enter a value from 1 to 40 kn.');return}
-  if(draft!=null&&(!(draft>=0)||draft>30)){showAlert('error','<b>Check draft.</b> Enter 0–30 m or leave it blank.');return}
+  if(!from||!to){invalid('error','<b>Invalid location.</b> Select a port, Norwegian offshore field/facility, or enter latitude,longitude.');return}
+  if(from.code===to.code){invalid('error','<b>Choose two different locations.</b>');return}
+  if(!(speed>=1&&speed<=40)){invalid('error','<b>Check speed.</b> Enter a value from 1 to 40 kn.');return}
+  if(draft!=null&&(!(draft>=0)||draft>30)){invalid('error','<b>Check draft.</b> Enter 0–30 m or leave it blank.');return}
   const btn=$('#veCalculateRoute'),old=btn.textContent;btn.disabled=true;btn.textContent='Calculating estimate…';
   try{
     let networkInfo=null;
@@ -348,7 +350,7 @@ async function calculate(){
   }catch(e){
     console.error(e);$('#veResultArea').hidden=true;
     const msg=String(e&&e.message||e||'Unknown error');
-    showAlert('error','<b>Estimate unavailable.</b> '+esc(msg));
+    window.MT_USAGE?.record('calculation_failed','veCalculateRoute','voyage-estimate','Port Distance & Sea Time');showAlert('error','<b>Estimate unavailable.</b> '+esc(msg));
   }finally{btn.disabled=false;btn.textContent=old}
 }
 function clearAll(){
@@ -407,7 +409,7 @@ async function init(){
 }
 function render(host){
   if(!host||host.dataset.voyageEstimateRendered)return;
-  host.dataset.voyageEstimateRendered='1';
+  host.dataset.voyageEstimateRendered='1';window.MT_USAGE?.record('tool_opened','veCalculateRoute','voyage-estimate','Port Distance & Sea Time');
   host.innerHTML=`
     <div class="page-title ve-page-title">
       <div>

@@ -66,9 +66,10 @@ function effectiveRate(speed=shared().speed){
   const manual=inputNum($('#vpdFuelDay'));
   return manual>=0&&ok(manual)?{rate:manual,source:'manual / Vessel Profile fuel-day value'}:null;
 }
-function setResult(id,main,sub='',cls=''){
+function setInvalidResult(id,main,sub='',cls=''){return setResult(id,main,sub,cls,false)}
+function setResult(id,main,sub='',cls='',valid=true){
   const el=$('#'+id);if(!el)return;
-  el.className='result '+cls;
+  el.dispatchEvent(new CustomEvent('mt-calculation-result',{bubbles:true,detail:{valid}}));el.className='result '+cls;
   el.innerHTML='<strong>'+esc(main)+'</strong>'+(sub?'<small>'+esc(sub)+'</small>':'');
 }
 function setSharedStatus(text,kind=''){
@@ -99,11 +100,11 @@ function validateBasis(){
   return b;
 }
 function bunker(){
-  const b=validateBasis();if(b.error)return setResult('vpdBunkerResult',b.error,'','caution');
+  const b=validateBasis();if(b.error)return setInvalidResult('vpdBunkerResult',b.error,'','caution');
   const rate=effectiveRate(b.speed);
-  if(!rate||!(rate.rate>=0))return setResult('vpdBunkerResult','Enter daily fuel consumption or save a usable consumption curve.','','caution');
+  if(!rate||!(rate.rate>=0))return setInvalidResult('vpdBunkerResult','Enter daily fuel consumption or save a usable consumption curve.','','caution');
   const rob=inputNum($('#vpdRob')),arrival=inputNum($('#vpdArrivalRob')),reserve=inputNum($('#vpdReservePct'));
-  if([rob,arrival,reserve].some(v=>!ok(v)||v<0))return setResult('vpdBunkerResult','Check ROB, arrival ROB and reserve inputs.','','caution');
+  if([rob,arrival,reserve].some(v=>!ok(v)||v<0))return setInvalidResult('vpdBunkerResult','Check ROB, arrival ROB and reserve inputs.','','caution');
   const h=b.distance/b.speed,cons=rate.rate*h/24,reserveVol=cons*reserve/100,total=cons+reserveVol+arrival,stem=Math.max(0,total-rob);
   setResult('vpdBunkerResult',fmt(stem,1)+' m³ estimated bunker requirement',
     'Voyage '+fmt(cons,1)+' m³ + reserve '+fmt(reserveVol,1)+' m³ + arrival ROB '+fmt(arrival,1)+' m³ − current ROB '+fmt(rob,1)+' m³ · '+rate.source,
@@ -119,20 +120,20 @@ function scenarioRate(speed,basis){
   return{rate:basis.fuelDay*Math.pow(speed/basis.speed,3),source:'cubic comparison model',model:'Cubic'};
 }
 function scenarios(){
-  const b=validateBasis();if(b.error)return setResult('vpdScenarioResult',b.error,'','caution');
+  const b=validateBasis();if(b.error)return setInvalidResult('vpdScenarioResult',b.error,'','caution');
   const baseRate=effectiveRate(b.speed);
   const basis={...b,fuelDay:baseRate?.rate};
   const speeds=parseSpeeds();
-  if(!speeds.length)return setResult('vpdScenarioResult','Enter one or more speeds to compare.','','caution');
+  if(!speeds.length)return setInvalidResult('vpdScenarioResult','Enter one or more speeds to compare.','','caution');
   const evaluated=speeds.map(s=>({s,r:scenarioRate(s,basis)}));
-  if(!evaluated.some(x=>x.r))return setResult('vpdScenarioResult','No usable fuel model for the selected speeds. Add curve coverage or a planned-speed reference fuel rate.','','caution');
+  if(!evaluated.some(x=>x.r))return setInvalidResult('vpdScenarioResult','No usable fuel model for the selected speeds. Add curve coverage or a planned-speed reference fuel rate.','','caution');
   const rows=evaluated.map(({s,r})=>{
     if(!r)return'<tr><td>'+fmt(s,1)+' kn</td><td colspan="4">No usable fuel model</td></tr>';
     const h=b.distance/s,fuel=r.rate*h/24;
     return'<tr><td>'+fmt(s,1)+' kn</td><td>'+hoursText(h)+'</td><td>'+fmt(r.rate,2)+' m³/day</td><td>'+fmt(fuel,1)+' m³</td><td>'+esc(r.model)+'</td></tr>';
   }).join('');
   const el=$('#vpdScenarioResult');
-  el.className='result vpd-table-result';
+  el.dispatchEvent(new CustomEvent('mt-calculation-result',{bubbles:true,detail:{valid:true}}));el.className='result vpd-table-result';
   const modelNote=basis.fuelDay>=0
     ?'Saved curve values are linearly interpolated inside the curve range. Other speeds use the simple cubic comparison model from the planned-speed reference.'
     :'Saved curve values are linearly interpolated inside the curve range. Speeds outside the saved curve show no model because no planned-speed reference fuel rate is available.';
@@ -143,9 +144,9 @@ function localDateTimeInputValue(d){
   return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
 }
 function arrivalPlanner(){
-  const b=validateBasis();if(b.error)return setResult('vpdArrivalResult',b.error,'','caution');
+  const b=validateBasis();if(b.error)return setInvalidResult('vpdArrivalResult',b.error,'','caution');
   const dep=new Date($('#vpdDeparture').value);
-  if(!Number.isFinite(dep.getTime()))return setResult('vpdArrivalResult','Enter a valid departure date and time.','','caution');
+  if(!Number.isFinite(dep.getTime()))return setInvalidResult('vpdArrivalResult','Enter a valid departure date and time.','','caution');
   const plannedHours=b.distance/b.speed,eta=new Date(dep.getTime()+plannedHours*3600000);
   const targetRaw=$('#vpdTargetArrival').value;
   let sub='ETA at '+fmt(b.speed,1)+' kn: '+eta.toLocaleString();
@@ -153,7 +154,7 @@ function arrivalPlanner(){
   if(targetRaw){
     const target=new Date(targetRaw);
     const available=(target-dep)/3600000;
-    if(!(available>0))return setResult('vpdArrivalResult','Target arrival must be after departure.','','caution');
+    if(!(available>0))return setInvalidResult('vpdArrivalResult','Target arrival must be after departure.','','caution');
     const req=b.distance/available,delta=req-b.speed;
     main='Required average speed '+fmt(req,1)+' kn';
     sub='Available '+hoursText(available)+' · planned '+fmt(b.speed,1)+' kn · '+(delta>=0?'+':'')+fmt(delta,1)+' kn versus plan';
@@ -172,12 +173,12 @@ function updateFactorUi(){
   $('#vpdFactorText').textContent=custom?'Enter company / approved factor.':(ok(f)?'IMO C_F '+fmt(f,3)+' t-CO₂/t-fuel.':'');
 }
 function emissions(){
-  const b=validateBasis();if(b.error)return setResult('vpdEmissionResult',b.error,'','caution');
+  const b=validateBasis();if(b.error)return setInvalidResult('vpdEmissionResult',b.error,'','caution');
   const rate=effectiveRate(b.speed);
-  if(!rate)return setResult('vpdEmissionResult','Enter daily fuel consumption or save a usable curve.','','caution');
+  if(!rate)return setInvalidResult('vpdEmissionResult','Enter daily fuel consumption or save a usable curve.','','caution');
   const density=inputNum($('#vpdDensity')),cf=factorForSelection();
-  if(!(density>0&&density<2000))return setResult('vpdEmissionResult','Enter a valid fuel density in kg/m³.','','caution');
-  if(!(cf>=0&&cf<10))return setResult('vpdEmissionResult','Enter a valid CO₂ factor (0 permitted only where a documented direct-CO₂ factor is zero).','','caution');
+  if(!(density>0&&density<2000))return setInvalidResult('vpdEmissionResult','Enter a valid fuel density in kg/m³.','','caution');
+  if(!(cf>=0&&cf<10))return setInvalidResult('vpdEmissionResult','Enter a valid CO₂ factor (0 permitted only where a documented direct-CO₂ factor is zero).','','caution');
   const h=b.distance/b.speed,volume=rate.rate*h/24,massT=volume*density/1000,co2=massT*cf;
   const fuelLabel=$('#vpdFuelType option:checked')?.textContent||'Selected fuel';
   setResult('vpdEmissionResult',fmt(co2,1)+' t CO₂ estimate',
@@ -203,8 +204,8 @@ function saveCurve(){
   const rows=$$('.vpd-curve-row',$('#vpdCurveRows')).map(r=>({speed:inputNum($('.vpd-curve-speed',r)),fuelDay:inputNum($('.vpd-curve-fuel',r))}))
     .filter(x=>x.speed>0&&x.speed<=40&&x.fuelDay>=0&&ok(x.fuelDay)).sort((a,b)=>a.speed-b.speed);
   const unique=rows.filter((x,i,a)=>!i||Math.abs(x.speed-a[i-1].speed)>.0001);
-  if(unique.length<2)return setResult('vpdCurveResult','Add at least two valid, unique speed points.','','caution');
-  writeJson(CURVE_KEY,unique);
+  if(unique.length<2)return setInvalidResult('vpdCurveResult','Add at least two valid, unique speed points.','','caution');
+  const saved=writeJson(CURVE_KEY,unique);if(saved){window.__marineToolsAnalyticsV2?.send?.('result_saved',{page:'voyage-planning',tool:'vessel-consumption-curve'});window.MT_USAGE?.record('active_usage','','voyage-planning')}
   renderCurveRows();
   setResult('vpdCurveResult','Consumption curve saved locally',unique.length+' points · linear interpolation only inside the saved speed range.','ok');
 }
@@ -276,7 +277,7 @@ function render(host){
             <label>Required arrival ROB m³<input id="vpdArrivalRob" type="number" min="0" step="0.1" value="25"></label>
             <label>Voyage reserve %<input id="vpdReservePct" type="number" min="0" step="0.1" value="10"></label>
           </div>
-          <div class="actions"><button id="vpdCalcBunker" class="btn primary">Calculate bunker requirement</button></div>
+          <div class="actions"><button id="vpdCalcBunker" class="btn primary calc-action">Calculate bunker requirement</button></div>
           <div id="vpdBunkerResult" class="result"><strong>—</strong><small>Uses the shared voyage basis and saved curve when available.</small></div>
         </div>
       </article>
@@ -285,7 +286,7 @@ function render(host){
         <div class="tool-card-head"><div><span class="vpd-number">02</span><h3>Voyage Scenario Compare</h3><p>Compare sea time and estimated fuel at several speeds for the same distance.</p></div></div>
         <div class="tool-card-work">
           <label>Speeds to compare · kn<input id="vpdScenarioSpeeds" value="8, 10, 12, 14" placeholder="e.g. 8, 10, 12"></label>
-          <div class="actions"><button id="vpdCalcScenarios" class="btn primary">Compare scenarios</button></div>
+          <div class="actions"><button id="vpdCalcScenarios" class="btn primary calc-action">Compare scenarios</button></div>
           <div id="vpdScenarioResult" class="result"><strong>—</strong><small>Saved curve is preferred; other speeds use a cubic comparison model.</small></div>
         </div>
       </article>
@@ -297,7 +298,7 @@ function render(host){
             <label>Departure<input id="vpdDeparture" type="datetime-local"></label>
             <label>Target arrival · optional<input id="vpdTargetArrival" type="datetime-local"></label>
           </div>
-          <div class="actions"><button id="vpdCalcArrival" class="btn primary">Calculate timing</button></div>
+          <div class="actions"><button id="vpdCalcArrival" class="btn primary calc-action">Calculate timing</button></div>
           <div id="vpdArrivalResult" class="result"><strong>—</strong><small>No weather, traffic, port or speed-change allowance is included.</small></div>
         </div>
       </article>
@@ -313,7 +314,7 @@ function render(host){
             <label>Density kg/m³ (at volume measurement temperature)<input id="vpdDensity" type="number" min="1" step="0.1" placeholder="Enter actual / approved value"></label>
             <label id="vpdCustomFactorWrap" hidden>Custom C_F t-CO₂/t-fuel<input id="vpdCustomFactor" type="number" min="0" step="0.001" value="3.206"></label>
           </div>
-          <div class="actions"><button id="vpdCalcEmission" class="btn primary">Estimate fuel & CO₂</button></div>
+          <div class="actions"><button id="vpdCalcEmission" class="btn primary calc-action">Estimate fuel & CO₂</button></div>
           <div id="vpdEmissionResult" class="result"><strong>—</strong><small>IMO C_F factors are provided for the listed fuel categories. For other fuels, use an approved custom factor. Direct CO₂ only; no CH₄/N₂O or lifecycle effects. Not an EU ETS or FuelEU compliance calculation.</small></div>
         </div>
       </article>
