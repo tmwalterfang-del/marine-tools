@@ -33,7 +33,7 @@ window.MT_USAGE={enabled,context,send,record:report,exclude(on){localStorage.set
 function report(event,tool,pageId,label){ensureVisit();send(event,tool,pageId,label);if(['calculation_succeeded','education_module'].includes(event))send('active_usage','',pageId)}
 document.addEventListener('mt-calculation-result',e=>{if(attempt&&attempt.card?.contains(e.target))attempt.outcome=e.detail.valid?'calculation_succeeded':'calculation_invalid'},true);
 document.addEventListener('click',e=>{
- const button=e.target.closest('.calc-action');if(!button)return;
+ const button=e.target.closest('.calc-action,[data-usage-action]');if(!button)return;
  ensureVisit();const card=button.closest('.tool-card'),tool=button.id;if(!tool)return;
  const pending=attempt={card,tool,page:page(),outcome:null};send('calculation_attempt',tool,pending.page);
  setTimeout(()=>{if(pending.outcome)report(pending.outcome,tool,pending.page);if(attempt===pending)attempt=null},0);
@@ -41,7 +41,7 @@ document.addEventListener('click',e=>{
 let observed=new WeakSet();
 function observeTools(){
  if(!window.IntersectionObserver)return;
- const observer=new IntersectionObserver(entries=>{for(const x of entries){if(!x.isIntersecting||x.target.hidden)continue;const button=x.target.querySelector('.calc-action[id]');if(button){report('tool_opened',button.id,x.target.closest('.page')?.id||page());observer.unobserve(x.target)}}},{threshold:.35});
+ const observer=new IntersectionObserver(entries=>{for(const x of entries){if(!x.isIntersecting||x.target.hidden)continue;const button=x.target.querySelector('.calc-action[id],[data-usage-action][id]');if(button){report('tool_opened',button.id,x.target.closest('.page')?.id||page());observer.unobserve(x.target)}}},{threshold:.35});
  function scan(){document.querySelectorAll('.page.active .tool-card').forEach(card=>{if(!observed.has(card)){observed.add(card);observer.observe(card)}})}
  new MutationObserver(scan).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});scan();
 }

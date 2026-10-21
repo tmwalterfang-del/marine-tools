@@ -277,7 +277,7 @@ function render(host){
             <label>Required arrival ROB m³<input id="vpdArrivalRob" type="number" min="0" step="0.1" value="25"></label>
             <label>Voyage reserve %<input id="vpdReservePct" type="number" min="0" step="0.1" value="10"></label>
           </div>
-          <div class="actions"><button id="vpdCalcBunker" class="btn primary calc-action">Calculate bunker requirement</button></div>
+          <div class="actions"><button id="vpdCalcBunker" class="btn primary" data-usage-action>Calculate bunker requirement</button></div>
           <div id="vpdBunkerResult" class="result"><strong>—</strong><small>Uses the shared voyage basis and saved curve when available.</small></div>
         </div>
       </article>
@@ -286,7 +286,7 @@ function render(host){
         <div class="tool-card-head"><div><span class="vpd-number">02</span><h3>Voyage Scenario Compare</h3><p>Compare sea time and estimated fuel at several speeds for the same distance.</p></div></div>
         <div class="tool-card-work">
           <label>Speeds to compare · kn<input id="vpdScenarioSpeeds" value="8, 10, 12, 14" placeholder="e.g. 8, 10, 12"></label>
-          <div class="actions"><button id="vpdCalcScenarios" class="btn primary calc-action">Compare scenarios</button></div>
+          <div class="actions"><button id="vpdCalcScenarios" class="btn primary" data-usage-action>Compare scenarios</button></div>
           <div id="vpdScenarioResult" class="result"><strong>—</strong><small>Saved curve is preferred; other speeds use a cubic comparison model.</small></div>
         </div>
       </article>
@@ -298,7 +298,7 @@ function render(host){
             <label>Departure<input id="vpdDeparture" type="datetime-local"></label>
             <label>Target arrival · optional<input id="vpdTargetArrival" type="datetime-local"></label>
           </div>
-          <div class="actions"><button id="vpdCalcArrival" class="btn primary calc-action">Calculate timing</button></div>
+          <div class="actions"><button id="vpdCalcArrival" class="btn primary" data-usage-action>Calculate timing</button></div>
           <div id="vpdArrivalResult" class="result"><strong>—</strong><small>No weather, traffic, port or speed-change allowance is included.</small></div>
         </div>
       </article>
@@ -314,7 +314,7 @@ function render(host){
             <label>Density kg/m³ (at volume measurement temperature)<input id="vpdDensity" type="number" min="1" step="0.1" placeholder="Enter actual / approved value"></label>
             <label id="vpdCustomFactorWrap" hidden>Custom C_F t-CO₂/t-fuel<input id="vpdCustomFactor" type="number" min="0" step="0.001" value="3.206"></label>
           </div>
-          <div class="actions"><button id="vpdCalcEmission" class="btn primary calc-action">Estimate fuel & CO₂</button></div>
+          <div class="actions"><button id="vpdCalcEmission" class="btn primary" data-usage-action>Estimate fuel & CO₂</button></div>
           <div id="vpdEmissionResult" class="result"><strong>—</strong><small>IMO C_F factors are provided for the listed fuel categories. For other fuels, use an approved custom factor. Direct CO₂ only; no CH₄/N₂O or lifecycle effects. Not an EU ETS or FuelEU compliance calculation.</small></div>
         </div>
       </article>
