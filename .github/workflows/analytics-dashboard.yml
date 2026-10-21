@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - 'worker/**'
+      - 'usage-analytics.js'
+      - 'analytics-v856.js'
+      - 'product-v860.js'
+      - 'app.js'
+      - 'index.html'
       - 'tests/analytics-*'
       - 'docs/ANALYTICS_*'
       - '.github/workflows/analytics-dashboard.yml'
@@ -11,6 +16,11 @@ on:
     branches: [main]
     paths:
       - 'worker/**'
+      - 'usage-analytics.js'
+      - 'analytics-v856.js'
+      - 'product-v860.js'
+      - 'app.js'
+      - 'index.html'
       - 'tests/analytics-*'
       - '.github/workflows/analytics-dashboard.yml'
 
@@ -38,6 +48,7 @@ jobs:
           MT_ANALYTICS_WORKER_MODULE: /tmp/analytics-worker/worker-v860-dashboard.js
         run: |
           node tests/analytics-dashboard-20261021.mjs
+          node tests/analytics-usage-20261021.mjs
           node tests/qa-preview-isolation-20261016.mjs
           node tests/qa-release-metadata-20261018.mjs
       - name: Share the tested deployable bundle with browser jobs

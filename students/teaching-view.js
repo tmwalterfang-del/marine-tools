@@ -51,7 +51,7 @@ window.addEventListener('resize',scheduleFit);
 new MutationObserver(scheduleFit).observe(main,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden']});
 if(window.ResizeObserver)new ResizeObserver(scheduleFit).observe(main);
 
-function setPresentation(on){if(!!on===presenting){scheduleFit();return}presenting=!!on;if(presenting)previousScroll=window.scrollY||0;document.body.classList.toggle('presentation-view',presenting);toggle.textContent=presenting?'Exit presentation':'Presentation view';toggle.setAttribute('aria-pressed',String(presenting));
+function setPresentation(on){if(!!on===presenting){scheduleFit();return}presenting=!!on;document.dispatchEvent(new CustomEvent('mt-presentation-change',{detail:{presenting}}));if(presenting)previousScroll=window.scrollY||0;document.body.classList.toggle('presentation-view',presenting);toggle.textContent=presenting?'Exit presentation':'Presentation view';toggle.setAttribute('aria-pressed',String(presenting));
  for(const f of document.querySelectorAll('#frames iframe')){try{f.contentWindow.MT_TEACHING_VIEW?.setPresentation(presenting)}catch{}}
  if(!presenting)for(const f of document.querySelectorAll('#frames iframe'))f.style.removeProperty('height');
  if(!presenting)for(const value of document.querySelectorAll('.metric strong'))value.style.removeProperty('font-size');

@@ -93,7 +93,7 @@ function formulaMarkup(f,forSheet=false){
   '<div class="study-diagram">'+study.figures[d.figure]+'</div>':"";
  const actions=forSheet?"":'<div class="card-actions"><button type="button" data-copy="'+enc(f.id)+'">Copy</button>'+
   (candidate?'<button type="button" data-open="'+enc(candidate.id)+'">Open '+enc(candidate.name)+' →</button>':"")+'</div>';
- return '<article class="formula-card'+(forSheet?' sheet-card':'')+'"><div class="card-line"><span class="topic-pill">'+enc(f.category)+'</span>'+
+ return '<article data-formula-id="'+enc(f.id)+'" class="formula-card'+(forSheet?' sheet-card':'')+'"><div class="card-line"><span class="topic-pill">'+enc(f.category)+'</span>'+
  (forSheet?"":'<button type="button" data-fav="'+enc(f.id)+'" aria-pressed="'+saved+'" aria-label="'+(saved?"Unsave":"Save")+' '+enc(f.name)+'">'+(saved?'★':'☆')+'</button>')+'</div>'+
  '<h3>'+enc(f.name)+'</h3><div class="equation" role="math" aria-label="'+enc(f.formula)+'">'+enc(f.formula)+'</div>'+
  '<p><strong>Conditions:</strong> '+enc(f.note)+'</p>'+
