@@ -1,0 +1,155 @@
+name: Students formula and source audit
+
+on:
+  push:
+    branches: ['feature/for-students-formula-library-20261019']
+  pull_request:
+    paths:
+      - 'students/**'
+      - 'tests/students-*.mjs'
+      - 'tests/students-*.cjs'
+      - 'tests/education-*.cjs'
+      - 'tests/analytics-*'
+      - 'worker/**'
+      - 'docs/STUDENTS_*'
+      - '.github/workflows/students-formula-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Formula and catalogue integrity
+        run: node tests/students-smoke-20261019.mjs
+      - name: Independent circuit node balances
+        run: node tests/students-source-circuits-20261020.mjs
+      - name: Qualified heat-transfer model references
+        run: |
+          node tests/students-heat-model-resolution-20261020.mjs
+          node tests/students-draft-model-resolution-20261020.mjs
+      - name: Per-expression review context
+        run: node tests/students-expression-review-ledger-20261020.mjs
+      - name: Student interface logic
+        run: node tests/students-ui-smoke-20261019.mjs
+      - name: Mathematics and physics
+        run: node tests/students-chapters-math-physics-20261020.mjs
+      - name: Printed page 12 geometry reference points
+        run: node tests/students-book-page12-20261020.mjs
+      - name: Mechanics and Mollier
+        run: node tests/students-mechanics-mollier-20261020.mjs
+      - name: Mollier
+        run: node tests/students-mollier-20261020.mjs
+      - name: IF97 reference points
+        run: node tests/students-if97-reference-20261020.mjs
+      - name: Published IAPWS reference values
+        run: node tests/students-if97-published-20261020.mjs
+      - name: Mollier phase and solver-failure interactions
+        run: node tests/students-mollier-ui-20261020.mjs
+      - name: Interactive lab independent reference cases
+        run: node tests/students-labs-20261020.mjs
+      - name: Physics source and Doppler reference cases
+        run: node tests/students-physics-audit-20261020.mjs
+      - name: Mechanics source expressions, dimensions and independent reference cases
+        run: node tests/students-mechanics-audit-20261020.mjs
+      - name: Chemistry arithmetic, conventions and source-pattern integrity
+        run: node tests/students-chemistry-audit-20261020.mjs
+      - name: Complete symbol and source-expression integrity
+        run: node tests/students-symbol-completion-20261020.mjs
+      - name: All sixteen chapter registers and displayed expressions
+        run: node tests/students-all-chapters-20261020.mjs
+      - name: Expanded dimensional and physical conservation review
+        run: |
+          node tests/students-dimensional-review-20261020.mjs students-dimensional-review.json
+          node tests/students-model-conservation-20261020.mjs
+      - name: Engineering explorer independent reference cases
+        run: node tests/students-explorers-20261020.mjs
+      - name: Install DOM integration test dependency
+        run: npm install --prefix /tmp/students-dom --no-audit --no-fund jsdom@26.1.0
+      - name: Export and interactive DOM integration
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: |
+          node tests/students-labs-dom-20261020.cjs
+          node tests/students-chapter-navigation-20261020.cjs
+          node tests/students-study-export-20261020.cjs
+          node tests/students-cargo-workspace-20261020.cjs
+          node tests/students-example-workshops-20261020.cjs
+          node tests/students-symbol-navigation-20261020.cjs
+          node tests/students-education-navigation-20261020.cjs
+          node tests/students-teaching-view-20261020.cjs
+          node tests/site-wide-source-audit-20261020.cjs
+          timeout 45s node tests/site-core-dom-20261020.cjs
+          node tests/students-explorers-dom-20261020.cjs
+          node tests/students-mollier-export-20261020.cjs
+          node tests/analytics-dashboard-20261021.mjs
+          node tests/analytics-usage-20261021.mjs
+      - name: Existing whole-site regressions with simulated providers
+        run: |
+          node tests/navigation-smoke.mjs
+          node tests/qa-aging-reflow-20261016.mjs
+          node tests/qa-ais-comparison-20261018.mjs
+          node tests/qa-ais-provider-status-20261018.mjs
+          node tests/qa-preview-isolation-20261016.mjs
+          node tests/qa-release-metadata-20261018.mjs
+          node tests/qa-six-fixes-20261016.mjs
+      - name: Upload whole-site audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-wide-source-audit
+          path: |
+            site-wide-source-audit.json
+            site-core-dom-audit.json
+            students-dimensional-review.json
+          if-no-files-found: warn
+      - name: Install symbolic mathematics test dependency
+        run: python3 -m pip install sympy==1.14.0
+      - name: Independently check selected mathematical identities
+        run: python3 tests/students-math-equations-20261020.py
+      - name: Generate complete editorial status report
+        run: node tests/students-formula-completeness-20261020.mjs students-formula-completeness.csv
+      - name: Upload editorial report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-formula-completeness
+          path: students-formula-completeness.csv
+          if-no-files-found: warn
+
+  education-browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser test runner
+        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.62.1
+      - name: Install rendering engine and Linux dependencies
+        run: node /tmp/education-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
+      - name: Responsive Education and whole-site browser checks
+        env:
+          NODE_PATH: /tmp/education-browser/node_modules
+        run: |
+          node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}
+          node tests/education-acceptance-20261021.cjs ${{ matrix.browser }}
+          node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
+      - name: Save screenshots, browser results and report exports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: education-browser-${{ matrix.browser }}
+          path: qa-education-${{ matrix.browser }}/
+          if-no-files-found: warn
