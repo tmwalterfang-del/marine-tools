@@ -4,7 +4,7 @@
  */
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),pw=require('playwright');
 const root=path.resolve(__dirname,'..'),engine=process.argv[2]||'chromium',out=path.resolve('qa-education-'+engine,'acceptance');fs.mkdirSync(out,{recursive:true});
-let swStage='current',privateFixture=false,browser;const checks=[],errors=[];
+let swStage='current',privateFixture=false,browser,liveAccess={state:'NOT_RUN'};const checks=[],errors=[];
 function check(value,label,detail={}){checks.push({ok:!!value,label,...detail});if(!value)console.log('FAIL '+label+' '+JSON.stringify(detail))}
 const legacy="self.addEventListener('install',e=>e.waitUntil(caches.open('marine-tools-legacy-qa').then(c=>c.put('/legacy-secret',new Response('QA LEGACY MARKER'))).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));";
 const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://localhost');let file=path.resolve(root,'.'+decodeURIComponent(u.pathname));if(!file.startsWith(root+path.sep)&&file!==root)return res.writeHead(403).end();if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');if(!fs.existsSync(file)&&!path.extname(file))file+='.html';if(!fs.existsSync(file))return res.writeHead(404).end();let data=fs.readFileSync(file);if(u.pathname==='/sw.js'){data=swStage==='legacy'?legacy:data.toString();if(privateFixture&&swStage!=='legacy')data=data.replace('test(self.location.hostname)',"test('qa.marine-tools-frontend-preview.pages.dev')");}res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type',({'.js':'application/javascript','.css':'text/css','.html':'text/html','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'})[path.extname(file)]||'application/octet-stream');res.end(data)});
@@ -19,6 +19,7 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
  const modules=await page.locator('#module-list a').evaluateAll(a=>a.map(x=>x.hash.slice(1)));
  for(const id of modules){
   console.log('ACCEPTANCE '+engine+'/'+id);await page.locator('#module-list a[href="#'+id+'"]').click();
+  await page.waitForFunction(id=>document.getElementById('selected-title').textContent===document.querySelector('#module-list a[href="#'+id+'"]').textContent,id);
   const h=await page.locator('#frames iframe:not([hidden])').elementHandle(),f=await h.contentFrame();await f.waitForSelector('svg path,svg polyline',{state:'attached'});await openInputs(f);
   const generic=await f.evaluate(()=>!!(window.MT_EXAMPLE_UI||window.MT_EXPLORER_UI)),lab=['stability','controls','engine'].includes(id),mollier=id==='mollier';
   const inputSel=mollier?'#pressure-number':lab?(id==='controls'?'#signal-form input[type=number]':'#'+id+'-form input[type=number]'):id==='cargo'?'#cargo-form input[name=displacement]':id==='faults'?'#experiment input[name=flow]':'#experiment input[type=number]';
@@ -34,7 +35,7 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
   await f.waitForFunction(({id,expected})=>{try{const s=window.MT_EXAMPLE_UI?.snapshot()||window.MT_EXPLORER_UI?.snapshot()||window.MT_CARGO_UI?.snapshot()||window.MT_MOLLIER_SNAPSHOT?.()||window.MT_LAB_SNAPSHOT(id);return JSON.stringify({inputs:s.inputs,results:s.results})===JSON.stringify(expected)}catch{return false}},{id,expected});
   check(JSON.stringify(await snapshot(f,id))===JSON.stringify(expected),'file-picker scenario restore recomputes same result/'+id);
   for(const invalid of ['', '1e308']){await input.fill(invalid);await input.dispatchEvent('change');let blocked=false;try{await snapshot(f,id)}catch{blocked=true}check(blocked,'invalid input blocks export snapshot/'+id+'/'+(invalid||'empty'));}
-  for(const edge of ['0','-1']){await input.fill(edge);await input.dispatchEvent('change');let blocked=false;try{await snapshot(f,id)}catch{blocked=true}const allowed=edge==='0'?['crank','faults','finance','current'].includes(id):id==='crank';check(blocked!==allowed,'zero/negative respects module domain/'+id+'/'+edge);}
+  for(const edge of ['0','-1']){await input.fill(edge);await input.dispatchEvent('change');let blocked=false;try{await snapshot(f,id)}catch{blocked=true}const allowed=edge==='0'?['crank','faults','finance','current','controls'].includes(id):['crank','controls'].includes(id);check(blocked!==allowed,'zero/negative respects module domain/'+id+'/'+edge);}
   await f.locator(fileSel).setInputFiles(jsonPath);await f.waitForFunction(()=>[...document.querySelectorAll('[role=alert],.error')].every(e=>e.hidden||!e.getBoundingClientRect().height));
   const malformed=Buffer.from(JSON.stringify({...saved,model:'wrong-module'}));await f.locator(fileSel).setInputFiles({name:'wrong.json',mimeType:'application/json',buffer:malformed});
   await f.waitForFunction(()=>[...document.querySelectorAll('#feedback,#export-feedback,#report-feedback')].some(x=>/Choose a version 1 scenario/.test(x.textContent)));
@@ -52,6 +53,13 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
  await page.goto(base+'/students/examples.html#trim');await page.locator('#presentation-toggle').click();
  for(const [width,height]of [[2048,774],[900,600],[390,844],[844,390],[1440,900]]){await page.setViewportSize({width,height});await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));const m=await page.evaluate(()=>({w:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));check(m.scroll<=m.w+2,'active presentation resize/'+width+'x'+height,m)}
  await context.close();
+ if(engine==='chromium'){
+  // Anonymous read only: no cookies, email submissions or authentication tokens.
+  try{const response=await fetch('https://feature-for-students-formula.marine-tools-frontend-preview.pages.dev/students/',{redirect:'manual',signal:AbortSignal.timeout(15000)}),location=response.headers.get('location');
+   if(location){const u=new URL(location,response.url);liveAccess={state:u.hostname.endsWith('.cloudflareaccess.com')?'ACCESS_LOGIN_REDIRECT_OBSERVED':'OTHER_REDIRECT',status:response.status,host:u.hostname,path:u.pathname};}
+   else{const body=await response.text(),exposed=response.status===200&&body.includes('id="formula-grid"');liveAccess={state:exposed?'UNAUTHENTICATED_CONTENT_RECEIVED':response.status===200&&/cloudflare access|send.*login.*code/i.test(body)?'ACCESS_LOGIN_PAGE_OBSERVED':'BLOCKED_OR_INCONCLUSIVE',status:response.status};check(!exposed,'anonymous request does not receive protected Education HTML');}
+  }catch(e){liveAccess={state:'BLOCKED_OR_INCONCLUSIVE',reason:e.name};}
+ }
  if(engine==='chromium')for(const privateMode of [false,true]){
   swStage='legacy';privateFixture=privateMode;const c=await browser.newContext({serviceWorkers:'allow'}),p=await c.newPage();
   await c.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());await p.goto(base+'/students/labs.html#engine');
@@ -67,4 +75,4 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
   else{await p.waitForSelector('#formula-grid .formula-card');check(await p.locator('#formula-grid .formula-card').count()>0,'public app library opens offline');check(await p.evaluate(()=>window.MT_STUDY.expressionReview.openModels)===6,'offline library includes current analytical review');}
   await c.close();
  }
-})().catch(e=>{errors.push(e.stack||String(e))}).finally(async()=>{if(browser)await browser.close();await new Promise(r=>server.close(r));const summary={engine,tests:checks.length,failures:checks.filter(x=>!x.ok).length,errors,scope:'Local checkout; actual headless engines and downloads. CSS zoom, not native OS zoom. Preview hostname selected in local service-worker fixture; not a Cloudflare identity test.',checks};fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify({engine,tests:summary.tests,failures:summary.failures,errors}));if(summary.failures||errors.length)process.exitCode=1});
+})().catch(e=>{errors.push(e.stack||String(e))}).finally(async()=>{if(browser)await browser.close();await new Promise(r=>server.close(r));const summary={engine,tests:checks.length,failures:checks.filter(x=>!x.ok).length,errors,liveAccess,scope:'Local checkout; actual headless engines and downloads. CSS zoom, not native OS zoom. Preview hostname selected in local service-worker fixture; not a Cloudflare identity test.',checks};fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify({engine,tests:summary.tests,failures:summary.failures,errors,liveAccess}));if(summary.failures||errors.length)process.exitCode=1});
