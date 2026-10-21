@@ -92,6 +92,9 @@ function dashboardTransport(){
   var chart=document.getElementById('chart');if(chart)chart.innerHTML='<div class="status">Loading…</div>';
   var health=document.getElementById('mtTechState');if(health){health.textContent='Loading';health.className='mt-health-state'}
   var requests=document.getElementById('mtTechRequests');if(requests)requests.textContent='—';
+  var lastError=document.getElementById('mtTechLatestError');if(lastError)lastError.textContent='Last error unavailable';
+  var updated=document.getElementById('updated');if(updated)updated.textContent=updated.textContent.replace(/^Updated /,'Last successful load ');
+  document.querySelectorAll('.mt-context-card b,[id^="mtLegend"],[id^="mtAct"][id$="Delta"]').forEach(function(el){el.textContent='—'});
   window.__mtAnalyticsDashboardData=null;window.dispatchEvent(new CustomEvent('mt-analytics-data',{detail:null}));
   status('Loading analytics…',false);
  }

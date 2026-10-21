@@ -30,6 +30,7 @@ function check(ok,label){checks.push({ok:!!ok,label});assert.ok(ok,label)}
  for(const range of ['7d','30d','90d']){await page.locator('[data-range="'+range+'"]').click();await loaded();check((await text('mtAnalyticsLoadState')).includes(range),'range '+range+' loads')}
  check(requests===4,'one request per range selection');
  mode='failure';await page.locator('#refresh').click();await loaded();check((await text('sessions'))==='—'&&(await text('v860Calc'))==='—'&&(await text('mtTechState'))==='Unavailable'&&await page.locator('#chart svg').count()===0,'full failure clears stale metrics and plot');
+ check((await text('mtTechLatestError'))==='Last error unavailable'&&(await text('updated')).startsWith('Last successful load '),'historical timestamps are not presented as current after failure');
  await page.screenshot({path:path.join(out,'dashboard-failure.png'),fullPage:true});
  for(const kind of ['html','denied','network']){mode=kind;await page.locator('#refresh').click();await loaded();check((await text('mtAnalyticsLoadState')).match(/sign.in|expired|connect/i)&&(await text('sessions'))==='—','friendly '+kind+' error')}
  mode='partial';await page.locator('#refresh').click();await loaded();check((await text('sessions'))==='10'&&(await text('v860Calc'))==='—'&&(await text('mtTechSuccess'))==='—'&&(await text('mtAnalyticsLoadState')).includes('Unavailable'),'optional errors retain usage and never claim zero success');
