@@ -63,10 +63,16 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
  if(engine==='chromium')for(const privateMode of [true,false]){
   swStage='legacy';privateFixture=privateMode;const c=await browser.newContext({serviceWorkers:'allow'}),p=await c.newPage();const workerErrors=[];p.on('pageerror',e=>workerErrors.push(e.message));p.on('requestfailed',r=>workerErrors.push(r.url()+' '+r.failure()?.errorText));
   await c.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());await p.goto(base+'/students/labs.html#engine');
-  await p.evaluate(()=>navigator.serviceWorker.register('/sw.js'));await p.waitForFunction(()=>navigator.serviceWorker.controller);
+  await p.evaluate(()=>navigator.serviceWorker.register('/sw.js'));await p.waitForFunction(()=>navigator.serviceWorker.controller);await p.waitForFunction(async()=>!!(await caches.match('/legacy-secret')));
   await p.locator('#engine-form input[name=rpm]').fill('800');await p.locator('#engine-form input[name=rpm]').dispatchEvent('change');
   const stored=await p.evaluate(()=>localStorage.getItem('mt-student-labs-v1'));swStage='current';
-  await p.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();if(r.waiting)r.waiting.postMessage({type:'SKIP_WAITING'});if(r.installing){const w=r.installing;w.addEventListener('statechange',()=>{if(w.state==='installed')w.postMessage({type:'SKIP_WAITING'})})}});
+  await p.evaluate(async()=>{
+   const r=await navigator.serviceWorker.getRegistration(),before=r.active;
+   const found=new Promise(resolve=>r.addEventListener('updatefound',()=>resolve(r.installing),{once:true}));
+   await r.update();let w=r.installing||r.waiting;
+   if(!w&&r.active!==before)return;if(!w)w=await found;
+   await new Promise((resolve,reject)=>{const state=()=>{if(w.state==='activated')resolve();else if(w.state==='redundant')reject(Error('Worker installation failed'));else if(w.state==='installed')w.postMessage({type:'SKIP_WAITING'})};w.addEventListener('statechange',state);state()});
+  });
   await p.waitForFunction(async()=>!(await caches.keys()).includes('marine-tools-legacy-qa'));
   check(await p.evaluate(()=>localStorage.getItem('mt-student-labs-v1'))===stored,'service worker upgrade preserves stored lab inputs/'+privateMode);
   await p.reload();await p.waitForSelector('#engine-form input[name=rpm]');check(await p.locator('#engine-form input[name=rpm]').inputValue()==='800','stored lab restores after reload/'+privateMode);
