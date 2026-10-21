@@ -1,3 +1,4 @@
+import {acceptUsage,enrichUsage} from './usage-analytics.js';
 import previousWorker from "./worker-v860-product.js";
 const VERSION="8.7.0";
 const WORKER="worker-v860-dashboard";
@@ -47,6 +48,7 @@ async function isolatedQaFetch(request,env,ctx){
  return new Response(response.body,{status:response.status,headers});
 }
 function enhance(html){
+  html=html.replace("Anonymous product analytics only.","Aggregate product usage. Random browser identifiers estimate reach; no cross-device matching.");
   html=html.replace(/Analytics Dashboard v2/g,"Analytics Dashboard v3").replace("Marine Tools v8.5.6 analytics","Marine Tools v8.7.0 analytics");
   const hasPanel=html.includes('id="mtV860Product"');
   const panel=`<div class="section-title">Workflow adoption</div><div class="panel" id="mtV860Product"><div class="panel-head"><h2>Product actions</h2><span class="pill mono">Analytics v3</span></div><div class="cards"><div class="card"><small>Calculations</small><strong id="v860Calc">—</strong></div><div class="card"><small>Saves</small><strong id="v860Save">—</strong></div><div class="card"><small>Exports</small><strong id="v860Export">—</strong></div><div class="card"><small>Profile reuse</small><strong id="v860Reuse">—</strong></div><div class="card"><small>Offline uses</small><strong id="v860Offline">—</strong></div><div class="card"><small>Returning browsers</small><strong id="v860Returning">—</strong></div></div><div id="v860Tools" class="status">Loading…</div></div>`;
@@ -76,6 +78,8 @@ function enhance(html){
   html=html.replace("document.getElementById('mtEndpointHealth').innerHTML='<div class=\"error\">Technical-health data unavailable.</div>'","document.getElementById('mtTechState').textContent='Unavailable';document.getElementById('mtTechState').className='mt-health-state';document.getElementById('mtSourceHealth').textContent='Source observations are unavailable.';document.getElementById('mtEndpointHealth').innerHTML='<div class=\"error\">Technical-health data unavailable.</div>'");
   html=html.replace('<div class="banner">','<div id="mtAnalyticsLoadState" class="banner" role="status" aria-live="polite">Loading analytics…</div><div class="banner">');
   html=html.replace('<script>','<script id="mtAnalyticsTransport">'+dashboardTransportScript()+'</script><script>');
+  html=html.replace('<div class="cards">',usagePanel()+'<div class="cards">');
+  html=html.replace('</body>',usageScript()+'</body>');
   html=html.replace('</style>','.status{min-width:0;max-width:100%;overflow-x:auto}.error{overflow-wrap:anywhere}</style>');
   return html;
 }
@@ -96,7 +100,7 @@ function dashboardTransportScript(){return String.raw`(function(){
   var lastError=document.getElementById('mtTechLatestError');if(lastError)lastError.textContent='Last error unavailable';
   var updated=document.getElementById('updated');if(updated)updated.textContent=updated.textContent.replace(/^Updated /,'Last successful load ');
   document.querySelectorAll('.mt-context-card b,[id^="mtLegend"],[id^="mtAct"][id$="Delta"]').forEach(function(el){el.textContent='—'});
-  window.__mtAnalyticsDashboardData=null;window.dispatchEvent(new CustomEvent('mt-analytics-data',{detail:null}));
+  window.dispatchEvent(new CustomEvent('mt-usage-data',{detail:null}));window.__mtAnalyticsDashboardData=null;window.dispatchEvent(new CustomEvent('mt-analytics-data',{detail:null}));
   status('Loading analytics…',false);
  }
  document.addEventListener('click',function(e){
@@ -121,13 +125,14 @@ function dashboardTransportScript(){return String.raw`(function(){
      }
      if(!d.current||!d.previous||!d.search||!Array.isArray(d.topTools))throw new Error('The analytics response is incomplete. The Worker and dashboard need the same version.');
      if(version===state.version){
-      var failed=[];if(d.technicalHealth&&d.technicalHealth.error)failed.push('live-data health');if(d.runtimeSmoke&&typeof d.runtimeSmoke.error==='string')failed.push('scheduled checks');if(d.productActions&&d.productActions.error)failed.push('product actions');
+      window.dispatchEvent(new CustomEvent('mt-usage-data',{detail:d.usage}));
+      var failed=[];if(d.technicalHealth&&d.technicalHealth.error)failed.push('live-data health');if(d.runtimeSmoke&&typeof d.runtimeSmoke.error==='string')failed.push('scheduled checks');if(d.productActions&&d.productActions.error)failed.push('product actions');if(d.usage&&d.usage.error)failed.push('audience and tools');
       status(failed.length?'Usage loaded. Unavailable: '+failed.join(', ')+'. Refresh to retry.':'Analytics loaded for '+range+'. Last updated '+new Date(d.generatedAt).toLocaleString()+'.',failed.length>0);
      }
      return new Response(JSON.stringify(d),{headers:{'content-type':'application/json'}});
     })(),
     new Promise(function(_,reject){timer=setTimeout(function(){controller.abort();reject(new Error('Analytics took too long to respond. Refresh to try again.'))},12000)})
-   ]).catch(function(error){if(error.name==='TypeError')error=new Error('Could not connect to analytics. Check your connection and refresh.');if(error.name==='AbortError')error=new Error('Analytics took too long to respond. Refresh to try again.');if(version===state.version){status(error.message,true);var health=document.getElementById('mtTechState');if(health){health.textContent='Unavailable';health.className='mt-health-state'}}throw error}).finally(function(){clearTimeout(timer);item.finished=Date.now()});
+   ]).catch(function(error){if(error.name==='TypeError')error=new Error('Could not connect to analytics. Check your connection and refresh.');if(error.name==='AbortError')error=new Error('Analytics took too long to respond. Refresh to try again.');if(version===state.version){window.dispatchEvent(new CustomEvent('mt-usage-data',{detail:{error:true}}));status(error.message,true);var health=document.getElementById('mtTechState');if(health){health.textContent='Unavailable';health.className='mt-health-state'}}throw error}).finally(function(){clearTimeout(timer);item.finished=Date.now()});
   }
   return(await entry.promise).clone();
  };
@@ -167,4 +172,21 @@ async function identify(response,path){
   return new Response(JSON.stringify(body),{status:response.status,headers});
 }
 
-export default{async fetch(request,env,ctx){const url=new URL(request.url);if(qaPreviewHost(url.hostname))return isolatedQaFetch(request,env,ctx);const path=url.pathname,analyticsApi=path==="/admin/api/analytics"||path==="/admin/api/analytics-v2";let response=await previousWorker.fetch(request,analyticsApi?analyticsRequestEnv(env):env,ctx);if(analyticsApi)response=await analyticsFailure(response);if(path==="/api/release"||path==="/api/health"||path==="/admin/api/analytics")return identify(response,path);if(path!=="/admin/analytics"||!response.ok)return response;const headers=new Headers(response.headers);headers.set("content-type","text/html;charset=utf-8");headers.set("cache-control","no-store");headers.set("x-frame-options","DENY");headers.set("x-marine-tools-dashboard",VERSION);headers.set("x-marine-tools-worker",WORKER);return new Response(enhance(await response.text()),{status:response.status,headers})},async scheduled(controller,env,ctx){if(previousWorker.scheduled)return previousWorker.scheduled(controller,env,ctx)}};
+export default{async fetch(request,env,ctx){const url=new URL(request.url);if(qaPreviewHost(url.hostname))return isolatedQaFetch(request,env,ctx);const path=url.pathname;if(path==='/api/analytics/event'){const usageResponse=await acceptUsage(request,env);if(usageResponse)return usageResponse}const analyticsApi=path==="/admin/api/analytics"||path==="/admin/api/analytics-v2";const queryEnv=analyticsApi?analyticsRequestEnv(env):env;let response=await previousWorker.fetch(request,queryEnv,ctx);if(analyticsApi)response=await analyticsFailure(response);if(path==='/admin/api/analytics')response=await enrichUsage(response,queryEnv);if(path==="/api/release"||path==="/api/health"||path==="/admin/api/analytics")return identify(response,path);if(path!=="/admin/analytics"||!response.ok)return response;const headers=new Headers(response.headers);headers.set("content-type","text/html;charset=utf-8");headers.set("cache-control","no-store");headers.set("x-frame-options","DENY");headers.set("x-marine-tools-dashboard",VERSION);headers.set("x-marine-tools-worker",WORKER);return new Response(enhance(await response.text()),{status:response.status,headers})},async scheduled(controller,env,ctx){if(previousWorker.scheduled)return previousWorker.scheduled(controller,env,ctx)}};
+
+function usagePanel(){return `<section class="panel" id="mtUsage" style="margin-bottom:16px"><h2>Audience & actual use</h2><p>Estimated browsers, not people. Random browser IDs expire after 180 days; visits end after 30 minutes of inactivity. New measurements start with this release; historical clicks remain below. Preview and browsers excluded in Settings are omitted.</p><div id="mtUsageCards" class="cards"></div><div id="mtUsageTimeline" class="status">Loading…</div><h2>Tools: reach and successful results</h2><p>Visible tool cards count as opens. Success means the application produced a result after its validation; it does not certify the calculation. Uninstrumented outcomes are not counted as successes.</p><div id="mtUsageTools" class="status">Loading…</div><h2>Traffic sources</h2><div id="mtUsageSources" class="status">Loading…</div><h2>Education</h2><p>One teacher presenting to a class counts as one browser. Preview activity is excluded.</p><div id="mtUsageEducation" class="status">Loading…</div></section>`}
+function usageScript(){return String.raw`<script>(function(){
+ var ids=['mtUsageCards','mtUsageTimeline','mtUsageTools','mtUsageSources','mtUsageEducation'];
+ function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+ function table(id,head,rows){document.getElementById(id).innerHTML=rows.length?'<table><thead><tr>'+head.map(function(x){return '<th>'+esc(x)+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(x){return '<td>'+esc(x)+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>':'No measurements yet for this period.'}
+ window.addEventListener('mt-usage-data',function(e){var u=e.detail;ids.forEach(function(id){document.getElementById(id).textContent=u&&u.error?'Usage data unavailable. Refresh to retry.':'Loading…'});if(!u||u.error)return;
+ var c=u.current,p=u.previous;
+ document.getElementById('mtUsageCards').innerHTML=[['Estimated browsers','browsers'],['Visits','visits'],['Active browsers','activeBrowsers'],['Successful calculations','calculations'],['Returning browsers','returningBrowsers']].map(function(pair){var v=Number(c[pair[1]])||0,old=Number(p[pair[1]])||0,delta=old?((v-old)/old*100).toFixed(0)+'% vs previous period':old===0&&v===0?'No change':'No previous baseline';return '<div class="card"><small>'+pair[0]+'</small><strong>'+v+'</strong><div class="delta">'+delta+'</div></div>'}).join('');
+ table('mtUsageTools',['Tool','Section','Browsers opened','Browsers with results','Attempts','Results','Invalid'],u.tools.map(function(x){return [x.label||x.tool,x.page,x.openedBrowsers,x.activeBrowsers,x.attempts,x.calculations,x.invalid]}));
+ table('mtUsageTimeline',['Time (UTC)','Estimated browsers','Visits'],u.timeline.map(function(x){return [x.bucket,x.browsers,x.visits]}));
+ var peak=Math.max(1,...u.timeline.map(function(x){return Number(x.visits)||0}));document.getElementById('mtUsageTimeline').insertAdjacentHTML('afterbegin','<div aria-label="Visits over time" style="display:flex;align-items:end;gap:2px;height:100px">'+u.timeline.map(function(x){return '<span title="'+esc(x.bucket)+': '+Number(x.visits)+' visits" style="flex:1;min-width:1px;background:#28c4f4;height:'+Math.max(1,Number(x.visits)/peak*100)+'%"></span>'}).join('')+'</div>');
+ table('mtUsageSources',['Source','Estimated browsers','Visits'],u.sources.map(function(x){return [x.source,x.browsers,x.visits]}));
+ table('mtUsageEducation',['Action','Module / filter','Browsers','Actions'],u.education.map(function(x){return [x.usage_event,x.tool,x.browsers,x.actions]}));
+ if(u.truncated)document.getElementById('mtUsageTools').insertAdjacentHTML('beforeend','<p>Top 1,000 action groups shown; totals above cover the full period.</p>');
+ });
+})();</script>`}

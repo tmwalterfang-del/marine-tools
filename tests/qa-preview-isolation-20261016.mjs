@@ -19,7 +19,7 @@ let pass=0;
 function check(label,condition){assert.ok(condition,label);pass++;console.log('PASS',label)}
 
 const wrapper=new Function('previousWorker','URL','Response','Headers',
- wr.replace(/^import[^\n]+\n/,'').replace(/^export default/m,'return'));
+ wr.replace(/^import[^\n]+\n/gm,'').replace(/^export default/m,'return'));
 const seen=[];
 const original={fetch:async(request,env)=>{
  seen.push({request,env});
