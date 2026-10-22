@@ -67,3 +67,9 @@ Where appropriate, reporters may be asked for additional information to reproduc
 A calculation discrepancy, incorrect assumption, stale external data, or usability concern may be important without being a security vulnerability. These can be reported through the normal Marine Tools suggestion or contact channels.
 
 Marine Tools remains a planning and calculation aid only. Users must verify inputs, units, assumptions, source age, and results against approved systems, official sources, vessel-specific documentation, and applicable procedures.
+
+## Security change verification
+
+Security changes must use a separate branch and isolated fixtures. Never test forged credentials, provider abuse, or bulk analytics submissions against production. The security test configuration has no routes, schedules, datasets or provider secrets. Run `npm ci --ignore-scripts`, `npm run test:security`, and the DOM/dashboard acceptance suites before requesting deployment approval.
+
+Admin routes require cryptographic Cloudflare Access verification in the Worker in addition to edge Access policy. New authentication variables and rate-limit bindings must be verified before any approved rollout; missing configuration fails closed. See `docs/SECURITY_AUDIT_2026-10-22.md` for the deployment gates and unresolved infrastructure checks.

@@ -13,7 +13,7 @@ function validAis(data){return Array.isArray(data)||(data&&typeof data==="object
 function writeSmoke(env,name,ok,duration,error=""){
   if(!env.ANALYTICS)return;
   env.ANALYTICS.writeDataPoint({
-    blobs:[ok?"runtime_smoke_ok":"runtime_smoke_error","runtime",name,"cloudflare-cron",VERSION,error?String(error).slice(0,120):""],
+    blobs:[ok?"runtime_smoke_ok":"runtime_smoke_error","runtime",name,"cloudflare-cron",VERSION,error?(/^HTTP \d{3}$/.test(String(error))?String(error):"Provider request failed"):""],
     doubles:[1,Math.max(0,Math.min(120,Number(duration)||0))],
     indexes:["marine-tools"]
   });

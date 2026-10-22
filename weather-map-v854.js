@@ -27,12 +27,12 @@ function loadLeaflet(){
   if(leafletPromise)return leafletPromise;
   leafletPromise=new Promise((resolve,reject)=>{
     if(!$('#leafletCss')&&!document.querySelector('link[href*="leaflet@1.9.4/dist/leaflet.css"]')){
-      const link=document.createElement('link');link.id='leafletCss';link.rel='stylesheet';link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(link);
+      const link=document.createElement('link');link.id='leafletCss';link.rel='stylesheet';link.href='vendor/leaflet/leaflet.css';document.head.appendChild(link);
     }
     const finish=()=>window.L?resolve(window.L):reject(new Error('Leaflet unavailable'));
     const existing=document.querySelector('script[src*="leaflet@1.9.4/dist/leaflet.js"]');
     if(existing){if(window.L){resolve(window.L);return}existing.addEventListener('load',finish,{once:true});existing.addEventListener('error',reject,{once:true});return}
-    const script=document.createElement('script');script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.async=true;script.onload=finish;script.onerror=reject;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='vendor/leaflet/leaflet.js';script.async=true;script.onload=finish;script.onerror=reject;document.head.appendChild(script);
   });
   return leafletPromise;
 }

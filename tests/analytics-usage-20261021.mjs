@@ -1,24 +1,25 @@
 import assert from 'node:assert/strict';
+import {validateAnalytics} from '../worker/analytics-schema.js';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
-import {worker,headers,fixtureBinding} from './analytics-fixture-20261021.mjs';
+import {worker,headers,fixtureBinding,securityEnv} from './analytics-fixture-20261021.mjs';
 const {JSDOM}=createRequire(import.meta.url)('jsdom');let checks=0;
 function check(value,label){assert.ok(value,label);checks++;console.log('PASS '+label)}
 const uuid='12345678-1234-4234-8234-123456789abc',written=[];
-const payload={event:'calculation_succeeded',page:'electrical',tool:'calc3p',label:'Three-phase power',visitor:uuid,session:uuid,schema:'usage-v1',source:'teaching',visitorKind:'returning',secret:'must not be stored',value:999};
-const post=(body=payload,origin='https://www.marinetools.app',host='api.marinetools.app')=>worker.fetch(new Request('https://'+host+'/api/analytics/event',{method:'POST',headers:{origin},body:JSON.stringify(body)}),{ANALYTICS:{writeDataPoint:x=>written.push(x)}},{});
+const payload={event:'calculation_succeeded',page:'electrical',tool:'calc3p',label:'Three-phase power',visitor:uuid,session:uuid,schema:'usage-v1',consent:'20261022-v1',device:'desktop',version:'8.7.0',source:'teaching',visitorKind:'returning'};
+const post=(body=payload,origin='https://www.marinetools.app',host='api.marinetools.app')=>worker.fetch(new Request('https://'+host+'/api/analytics/event',{method:'POST',headers:{origin},body:JSON.stringify(body)}),{...securityEnv,ANALYTICS:{writeDataPoint:x=>written.push(x)}},{});
 check((await post()).status===202&&written.length===1,'new usage events are accepted on production');
 check(written[0].blobs[5]===uuid&&written[0].blobs[7]==='teaching'&&!JSON.stringify(written).includes('must not')&&!JSON.stringify(written).includes('999'),'storage uses explicit metadata allowlist and never input fields');
 check((await post(payload,'https://evil.invalid')).status===403&&written.length===1,'foreign origins cannot submit usage events');
 check((await post({...payload,visitor:'email@example.com'})).status===400,'identities must be random UUIDs');
 check((await post(payload,'https://www.marinetools.app','qa.api.marinetools.app')).status===403&&written.length===1,'preview remains isolated even for new collector');
-const calls=[],data=await(await worker.fetch(new Request('https://api.marinetools.app/admin/api/analytics',{headers}),{ANALYTICS_SQL:fixtureBinding('normal',calls)},{})).json();
+const calls=[],data=await(await worker.fetch(new Request('https://api.marinetools.app/admin/api/analytics',{headers}),{...securityEnv,ANALYTICS_SQL:fixtureBinding('normal',calls)},{})).json();
 check(data.usage.current.browsers===8&&data.usage.current.visits===10&&data.usage.current.calculations===7,'visitors, visits and results remain separate');
 check(data.usage.tools.find(x=>x.tool==='calc3p').activeBrowsers===3,'tool reach is unique browsers rather than result count');
 check(calls.filter(x=>x.query.includes("blob10='usage-v1'")).every(x=>x.query.includes('COUNT(DISTINCT blob6)')),'audience queries deduplicate random browser IDs within period');
 const index=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const js=fs.readFileSync(new URL('../usage-analytics.js',import.meta.url),'utf8');
-async function dom(url='https://www.marinetools.app/',settings={},flags={}){
+async function dom(url='https://www.marinetools.app/',settings={usageAnalytics:true,analyticsConsent:'20261022-v1'},flags={}){
  const sent=[],d=new JSDOM(index,{url,runScripts:'outside-only',pretendToBeVisual:true});const w=d.window;
  w.fetch=async(u,init)=>{if(String(u).includes('/api/analytics/event'))sent.push(JSON.parse(init.body));return new Response('{}',{headers:{'content-type':'application/json'}})};
  w.scrollTo=()=>{};Object.defineProperty(w.HTMLElement.prototype,'innerText',{get(){return this.textContent}});w.localStorage.setItem('mt.settings',JSON.stringify(settings));
@@ -50,6 +51,7 @@ a.w.document.getElementById('veFromPort').value='1,1';a.w.document.getElementByI
 a.w.document.getElementById('veSpeedKnots').value='12';voyageStart=a.sent.length;await api.calculate();check(a.sent.slice(voyageStart).some(x=>x.event==='calculation_succeeded'&&x.tool==='veCalculateRoute'),'Voyage Estimate asynchronous result');
 api.state.engine.seaRoute=()=>{throw Error('synthetic route engine failure')};voyageStart=a.sent.length;await api.calculate();check(a.sent.slice(voyageStart).some(x=>x.event==='calculation_failed')&&!a.sent.slice(voyageStart).some(x=>x.event==='calculation_succeeded'),'route engine failure remains separate from validation and success');
 
+check(a.sent.every(x=>!validateAnalytics(x)),'all real calculator events satisfy server schema: '+JSON.stringify(a.sent.filter(x=>validateAnalytics(x)).map(x=>({event:x.event,page:x.page,tool:x.tool,label:x.label,error:validateAnalytics(x)}))));
 const original=a.w.MT_USAGE.context();check(a.w.MT_USAGE.context().visitor===original.visitor&&a.w.MT_USAGE.context().session===original.session,'repeated actions reuse browser and visit IDs');
 const saved=JSON.parse(a.w.sessionStorage.getItem('mt.analytics.visit.v1'));saved.last=Date.now()-1800001;a.w.sessionStorage.setItem('mt.analytics.visit.v1',JSON.stringify(saved));const next=a.w.MT_USAGE.context();check(next.visitor===original.visitor&&next.session!==original.session&&next.visitorKind==='returning','a later visit preserves browser identity and marks returning');
 const settingsButton=a.w.document.createElement('button');settingsButton.dataset.go='settings';a.w.document.body.append(settingsButton);settingsButton.click();const count=a.sent.length;a.w.document.getElementById('excludeAnalytics').click();a.w.MT_USAGE.send('visit_started');check(a.sent.length===count&&!a.w.MT_USAGE.enabled(),'Settings exclusion suppresses all new usage events immediately');
@@ -58,7 +60,7 @@ const c=await dom('https://www.marinetools.app/',{usageAnalytics:false});check(!
 check(!a.sent.some(x=>x.event==='calculation_completed'),'new collector does not mislabel click as completed');a.close();
 for(const flags of [{dnt:true},{automation:true}]){const x=await dom('https://www.marinetools.app/',{},flags);check(x.sent.length===0,'tracking suppressed for '+JSON.stringify(flags));x.close()}
 const eduEvents=[],edu=new JSDOM('<select id="module-quick"><option value="trim">Trim</option><option value="tank">Tank</option></select><select id="topic-filter"><option>Thermodynamics</option></select><article data-formula-id="heat-1"><details><summary>Show formula</summary></details></article>',{url:'https://www.marinetools.app/students/interactive.html#trim',runScripts:'outside-only',pretendToBeVisual:true});
-edu.window.fetch=async(u,init)=>{eduEvents.push(JSON.parse(init.body));return new Response('{}')};edu.window.eval(js);await new Promise(r=>setTimeout(r,20));
+edu.window.localStorage.setItem('mt.settings',JSON.stringify({usageAnalytics:true,analyticsConsent:'20261022-v1'}));edu.window.fetch=async(u,init)=>{eduEvents.push(JSON.parse(init.body));return new Response('{}')};edu.window.eval(js);await new Promise(r=>setTimeout(r,20));
 check(eduEvents.filter(x=>x.event==='education_module').length===1&&eduEvents.some(x=>x.event==='active_usage'),'Education initial module counts active use');
 const select=edu.window.document.getElementById('module-quick');select.value='tank';select.dispatchEvent(new edu.window.Event('change',{bubbles:true}));edu.window.location.hash='tank';await new Promise(r=>setTimeout(r,20));
 check(eduEvents.filter(x=>x.event==='education_module').length===2,'module dropdown and hash change do not duplicate selection');

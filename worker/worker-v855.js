@@ -1,3 +1,4 @@
+import {providerFetch,BoundedMap} from './provider-security.js';
 import baseWorker from "./worker.js";
 
 const MET_LOCATION_URL="https://api.met.no/weatherapi/locationforecast/2.0/compact";
@@ -9,7 +10,7 @@ const USER_AGENT="MarineTools/8.5.5 contact@marinetools.app";
 const PRODUCT_ORIGINS=new Set(["https://marinetools.app","https://www.marinetools.app"]);
 const cors={"access-control-allow-origin":"*","access-control-allow-methods":"GET,POST,OPTIONS","access-control-allow-headers":"content-type"};
 
-const weatherCache=new Map(),cycleCache={value:null,expires:0},waveCache=new Map(),pelyrAisCache=new Map();
+const weatherCache=new BoundedMap(128),cycleCache={value:null,expires:0},waveCache=new BoundedMap(512),pelyrAisCache=new BoundedMap(128);
 let pelyrSourcesCache={expires:0,map:null};
 
 function json(data,status=200,extra={}){return new Response(JSON.stringify(data),{status,headers:{...cors,"content-type":"application/json;charset=utf-8","cache-control":"no-store",...extra}})}
@@ -29,7 +30,7 @@ function nearest(series,time,maxMs=90*60*1000){if(!series?.length)return null;co
 function distanceNm(a,b){if(!a||!b)return null;const R=3440.065,p1=rad(a.lat),p2=rad(b.lat),dp=rad(b.lat-a.lat),dl=rad(b.lon-a.lon),q=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
 function combined(locationRow,oceanRow){return{forecastTime:locationRow?.time||oceanRow?.time||null,hs:safeHs(detail(oceanRow,"sea_surface_wave_height")),waveDirection:detail(oceanRow,"sea_surface_wave_from_direction"),wavePeriod:detail(oceanRow,"sea_surface_wave_period_at_variance_spectral_density_maximum"),windKn:msToKn(detail(locationRow,"wind_speed")),windDirection:detail(locationRow,"wind_from_direction"),airTemp:detail(locationRow,"air_temperature"),seaTemp:detail(oceanRow,"sea_water_temperature"),precipitation:periodDetail(locationRow,"precipitation_amount"),symbolCode:periodSummary(locationRow,"symbol_code"),source:"MET Norway"}}
 
-async function timedFetch(url,init={},timeoutMs=4500){const ac=new AbortController(),timer=setTimeout(()=>ac.abort("timeout"),timeoutMs);try{return await fetch(url,{...init,signal:ac.signal,headers:{"user-agent":USER_AGENT,...(init.headers||{})}})}finally{clearTimeout(timer)}}
+async function timedFetch(url,init={},timeoutMs=4500){const ac=new AbortController(),timer=setTimeout(()=>ac.abort("timeout"),timeoutMs);try{return await providerFetch(url,{...init,signal:ac.signal,headers:{"user-agent":USER_AGENT,...(init.headers||{})}})}finally{clearTimeout(timer)}}
 async function fetchMet(url,timeoutMs=3500){try{const r=await timedFetch(url,{headers:{accept:"application/json"}},timeoutMs),text=await r.text();let data=null;try{data=JSON.parse(text)}catch{}return r.ok?{ok:true,status:r.status,data}:{ok:false,status:r.status,error:(data?.error||text||"").slice(0,240),data}}catch(err){return{ok:false,status:"timeout",error:String(err?.message||err),data:null}}}
 function inlandForecast(locationRows,limit){return selectFuture(locationRows,limit).map(r=>combined(r,null)).map(r=>({...r,hs:null,waveDirection:null,wavePeriod:null,seaTemp:null}))}
 
