@@ -1,0 +1,25 @@
+name: Security regression
+on: [pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts
+      - run: npm audit --omit=dev --audit-level=moderate
+      - run: npm run test:security
+      - run: npm install --prefix /tmp/security-dom --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+      - run: node tests/security-dom-20261022.mjs
+        env:
+          NODE_PATH: /tmp/security-dom/node_modules
+      - run: node tests/navigation-smoke.mjs
+      - name: Rebuild analytics dimension catalog
+        run: |
+          node scripts/build-analytics-catalog.mjs
+          git diff --exit-code worker/analytics-catalog.js

@@ -3,6 +3,7 @@
 // Test real Cloudflare Access/browser/provider integration separately.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {securityGateway} from '../worker/security.js';
 
 const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
 const analytics=fs.readFileSync(new URL('../analytics-v856.js',import.meta.url),'utf8');
@@ -18,14 +19,14 @@ const qaPage='https://qa-test.marine-tools-frontend-preview.pages.dev';
 let pass=0;
 function check(label,condition){assert.ok(condition,label);pass++;console.log('PASS',label)}
 
-const wrapper=new Function('previousWorker','URL','Response','Headers',
+const wrapper=new Function('previousWorker','URL','Response','Headers','securityGateway',
  wr.replace(/^import[^\n]+\n/gm,'').replace(/^export default/m,'return'));
 const seen=[];
 const original={fetch:async(request,env)=>{
  seen.push({request,env});
  return new Response(JSON.stringify({ok:true}),{headers:{'access-control-allow-origin':'*'}});
 }};
-const worker=wrapper(original,URL,Response,Headers);
+const worker=wrapper(original,URL,Response,Headers,securityGateway);
 const env={ANALYTICS:{writeDataPoint(){throw new Error('production analytics must not be called')}},
  ANALYTICS_SQL:{query(){throw new Error('production analytics query must not be called')}},
  PELYR_API_KEY:'test-provider-binding'};
@@ -35,7 +36,7 @@ const health=await worker.fetch(req(qaWorker+'/api/health','GET',qaPage),env,{})
 check('QA health remains readable',health.status===200);
 check('QA environment header',health.headers.get('x-marine-tools-environment')==='preview');
 check('No inherited production analytics bindings',seen.at(-1).env.ANALYTICS===undefined&&seen.at(-1).env.ANALYTICS_SQL===undefined);
-check('Other provider binding preserved',seen.at(-1).env.PELYR_API_KEY==='test-provider-binding');
+check('Production provider secrets removed in preview',seen.at(-1).env.PELYR_API_KEY===undefined);
 check('Only approved origin echoed',health.headers.get('access-control-allow-origin')===qaPage);
 check('Credentialed QA CORS',health.headers.get('access-control-allow-credentials')==='true');
 check('Vary Origin used',health.headers.get('vary')==='Origin');

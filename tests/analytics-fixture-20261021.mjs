@@ -1,7 +1,9 @@
 // Synthetic data only. No network calls, account credentials or analytics writes.
 // CI sets this to the exact wrangler dry-run bundle that is deployed.
 export const worker=(await import(process.env.MT_ANALYTICS_WORKER_MODULE||'../worker/worker-v860-dashboard.js')).default;
-export const headers={'cf-access-jwt-assertion':'local-test-fixture','cf-access-authenticated-user-email':'fixture@example.invalid'};
+import {headers,securityEnv,installJwksFetch} from './security-fixture-20261022.mjs';
+export {headers,securityEnv};
+installJwksFetch();
 export function fixtureBinding(mode='normal',calls=[]){return{async query(input){
  calls.push(input);const q=input.query;
  if(mode==='hang')return new Promise(()=>{});
@@ -24,7 +26,8 @@ export function fixtureBinding(mode='normal',calls=[]){return{async query(input)
  else if(q.includes('LIMIT 800'))data=[{event_name:'calculation_completed',page:'navigation',tool:'Synthetic trim',event_count:7},{event_name:'visitor_type',tool:'first',event_count:1},{event_name:'visitor_type',tool:'returning',event_count:1}];
  return{data};
 }}}
-export async function fixtureHtml(){const r=await worker.fetch(new Request('https://api.marinetools.app/admin/analytics',{headers}),{},{});return(await r.text()).replace('<div class="shell">','<div class="shell"><div class="banner"><b>TEST FIXTURE — synthetic data, not live analytics.</b></div>')}
+export let fixtureHeaders={};
+export async function fixtureHtml(){const r=await worker.fetch(new Request('https://api.marinetools.app/admin/analytics',{headers}),securityEnv,{});fixtureHeaders=Object.fromEntries(r.headers);return(await r.text()).replace('<div class="shell">','<div class="shell"><div class="banner"><b>TEST FIXTURE — synthetic data, not live analytics.</b></div>')}
 export async function fixtureResponse(mode='normal',range='24h'){
- return worker.fetch(new Request('https://api.marinetools.app/admin/api/analytics?range='+range,{headers}),{ANALYTICS_SQL:fixtureBinding(mode)},{});
+ return worker.fetch(new Request('https://api.marinetools.app/admin/api/analytics?range='+range,{headers}),{...securityEnv,ANALYTICS_SQL:fixtureBinding(mode)},{});
 }

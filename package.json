@@ -1,0 +1,7 @@
+{
+  "name": "marine-tools-security",
+  "private": true,
+  "type": "module",
+  "scripts": {"test:security": "node tests/security-regression-20261022.mjs"},
+  "dependencies": {"jose": "6.1.3"}
+}

@@ -1,3 +1,4 @@
+import {securityGateway} from './security.js';
 import {acceptUsage,enrichUsage} from './usage-analytics.js';
 import previousWorker from "./worker-v860-product.js";
 const VERSION="8.7.0";
@@ -40,7 +41,7 @@ async function isolatedQaFetch(request,env,ctx){
  if(!readOnlyPaths.has(path))return qaPreviewResponse({error:"Endpoint not enabled in QA preview."},404,origin);
  // Even if deployment preview inherits production bindings, downstream
  // handlers cannot read analytics or publish production analytics events.
- const safeEnv={...env,ANALYTICS:undefined,ANALYTICS_SQL:undefined};
+ const safeEnv={...env,ANALYTICS:undefined,ANALYTICS_SQL:undefined,BW_AIS_CLIENT_ID:undefined,BW_AIS_CLIENT_SECRET:undefined,BW_API_CLIENT_ID:undefined,BW_API_CLIENT_SECRET:undefined,PELYR_API_KEY:undefined};
  const response=await previousWorker.fetch(request,safeEnv,ctx);
  const headers=new Headers(response.headers);
  for(const [name,value] of Object.entries(qaHeaders(origin)))headers.set(name,value);
@@ -172,7 +173,7 @@ async function identify(response,path){
   return new Response(JSON.stringify(body),{status:response.status,headers});
 }
 
-export default{async fetch(request,env,ctx){const url=new URL(request.url);if(qaPreviewHost(url.hostname))return isolatedQaFetch(request,env,ctx);const path=url.pathname;if(path==='/api/analytics/event'){const usageResponse=await acceptUsage(request,env);if(usageResponse)return usageResponse}const analyticsApi=path==="/admin/api/analytics"||path==="/admin/api/analytics-v2";const queryEnv=analyticsApi?analyticsRequestEnv(env):env;let response=await previousWorker.fetch(request,queryEnv,ctx);if(analyticsApi)response=await analyticsFailure(response);if(path==='/admin/api/analytics')response=await enrichUsage(response,queryEnv);if(path==="/api/release"||path==="/api/health"||path==="/admin/api/analytics")return identify(response,path);if(path!=="/admin/analytics"||!response.ok)return response;const headers=new Headers(response.headers);headers.set("content-type","text/html;charset=utf-8");headers.set("cache-control","no-store");headers.set("x-frame-options","DENY");headers.set("x-marine-tools-dashboard",VERSION);headers.set("x-marine-tools-worker",WORKER);return new Response(enhance(await response.text()),{status:response.status,headers})},async scheduled(controller,env,ctx){if(previousWorker.scheduled)return previousWorker.scheduled(controller,env,ctx)}};
+const dashboardWorker={async fetch(request,env,ctx){const url=new URL(request.url);if(qaPreviewHost(url.hostname))return isolatedQaFetch(request,env,ctx);const path=url.pathname;if(path==='/api/analytics/event'){const usageResponse=await acceptUsage(request,env);if(usageResponse)return usageResponse}const analyticsApi=path==="/admin/api/analytics"||path==="/admin/api/analytics-v2";const queryEnv=analyticsApi?analyticsRequestEnv(env):env;let response=await previousWorker.fetch(request,queryEnv,ctx);if(analyticsApi)response=await analyticsFailure(response);if(path==='/admin/api/analytics')response=await enrichUsage(response,queryEnv);if(path==="/api/release"||path==="/api/health"||path==="/admin/api/analytics")return identify(response,path);if(path!=="/admin/analytics"||!response.ok)return response;const headers=new Headers(response.headers);headers.set("content-type","text/html;charset=utf-8");headers.set("cache-control","no-store");headers.set("x-frame-options","DENY");headers.set("x-marine-tools-dashboard",VERSION);headers.set("x-marine-tools-worker",WORKER);return new Response(enhance(await response.text()),{status:response.status,headers})},async scheduled(controller,env,ctx){if(previousWorker.scheduled)return previousWorker.scheduled(controller,env,ctx)}};
 
 function usagePanel(){return `<section class="panel" id="mtUsage" style="margin-bottom:16px"><h2>Audience & actual use</h2><p>Estimated browsers, not people. Random browser IDs expire after 180 days; visits end after 30 minutes of inactivity. New measurements start with this release; historical clicks remain below. Preview and browsers excluded in Settings are omitted.</p><div id="mtUsageCards" class="cards"></div><div id="mtUsageTimeline" class="status">Loading…</div><h2>Tools: reach and successful results</h2><p>Visible tool cards count as opens. Success means the application produced a result after its validation; it does not certify the calculation. Uninstrumented outcomes are not counted as successes.</p><div id="mtUsageTools" class="status">Loading…</div><h2>Traffic sources</h2><div id="mtUsageSources" class="status">Loading…</div><h2>Education</h2><p>One teacher presenting to a class counts as one browser. Preview activity is excluded.</p><div id="mtUsageEducation" class="status">Loading…</div></section>`}
 function usageScript(){return String.raw`<script>(function(){
@@ -190,3 +191,5 @@ function usageScript(){return String.raw`<script>(function(){
  if(u.truncated)document.getElementById('mtUsageTools').insertAdjacentHTML('beforeend','<p>Top 1,000 action groups shown; totals above cover the full period.</p>');
  });
 })();</script>`}
+
+export default {fetch(request,env,ctx){return securityGateway(request,env,ctx,(r,e,c)=>dashboardWorker.fetch(r,e,c))},scheduled(controller,env,ctx){return dashboardWorker.scheduled(controller,env,ctx)}};

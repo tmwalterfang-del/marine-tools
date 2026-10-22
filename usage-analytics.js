@@ -2,10 +2,11 @@
 (() => {
 'use strict';
 const hosts=new Set(['marinetools.app','www.marinetools.app']);
+const CONSENT='20261022-v1';
 const key='mt.analytics.browser.v1',sessionKey='mt.analytics.visit.v1';
 const read=(store,k,f)=>{try{return JSON.parse(store.getItem(k))||f}catch{return f}};
 const write=(store,k,v)=>{try{store.setItem(k,JSON.stringify(v))}catch{}};
-function enabled(){return hosts.has(location.hostname)&&read(localStorage,'mt.settings',{}).usageAnalytics!==false&&localStorage.getItem('mt.analytics.exclude')!=='1'&&navigator.doNotTrack!=='1'&&!navigator.webdriver}
+function enabled(){try{const settings=read(localStorage,'mt.settings',{});return hosts.has(location.hostname)&&settings.usageAnalytics===true&&settings.analyticsConsent===CONSENT&&localStorage.getItem('mt.analytics.exclude')!=='1'&&navigator.doNotTrack!=='1'&&!navigator.webdriver}catch{return false}}
 let browser=null,visit=null;
 function context(){
  if(!enabled())return null;
@@ -25,11 +26,24 @@ function source(){
 function page(){return location.pathname.startsWith('/students')?'education':document.querySelector('.page.active')?.id||'home'}
 function send(event,tool='',pageId=page(),label=''){
  const meta=context();if(!meta||!navigator.onLine)return;
- fetch('https://api.marinetools.app/api/analytics/event',{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},keepalive:true,cache:'no-store',body:JSON.stringify({event,page:pageId,tool,device:innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop',version:window.__MARINE_TOOLS_RELEASE?.version||'8.7.0',label:label||document.getElementById(tool)?.closest('.tool-card')?.dataset.toolTitle||document.getElementById(tool)?.closest('.tool-card')?.querySelector('h3')?.textContent||'',...meta})}).catch(()=>{});
+ fetch('https://api.marinetools.app/api/analytics/event',{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},keepalive:true,cache:'no-store',body:JSON.stringify({event,page:pageId,tool,device:innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop',version:window.__MARINE_TOOLS_RELEASE?.version||'8.7.0',consent:CONSENT,label:label||document.getElementById(tool)?.closest('.tool-card')?.dataset.toolTitle||document.getElementById(tool)?.closest('.tool-card')?.querySelector('h3')?.textContent||'',...meta})}).catch(()=>{});
 }
+
+function clearIdentity(){
+ browser=null;visit=null;seenVisit='';
+ for(const name of ['localStorage','sessionStorage']){try{const storage=window[name];for(let i=storage.length-1;i>=0;i--){const k=storage.key(i);if(k.startsWith('mt.analytics.')&&k!=='mt.analytics.exclude'||k==='mt.visitedBefore')storage.removeItem(k)}}catch{}}
+}
+function setConsent(allow){const settings=read(localStorage,'mt.settings',{});write(localStorage,'mt.settings',{...settings,usageAnalytics:!!allow,analyticsConsent:CONSENT});if(!allow)clearIdentity();document.getElementById('mtAnalyticsChoice')?.remove();window.dispatchEvent(new CustomEvent('mt-analytics-consent-change',{detail:{enabled:enabled()}}));if(allow)ensureVisit()}
+function showChoice(){
+ let settings;try{settings=read(localStorage,'mt.settings',{})}catch{return}if(!hosts.has(location.hostname)||settings.analyticsConsent===CONSENT||navigator.doNotTrack==='1'||navigator.webdriver)return;
+ const panel=document.createElement('aside');panel.id='mtAnalyticsChoice';panel.setAttribute('aria-label','Optional usage analytics');panel.className='mt-analytics-choice';
+ panel.innerHTML='<strong>Optional usage analytics</strong><p>May Marine Tools count visits and tool use with random browser and visit IDs? Calculation values stay out of analytics. All tools work if you decline.</p><div><button type="button" id="mtAllowAnalytics" class="btn">Allow analytics</button><button type="button" id="mtDeclineAnalytics" class="btn">Decline</button><button type="button" data-go="privacy" class="btn">Privacy & data</button></div>';
+ document.body.append(panel);panel.querySelector('#mtAllowAnalytics').onclick=()=>setConsent(true);panel.querySelector('#mtDeclineAnalytics').onclick=()=>setConsent(false);
+}
+
 let seenVisit='',attempt=null;
 function ensureVisit(){const meta=context();if(meta&&navigator.onLine&&seenVisit!==meta.session){seenVisit=meta.session;send('visit_started');if(meta.visitorKind==='returning')send('return_visit')}}
-window.MT_USAGE={enabled,context,send,record:report,exclude(on){localStorage.setItem('mt.analytics.exclude',on?'1':'0');if(on){localStorage.removeItem(key);sessionStorage.removeItem(sessionKey);browser=null;seenVisit=''}else ensureVisit()}};
+window.MT_USAGE={enabled,context,send,record:report,setConsent,exclude(on){localStorage.setItem('mt.analytics.exclude',on?'1':'0');if(on){localStorage.removeItem(key);sessionStorage.removeItem(sessionKey);browser=null;seenVisit=''}else ensureVisit()}};
 function report(event,tool,pageId,label){ensureVisit();send(event,tool,pageId,label);if(['calculation_succeeded','education_module'].includes(event))send('active_usage','',pageId)}
 document.addEventListener('mt-calculation-result',e=>{if(attempt&&attempt.card?.contains(e.target))attempt.outcome=e.detail.valid?'calculation_succeeded':'calculation_invalid'},true);
 document.addEventListener('click',e=>{
@@ -45,7 +59,7 @@ function observeTools(){
  function scan(){document.querySelectorAll('.page.active .tool-card').forEach(card=>{if(!observed.has(card)){observed.add(card);observer.observe(card)}})}
  new MutationObserver(scan).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});scan();
 }
-function boot(){if(page()==='education'&&window.parent!==window)return;ensureVisit();observeTools();
+function boot(){showChoice();if(!enabled())clearIdentity();if(page()==='education'&&window.parent!==window)return;ensureVisit();observeTools();
  if(page()==='education'){
   if(window.parent!==window)return; // Workspace frames must not duplicate page/module counts.
   report('education_page',location.pathname.split('/').pop()?.replace(/\.html$/,'')||'index');

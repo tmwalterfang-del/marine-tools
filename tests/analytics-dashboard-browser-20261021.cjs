@@ -4,11 +4,11 @@ const engine=process.argv[2]||'chromium',out=path.resolve('qa-education-'+engine
 let browser,mode='normal',requests=0,hold=false,releaseOld;const errors=[],checks=[];
 function check(ok,label){checks.push({ok:!!ok,label});assert.ok(ok,label)}
 (async()=>{
- const {fixtureHtml,fixtureResponse}=await import('./analytics-fixture-20261021.mjs'),html=await fixtureHtml();
+ const fixture=await import('./analytics-fixture-20261021.mjs'),{fixtureHtml,fixtureResponse}=fixture,html=await fixtureHtml();
  browser=await pw[engine].launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:900}});page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());if(u.origin!=='https://dashboard.example.invalid')return route.abort();
-  if(u.pathname==='/admin/analytics')return route.fulfill({status:200,contentType:'text/html',body:html});
+  if(u.pathname==='/admin/analytics')return route.fulfill({status:200,headers:fixture.fixtureHeaders,body:html});
   if(u.pathname!=='/admin/api/analytics')return route.fulfill({status:404,body:''});
   requests++;const kind=mode,range=u.searchParams.get('range');if(hold&&range==='7d'){hold=false;await new Promise(resolve=>{releaseOld=resolve})}
   if(kind==='network')return route.abort();
@@ -39,7 +39,7 @@ function check(ok,label){checks.push({ok:!!ok,label});assert.ok(ok,label)}
  mode='empty';await page.locator('#refresh').click();await loaded();check((await text('sessions'))==='0'&&(await text('mtTechSuccess'))==='—'&&(await text('v860Returning'))==='—','empty results distinguished from failed query');
  mode='normal';hold=true;await page.locator('[data-range="7d"]').click();while(!releaseOld)await page.waitForTimeout(20);await page.locator('[data-range="30d"]').click();await loaded();releaseOld();await page.waitForTimeout(250);check((await text('periodLabel')).includes('30')&&await page.evaluate(()=>window.__mtAnalyticsDashboardData.range==='30d'),'late old range does not overwrite current period');
  const app=await browser.newPage({serviceWorkers:'block'});app.on('pageerror',e=>errors.push(e.message));let events=[];
- await app.addInitScript(()=>{Object.defineProperty(navigator,'webdriver',{get:()=>false});localStorage.setItem('mt.lastSeenReleaseBuild','20261019-v8-7-0')});
+ await app.addInitScript(()=>{Object.defineProperty(navigator,'webdriver',{get:()=>false});localStorage.setItem('mt.lastSeenReleaseBuild','20261019-v8-7-0');localStorage.setItem('mt.settings',JSON.stringify({usageAnalytics:true,analyticsConsent:'20261022-v1'}))});
  await app.route('**/*',async route=>{const u=new URL(route.request().url());if(u.origin==='https://api.marinetools.app'&&u.pathname==='/api/analytics/event'){events.push(JSON.parse(route.request().postData()));return route.fulfill({status:202,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{}'})}if(u.origin!=='https://www.marinetools.app')return route.abort();const file=path.resolve('.'+u.pathname+(u.pathname==='/'?'index.html':''));if(!file.startsWith(process.cwd()+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return route.fulfill({status:404,body:''});return route.fulfill({path:file,contentType:file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':undefined})});
  await app.goto('https://www.marinetools.app/');await app.locator('[data-page="electrical"]').first().click();await app.locator('#elV').fill('0');await app.locator('#calc3p').click();await app.waitForTimeout(100);
  check(events.some(x=>x.event==='calculation_invalid')&&!events.some(x=>x.event==='calculation_succeeded'),'real app rejects invalid inputs without false success');

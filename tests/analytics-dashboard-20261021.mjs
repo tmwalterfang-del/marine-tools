@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {worker,fixtureBinding,fixtureHtml,fixtureResponse,headers} from './analytics-fixture-20261021.mjs';
+import {worker,fixtureBinding,fixtureHtml,fixtureResponse,headers,securityEnv} from './analytics-fixture-20261021.mjs';
 const require=createRequire(import.meta.url),{JSDOM,VirtualConsole}=require('jsdom');
 let checks=0;function check(condition,label){assert.ok(condition,label);checks++;console.log('PASS '+label)}
 const req=(path,auth=true)=>new Request('https://api.marinetools.app'+path,{headers:auth?headers:{}});
-const calls=[];const env={ANALYTICS_SQL:fixtureBinding('normal',calls),ANALYTICS:{writeDataPoint(){throw Error('No analytics writes in dashboard tests')}}};
+const calls=[];const env={...securityEnv,ANALYTICS_SQL:fixtureBinding('normal',calls),ANALYTICS:{writeDataPoint(){throw Error('No analytics writes in dashboard tests')}}};
 for(const path of ['/admin/api/analytics','/admin/api/analytics-v2','/admin/analytics'])check((await worker.fetch(req(path,false),env,{})).status===401,'authentication preserved '+path);
 check(calls.length===0,'unauthenticated requests perform no queries');
 const preview=await worker.fetch(new Request('https://qa.api.marinetools.app/admin/api/analytics',{headers}),env,{});
@@ -14,13 +14,13 @@ check(response.status===200&&data.current.sessions===10&&data.topTools[0].uses==
 check(calls.length===21,'one shared dashboard request uses twenty-one bounded SQL queries including audience metrics');
 check(calls.every(x=>x.params.end===data.period.end||x.params.end===data.period.start),'all panels use the same period boundaries');
 check(data.technicalHealth.requests===2&&data.runtimeSmoke.error===1&&data.productActions.totals.calculation_completed===7,'technical, scheduled and product sections preserved');
-const missing=await worker.fetch(req('/admin/api/analytics'),{},{});
+const missing=await worker.fetch(req('/admin/api/analytics'),securityEnv,{});
 check(missing.status===503&&(await missing.json()).code==='ANALYTICS_NOT_CONFIGURED','missing binding produces actionable failure status');
 const failure=await fixtureResponse('failure'),fb=await failure.json();check(failure.status===503&&fb.code==='ANALYTICS_QUERY_FAILED'&&!JSON.stringify(fb).includes('PRIVATE'),'query failures remain failures without leaking SQL diagnostics');
 const partial=await(await fixtureResponse('partial')).json();check(partial.current.sessions===10&&typeof partial.technicalHealth.error==='string'&&partial.productActions.error,'optional failures retain useful usage data with explicit errors');
 const started=Date.now(),hung=await fixtureResponse('hang');check(hung.status===503&&(await hung.json()).code==='ANALYTICS_TIMEOUT'&&Date.now()-started<8500,'hung queries time out within the request budget');
 let retried=false;const retryBinding=fixtureBinding();let attempts=0;
-const retry=await worker.fetch(req('/admin/api/analytics'),{ANALYTICS_SQL:{async query(input){if(input.query.includes('AS views')){attempts++;if(!retried){retried=true;throw Object.assign(new Error('Transient'),{retryable:true})}}return retryBinding.query(input)}}},{});
+const retry=await worker.fetch(req('/admin/api/analytics'),{...securityEnv,ANALYTICS_SQL:{async query(input){if(input.query.includes('AS views')){attempts++;if(!retried){retried=true;throw Object.assign(new Error('Transient'),{retryable:true})}}return retryBinding.query(input)}}},{});
 check(retry.ok&&attempts===2,'retryable binding failure is retried once');
 
 let mode='normal',fetches=0,delayOld=null,releaseOld,dom;

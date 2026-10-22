@@ -1,0 +1,7 @@
+{
+  "name": "marine-tools-security-isolated",
+  "main": "worker/worker-v860-dashboard.js",
+  "compatibility_date": "2026-10-03",
+  "workers_dev": false,
+  "preview_urls": false
+}

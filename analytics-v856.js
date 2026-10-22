@@ -14,16 +14,17 @@ const nativeFetch=window.fetch.bind(window);
 function settings(){
   try{return JSON.parse(localStorage.getItem('mt.settings')||'{}')||{}}catch{return{}}
 }
-function enabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/\.pages\.dev$/i.test(location.hostname)&&settings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function enabled(){if(!window.MT_USAGE?.enabled())return false;return !/\.pages\.dev$/i.test(location.hostname)&&settings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
 function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
 function currentPage(){return document.querySelector('.page.active')?.id||'home'}
 function clean(v,max){return String(v??'').replace(/[\u0000-\u001f]/g,' ').trim().slice(0,max)}
 function send(event,{page=currentPage(),tool='',duration=0}={}){
   if(!enabled()||!navigator.onLine)return;
-  const payload={event:clean(event,40),page:clean(page,80),tool:clean(tool,120),device:deviceClass(),version:VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0))};
+  const payload={event:clean(event,40),page:clean(page,80),tool:clean(tool,120),device:deviceClass(),version:VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0)),consent:'20261022-v1'};
   try{nativeFetch(EVENT_URL,{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload),keepalive:true,cache:'no-store'}).catch(()=>{})}catch{}
 }
 function oncePerSession(key,event,opts={}){
+  if(!enabled())return;
   try{if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1')}catch{}
   send(event,opts);
 }
@@ -138,5 +139,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&SEARCH_IDS.has(e.tar
 document.addEventListener('focusout',e=>{if(SEARCH_IDS.has(e.target.id))setTimeout(()=>commitSearch(e.target),120)},true);
 
 oncePerSession(`mt.analytics.${VERSION}.version`,'version_seen',{page:'home',tool:'analytics-v2'});
+window.addEventListener('mt-analytics-consent-change',e=>{if(e.detail.enabled)oncePerSession(`mt.analytics.${VERSION}.version`,'version_seen',{page:'home',tool:'analytics-v2'})});
 window.__marineToolsAnalyticsV2={version:VERSION,enabled:enabled(),send};
 })();

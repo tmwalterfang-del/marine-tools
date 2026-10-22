@@ -7,8 +7,52 @@
   "preview_urls": false,
   "previews": {},
   "keep_vars": true,
-  "routes": [{"pattern": "api.marinetools.app","custom_domain": true,"enabled": true,"previews_enabled": true}],
-  "triggers": {"crons": ["*/15 * * * *"]},
-  "analytics_engine_datasets": [{"binding": "ANALYTICS","dataset": "marine_tools_usage"}],
-  "analytics": {"binding": "ANALYTICS_SQL"}
+  "routes": [
+    {
+      "pattern": "api.marinetools.app",
+      "custom_domain": true,
+      "enabled": true,
+      "previews_enabled": true
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
+  },
+  "analytics_engine_datasets": [
+    {
+      "binding": "ANALYTICS",
+      "dataset": "marine_tools_usage"
+    }
+  ],
+  "analytics": {
+    "binding": "ANALYTICS_SQL"
+  },
+  "ratelimits": [
+    {
+      "name": "PUBLIC_API_LIMITER",
+      "namespace_id": "352201",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
+    },
+    {
+      "name": "ANALYTICS_LIMITER",
+      "namespace_id": "352202",
+      "simple": {
+        "limit": 600,
+        "period": 60
+      }
+    },
+    {
+      "name": "ADMIN_LIMITER",
+      "namespace_id": "352203",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
+    }
+  ]
 }

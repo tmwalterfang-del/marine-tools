@@ -16,15 +16,15 @@ const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
 const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 
-const DEFAULT_SETTINGS={usageAnalytics:true};
+const DEFAULT_SETTINGS={usageAnalytics:false};
 function appSettings(){return{...DEFAULT_SETTINGS,...(store.get(K.settings,{})||{})}}
 function saveAppSettings(next){store.set(K.settings,{...appSettings(),...next})}
-function analyticsEnabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/\.pages\.dev$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function analyticsEnabled(){if(!window.MT_USAGE?.enabled())return false;return !/\.pages\.dev$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
 function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
-let analyticsCurrentPage='home',analyticsVisibleSince=null,analyticsTimer=null;
+let analyticsCurrentPage='home',analyticsVisibleSince=null,analyticsTimer=null,analyticsListeners=false;
 function sendAnalyticsEvent(event,{page=analyticsCurrentPage,tool='',duration=0,beacon=false}={}){
  if(!analyticsEnabled()||!navigator.onLine)return;
- const payload={event:String(event||'').slice(0,40),page:String(page||'').slice(0,80),tool:String(tool||'').slice(0,120),device:deviceClass(),version:APP_VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0))};
+ const payload={event:String(event||'').slice(0,40),page:String(page||'').slice(0,80),tool:String(tool||'').slice(0,120),device:deviceClass(),version:APP_VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0)),consent:'20261022-v1'};
  const body=JSON.stringify(payload),url=`${API}/api/analytics/event`;
  try{
   fetch(url,{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},body,keepalive:true,cache:'no-store'}).catch(()=>{})
@@ -45,10 +45,10 @@ function initUsageAnalytics(){
  if(!sessionStorage.getItem('mt.analytics.session')){
   sessionStorage.setItem('mt.analytics.session','1');sendAnalyticsEvent('session_start',{page:'home'})
  }
- analyticsCurrentPage='home';analyticsVisibleSince=document.visibilityState==='visible'?performance.now():null;
- sendAnalyticsEvent('page_view',{page:'home'});
+ analyticsCurrentPage=document.querySelector('.page.active')?.id||'home';analyticsVisibleSince=document.visibilityState==='visible'?performance.now():null;
+ sendAnalyticsEvent('page_view',{page:analyticsCurrentPage});
  clearInterval(analyticsTimer);analyticsTimer=setInterval(()=>{if(document.visibilityState==='visible')flushAnalyticsEngagement(false)},60000);
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){flushAnalyticsEngagement(true);analyticsVisibleSince=null}else analyticsVisibleSince=performance.now()});
+ if(analyticsListeners)return;analyticsListeners=true;document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){flushAnalyticsEngagement(true);analyticsVisibleSince=null}else analyticsVisibleSince=performance.now()});
  window.addEventListener('pagehide',()=>flushAnalyticsEngagement(true));
 }
 
@@ -101,9 +101,9 @@ let leafletPromise=null,bmcLoaded=false;
 const renderedPages=new Set();
 function loadLeaflet(){
  if(window.L)return Promise.resolve(window.L);if(leafletPromise)return leafletPromise;
- leafletPromise=new Promise((resolve,reject)=>{if(!document.getElementById('leafletCss')){const l=document.createElement('link');l.id='leafletCss';l.rel='stylesheet';l.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(l)}const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.async=true;s.onload=()=>resolve(window.L);s.onerror=reject;document.head.appendChild(s)});return leafletPromise;
+ leafletPromise=new Promise((resolve,reject)=>{if(!document.getElementById('leafletCss')){const l=document.createElement('link');l.id='leafletCss';l.rel='stylesheet';l.href='vendor/leaflet/leaflet.css';document.head.appendChild(l)}const s=document.createElement('script');s.src='vendor/leaflet/leaflet.js';s.async=true;s.onload=()=>resolve(window.L);s.onerror=reject;document.head.appendChild(s)});return leafletPromise;
 }
-function loadSupportWidget(){if(bmcLoaded||document.querySelector('script[data-name="BMC-Widget"]'))return;bmcLoaded=true;const s=document.createElement('script');s.src='https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js';s.async=true;s.dataset.name='BMC-Widget';s.dataset.cfasync='false';s.dataset.id='marinetools';s.dataset.description='Support Marine Tools on Buy Me a Coffee';s.dataset.message='Enjoying Marine Tools? Support continued development and help keep the tools free.';s.dataset.color='#159fe4';s.dataset.position='Right';s.dataset.x_margin='18';s.dataset.y_margin='18';document.body.appendChild(s)}
+function loadSupportWidget(){if(document.getElementById('bmc-wbtn'))return;const a=document.createElement('a');a.id='bmc-wbtn';a.className='mt-support-link';a.href=SUPPORT_URL;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Support Marine Tools';document.body.append(a)}
 function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)requestIdleCallback(fn,{timeout});else setTimeout(fn,timeout)}
 const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'voyage-planning-lab':renderVoyagePlanningDraft,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
@@ -308,7 +308,7 @@ async function shareResult(btn){
 function renderRecentHome(){
  const box=$('#recentToolsHome');if(!box)return;
  const r=recentTools();
- box.innerHTML=r.length?r.map(x=>`<button class="tool-link" data-go="${x.page}" data-tool-target="${esc(x.title)}"><span>↻</span>${esc(x.title)}<small>${timeAgo(x.time)}</small></button>`).join(''):'<p class="helper">Tools you calculate with will appear here.</p>';
+ box.innerHTML=r.length?r.map(x=>`<button class="tool-link" data-go="${esc(x.page)}" data-tool-target="${esc(x.title)}"><span>↻</span>${esc(x.title)}<small>${timeAgo(x.time)}</small></button>`).join(''):'<p class="helper">Tools you calculate with will appear here.</p>';
 }
 function renderHistoryHome(){
  const box=$('#historyHome');if(!box)return;
@@ -374,7 +374,7 @@ function renderFavoriteHome(){
   {title:'Generator load margin',page:'engineering'}
  ];
  const items=f.length?f:fallback;
- box.innerHTML=items.slice(0,8).map(x=>`<button class="tool-link" data-go="${x.page}" data-tool-target="${esc(x.title)}"><span>${f.length?'★':'☆'}</span> ${esc(x.title)}</button>`).join('');
+ box.innerHTML=items.slice(0,8).map(x=>`<button class="tool-link" data-go="${esc(x.page)}" data-tool-target="${esc(x.title)}"><span>${f.length?'★':'☆'}</span> ${esc(x.title)}</button>`).join('');
  const sub=$('#favoriteSub');if(sub)sub.textContent=f.length?'Your starred tools':'Star any calculation card to build your own quick list';
 }
 
@@ -402,7 +402,7 @@ function bindGlobal(){
  $('#mobileMenu').onclick=()=>{const sb=$('#sidebar'),open=sb.classList.toggle('open');$('#mobileMenu').setAttribute('aria-expanded',String(open))};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){const sb=$('#sidebar');if(sb.classList.contains('open')){sb.classList.remove('open');$('#mobileMenu').setAttribute('aria-expanded','false');$('#mobileMenu').focus()}}});
  $('#themeToggle').onclick=()=>setTheme(state.theme==='bridge'?'dark':'bridge');
- $('#globalSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,12);box.innerHTML=hits.map(x=>`<button data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}</small></span></button>`).join('')||'<button>No matching tool</button>';box.hidden=false});
+ $('#globalSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,12);box.innerHTML=hits.map(x=>`<button data-go="${esc(x.page)}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}</small></span></button>`).join('')||'<button>No matching tool</button>';box.hidden=false});
  document.addEventListener('click',e=>{if(!e.target.closest('.searchbox'))$('#searchResults').hidden=true});
  document.addEventListener('input',e=>{if(e.target.matches('input[type="number"]'))sanityCheckInput(e.target)});
  window.addEventListener('online',()=>{updateConnectivity();checkApi()});window.addEventListener('offline',updateConnectivity);
@@ -522,7 +522,7 @@ function renderHome(){
  const homeCustom=$('.home-custom-link a');if(homeCustom)homeCustom.href=CUSTOM_TOOL_URL;
 
  const homeSearch=$('#homeToolSearch'),results=$('#homeToolResults');
- const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,10);results.innerHTML=hits.length?hits.map(x=>`<button type="button" data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span class="home-search-copy"><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}${TOOL_META[x.title]?.how?` · ${esc(TOOL_META[x.title].how)}`:''}</small></span><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
+ const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,10);results.innerHTML=hits.length?hits.map(x=>`<button type="button" data-go="${esc(x.page)}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span class="home-search-copy"><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}${TOOL_META[x.title]?.how?` · ${esc(TOOL_META[x.title].how)}`:''}</small></span><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
  homeSearch.addEventListener('input',showHomeSearch);
  homeSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const hits=showHomeSearch();if(hits[0])openTool(hits[0].page,hits[0].tool)}});
  $('#homeSearchGo').onclick=()=>{const hits=showHomeSearch();if(hits[0])openTool(hits[0].page,hits[0].tool);else homeSearch.focus()};
@@ -555,7 +555,7 @@ function renderRouteIntelligence(){
 function initRouteMap(){if(state.map)return;const el=$('#riMap');if(!el)return;state.map=L.map(el,{zoomControl:true}).setView([59.2,10.5],7);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(state.map);L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenSeaMap'}).addTo(state.map);state.routeLayer=L.layerGroup().addTo(state.map);state.riskLayer=L.layerGroup().addTo(state.map);state.aisLayer=L.layerGroup().addTo(state.map);state.map.on('click',e=>{state.route.push({lat:+e.latlng.lat.toFixed(5),lon:+e.latlng.lng.toFixed(5),name:`WP${state.route.length+1}`});store.set(K.route,state.route);drawRoute();updateRiSummary()});drawRoute();fitRoute()}
 function drawRoute(){if(!state.routeLayer)return;state.routeLayer.clearLayers();state.riskLayer.clearLayers();if(state.route.length){state.route.forEach((p,i)=>L.circleMarker([p.lat,p.lon],{radius:5,color:'#75ddff',fillColor:'#092a3c',fillOpacity:1,weight:2}).bindTooltip(p.name||`WP${i+1}`).addTo(state.routeLayer));if(state.route.length>1)L.polyline(state.route.map(p=>[p.lat,p.lon]),{color:'#39c5f3',weight:3,dashArray:'8 7'}).addTo(state.routeLayer)}drawRiskSegments()}
 function fitRoute(){if(state.map&&state.route.length)state.map.fitBounds(L.latLngBounds(state.route.map(p=>[p.lat,p.lon])).pad(.18));}
-function renderEnvelope(){const box=$('#envelopeBox');if(!box)return;const p=state.profile;box.innerHTML=`<div class="source-box"><div class="source-item"><span>Max Hs</span><b>${p.maxHs} m</b></div><div class="source-item"><span>Max wind</span><b>${p.maxWind} kn</b></div><div class="source-item"><span>Max current</span><b>${p.maxCurrent} kn</b></div><div class="source-item"><span>Min UKC</span><b>${p.minUKC} m</b></div><div class="source-item"><span>CPA alert</span><b>${p.cpaAlert} NM</b></div><div class="source-item"><span>AIS corridor</span><b>${p.corridor} NM</b></div></div><div class="actions">${button('Edit vessel profile','profile','btn')}</div>`}
+function renderEnvelope(){const box=$('#envelopeBox');if(!box)return;const p=state.profile;box.innerHTML=`<div class="source-box"><div class="source-item"><span>Max Hs</span><b>${esc(p.maxHs)} m</b></div><div class="source-item"><span>Max wind</span><b>${esc(p.maxWind)} kn</b></div><div class="source-item"><span>Max current</span><b>${esc(p.maxCurrent)} kn</b></div><div class="source-item"><span>Min UKC</span><b>${esc(p.minUKC)} m</b></div><div class="source-item"><span>CPA alert</span><b>${esc(p.cpaAlert)} NM</b></div><div class="source-item"><span>AIS corridor</span><b>${esc(p.corridor)} NM</b></div></div><div class="actions">${button('Edit vessel profile','profile','btn')}</div>`}
 const MAX_AIS_AGE_MS=15*60*1000; // Experimental CPA threshold; NOT a navigation-safety guarantee.
 function aisNumeric(value,max){if(value==null||value===''||typeof value==='boolean')return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=max?n:null}
 function aisPosition(v){const rawLat=v.latitude??v.lat,rawLon=v.longitude??v.lon;if(rawLat==null||rawLon==null||rawLat===''||rawLon==='')return null;const lat=Number(rawLat),lon=Number(rawLon);return Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180?{lat,lon}:null}
@@ -1199,7 +1199,7 @@ function bindQuick(){
 }
 function beaufort(k){const rows=[[1,'Light air','1–3'],[4,'Light breeze','4–6'],[7,'Gentle breeze','7–10'],[11,'Moderate breeze','11–16'],[17,'Fresh breeze','17–21'],[22,'Strong breeze','22–27'],[28,'Near gale','28–33'],[34,'Gale','34–40'],[41,'Strong gale','41–47'],[48,'Storm','48–55'],[56,'Violent storm','56–63'],[64,'Hurricane','64+']];if(k<1)return{force:0,desc:'Calm',range:'<1'};for(let i=0;i<rows.length;i++){const next=rows[i+1]?.[0]??Infinity;if(k<next)return{force:i+1,desc:rows[i][1],range:rows[i][2]}}return{force:12,desc:'Hurricane',range:'64+'}}
 
-function renderProfile(){const p=state.profile;$('#profile').innerHTML=pageTitle('Vessel Profile','Shared vessel values are used by route, fuel and operational-envelope calculations.')+`<article class="panel"><div class="panel-body"><div class="fields three"><label>Vessel name<input id="pName" value="${esc(p.name)}"></label><label>LOA m<input id="pLoa" type="number" step=".1" value="${p.loa}"></label><label>Draft m<input id="pDraft" type="number" step=".1" value="${p.draft}"></label><label>Service speed kn<input id="pSpeed" type="number" step=".1" value="${p.serviceSpeed}"></label><label>Fuel consumption m³/day<input id="pFuel" type="number" step=".1" value="${p.fuelDay}"></label><label>Max Hs m<input id="pHs" type="number" step=".1" value="${p.maxHs}"></label><label>Max wind kn<input id="pWind" type="number" value="${p.maxWind}"></label><label>Max current kn<input id="pCur" type="number" step=".1" value="${p.maxCurrent}"></label><label>Minimum UKC m<input id="pUkc" type="number" step=".1" value="${p.minUKC}"></label><label>CPA alert NM<input id="pCpa" type="number" step=".1" value="${p.cpaAlert}"></label><label>AIS route corridor NM<input id="pCorr" type="number" step=".1" value="${p.corridor}"></label></div><div class="actions"><button class="btn primary" id="saveProfile">Save profile</button></div><p class="helper">Operational limits are user-defined planning values. Marine Tools does not determine safe limits for your vessel.</p></div></article>`;$('#saveProfile').onclick=saveProfile}
+function renderProfile(){const p=state.profile;$('#profile').innerHTML=pageTitle('Vessel Profile','Shared vessel values are used by route, fuel and operational-envelope calculations.')+`<article class="panel"><div class="panel-body"><div class="fields three"><label>Vessel name<input id="pName" value="${esc(p.name)}"></label><label>LOA m<input id="pLoa" type="number" step=".1" value="${esc(p.loa)}"></label><label>Draft m<input id="pDraft" type="number" step=".1" value="${esc(p.draft)}"></label><label>Service speed kn<input id="pSpeed" type="number" step=".1" value="${esc(p.serviceSpeed)}"></label><label>Fuel consumption m³/day<input id="pFuel" type="number" step=".1" value="${esc(p.fuelDay)}"></label><label>Max Hs m<input id="pHs" type="number" step=".1" value="${esc(p.maxHs)}"></label><label>Max wind kn<input id="pWind" type="number" value="${esc(p.maxWind)}"></label><label>Max current kn<input id="pCur" type="number" step=".1" value="${esc(p.maxCurrent)}"></label><label>Minimum UKC m<input id="pUkc" type="number" step=".1" value="${esc(p.minUKC)}"></label><label>CPA alert NM<input id="pCpa" type="number" step=".1" value="${esc(p.cpaAlert)}"></label><label>AIS route corridor NM<input id="pCorr" type="number" step=".1" value="${esc(p.corridor)}"></label></div><div class="actions"><button class="btn primary" id="saveProfile">Save profile</button></div><p class="helper">Operational limits are user-defined planning values. Marine Tools does not determine safe limits for your vessel.</p></div></article>`;$('#saveProfile').onclick=saveProfile}
 function saveProfile(){
  const previous=state.profile;
  const field=(id,key)=>{const el=$(id);if(!el||el.value.trim()==='')return previous[key];const value=Number(el.value);return Number.isFinite(value)?value:previous[key]};
@@ -1221,7 +1221,7 @@ function renderSettings(){
  $('#settings').innerHTML=pageTitle('Settings','Local-first preferences, backup/restore and privacy controls.')+`
  <div class="grid-2">
   <article class="panel"><div class="panel-body"><h3>Appearance</h3><label>Theme<select id="setTheme"><option value="dark">Dark maritime</option><option value="bridge">Bridge Dark</option></select></label><div class="actions"><button class="btn primary" id="saveSet">Save</button></div></div></article>
-  <article class="panel"><div class="panel-body"><h3>Usage analytics</h3><label class="toggle-row"><input id="excludeAnalytics" type="checkbox" ${localStorage.getItem('mt.analytics.exclude')==='1'?'checked':''}><span><b>Exclude this browser from analytics</b><small>Use for development and your own testing. Applies to this browser only.</small></span></label><label class="toggle-row"><input id="setAnalytics" type="checkbox" ${s.usageAnalytics!==false&&!dnt?'checked':''} ${dnt?'disabled':''}><span><b>Help improve Marine Tools</b><small>Send usage events with a random browser identifier (expires after 180 days), visit identifier and coarse traffic source. Calculation values, vessel profile, routes and weather positions are never included.</small></span></label>${dnt?'<p class="helper">Your browser has Do Not Track enabled, so Marine Tools usage analytics stays disabled.</p>':''}<div class="actions">${button('Privacy & data','privacy','btn')}</div></div></article>
+  <article class="panel"><div class="panel-body"><h3>Usage analytics</h3><label class="toggle-row"><input id="excludeAnalytics" type="checkbox" ${localStorage.getItem('mt.analytics.exclude')==='1'?'checked':''}><span><b>Exclude this browser from analytics</b><small>Use for development and your own testing. Applies to this browser only.</small></span></label><label class="toggle-row"><input id="setAnalytics" type="checkbox" ${window.MT_USAGE?.enabled()&&!dnt?'checked':''} ${dnt?'disabled':''}><span><b>Help improve Marine Tools</b><small>Send usage events with a random browser identifier (expires after 180 days), visit identifier and coarse traffic source. Calculation values, vessel profile, routes and weather positions are never included.</small></span></label>${dnt?'<p class="helper">Your browser has Do Not Track enabled, so Marine Tools usage analytics stays disabled.</p>':''}<div class="actions">${button('Privacy & data','privacy','btn')}</div></div></article>
  </div>
  <article class="panel" style="margin-top:12px"><div class="panel-body">
   <div class="settings-head"><div><h3>Data stored on this device</h3><p class="helper">Operational entries stay in this browser unless you export or restore them yourself.</p></div><span class="storage-size">${nf(st.kb,1)} KB</span></div>
@@ -1232,8 +1232,8 @@ function renderSettings(){
  <details class="panel info-fold"><summary><span><b>Data principle</b><small>How Marine Tools handles operational data</small></span><strong>Show</strong></summary><div class="panel-body"><p class="helper">Marine Tools keeps entered operational data local where possible. Online requests send only the context needed for that request. Usage analytics records page/tool identifiers, device class, app version, visible time, coarse source and random browser/visit identifiers. Browser counts estimate browsers, not people. No cross-device matching is used. Disable analytics or exclude this browser above.</p></div></details>`;
  $('#setTheme').value=state.theme;
  $('#excludeAnalytics').onchange=e=>window.MT_USAGE?.exclude(e.target.checked);
- $('#saveSet').onclick=()=>{setTheme($('#setTheme').value);saveAppSettings({usageAnalytics:$('#setAnalytics')?.checked!==false});toast('Settings saved.')};
- if($('#setAnalytics'))$('#setAnalytics').onchange=e=>{saveAppSettings({usageAnalytics:e.target.checked});if(e.target.checked){sendAnalyticsEvent('analytics_enabled',{page:'settings'});analyticsVisibleSince=performance.now()}else flushAnalyticsEngagement(true);toast(e.target.checked?'Usage analytics enabled.':'Usage analytics disabled.')};
+ $('#saveSet').onclick=()=>{setTheme($('#setTheme').value);toast('Settings saved.')};
+ if($('#setAnalytics'))$('#setAnalytics').onchange=e=>{window.MT_USAGE?.setConsent(e.target.checked);if(e.target.checked){sendAnalyticsEvent('analytics_enabled',{page:'settings'});analyticsVisibleSince=performance.now()}else flushAnalyticsEngagement(true);toast(e.target.checked?'Usage analytics enabled.':'Usage analytics disabled.')};
  $('#exportData').onclick=exportData;
  $('#importData').onclick=()=>$('#importDataFile').click();
  $('#importDataFile').onchange=e=>{const f=e.target.files?.[0];if(f)importDataBackup(f);e.target.value=''};
@@ -1247,7 +1247,9 @@ function exportData(){
 }
 async function importDataBackup(file){
  try{
+  if(file.size>10485760)return toast('Backup is too large (maximum 10 MB).');
   const data=JSON.parse(await file.text());
+  const existingConsent=appSettings();if(data.settings){data.settings={...data.settings,analyticsConsent:existingConsent.analyticsConsent,usageAnalytics:existingConsent.usageAnalytics};}
   if(!data||typeof data!=='object'||(!data.profile&&!data.consumption&&!data.bunkering&&!data.settings))return toast('This does not look like a Marine Tools backup.');
   if(!confirm('Restore this Marine Tools backup? Existing local values may be replaced.'))return;
   const mapping=[[K.profile,data.profile],[K.route,data.route],[K.lastAnalysis,data.lastAnalysis],[K.settings,data.settings],[K.theme,data.theme],[K.favorites,data.favorites],[K.recent,data.recent],[K.history,data.history],[K.consumption,data.consumption],[K.bunkHistory,data.bunkering],[K.weatherCache,data.weatherCache]];
@@ -1343,12 +1345,12 @@ function renderPrivacy(){
      <li>Optional experimental route data</li>
      <li>Cached weather data for offline reference</li>
    </ul><p class="helper">These values are stored in this browser and are not automatically synced to a Marine Tools account.</p></article>
-   <article class="panel bullet-box"><h3>Usage analytics</h3><ul>
+   <article class="panel bullet-box"><h3>Optional usage analytics</h3><p>Analytics is off until you choose to allow it. Random browser and visit IDs are pseudonymous, not proof of a person’s identity. You may withdraw consent in Settings; this stops future collection and clears analytics identifiers on this device.</p><ul>
      <li>Page and tool names</li>
      <li>Device class and app version</li>
      <li>Visible-time seconds</li><li>Random browser identifier, renewed after 180 days; visit identifier renewed after 30 minutes of inactivity</li><li>Coarse traffic source and tool outcome; no cross-device matching</li>
      <li>No calculation inputs, vessel values, route coordinates or weather positions</li>
-   </ul><p class="helper">Usage analytics can be disabled under Settings.</p></article>
+   </ul><p class="helper">Manage or withdraw analytics consent in Settings. Operational calculation data remains on your device unless you export it. Usage events are stored in Cloudflare Analytics Engine; Cloudflare documents a three-month retention period for this service. Withdrawing consent clears this device’s analytics identifiers and stops future collection; it does not erase events already stored. Contact contact@marinetools.app for privacy requests. Infrastructure and external data providers may process connection information under their own policies.</p></article>
  </div>
  <details class="panel info-fold">
    <summary><span><b>Online requests</b><small>Weather, AIS, maps and Voyage Estimate</small></span><strong>Show</strong></summary>
@@ -1376,5 +1378,6 @@ function setRes(id,main,sub='',cls='',valid=true){const e=$('#'+id);if(!e)return
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
 function init(){renderHome();renderedPages.add('home');bindGlobal();initUsageAnalytics();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();const requested=requestedInitialPage();if(requested&&requested!=='home')setTimeout(()=>page(requested),0)}
+window.addEventListener('mt-analytics-consent-change',e=>{if(e.detail.enabled)initUsageAnalytics();else{clearInterval(analyticsTimer);analyticsVisibleSince=null}});
 document.addEventListener('DOMContentLoaded',init);
 })();
