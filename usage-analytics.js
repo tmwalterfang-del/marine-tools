@@ -43,7 +43,7 @@ function showChoice(){
 
 let seenVisit='',attempt=null;
 function ensureVisit(){const meta=context();if(meta&&navigator.onLine&&seenVisit!==meta.session){seenVisit=meta.session;send('visit_started');if(meta.visitorKind==='returning')send('return_visit')}}
-window.MT_USAGE={enabled,context,send,record:report,setConsent,exclude(on){localStorage.setItem('mt.analytics.exclude',on?'1':'0');if(on){localStorage.removeItem(key);sessionStorage.removeItem(sessionKey);browser=null;seenVisit=''}else ensureVisit()}};
+window.MT_USAGE={enabled,context,send,record:report,setConsent,exclude(on){localStorage.setItem('mt.analytics.exclude',on?'1':'0');if(on)clearIdentity();else ensureVisit()}};
 function report(event,tool,pageId,label){ensureVisit();send(event,tool,pageId,label);if(['calculation_succeeded','education_module'].includes(event))send('active_usage','',pageId)}
 document.addEventListener('mt-calculation-result',e=>{if(attempt&&attempt.card?.contains(e.target))attempt.outcome=e.detail.valid?'calculation_succeeded':'calculation_invalid'},true);
 document.addEventListener('click',e=>{

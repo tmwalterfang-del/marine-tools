@@ -56,9 +56,14 @@ All provider, SQL and authentication fixtures are isolated; unexpected external 
 | Navigation calculation smoke | Passed locally |
 | Wrangler build | Dry-run successful; no deployment performed |
 | npm production dependency audit | Zero reported vulnerabilities in locked root dependency at audit time; not proof against unknown vulnerabilities or all remotely imported code |
-| Chromium / Firefox / WebKit | Local engine download unavailable (invalid/truncated download); CI matrix provides independent isolated browser verification. Results to be recorded after CI. |
+| Chromium / Firefox / WebKit | Passed in CI for Chromium, Firefox and WebKit against synthetic SQL and blocked external traffic, including actual admin nonce CSP. Tested dashboard viewports: 390×844, 844×390, 1440×900. Local engine download was unavailable; results come from GitHub runners. |
 
 Coverage includes missing/forged/expired/incorrect issuer or audience tokens, future claims, unknown key, wrong subject, signed identity substitution, email policy, preview restrictions, invalid coordinates/routes, rate rejection, missing protection fail-closed, CORS, nonce CSP, oversized/malformed/unconsented events and provider constraints. It does not prove every security property, upstream provider behavior or live account setting.
+
+CI evidence for implementation commit `252c4b1c4092734252e6d6c2b51b674e307837ec`:
+- Security regression: https://github.com/tmwalterfang-del/marine-tools/actions/runs/39732888510
+- Worker integration and all three browser engines: https://github.com/tmwalterfang-del/marine-tools/actions/runs/39732888471
+- Draft review: https://github.com/tmwalterfang-del/marine-tools/pull/40
 
 ## Analytics privacy and data integrity
 
@@ -79,7 +84,7 @@ Do not deploy until these are reviewed and explicitly approved. Missing new vari
 3. **P0 — Deployment isolation:** verify Cloudflare git production branch is exclusively main, preview has separate Worker identity/bindings/provider credentials or no credentials, no production cron, Access-protected preview, workers.dev/preview URLs disabled where intended. keep_vars is not evidence of separation. Do not attach production secrets to a test branch. Verify Pages public hosting vs the separate private Education preview. A Draft PR may trigger CI/preview builds; it must not deploy production.
 4. **P1 — Edge abuse and headers:** inspect existing WAF/rate/bot rules, add cost-aware controls and spending alerts with approval, verify Cloudflare overwrites client-IP header, set conservative timeouts. Worker rate limits are per-location/eventually consistent, not strict global quotas. Apply HSTS/nosniff/referrer/CSP/frame policy at the actual production hosting layer. `_headers` alone will not configure GitHub Pages. Keep education iframe needs in mind.
 5. **P1 — Privacy/account review:** complete the privacy actions above; inspect Workers logs for token/header/query/body leakage and constrain access/retention. Keep logs to endpoint/status/provider category; avoid raw routes, inputs, Authorization or JWTs. No live retention or deletion changes have been made.
-6. **P1 — GitHub controls:** require passing security + browser checks and review before merging main, least-privilege deployment token, protected production environment and manual deployment approval. Verify secret scanning/push protection and dependency alerts. The source scan did not expose a high-confidence embedded secret, but this is not a guarantee about provider dashboards or all historical/revoked credentials.
+6. **P1 — GitHub controls:** require passing security + browser checks and review before merging main, least-privilege deployment token, protected production environment and manual deployment approval. Verify secret scanning/push protection and dependency alerts. A scan of reachable git diff history found zero matches for high-confidence private-key, GitHub-token and AWS-key patterns. This is not a guarantee about other secret formats, provider dashboards, unreachable history or revoked credentials.
 7. **P2 — Follow-up implementation:** migrate remaining inline handlers to permit a strict frontend script CSP; vendor/review searoute and its transitive assets, test upstream field/schema drift, measure per-request fan-out/concurrency and add global cost budgets if justified. Preserve calculator UX and teacher presentation behavior while doing so.
 
 ## Rollout and rollback after approval

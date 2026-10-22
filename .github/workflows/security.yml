@@ -14,7 +14,11 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm audit --omit=dev --audit-level=moderate
       - run: npm run test:security
-      - run: npm install --prefix /tmp/security-dom --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+      - run: npm install --prefix /tmp/security-dom --ignore-scripts --no-audit --no-fund jsdom@26.1.0 wrangler@4.151.3
+      - name: Build without production routes, bindings or schedules
+        run: node /tmp/security-dom/node_modules/wrangler/bin/wrangler.js deploy --dry-run --config wrangler.security-test.jsonc --outdir /tmp/security-isolated-worker
+        env:
+          WRANGLER_SEND_METRICS: 'false'
       - run: node tests/security-dom-20261022.mjs
         env:
           NODE_PATH: /tmp/security-dom/node_modules
