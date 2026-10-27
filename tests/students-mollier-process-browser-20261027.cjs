@@ -160,6 +160,47 @@ const ok = (v, s) => {
       fullPage: true,
     });
   }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("details.teaching-inputs").evaluate((el) => {
+    el.open = false;
+  });
+  ok(
+    await page.locator("#process-summary").isVisible(),
+    "Process result remains outside collapsed mobile inputs",
+  );
+  await page.locator("details.teaching-inputs > summary").click();
+  ok(
+    await page.locator("#process-mode").isVisible(),
+    "Mobile process controls expand",
+  );
+  ok(
+    await page.locator("#solve-process").isVisible(),
+    "Mobile process action reachable",
+  );
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.locator("#presentation-toggle").click();
+  await page.waitForFunction(() =>
+    document
+      .getElementById("hs-chart")
+      .style.getPropertyValue("--teaching-chart-height"),
+  );
+  const bounds = await page
+    .locator("#hs-chart")
+    .evaluate((el) => ({
+      top: el.getBoundingClientRect().top,
+      bottom: el.getBoundingClientRect().bottom,
+    }));
+  ok(
+    bounds.top >= 0 && bounds.bottom <= 900 + 2,
+    "Mollier presentation retains the complete SVG and axes",
+  );
+  await page.locator("#presentation-toggle").press("Escape");
+  ok(
+    (await page
+      .locator("#presentation-toggle")
+      .getAttribute("aria-pressed")) === "false",
+    "Mollier presentation exits with Escape",
+  );
   ok(errors.length === 0, "No page exceptions");
   const result = {
     engine,

@@ -75,7 +75,7 @@ Det lokale Neutrium-biblioteket og CC BY 4.0-attribusjonen er beholdt. Det er ik
 - p–h og p–s løses ved braketert biseksjon innen disse grensene. Underkjølte endepunkter og utfall over domenet avvises.
 - Isentropisk ekspansjon og ideell struping beregner mellomtilstander ved avtakende trykk. Turbin med oppgitt isentropisk virkningsgrad beregner endepunkt og positivt arbeid ut. Den irreversible banen blir **ikke** diktet opp.
 - Stasjonær strømning, neglisjerbar kinetisk/potensiell energiforskjell og adiabatisk turbin/ideell struping er eksplisitte forutsetninger.
-- Entalpiaksen er utvidet til 4 200 kJ/kg. Presis numerisk kvalitetsinngang er lagt til. Manuell endring av et punkt fjerner en utdatert prosessforklaring.
+- Entalpiaksen er utvidet til 4 200 kJ/kg. Presis numerisk kvalitetsinngang er lagt til. Manuell endring av et punkt fjerner en utdatert prosessforklaring. Prosessresultatet vises også utenfor de sammenfoldbare mobilinngangene, slik at arbeid og modelltype ikke blir skjult sammen med kontrollene.
 - Scenarioeksport kan ta med valgt prosess og virkningsgrad. Gamle A/B-filer støttes fortsatt. Ny import verifiserer endepunktene mot prosessen før begge tilstander erstattes. Rapport/CSV/SVG viser gjeldende gyldige tilstander.
 
 **Uavhengig tallkontroll:** 225 tilstander fra Python `iapws==1.5.4`, separat fra Neutrium. Maksimalt observert avvik: h `1,53×10⁻⁶ kJ/kg`; s `2,47×10⁻⁹ kJ/(kg·K)`. Disse tallene viser implementasjonsenighet, ikke fysisk måleusikkerhet. Publiserte IAPWS-eksempler i tabell 5/15/35/36 beholdes som spesifikasjonsankre. Metningskontrollen bruker den dokumenterte Gibbs-konsistensen i tabell 44 fremfor å kreve eksakt likhet mellom separate regiontilpasninger.
@@ -91,6 +91,12 @@ Nye tester:
 - `node tests/students-mollier-process-browser-20261027.cjs chromium|firefox|webkit`: faktisk UI, utvidet domene, prosess-/scenario-/rapportflyt, feilbevaring og fire skjermstørrelser. CI-resultater følger aktuell commit; ikke forveksle tidligere grønne kjøringer med ny kode.
 
 De eksisterende kilde-, matematikk-, mekanikk-, kjemi-, bevarings-, eksport-, visnings- og øvrige Education-testene beholdes. Full nettleserakseptanse kjøres i CI mot isolerte data med eksterne forespørsler blokkert/simulert. Ingen testforespørsler med elever eller sensitive data sendes til produksjons-API.
+
+### Faktisk CI-evidens
+
+Implementasjonscommit `40481fe3afcea8563f1f4a4569e758ef72224a24` bestod kilde-/DOM-/symbolsk validering og alle tre Education-nettleserjobbene i [kjøring 40473740368](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40473740368). De første nye Mollier-browserkontrollene ga 20 beståtte per motor. Eksisterende Education-akseptanse/responsivkontroll ga henholdsvis 173/1552 i Chromium og 165/1551 i Firefox og WebKit; disse tallene inkluderer funksjons- og layoutkontroller, ikke tilsvarende antall faglige bevis. Den videre UI-kontrollen dekker i tillegg synlige prosessresultater med sammenfoldede mobilinnganger, tilgjengelige kontroller og komplett SVG i Mollier-presentasjon.
+
+Chromium-skjermbilder ved 390 og 1440 piksler ble visuelt gjennomgått. CI har også bilder ved 844 og 2048 piksler, faktiske rapportnedlastinger og tidligere Education-rapport/PDF-kontroll. Fysiske enheter er fortsatt ikke sertifisert. Gjeldende slutthead og siste kontrollstatus fremgår av Draft PR #35; en eventuell senere endring krever egne grønne kontroller.
 
 ## Appberedskap
 

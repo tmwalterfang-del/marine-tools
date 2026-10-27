@@ -376,6 +376,7 @@
               f(lastProcess.efficiency, 3) +
               ". The connector joins endpoints; the irreversible path is not solved.")
       : "Endpoint comparison: no thermodynamic process has been solved.";
+    $("process-summary").textContent = $("process-result").textContent;
     $("state-delta").textContent =
       "hA − hB = " +
       f(states.a.h - states.b.h, 1) +
