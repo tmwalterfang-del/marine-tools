@@ -2,6 +2,16 @@
   "appId": "app.marinetools.preview",
   "appName": "Marine Tools Preview",
   "webDir": "app-dist",
-  "android": {"path": "apps/mobile/android", "allowMixedContent": false},
-  "ios": {"path": "apps/mobile/ios"}
+  "android": {
+    "path": "apps/mobile/android",
+    "allowMixedContent": false
+  },
+  "ios": {
+    "path": "apps/mobile/ios"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css"
+    }
+  }
 }

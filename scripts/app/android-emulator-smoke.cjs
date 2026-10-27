@@ -1,3 +1,4 @@
+const {assertAppLayout,assertReachable}=require('../../tests/helpers/app-layout.cjs');
 const fs=require('node:fs'),assert=require('node:assert/strict'),{_android:android}=require('playwright');
 (async()=>{
  fs.mkdirSync('app-artifacts/android',{recursive:true});const passed=[];
@@ -7,8 +8,25 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{_android:andro
  try{
   await device.shell('am start -W -n app.marinetools.preview/.MainActivity');
   let web=await device.webView({pkg:'app.marinetools.preview'});page=await web.page();await page.waitForFunction(()=>!!window.MT_APP_NAV);
-  await page.evaluate(()=>document.getElementById('mtReleaseDone')?.click());assert.equal(await page.evaluate(()=>MT_PLATFORM.kind),'android');
+  await page.locator('#mtReleaseDialog[open] #mtReleaseDone').click();assert.equal(await page.evaluate(()=>MT_PLATFORM.kind),'android');
   await page.evaluate(()=>{MT_APP_NAV.go('vessel-calcs');window.scrollTo({top:0,behavior:'instant'})});await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/3.20 m/);
+  const layouts=[];
+  for(const rotation of [0,1,0]){
+   await device.shell('settings put system accelerometer_rotation 0');await device.shell('settings put system user_rotation '+rotation);
+   await page.waitForFunction(wide=>wide?innerWidth>innerHeight:innerHeight>innerWidth,rotation===1);
+   for(const route of ['home','vessel-calcs','settings']){
+    await page.evaluate(id=>MT_APP_NAV.go(id),route);
+    layouts.push(await assertAppLayout(page,'native rotation '+rotation+'/'+route));
+    if(route==='home')await assertReachable(page,'#homeSearchGo','native home search');
+    if(route==='vessel-calcs'){await assertReachable(page,'#calcAirDraft','native calculate');await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/3.20 m/)}
+   }
+   await page.evaluate(()=>MT_APP_NAV.go('home'));await page.locator('#mobileMenu').click();await page.locator('#sidebar [data-page="electrical"]').click();
+   await page.evaluate(()=>MT_APP_NAV.go('home'));await assertAppLayout(page,'native after menu '+rotation);
+   await device.screenshot({path:'app-artifacts/android/layout-'+(rotation?'landscape':'portrait')+'.png'});
+  }
+  fs.writeFileSync('app-artifacts/android/layout-results.json',JSON.stringify({status:'PASS',actualAndroidRotation:true,layouts,physicalDevice:false},null,2));
+  checkpoint('portrait/landscape/portrait native rotation, safe bounds and actionable controls');
+  await page.evaluate(()=>MT_APP_NAV.go('vessel-calcs'));
   await page.evaluate(()=>MT_PLATFORM.copyText('Marine Tools Android clipboard check'));
   const clipboard=await page.evaluate(()=>Capacitor.Plugins.Clipboard.read());assert.equal(clipboard.value,'Marine Tools Android clipboard check');checkpoint('native UI, 3.20 m calculation and real clipboard');
   await page.evaluate(()=>{window.__nativeShare=MT_PLATFORM.saveText('android-smoke.json','{"native":true}','application/json').catch(e=>({error:e.message}));});
@@ -26,5 +44,5 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{_android:andro
   fs.mkdirSync('app-artifacts/android',{recursive:true});await device.screenshot({path:'app-artifacts/android/native-emulator.png'});
   fs.writeFileSync('app-artifacts/android/emulator-results.json',JSON.stringify({status:'PASS',version:'0.2.0',nativeClipboard:true,fileChooser:true,privateExportContents:true,backNavigation:true,offlineColdReopen:true,calculation:'2.70 m with restored 1.5 m margin',physicalDevice:false,samsungDevice:false,recipientFileDelivery:'UNVERIFIED'},null,2));
  }catch(e){if(page)try{console.error(JSON.stringify(await page.evaluate(()=>({url:location.href,viewport:[innerWidth,innerHeight,visualViewport?.width,visualViewport?.height],scroll:[scrollX,scrollY,document.scrollingElement?.scrollHeight],bodyClass:document.body.className,dialogOpen:document.getElementById('mtReleaseDialog')?.open,button:document.getElementById('calcAirDraft')?.getBoundingClientRect().toJSON(),draft:localStorage.getItem('mt.app.tool-drafts.v1')}))))}catch{};fs.writeFileSync('app-artifacts/android/failure.json',JSON.stringify({error:e.message,passed},null,2));await device.screenshot({path:'app-artifacts/android/failure.png'}).catch(()=>{});throw e
- }finally{await device.shell('cmd connectivity airplane-mode disable').catch(()=>{});await device.close()}
+ }finally{await device.shell('settings put system user_rotation 0').catch(()=>{});await device.shell('settings put system accelerometer_rotation 1').catch(()=>{});await device.shell('cmd connectivity airplane-mode disable').catch(()=>{});await device.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

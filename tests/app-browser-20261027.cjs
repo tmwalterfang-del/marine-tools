@@ -14,17 +14,7 @@ const engine=process.argv[2]||'chromium',root=path.resolve('app-dist'),out=path.
  await page.evaluate(()=>__marineToolsOpenPage('settings'));const download=page.waitForEvent('download');await page.locator('#exportData').click();const file=await download;const saved=path.join(out,'app-backup.json');await file.saveAs(saved);ok(JSON.parse(fs.readFileSync(saved)).format==='Marine Tools local backup','Actual backup file export through adapter');
  await page.evaluate(()=>__marineToolsOpenPage('privacy'));ok((await page.locator('#privacy').textContent()).includes('does not enable app analytics'),'App privacy matches disabled telemetry');ok(!(await page.locator('#privacy').textContent()).includes('Usage analytics can be disabled'),'Website analytics policy is replaced in candidate');
  await page.evaluate(()=>__marineToolsOpenPage('vessel-calcs'));await page.locator('#airMargin').fill('1.5');await page.locator('#airMargin').dispatchEvent('change');await page.evaluate(()=>MT_APP_DRAFTS.flush());await page.reload();await page.waitForFunction(()=>!!window.MT_APP_NAV);ok(await page.locator('#airMargin').inputValue()==='1.5','Raw app input survives reopening');await page.locator('#airMargin').fill('1');await page.locator('#airMargin').dispatchEvent('change');await page.evaluate(()=>MT_APP_DRAFTS.flush());
- // Exercise the actual UI at phone/tablet/desktop widths in both existing themes.
- for(const viewport of [{width:360,height:640},{width:844,height:390},{width:768,height:1024},{width:1024,height:768},{width:1920,height:1080}]){
-  await page.setViewportSize(viewport);
-  for(const theme of ['dark','bridge']){
-   await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
-   for(const id of ['home','vessel-calcs','electrical','settings']){
-    await page.evaluate(id=>MT_APP_NAV.go(id),id);
-    ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),`No page overflow: ${viewport.width}x${viewport.height} ${theme} ${id}`);
-   }
-  }
- }
+ const phoneLayoutChecks=await require('./app-phone-layout-20261027.cjs')(page,out);checks+=phoneLayoutChecks;
  await page.setViewportSize({width:1440,height:900});
  await page.evaluate(async()=>{await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise(r=>navigator.serviceWorker.addEventListener('controllerchange',r,{once:true}))});
  const cached=await page.evaluate(async()=>{const keys=await caches.keys();return (await Promise.all(keys.map(async k=>(await(await caches.open(k)).keys()).map(r=>r.url)))).flat()});ok(cached.some(u=>u.endsWith('/index.html')),'Public PWA shell cached');ok(!cached.some(u=>u.includes('/students/')),'Protected Education absent from cache');
