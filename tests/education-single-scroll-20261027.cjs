@@ -45,8 +45,13 @@ const ok=(value,label)=>{assert.ok(value,label);checks++;};
   const disclosure=frame.locator('details.teaching-inputs').first();
   await disclosure.evaluate(d=>d.open=false);await fitted(width+'/trim/collapsed');
   const collapsed=await page.locator('#frames iframe:not([hidden])').evaluate(f=>f.clientHeight);
+  const closedInputs=await disclosure.evaluate(d=>d.getBoundingClientRect().height);
   await disclosure.evaluate(d=>d.open=true);await fitted(width+'/trim/expanded');
-  ok(await page.locator('#frames iframe:not([hidden])').evaluate(f=>f.clientHeight)>collapsed+50,'Expanding inputs grows the page '+width);
+  ok(await disclosure.evaluate(d=>d.getBoundingClientRect().height)>closedInputs+50,'Expanded inputs remain visible '+width);
+  const expanded=await page.locator('#frames iframe:not([hidden])').evaluate(f=>f.clientHeight);
+  // On desktop the result column can already be taller than the input column.
+  // Opening inputs then needs no extra page height; stacked mobile inputs do.
+  ok(width===390?expanded>collapsed+50:expanded>=collapsed-2,'Content height accommodates expanded inputs '+width);
   const input=frame.locator('input:not([type=file])').first();await input.fill('1200');await input.dispatchEvent('input');
   await choose('heat');await fitted(width+'/heat');
   await choose('trim');({frame}=await fitted(width+'/trim/return'));

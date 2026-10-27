@@ -8,10 +8,11 @@ function filter(){const q=document.getElementById('module-search').value.trim().
 document.getElementById('module-search').addEventListener('input',filter);
 const embedded = new WeakMap();
 function decorateFrame(frame) {
+ embedded.get(frame)?.disconnect();
+ embedded.delete(frame);
  try {
   const doc = frame.contentDocument, view = frame.contentWindow;
-  if (!doc?.body || !doc.querySelector('main')) return;
-  embedded.get(frame)?.disconnect();
+  if (!doc?.body || !doc.querySelector('main') || !doc.querySelector('#module,#cargo-form,#hs-chart,#stability')) return;
   if (!doc.getElementById('workspace-embed-style')) {
    const style = doc.createElement('style');
    style.id = 'workspace-embed-style';
