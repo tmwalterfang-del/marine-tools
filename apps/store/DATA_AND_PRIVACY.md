@@ -32,3 +32,12 @@ online/analytics-enabled variant.
 The public website policy URL is a candidate URL only. It has not been updated
 or approved as the app policy by this work. Host the approved app-specific
 policy at a stable public URL and enter that exact URL in each console.
+
+## 27 October privacy-route follow-up
+
+Superseding policy source: `privacy/policy.html`; generated existing website,
+standalone and offline app copies share the same revision. Candidate public URL:
+https://www.marinetools.app/privacy. It returned production 404 at inspection.
+See `docs/apps/PRIVACY_AUDIT_2026-10-27.md` for actual data inventory, conditional
+Data Safety answers and controller/legal blockers. The policy remains a visible
+draft, not ready for public/store use. Build 4 integrates it; build 3 does not.

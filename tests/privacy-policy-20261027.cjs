@@ -1,0 +1,33 @@
+/* Render real site code; no production requests or analytics writes. */
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),{execFileSync}=require('node:child_process'),{JSDOM,VirtualConsole}=require('jsdom');
+const read=p=>fs.readFileSync(p,'utf8');
+(async()=>{
+ execFileSync(process.execPath,['scripts/build-privacy.mjs','--check']);
+ const box={window:{}};vm.runInNewContext(read('privacy-policy.js'),box);const policy=box.window.MT_PRIVACY_POLICY;
+ const staticDom=new JSDOM(read('privacy/index.html'));
+ assert.equal(staticDom.window.document.querySelector('.privacy-policy').outerHTML,new JSDOM(policy.html).window.document.querySelector('.privacy-policy').outerHTML);
+ assert.equal(staticDom.window.document.querySelectorAll('script,iframe,details,form').length,0,'Full text without scripts/accordions/embedded services');
+ assert.equal(staticDom.window.document.querySelectorAll('h1').length,1);
+ for(const link of staticDom.window.document.querySelectorAll('a[href^="#"]'))assert(staticDom.window.document.getElementById(link.hash.slice(1)),'Fragment target '+link.hash);
+ for(const heading of ['controller','local-storage','analytics','online-services','external-services','android-windows','purposes-bases','recipients-transfers','retention','security','rights','policy-changes'])assert(staticDom.window.document.getElementById(heading));
+ const dom=new JSDOM(read('index.html'),{url:'https://qa.marine-tools-frontend-preview.pages.dev/?page=privacy',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()}),w=dom.window,d=w.document;
+ if(d.readyState==='loading')await new Promise(r=>d.addEventListener('DOMContentLoaded',r,{once:true}));
+ w.setTimeout=(fn,ms)=>{if(ms===0)queueMicrotask(fn);return 0};w.setInterval=w.requestIdleCallback=w.requestAnimationFrame=()=>0;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
+ w.matchMedia=()=>({matches:false,addEventListener(){},addListener(){}});w.fetch=async()=>({ok:false,status:503,json:async()=>({}),text:async()=>'',headers:new Headers()});
+ Object.defineProperty(w.navigator,'onLine',{value:false});
+ const settings={usageAnalytics:false,retained:'privacy-test'};
+ w.localStorage.setItem('mt.settings',JSON.stringify(settings));w.localStorage.setItem('mt.profile',JSON.stringify({name:'Test vessel',draft:4}));w.localStorage.setItem('mt.analytics.exclude','1');
+ for(const file of ['privacy-policy.js','usage-analytics.js','voyage-estimate-v861.js','voyage-planning-draft-v1.js','app.js'])w.eval(read(file));d.dispatchEvent(new w.Event('DOMContentLoaded'));await new Promise(r=>setImmediate(r));
+ assert(d.getElementById('privacy').classList.contains('active'),'Existing ?page=privacy opens');
+ assert.equal(d.querySelector('#privacy .privacy-policy').dataset.policyRevision,policy.revision);
+ assert.equal(d.querySelector('#privacy h1').textContent,'Marine Tools Privacy Policy');
+ w.__marineToolsOpenPage('settings');assert.equal(d.getElementById('setAnalytics').checked,false);assert.equal(d.getElementById('excludeAnalytics').checked,true);
+ d.getElementById('excludeAnalytics').checked=false;d.getElementById('excludeAnalytics').dispatchEvent(new w.Event('change'));assert.equal(w.localStorage.getItem('mt.analytics.exclude'),'0');
+ d.getElementById('setAnalytics').checked=true;d.getElementById('setAnalytics').dispatchEvent(new w.Event('change'));assert.equal(JSON.parse(w.localStorage.getItem('mt.settings')).usageAnalytics,true);
+ d.getElementById('setAnalytics').checked=false;d.getElementById('setAnalytics').dispatchEvent(new w.Event('change'));assert.equal(JSON.parse(w.localStorage.getItem('mt.settings')).usageAnalytics,false);
+ w.__marineToolsOpenPage('privacy');assert.equal(JSON.parse(w.localStorage.getItem('mt.profile')).name,'Test vessel');assert.equal(JSON.parse(w.localStorage.getItem('mt.settings')).retained,'privacy-test');
+ assert.equal(policy.url,JSON.parse(read('apps/app-config.json')).privacyPolicyUrl);
+ assert.equal(policy.url,JSON.parse(read('apps/store/listings.en.json')).privacyUrlCandidate);
+ dom.window.close();staticDom.window.close();
+ console.log(JSON.stringify({status:'PASS',scope:'Single-source parity, direct SPA privacy, complete static policy, fragments, existing analytics/exclusion controls and local-data preservation',productionUrl:'NOT_DEPLOYED'}));
+})().catch(e=>{console.error(e);process.exitCode=1});

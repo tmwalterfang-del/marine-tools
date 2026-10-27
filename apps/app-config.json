@@ -1,6 +1,6 @@
 {
   "version": "0.2.0",
-  "buildNumber": 3,
+  "buildNumber": 4,
   "channel": "preview",
   "name": "Marine Tools Preview",
   "publicName": "Marine Tools",
@@ -29,5 +29,6 @@
     "android",
     "windows",
     "pwa"
-  ]
+  ],
+  "privacyPolicyUrl": "https://www.marinetools.app/privacy"
 }
