@@ -211,3 +211,12 @@ footer a{font-size:11px;text-decoration:none;color:var(--muted)}
 .symbol-evidence{margin-top:8px}.symbol-evidence>summary{font-size:11px;color:var(--muted);font-weight:400}.symbol-results>.symbol-context:only-child{grid-column:1/-1;max-width:900px;width:100%}
 
 .source-open-model{border-left:3px solid var(--gold,#f8ce81);padding:9px 12px;background:#7d54151a;color:var(--text);font-size:12px;line-height:1.6}
+
+/* Reference cases stay beside their source-specific assumptions and units. */
+.worked-example{margin:14px 0;border:1px solid var(--border);border-radius:10px;background:var(--raised)}
+.worked-example>summary{padding:12px;cursor:pointer;color:var(--accent);font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.worked-example>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+.worked-example-body{padding:0 14px 12px;overflow-wrap:anywhere;line-height:1.6}
+.worked-example h6{font-size:13px;margin:14px 0 6px}.worked-example ul{padding-left:20px;margin:6px 0}
+.worked-example .worked-scope{font-size:11px;color:var(--muted)}.worked-result{border-top:1px solid var(--border);padding-top:10px}
+@media print{.worked-example{break-inside:avoid}}
