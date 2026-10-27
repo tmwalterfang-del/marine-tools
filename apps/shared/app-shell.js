@@ -2,7 +2,7 @@
 const allowed=new Set(['home','fuel','energy-log','engineering','electrical','vessel-calcs','quick','profile','settings','privacy','about','contact','suggestions','navigation','voyage-planning-lab']);
 let suppress=false,stack=[],position=0,lastBack=0,installPrompt=null;
 function status(message){const el=document.getElementById('mt-app-status');if(el)el.textContent=message;if(window.MT_APP_NAV&&typeof window.toast==='function')window.toast(message)}
-function remember(id){try{localStorage.setItem('mt.app.last-page.v1',id)}catch{}}
+function remember(id){document.documentElement.dataset.mtPage=id;try{localStorage.setItem('mt.app.last-page.v1',id)}catch{}}
 function go(id,push=true){if(!allowed.has(id))return false;suppress=true;window.__marineToolsOpenPage(id);suppress=false;if(push)pushPage(id);remember(id);updateBack();return true}
 function pushPage(id){if(stack[position]===id)return;stack=stack.slice(0,position+1);stack.push(id);position=stack.length-1;history.pushState({mtPage:id,mtPosition:position},'',pageUrl(id))}
 function pageUrl(id){const u=new URL(location.href);if(['http:','https:'].includes(u.protocol))u.searchParams.set('page',id);else u.hash='page='+id;return u.href}
@@ -37,7 +37,7 @@ function init(){
  let saved='home';try{saved=localStorage.getItem('mt.app.last-page.v1')||'home'}catch{}
  const initial=window.__MT_INITIAL_PAGE||(location.hash.startsWith('#page=')?location.hash.slice(6):new URL(location.href).searchParams.get('page'))||saved;
  const id=allowed.has(initial)?initial:'home';stack=[id];history.replaceState({mtPage:id,mtPosition:0},'',pageUrl(id));go(id,false);
- const measure=()=>document.documentElement.style.setProperty('--mt-header-height',Math.ceil(bar.getBoundingClientRect().height)+'px');
+ const measure=()=>document.documentElement.style.setProperty('--mt-header-height',bar.offsetHeight+'px');
  measure();const size=new ResizeObserver(measure);size.observe(bar);window.addEventListener('resize',measure);window.visualViewport?.addEventListener('resize',measure);
  // Do not advertise network-only pages as available local app features.
  for(const n of document.querySelectorAll('.nav-btn[data-page]'))if(!allowed.has(n.dataset.page))n.hidden=true;

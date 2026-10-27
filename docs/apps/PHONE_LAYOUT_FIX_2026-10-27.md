@@ -11,6 +11,9 @@ layout. Earlier test passes do not establish acceptance of this correction.
 - One existing header now contains menu/back, application identity, search and
   settings/theme controls. It is sticky in normal document flow; there is no
   separately fixed preview banner or body padding calculation to overlap it.
+- On the phone home screen, the main tool search replaces the duplicate header
+  search; it remains available in the header on other routes. The home toolbar
+  is verified to fit a single compact row.
 - App/version information is compact. Status text and install/update controls
   sit in normal flow below navigation. Operational notifications use the existing
   toast with safe bottom spacing and no pointer interception.
@@ -35,16 +38,23 @@ layout. Earlier test passes do not establish acceptance of this correction.
 bounds, 44px touch targets, center-point hit tests (covered controls fail), useful
 working height and scroll-to-control visibility below the sticky header.
 
-The three-browser app suite runs 12 viewport profiles: 320×568, 360×640, 384×832,
-412×915 and their landscape equivalents, plus tablet/desktop profiles. It checks
+The three-browser app suite runs 26 viewport profiles: 320×568, 360×640, 384×832,
+412×915 and their landscape equivalents, plus tablet/desktop profiles through 3440×1440, small 1024×600 laptops,
+1280×720/800, 1366×768, 1536×864, 960×540 effective viewports and breakpoint
+boundaries at 900/901 and 1199/1200/1201 pixels. It checks
 five representative routes in both existing themes, simulated status/navigation/
 cutout insets, actual menu selection and reachable search/calculate/export buttons.
-These simulated insets are not represented as physical-device evidence.
+It also tests 125%, 150% and 200% CSS enlargement at representative
+phone/laptop viewports. CSS zoom/effective viewport simulation does not establish
+actual Windows display-DPI or hardware coverage. These simulated insets are not
+represented as physical-device evidence.
 
 The Android emulator suite rotates the real installed WebView portrait →
 landscape → portrait. It verifies home/calculator/settings geometry, actual menu
 selection and calculation, and captures OS-level screenshots for both orientations.
-Existing clipboard, file sharing, system back and offline cold-reopen checks remain.
+The native OS keyboard is also opened in each orientation and the focused input
+must remain reachable above it. Existing clipboard, file sharing, system back and
+offline cold-reopen checks remain.
 Numerical source/guard tests and Windows packaging are retained as regressions.
 
 Local source/package/adapter checks run before committing. A browser could not be

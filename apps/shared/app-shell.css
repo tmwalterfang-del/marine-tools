@@ -26,7 +26,7 @@ html.mt-app{
 .mt-app-title small{font-size:10px;color:var(--muted);overflow-wrap:anywhere}
 .mt-app .searchbox{min-width:0;flex:1 1 180px;width:auto;min-height:44px;height:auto;margin-left:auto}
 .mt-app .searchbox input{min-width:0;min-height:42px;padding:8px 0}
-.mt-app .top-actions{flex-shrink:0;gap:6px}
+.mt-app .top-actions{flex-shrink:0;gap:6px;margin-left:auto}
 /* These local-only candidates have no provider connection to advertise. */
 .mt-app #connectivityPill,.mt-app #utcClock{display:none}
 .mt-app-info{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px max(14px,var(--mt-safe-right)) 0 max(14px,var(--mt-safe-left));font-size:12px;color:var(--muted)}
@@ -51,7 +51,8 @@ html.mt-app{
  .mt-app .sidebar{top:var(--mt-header-height);max-height:calc(100dvh - var(--mt-header-height));padding-top:0}
  .mt-app .mt-app-title{flex:1 1 100px}
  .mt-app .topbar{gap:8px;min-height:56px;padding:calc(6px + var(--mt-safe-top)) max(10px,var(--mt-safe-right)) 6px max(10px,var(--mt-safe-left))}
- .mt-app .top-actions [data-go="profile"]{display:none}
+ .mt-app .top-actions [data-go="profile"]{display:none!important}
+ .mt-app[data-mt-page="home"] .topbar .searchbox{display:none}
  .mt-app .topbar .searchbox{order:4;flex-basis:100%;margin:0}
  .mt-app .main-content{padding-top:12px}
  .mt-app .home-hero-a{min-height:0}
@@ -87,3 +88,11 @@ html.mt-app{
 .mt-app .home-hero-a{overflow:visible}
 .mt-app .home-hero-media,.mt-app .home-hero-overlay{border-radius:inherit;overflow:hidden}
 .mt-app .home-tool-results{max-height:calc(100dvh - var(--mt-header-height) - var(--mt-safe-bottom) - 24px);overflow-y:auto}
+
+/* Fit the actual workspace, including small laptop windows beside a sidebar. */
+.mt-app :is(#fuel,#engineering,#electrical,#vessel-calcs,#navigation,#quick) .tool-grid,
+.mt-app .grid-2,.mt-app .grid-3{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.mt-app input,.mt-app select,.mt-app textarea{min-width:0;max-width:100%}
+.mt-app .panel,.mt-app .tool-card{min-width:0}
+.mt-app .panel p,.mt-app .result,.mt-app .page-title{overflow-wrap:anywhere}
+.mt-app .page [id]{scroll-margin-top:calc(var(--mt-header-height) + 12px);scroll-margin-bottom:calc(var(--mt-safe-bottom) + 12px)}

@@ -20,6 +20,16 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{_android:andro
     if(route==='home')await assertReachable(page,'#homeSearchGo','native home search');
     if(route==='vessel-calcs'){await assertReachable(page,'#calcAirDraft','native calculate');await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/3.20 m/)}
    }
+   // Real OS keyboard, including landscape: verify the focused field stays reachable.
+   await device.shell('settings put secure show_ime_with_hard_keyboard 1');
+   await page.evaluate(()=>MT_APP_NAV.go('vessel-calcs'));
+   const beforeKeyboard=await page.evaluate(()=>visualViewport?.height||innerHeight);
+   await page.locator('#airMargin').click();
+   await page.waitForFunction(before=>(visualViewport?.height||innerHeight)<before-60,beforeKeyboard,{timeout:15000});
+   layouts.push(await assertReachable(page,'#airMargin','native keyboard rotation '+rotation));
+   await device.screenshot({path:'app-artifacts/android/keyboard-'+(rotation?'landscape':'portrait')+'.png'});
+   await device.shell('input keyevent KEYCODE_BACK');
+   await page.waitForFunction(before=>(visualViewport?.height||innerHeight)>=before-10,beforeKeyboard,{timeout:15000});
    await page.evaluate(()=>MT_APP_NAV.go('home'));await page.locator('#mobileMenu').click();await page.locator('#sidebar [data-page="electrical"]').click();
    await page.evaluate(()=>MT_APP_NAV.go('home'));await assertAppLayout(page,'native after menu '+rotation);
    await device.screenshot({path:'app-artifacts/android/layout-'+(rotation?'landscape':'portrait')+'.png'});
