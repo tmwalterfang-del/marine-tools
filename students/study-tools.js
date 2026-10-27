@@ -17,15 +17,21 @@ function scope(){if(page==='labs.html')return document.getElementById(moduleId()
 const fields=()=>[...(scope()?.querySelectorAll('input,select,textarea')||[])].filter(x=>x.type!=='file'&&(x.name||x.id));
 const keyOf=x=>(x.form?.id||'')+':'+(x.id||x.name)+':'+(x.type||x.tagName);
 function raw(){return fields().map(x=>({key:keyOf(x),value:x.type==='checkbox'?x.checked:x.value}));}
-function capture(){if(page==='cargo.html')return window.MT_CARGO_UI.draft();if(page==='mollier.html'){const error=document.getElementById('input-error');return {scenario:window.MT_MOLLIER_INPUTS(),active:document.getElementById('active-state').value,error:error.hidden?'':error.textContent,raw:error.hidden?[]:['pressure-number','quality-number','superheat-temp','process-efficiency'].map(id=>({id,value:document.getElementById(id).value}))};}return raw();}
+function capture(){if(page==='cargo.html')return window.MT_CARGO_UI.draft();if(page==='mollier.html'){const error=document.getElementById('input-error');return {scenario:window.MT_MOLLIER_INPUTS(),active:document.getElementById('active-state').value,processMode:document.getElementById('process-mode').value,error:error.hidden?'':error.textContent,raw:['pressure-number','quality-number','superheat-temp','process-efficiency'].map(id=>({id,value:document.getElementById(id).value}))};}return raw();}
 function restore(data){
  if(page==='cargo.html'){window.MT_CARGO_UI.restoreDraft(data);return;}
  if(page==='mollier.html'){
   if(!data||!['a','b'].includes(data.active)||typeof data.error!=='string'||data.error.length>2000||!Array.isArray(data.raw)||data.raw.length>4)throw Error('Invalid saved state.');
+  if(data.processMode!==undefined&&!['isentropic','throttle','turbine'].includes(data.processMode))throw Error('Invalid saved process.');
+  if(new Set(data.raw.map(x=>x?.id)).size!==data.raw.length)throw Error('Duplicate saved fields.');
   for(const x of data.raw)if(!['pressure-number','quality-number','superheat-temp','process-efficiency'].includes(x.id)||typeof x.value!=='string'||x.value.length>200)throw Error('Invalid saved field.');
   window.MT_MOLLIER_RESTORE(window.MT_STUDY_EXPORT.scenario('mollier-if97',data.scenario));
   const active=document.getElementById('active-state');active.value=data.active;active.dispatchEvent(new Event('change',{bubbles:true}));
-  if(data.error){for(const x of data.raw)document.getElementById(x.id).value=x.value;const e=document.getElementById('input-error');e.textContent=data.error;e.hidden=false;}
+  if(data.processMode){const mode=document.getElementById('process-mode');mode.value=data.processMode;mode.dispatchEvent(new Event('change',{bubbles:true}));}
+  for(const x of data.raw)document.getElementById(x.id).value=x.value;
+  const state=data.scenario[data.active],value=id=>document.getElementById(id).value;
+  const pending=value('pressure-number').trim()===''||Number(value('pressure-number'))!==state.p||(state.phase==='wet'?(value('quality-number').trim()===''||Number(value('quality-number'))!==state.x):(value('superheat-temp').trim()===''||Number(value('superheat-temp'))!==state.T));
+  if(data.error||pending){const e=document.getElementById('input-error');e.textContent=data.error||'Restored unfinished numeric edits. Review and apply the marked state controls before exporting.';e.hidden=false;}
   return;
  }
  const current=fields();if(!Array.isArray(data)||data.length!==current.length)throw Error('Saved fields changed.');

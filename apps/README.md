@@ -14,7 +14,8 @@ npm run app:desktop:build
 ```
 
 Android requires Java 21 and Android SDK 36; iOS requires macOS and Xcode.
-Desktop builds require Rust and the platform's native build tools. Native
+Desktop builds require Rust and the platform's native build tools. The checked-in
+Cargo.lock pins Rust dependencies and desktop builds use --locked. Native
 projects and icons are generated from the checked-in configuration. Node 22+
 is used in CI. `Native app prototypes` builds Android debug APK, iOS Simulator
 app, unsigned Windows NSIS installer and macOS DMG on the feature branch.

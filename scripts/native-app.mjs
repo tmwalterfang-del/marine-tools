@@ -15,5 +15,5 @@ if(['android','ios'].includes(platform)&&command==='sync'){
  const cwd=path.join(root,'apps/desktop');
  cli('@tauri-apps/cli',['icon',path.join(root,'assets/icon-512.png'),'--output',path.join(cwd,'src-tauri/icons')]);
  const bundles=process.platform==='win32'?'nsis':process.platform==='darwin'?'dmg':null;
- cli('@tauri-apps/cli',[command,...(command==='build'&&bundles?['--bundles',bundles]:[])],cwd);
+ cli('@tauri-apps/cli',[command,...(command==='build'&&bundles?['--bundles',bundles]:[]),...(command==='build'?['--','--locked']:[])],cwd);
 }else throw Error('Use android sync, ios sync, desktop build or desktop dev.');

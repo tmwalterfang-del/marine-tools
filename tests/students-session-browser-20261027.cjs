@@ -16,6 +16,7 @@ let browser,server,checks=0;const errors=[];function ok(v,m){assert.ok(v,m);chec
   await svg.focus();await svg.press('Escape');ok(await pan.getAttribute('aria-pressed')==='false','Escape exits pan '+id);await svg.press('0');ok(await svg.getAttribute('viewBox')===original,'Reset view '+id);
   ok(await page.locator('details.study-extra').count()>0,'Supplementary sections compact '+id);
   if(group==='cargo'){await page.locator('#add-operation').click();await page.locator('#operations tr:last-child [data-key=name]').fill('Restored cargo operation');}
+  if(group==='mollier'){await page.selectOption('#process-mode','turbine');await page.locator('#process-efficiency').fill('0.72');}
   const selector=group==='mollier'?'#pressure-number':group==='labs'?'#'+id+' input[type=number]':group==='cargo'?'#cargo-form input[type=number]':'#experiment input[type=number]';const input=page.locator(selector).first();
   await input.fill(group==='mollier'?'12':'');await input.dispatchEvent('change');const expected=await page.evaluate(()=>JSON.stringify(MT_STUDY_DRAFT.capture()));
   await page.waitForFunction(expected=>{const record=JSON.parse(localStorage.getItem(MT_STUDY_DRAFT.key)||'null');return JSON.stringify(record?.data)===expected},expected);
