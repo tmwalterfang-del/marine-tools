@@ -189,6 +189,7 @@ jobs:
           name: MarineTools-0.2.0-android-candidates
           path: emulator-input
       - run: npm install --prefix /tmp/android-browser --no-audit --no-fund playwright@1.62.1
+      - run: node /tmp/android-browser/node_modules/playwright/cli.js install android
       - name: Enable KVM
         run: |
           sudo chmod 666 /dev/kvm

@@ -20,10 +20,14 @@ if ($Width -gt 0 -and $Height -gt 0) {
  Start-Sleep -Milliseconds 300
 }
 $rect=New-Object MarineWindowBounds+RECT
-if (![MarineWindowBounds]::GetWindowRect($handle,[ref]$rect)) { throw 'Native window bounds unavailable' }
-if ($rect.Left -lt $work.Left-1 -or $rect.Top -lt $work.Top-1 -or $rect.Right -gt $work.Right+1 -or $rect.Bottom -gt $work.Bottom+1) {
- throw "App window outside working area: $($rect.Left),$($rect.Top),$($rect.Right),$($rect.Bottom) / $work"
+$fits=$false
+for ($attempt=0;$attempt -lt 40;$attempt++) {
+ if (![MarineWindowBounds]::GetWindowRect($handle,[ref]$rect)) { throw 'Native window bounds unavailable' }
+ $fits=$rect.Left -ge $work.Left-1 -and $rect.Top -ge $work.Top-1 -and $rect.Right -le $work.Right+1 -and $rect.Bottom -le $work.Bottom+1
+ if ($fits) { break }
+ Start-Sleep -Milliseconds 250
 }
+if (!$fits) { throw "App window outside working area: $($rect.Left),$($rect.Top),$($rect.Right),$($rect.Bottom) / $work" }
 $result=@{window=@{left=$rect.Left;top=$rect.Top;right=$rect.Right;bottom=$rect.Bottom};workArea=@{left=$work.Left;top=$work.Top;right=$work.Right;bottom=$work.Bottom};coordinateContext='Both Win32 and Forms queried from the same PowerShell process; not a physical-DPI acceptance claim'}
 $json=$result | ConvertTo-Json -Depth 4
 if ($OutputFile) { $json | Set-Content $OutputFile }

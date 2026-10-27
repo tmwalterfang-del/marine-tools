@@ -1,10 +1,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 #[cfg(target_os = "windows")]
-use tauri::Manager;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 #[cfg(target_os = "windows")]
-fn fit_window_to_work_area(window: &tauri::WebviewWindow) -> tauri::Result<()> {
+static INITIAL_WINDOW_FIT: AtomicBool = AtomicBool::new(false);
+
+#[cfg(target_os = "windows")]
+fn fit_window_to_work_area(window: &tauri::Window) -> tauri::Result<()> {
     let monitor = match window.current_monitor()? {
         Some(monitor) => Some(monitor),
         None => window.primary_monitor()?,
@@ -38,15 +41,16 @@ fn main() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
-        .setup(|app| {
+        .on_page_load(|webview, payload| {
             #[cfg(target_os = "windows")]
-            if let Some(window) = app.get_webview_window("main") {
-                // Best-effort OS sizing must not prevent app startup if monitor APIs fail.
-                if let Err(error) = fit_window_to_work_area(&window) {
+            if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished)
+                && !INITIAL_WINDOW_FIT.swap(true, Ordering::Relaxed)
+            {
+                // Fit after the native window and WebView have completed creation.
+                if let Err(error) = fit_window_to_work_area(&webview.window()) {
                     eprintln!("Initial window sizing unavailable: {error}");
                 }
             }
-            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("Marine Tools Preview could not start");
