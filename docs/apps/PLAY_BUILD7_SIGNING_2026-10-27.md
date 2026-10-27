@@ -60,3 +60,45 @@ format for the owner's Play Console bundle field; it cannot be installed directl
 on a phone. Store acceptance, legal/Data Safety/rating answers, physical-device
 acceptance and Google-held signing/distribution are separate from structural
 bundle/signature validation.
+
+## Final build-7 result
+
+Runtime/tested head: 43a5b62e15c5a865c5d82cc4ff370d5c7a7a6c1f.
+CI temporary integration source: a8479c11b2a35f4bad0b1a6a169ee25551bce298
+(not a main merge). Final CI run 40569434919 passed all jobs: Android build and
+package inspection, Chromium/Firefox/WebKit policy and full app browser checks,
+and Android emulator acceptance for the new com.marinetools.app package.
+The first build-7 run compiled but was stopped by the package inspector using
+the historical preview ID for the internal signature permission; that reference
+was fixed without expanding the permitted permissions.
+
+The final unsigned release bundle was independently downloaded and checked
+against source/configuration/policy bytes and CI hashes, then signed locally.
+The signed bundle passed jarsigner, a pinned-certificate verification of all
+503 non-META-INF payload entries, Google bundletool validate, manifest checks
+(package, version 7, debug false, backup/cleartext disabled), and byte-for-byte
+comparison proving signing did not alter application payloads. Self-signed
+upload-certificate trust-chain warnings from jarsigner are expected; the actual
+signer is pinned to the approved local upload certificate below.
+
+- Delivered file: deliverables/MarineTools-0.2.0-build7.aab (10,536,940 bytes).
+- Signed AAB SHA-256: 2fd9d4018eaf70b025504bdddd36986c286913389b05778eee5959f1dad65100
+- Unsigned AAB SHA-256: ef7b22f0b2d94771978a7c7786a87664cf0e72e66fe815a14ee99305bbb0a1b6
+- Upload certificate SHA-256: 9E:55:82:3F:1F:08:B6:25:F7:B3:45:2D:B7:B7:D9:33:42:59:2C:95:F5:C7:2A:10:EC:5A:DD:87:94:98:38:28
+- CI: https://github.com/tmwalterfang-del/marine-tools/actions/runs/40569434919
+- Unsigned CI build/package artifact: https://github.com/tmwalterfang-del/marine-tools/actions/runs/40569434919/artifacts/12765006743
+- Public upload PEM, verification JSON and local signing/backup information are
+  in the ignored deliverables folder; no private key is in that folder.
+
+Native UI acceptance uses a debug build from the same checked source; local
+release-bundle signature/structure checks are separate. The final Play-delivered
+Google-signed APK and a physical phone have not been tested. No production-key
+upgrade on-device, Play submission or app publication is claimed.
+
+Release name: Marine Tools 0.2.0 (7), within 50 characters. en-US notes contain
+282 Unicode characters within the 500-per-language limit. These texts and the
+correct signed .aab file are supplied for the owner to use in Play Console.
+The Preview build-6 APK remains a separate direct-install test file and cannot
+be used in the AAB field. Local signing can be reproduced with
+scripts/app/sign-android-bundle.ps1 and the private user-owned key paths.
+Secure, recoverable key/password backup remains the owner's responsibility.
