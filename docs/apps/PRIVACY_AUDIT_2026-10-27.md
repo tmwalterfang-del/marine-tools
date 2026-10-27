@@ -31,7 +31,7 @@ point, not a global access test.
 
 ## Single policy implementation
 
-`privacy/policy.html` is the ONLY editable English policy content. The generator
+`privacy/policy.fragment` is the ONLY editable English policy content. The generator
 `scripts/build-privacy.mjs` produces the complete static `/privacy` document,
 `privacy-policy.js` for the existing `renderPrivacy()` and the app/store offline
 copy. The generator's `--check` rejects stale copies. Policy presentation reuses
@@ -129,7 +129,7 @@ represented by DOM tests. No production `/privacy` success is claimed.
 ## Approval and production verification
 
 1. Resolve owner legal/operational confirmations above and separate consent work.
-2. Review the exact generated English policy; change only privacy/policy.html,
+2. Review the exact generated English policy; change only privacy/policy.fragment,
    regenerate and keep parity checks. Remove draft banner only when true.
 3. Explicit owner approval to merge and deploy the named privacy revision.
    Deployment uses the existing production host, not the protected preview origin.

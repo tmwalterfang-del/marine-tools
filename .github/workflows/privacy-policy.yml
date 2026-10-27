@@ -29,6 +29,9 @@ jobs:
       - run: node tests/privacy-policy-20261027.cjs
         env:
           NODE_PATH: /tmp/privacy-qa/node_modules
+      - run: node tests/site-wide-source-audit-20261020.cjs
+        env:
+          NODE_PATH: /tmp/privacy-qa/node_modules
       - run: node /tmp/privacy-qa/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
       - run: node tests/privacy-browser-20261027.cjs ${{ matrix.browser }}
         env:

@@ -23,6 +23,8 @@ const engine=process.argv[2]||'chromium',out=path.resolve('app-artifacts/privacy
  await page.getByRole('link',{name:'Android & Windows',exact:true}).click();assert.equal(await page.evaluate(()=>MT_APP_NAV.current),'privacy','Policy fragment keeps app route');
  await page.evaluate(()=>{MT_PLATFORM.openUrl=async u=>{window.__privacyOpened=u}});await page.locator('#privacy a[href="https://www.marinetools.app/privacy"]').click();assert.equal(await page.evaluate(()=>window.__privacyOpened),'https://www.marinetools.app/privacy');
  await page.evaluate(()=>MT_APP_NAV.go('settings'));assert.equal(await page.locator('#setAnalytics').isChecked(),false);await page.evaluate(()=>MT_APP_NAV.go('privacy'));assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('mt.settings')).privacySentinel),'keep');
- await page.screenshot({path:path.join(out,'app-policy.png'),fullPage:true});
+ await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+ await page.waitForFunction(()=>getComputedStyle(document.getElementById('privacy')).opacity==='1'&&scrollY===0);
+ await page.screenshot({path:path.join(out,'app-policy.png'),animations:'disabled'});
  fs.writeFileSync(path.join(out,'results.json'),JSON.stringify({status:'PASS',engine,profiles:results,appPolicy:true,settingsPreserved:true,productionVerified:false,physicalDevice:false},null,2));console.log(JSON.stringify({status:'PASS',engine,profiles:results.length,appPolicy:true}));
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server?.closeAllConnections();server?.close()});

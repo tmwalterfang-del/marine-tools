@@ -35,7 +35,7 @@ policy at a stable public URL and enter that exact URL in each console.
 
 ## 27 October privacy-route follow-up
 
-Superseding policy source: `privacy/policy.html`; generated existing website,
+Superseding policy source: `privacy/policy.fragment`; generated existing website,
 standalone and offline app copies share the same revision. Candidate public URL:
 https://www.marinetools.app/privacy. It returned production 404 at inspection.
 See `docs/apps/PRIVACY_AUDIT_2026-10-27.md` for actual data inventory, conditional
