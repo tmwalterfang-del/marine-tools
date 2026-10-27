@@ -7,16 +7,27 @@ for(const [label,ids]of groups){const h=document.createElement('h3');h.textConte
 function filter(){const q=document.getElementById('module-search').value.trim().toLowerCase();for(const a of nav.querySelectorAll('a'))a.hidden=!(a.textContent+' '+a.dataset.group).toLowerCase().includes(q);for(const h of nav.querySelectorAll('h3'))h.hidden=![...nav.querySelectorAll('a')].some(a=>a.dataset.group===h.dataset.group&&!a.hidden);document.getElementById('module-no-results').hidden=[...nav.querySelectorAll('a')].some(a=>!a.hidden)}
 document.getElementById('module-search').addEventListener('input',filter);
 const embedded = new WeakMap();
+const listToggle = document.getElementById('toggle-module-list');
+listToggle?.addEventListener('click', () => {
+ const picker = document.getElementById('module-picker');
+ const open = picker.hidden;
+ picker.hidden = !open;
+ picker.closest('.workspace').classList.toggle('module-list-open', open);
+ listToggle.setAttribute('aria-expanded', String(open));
+ listToggle.textContent = open ? 'Hide module list' : 'Show module list';
+ window.dispatchEvent(new Event('resize'));
+});
 function decorateFrame(frame) {
  embedded.get(frame)?.disconnect();
  embedded.delete(frame);
+ frame.removeAttribute('scrolling');
  try {
   const doc = frame.contentDocument, view = frame.contentWindow;
   if (!doc?.body || !doc.querySelector('main') || !doc.querySelector('#module,#cargo-form,#hs-chart,#stability')) return;
   if (!doc.getElementById('workspace-embed-style')) {
    const style = doc.createElement('style');
    style.id = 'workspace-embed-style';
-   style.textContent = 'html,body{height:auto!important;min-height:0!important}header,.topbar,.lab-nav,.hero,.teaching-toolbar,footer{display:none!important}main{padding:16px!important;max-width:none!important}.lab{scroll-margin-top:16px!important}#workspace-content{display:flow-root}';
+   style.textContent = 'html,body{height:auto!important;min-height:0!important;overflow-y:hidden!important;scrollbar-width:none!important;scrollbar-gutter:auto!important;background:transparent!important}html::-webkit-scrollbar,body::-webkit-scrollbar{width:0;height:0}header,.topbar,.lab-nav,.hero,.teaching-toolbar,footer{display:none!important}main{padding:0!important;max-width:none!important}.lab{scroll-margin-top:16px!important}#workspace-content{display:flow-root;min-width:0}';
    doc.head.append(style);
   }
   // A flow-root measures the natural content, independent of iframe viewport
@@ -38,8 +49,9 @@ function decorateFrame(frame) {
    const measure = () => {
     pending = false;
     if (frame.hidden || !frame.getBoundingClientRect().width) return;
-    const height = Math.ceil(content.getBoundingClientRect().height) + 4;
+    const height = Math.ceil(Math.max(content.getBoundingClientRect().height, content.scrollHeight)) + 4;
     if (height > 4 && frame.style.height !== height + 'px') frame.style.height = height + 'px';
+    frame.setAttribute('scrolling', 'no');
     frame.dataset.contentSized = 'true';
     if (view.scrollY) view.scrollTo(0, 0);
    };

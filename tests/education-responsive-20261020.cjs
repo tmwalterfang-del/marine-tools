@@ -51,10 +51,10 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   await page.goto(base+'/students/interactive.html');await page.waitForSelector('#module-list a',{state:'attached'});
   const modules=await page.locator('#module-list a').evaluateAll(xs=>xs.map(x=>({id:x.hash.slice(1),name:x.textContent})));
   check(modules.length===15,'fifteen modules selectable',{scope});
-  check(await page.locator('#module-quick').isVisible()===(width<=800),'compact selector follows viewport',{scope});
+  check(await page.locator('#module-quick').isVisible(),'compact selector available at every viewport',{scope});
   for(const {id,name}of modules){
    console.log('MODULE '+scope+'/'+id);
-   if(width<=800)await page.selectOption('#module-quick',id);else await page.locator('#module-list a[href="#'+id+'"]').click();
+   await page.selectOption('#module-quick',id);
    await page.waitForFunction(name=>document.getElementById('selected-title').textContent===name,name);
    const handle=await page.locator('#frames iframe:not([hidden])').elementHandle(),frame=await handle.contentFrame();
    await frame.waitForSelector('svg path,svg polyline,svg rect',{state:'attached',timeout:15000});
@@ -89,8 +89,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    }
   }
   // Save representative screenshots, including the compact picker and embedded chart.
-  if(width<=800)await page.selectOption('#module-quick','trim');
-  else await page.locator('#module-list a[href="#trim"]').click();
+  await page.selectOption('#module-quick','trim');
   await page.waitForFunction(()=>document.getElementById('selected-title').textContent==='Trim & draft changes');
   await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,'workspace-'+device+'.png'),fullPage:true});
   if(device==='desktop'){

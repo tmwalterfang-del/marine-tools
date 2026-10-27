@@ -14,7 +14,7 @@ const cargo=document.getElementById('cargo-form');if(cargo){const d=wrapControls
 if(narrow.addEventListener)narrow.addEventListener('change',e=>{for(const d of wrappers)d.open=!e.matches});
 const toolbar=document.createElement('div');toolbar.className='teaching-toolbar';
 const toggle=document.createElement('button');toggle.type='button';toggle.id='presentation-toggle';toggle.setAttribute('aria-pressed','false');toggle.textContent='Presentation view';toolbar.append(toggle);
-const hint=document.createElement('span');hint.textContent='Larger diagrams for teaching';toolbar.append(hint);main.prepend(toolbar);
+const hint=document.createElement('span');hint.textContent='Larger diagrams for teaching';toolbar.append(hint);(document.querySelector('.workspace-toolbar')||main).prepend(toolbar);
 let presenting=false,previousScroll=0,layoutPending=false,viewportHeightOverride=null;
 // Size the whole SVG viewport, including its axes. Preserve the viewBox aspect
 // ratio instead of letting a wide monitor turn the diagram into a tall poster.

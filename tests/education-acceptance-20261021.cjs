@@ -18,7 +18,7 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/students/interactive.html');
  const modules=await page.locator('#module-list a').evaluateAll(a=>a.map(x=>x.hash.slice(1)));
  for(const id of modules){
-  console.log('ACCEPTANCE '+engine+'/'+id);await page.locator('#module-list a[href="#'+id+'"]').click();
+  console.log('ACCEPTANCE '+engine+'/'+id);await page.selectOption('#module-quick',id);
   await page.waitForFunction(id=>document.getElementById('selected-title').textContent===document.querySelector('#module-list a[href="#'+id+'"]').textContent,id);
   const h=await page.locator('#frames iframe:not([hidden])').elementHandle(),f=await h.contentFrame();await f.waitForSelector('svg path,svg polyline',{state:'attached'});await openInputs(f);
   const generic=await f.evaluate(()=>!!(window.MT_EXAMPLE_UI||window.MT_EXPLORER_UI)),lab=['stability','controls','engine'].includes(id),mollier=id==='mollier';
@@ -26,7 +26,7 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
   const input=f.locator(inputSel).first(),initial=Number(await input.inputValue()),changed=mollier?12:initial===0?1:initial*1.01;
   await input.fill(String(changed));await input.dispatchEvent('change');const expected=await snapshot(f,id);check(Object.keys(expected.results).length>0,'changed inputs calculate/'+id);
   if(id==='trim'){const mass=500,tpc=30,mct=150,lcf=70,lcg=100,L=changed;const r=expected.results;check(Math.abs(r['Forward draft (m)']-(6+mass/tpc/100-(-mass*(lcg-lcf)/mct/100)*(L-lcf)/L))<1e-10,'independent trim input-to-result reference')}
-  const other=id==='trim'?'crank':'trim';await page.locator('#module-list a[href="#'+other+'"]').click();await page.locator('#module-list a[href="#'+id+'"]').click();check(await input.inputValue()===String(changed),'module switch preserves changed input/'+id);
+  const other=id==='trim'?'crank':'trim';await page.selectOption('#module-quick',other);await page.selectOption('#module-quick',id);check(await input.inputValue()===String(changed),'module switch preserves changed input/'+id);
   const jsonSel=mollier?'#export-scenario':lab?'#report-json':'[data-save=json]',htmlSel=mollier?'#export-report':lab?'#report-html':'[data-save=html]',fileSel=mollier?'#mollier-scenario':lab?'#scenario-file':'#scenario';
   const jsonPath=await fileDownload(page,f,jsonSel,id+'.json'),htmlPath=await fileDownload(page,f,htmlSel,id+'.html');
   const saved=JSON.parse(fs.readFileSync(jsonPath,'utf8')),html=fs.readFileSync(htmlPath,'utf8'),embedded=JSON.parse(html.match(/id="study-snapshot">([\s\S]*?)<\/script>/)[1]);

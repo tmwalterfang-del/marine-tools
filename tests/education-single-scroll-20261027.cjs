@@ -25,11 +25,26 @@ const ok=(value,label)=>{assert.ok(value,label);checks++;};
   // Content changes must settle rather than growing on every layout frame.
   const sizes=await page.evaluate(async()=>{const f=document.querySelector('#frames iframe:not([hidden])'),values=[];for(let i=0;i<8;i++){await new Promise(r=>requestAnimationFrame(r));values.push(f.getBoundingClientRect().height);}return values;});
   ok(Math.max(...sizes)-Math.min(...sizes)<=2,'Stable content height: '+label);
-  const m=await frame.evaluate(()=>({viewport:innerHeight,content:document.scrollingElement.scrollHeight,scroll:scrollY,width:document.documentElement.clientWidth,fullWidth:document.documentElement.scrollWidth}));
+  const m=await frame.evaluate(()=>({viewport:innerHeight,content:document.scrollingElement.scrollHeight,scroll:scrollY,width:document.documentElement.clientWidth,fullWidth:document.documentElement.scrollWidth,overflow:getComputedStyle(document.documentElement).overflowY,gutter:innerWidth-document.documentElement.clientWidth}));
   ok(m.content<=m.viewport+2&&m.scroll===0,'No inner vertical scroll: '+label);
   ok(m.fullWidth<=m.width+2,'No page-wide horizontal overflow: '+label);
+  ok(m.overflow==='hidden'&&m.gutter===0&&await el.getAttribute('scrolling')==='no','No visible module scrollbar or gutter: '+label);
   return {el,frame};
  }
+ await page.setViewportSize({width:1920,height:1080});
+ let wide=await fitted('wide/full screen');
+ const full=await page.locator('#frames iframe:not([hidden])').evaluate(f=>f.getBoundingClientRect().width);
+ ok(full>=1920*.94,'Module uses at least 94 percent of a wide screen');
+ ok(!await page.locator('#module-picker').isVisible(),'Module list starts collapsed');
+ ok(await page.locator('#module-quick').isVisible(),'Top module selector remains available on desktop');
+ const columns=await wide.frame.evaluate(()=>{const input=document.querySelector('.teaching-inputs').getBoundingClientRect(),result=document.querySelector('.teaching-results').getBoundingClientRect();return result.left>=input.right-1;});
+ ok(columns,'Desktop inputs and results use side-by-side columns');
+ await page.locator('#toggle-module-list').click();await fitted('wide/list open');
+ ok(await page.locator('#module-picker').isVisible(),'Optional subject list opens');
+ ok(await page.locator('#frames iframe:not([hidden])').evaluate(f=>f.getBoundingClientRect().width)<full-200,'Optional list shares horizontal space');
+ await page.locator('#toggle-module-list').click();await fitted('wide/list closed');
+ ok(Math.abs(await page.locator('#frames iframe:not([hidden])').evaluate(f=>f.getBoundingClientRect().width)-full)<=2,'Closing list returns the full width');
+ await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,'workspace-1920.png'),fullPage:true});
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:width===390?844:900});
   for(const id of ids){
@@ -72,6 +87,6 @@ const ok=(value,label)=>{assert.ok(value,label);checks++;};
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,'workspace-'+width+'.png'),fullPage:true});
  }
  ok(errors.length===0,'No browser exceptions: '+errors.join('; '));
- const result={engine,status:'PASS',checks,modules:15,widths:[1440,390],errors};
+ const result={engine,status:'PASS',checks,modules:15,widths:[1920,1440,390],errors};
  fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server?.close()});
