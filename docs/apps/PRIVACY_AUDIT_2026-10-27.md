@@ -19,6 +19,8 @@ inference. Public root includes usage-analytics.js, support-widget-v857.js and
 Cloudflare email-decoding injection. Edge metadata contains Cloudflare reporting
 configuration; full account-level telemetry/log settings are not known.
 
+Live usage-analytics.js and support-widget-v857.js are byte-identical to reviewed source; live app.js matches origin/main (not the modified Android branch). Public API health reports analyticsConfigured=true, analyticsQueryConfigured=true, NOAA/NCEP GFS-Wave and configured Pelyr fallback; this is public configuration metadata, not proof of provider fetch/log behavior. Read-only observations sent no analytics events. Exact hashes and metadata: PRIVACY_LIVE_EVIDENCE_2026-10-27.json.
+
 No public production privacy success is claimed. A directory document
 `privacy/index.html` supports GitHub Pages and Cloudflare Pages static directory
 routing (`/privacy` may redirect to `/privacy/`). No `_redirects`-only assumption,
@@ -52,9 +54,9 @@ submitted as an approved final policy.
 | Website workspace | `mt.profile`, `mt.route`, `mt.theme`, `mt.lastAnalysis`, `mt.settings`, favourites/history/recent, consumption/bunkering/weather | app.js K/store + export/import/clear handlers; no automatic account sync found |
 | Profile v2/energy | `mt.profile.v2`, energy rows, workflow settings/visited marker | product-v860.js K/local JSON helpers; explicit exports can leave device |
 | Voyage Estimate | Last estimate and user curve local; public route/port/dataset downloads | voyage-estimate-v861.js; voyage-planning-draft-v1.js; local route calculation, providers receive download requests |
-| Weather/API | selected lat/lon in GET to Worker; Worker forwards to MET/BarentsWatch; local weather cache contains selected point | app.js weather handler; worker/worker.js weather/forecast code. Coordinate query URLs may appear in infrastructure logs |
+| Weather/API | selected lat/lon in GET to Worker; MET/BarentsWatch forecast paths plus NOAA/NCEP selected-area wave fallback; local weather cache contains selected point | app.js + worker/worker.js + worker-v855.js; public health advertises NOAA fallback. Coordinate query URLs may appear in infrastructure logs |
 | Experimental route | route JSON (including waypoint information) sent to Worker for forecast sampling; last analysis local | app.js refreshLive; worker routeSamples. Cannot claim all route data remains local |
-| AIS | bounds sent to Worker; base Worker retrieves provider AIS then locally filters bounds | app.js API latest + worker latestAis; provider configuration in dashboard wrapper needs deployed verification |
+| AIS | bounds sent to Worker; BarentsWatch path filters on Worker; Pelyr fallback receives requested bounding box | app.js API latest + worker-v855.js pelyrLatest/aisResponse; public health advertises configured Pelyr, actual fallback fetch not exercised |
 | Maps/CDNs | OSM/OpenSeaMap tile-area requests; unpkg Leaflet; esm.sh/jsDelivr route assets; Sodir public datasets | app.js/weather-map-v854.js/voyage-estimate-v861.js. Client request metadata reaches services |
 | Website analytics | event/page/tool/device/version/visible time, browser UUID, visit UUID, source category, return marker and labels | usage-analytics.js, app.js sendAnalyticsEvent, product hooks; worker usage/product allowlisted fields |
 | Analytics controls | default enabled, settings opt-out, exclusion, DNT/environment guards; browser ID 180 days, visit inactivity 30 minutes | source defaults and collector logic. These are client expiry intervals, NOT server deletion guarantees; not prior consent |
@@ -72,8 +74,10 @@ submitted as an approved final policy.
 No Analytics Engine event deletion/retention configuration, mail retention, form
 response retention, Cloudflare/GitHub log duration, backup policy or signed
 processor/transfer agreements can be proven from this repository. The base
-Worker uses some five-minute in-memory forecast validity checks, not guaranteed
-deletion after five minutes. Token cache contains service credentials in memory;
+Worker uses some five-minute in-memory forecast validity checks; the active
+global wrapper also includes coordinate-keyed 20-minute wave validity checks.
+Expired entries are not proactively deleted merely because they expire. These
+intervals are not retention/deletion guarantees. Token cache contains service credentials in memory;
 no production secrets enter app packages. Current backend security approval
 remains separate (#40); this privacy route is not a security remediation.
 
@@ -146,6 +150,8 @@ No merge, deployment, legal publication or store declaration was performed.
   https://support.google.com/googleplay/android-developer/answer/10787469?hl=en
 - Datatilsynet, Norwegian cookie/similar technology consent:
   https://www.datatilsynet.no/personvern-pa-ulike-omrader/internett-og-apper/cookies/
+- Datatilsynet information/clarity obligations:
+  https://www.datatilsynet.no/rettigheter-og-plikter/virksomhetenes-plikter/informasjon-og-apenhet/
 - Microsoft Store 10.5 privacy requirements (effective 22 October 2026):
   https://learn.microsoft.com/en-us/windows/apps/publish/store-policies
 
