@@ -1,0 +1,16 @@
+# Android / Windows changelog
+
+## 27 October 2026 — focused development candidate
+
+Base: app Draft #42 a9544ff, carrying Education Draft #35 0034688.
+
+- Scope distribution CI, metadata, English listings and screenshot references to
+  Android, Windows and the shared PWA; preserve upstream optional platform code.
+- Fix app history cursor across Back/Forward and new navigation.
+- Flush raw input drafts on document/native background lifecycle events.
+- Clean MSIX staging on each build; include generated Android project in artifacts.
+- Add reproducible shared source syntax validation and expanded viewport/theme
+  and history regressions. Formula engines and production settings unchanged.
+
+Evidence and limitations: ANDROID_WINDOWS_DELIVERY.md. No merge, store upload or
+production deployment is authorized by this changelog.

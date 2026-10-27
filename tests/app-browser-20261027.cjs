@@ -8,10 +8,24 @@ const engine=process.argv[2]||'chromium',root=path.resolve('app-dist'),out=path.
  await page.evaluate(()=>__marineToolsOpenPage('vessel-calcs'));await page.locator('#calcAirDraft').click();ok(/3[.,]20 m remaining clearance/.test(await page.locator('#resAirDraft').textContent()),'Independent clearance: 25 - 0.8 - 20 - 1 = 3.20 m');
  await page.evaluate(()=>__marineToolsOpenPage('electrical'));await page.locator('#calc3p').click();ok((await page.locator('#res3p').textContent()).includes((Math.sqrt(3)*400*143*.85/1000).toFixed(1)+' kW'),'Independent three-phase power reference');
  await page.locator('#mt-app-back').click();await page.waitForFunction(()=>MT_APP_NAV.current==='vessel-calcs');ok(await page.locator('#calcAirDraft').isVisible(),'App back returns to previous tool');
+ await page.goForward();await page.waitForFunction(()=>MT_APP_NAV.current==='electrical');ok(await page.locator('#calc3p').isVisible(),'Forward restores electrical navigation');
+ await page.locator('#mt-app-back').click();await page.waitForFunction(()=>MT_APP_NAV.current==='vessel-calcs');ok(await page.locator('#calcAirDraft').isVisible(),'Back still works after forward');
  await page.locator('#resAirDraft').locator('xpath=ancestor::*[contains(@class,"tool-card")][1]').locator('.copy-result').click();await page.waitForFunction(()=>window.__qaClipboard?.includes('3.20'));ok(true,'Copy reaches platform adapter');
  await page.evaluate(()=>__marineToolsOpenPage('settings'));const download=page.waitForEvent('download');await page.locator('#exportData').click();const file=await download;const saved=path.join(out,'app-backup.json');await file.saveAs(saved);ok(JSON.parse(fs.readFileSync(saved)).format==='Marine Tools local backup','Actual backup file export through adapter');
  await page.evaluate(()=>__marineToolsOpenPage('privacy'));ok((await page.locator('#privacy').textContent()).includes('does not enable app analytics'),'App privacy matches disabled telemetry');ok(!(await page.locator('#privacy').textContent()).includes('Usage analytics can be disabled'),'Website analytics policy is replaced in candidate');
  await page.evaluate(()=>__marineToolsOpenPage('vessel-calcs'));await page.locator('#airMargin').fill('1.5');await page.locator('#airMargin').dispatchEvent('change');await page.evaluate(()=>MT_APP_DRAFTS.flush());await page.reload();await page.waitForFunction(()=>!!window.MT_APP_NAV);ok(await page.locator('#airMargin').inputValue()==='1.5','Raw app input survives reopening');await page.locator('#airMargin').fill('1');await page.locator('#airMargin').dispatchEvent('change');await page.evaluate(()=>MT_APP_DRAFTS.flush());
+ // Exercise the actual UI at phone/tablet/desktop widths in both existing themes.
+ for(const viewport of [{width:360,height:640},{width:844,height:390},{width:768,height:1024},{width:1024,height:768},{width:1920,height:1080}]){
+  await page.setViewportSize(viewport);
+  for(const theme of ['dark','bridge']){
+   await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+   for(const id of ['home','vessel-calcs','electrical','settings']){
+    await page.evaluate(id=>MT_APP_NAV.go(id),id);
+    ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),`No page overflow: ${viewport.width}x${viewport.height} ${theme} ${id}`);
+   }
+  }
+ }
+ await page.setViewportSize({width:1440,height:900});
  await page.evaluate(async()=>{await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise(r=>navigator.serviceWorker.addEventListener('controllerchange',r,{once:true}))});
  const cached=await page.evaluate(async()=>{const keys=await caches.keys();return (await Promise.all(keys.map(async k=>(await(await caches.open(k)).keys()).map(r=>r.url)))).flat()});ok(cached.some(u=>u.endsWith('/index.html')),'Public PWA shell cached');ok(!cached.some(u=>u.includes('/students/')),'Protected Education absent from cache');
  ok(await page.evaluate(async()=>(await caches.keys()).some(k=>/^marine-tools-app-preview-0\.2\.0-[a-f0-9]{16}$/.test(k))),'Offline package cache is versioned by asset contents');

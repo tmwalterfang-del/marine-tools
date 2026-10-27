@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 const config=JSON.parse(fs.readFileSync('apps/app-config.json'));
-const report={version:config.version,channel:config.channel,implemented:true,storeReady:false,submitted:false,published:false,blockers:[
+const report={version:config.version,channel:config.channel,targets:config.distributionTargets,implemented:true,storeReady:false,submitted:false,published:false,blockers:[
  'Owner developer accounts, legal/trader verification and store identities are not confirmed',
- 'Production signing credentials/provisioning and cross-store Android key strategy are not confirmed',
- 'Physical Android, Samsung, iPhone, iPad and Windows installation/export/accessibility acceptance is not verified',
+ 'Production signing credentials/provisioning and Android upload/app-signing key strategy are not confirmed',
+ 'Physical Android phone/tablet and Windows installation/export/accessibility acceptance is not verified',
  'App-specific public privacy policy and store questionnaires require owner approval',
  'No owner approval exists for store submission or production deployment'
 ],sourceConstraints:{productionIdentityVerified:config.productionIdentityVerified,windowsStoreIdentityVerified:config.windows.storeIdentityVerified,productionApiEnabled:config.productionApiEnabled,analyticsEnabled:config.analyticsEnabled,educationBundled:false}};

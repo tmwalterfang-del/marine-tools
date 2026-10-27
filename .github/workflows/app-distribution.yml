@@ -1,7 +1,7 @@
 name: App distribution candidates
 on:
   pull_request:
-    branches: ['feature/for-students-formula-library-20261019', 'main']
+    branches: ['feature/cross-platform-app', 'feature/for-students-formula-library-20261019', 'main']
     paths-ignore: ['docs/**', 'apps/README.md']
   workflow_dispatch:
 permissions:
@@ -26,6 +26,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run test:app
       - run: npm run test:app:unit
+      - run: npm run lint
       - run: node scripts/app/release-readiness.mjs
       - run: npm install --prefix /tmp/app-browser --no-audit --no-fund playwright@1.62.1
       - run: node /tmp/app-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
@@ -105,6 +106,10 @@ jobs:
             apps/mobile/android/app/build/outputs/bundle/
             apps/mobile/android/app/src/main/AndroidManifest.xml
             app-artifacts/android/
+            apps/mobile/android/
+            !apps/mobile/android/**/build/**
+            !apps/mobile/android/.gradle/**
+            !apps/mobile/android/local.properties
           if-no-files-found: error
   desktop:
     concurrency:
@@ -113,7 +118,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 35
     steps:
@@ -141,49 +146,11 @@ jobs:
           name: MarineTools-0.2.0-${{ matrix.os }}
           path: |
             apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
-            apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg
             apps/desktop/src-tauri/Cargo.lock
             app-artifacts/windows/*.msix
             app-artifacts/windows/*.json
             app-artifacts/windows/*.png
           if-no-files-found: error
-  ios:
-    concurrency:
-      group: app-ios-${{ github.ref }}
-      cancel-in-progress: true
-    runs-on: macos-latest
-    timeout-minutes: 35
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: xcodebuild -version
-      - run: xcrun --sdk iphoneos --show-sdk-version
-      - run: npm ci --no-audit --no-fund
-      - run: npm run app:ios:sync
-      - run: xcodebuild -project apps/mobile/ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
-      - run: node scripts/app/ios-simulator-smoke.mjs
-      - if: ${{ !cancelled() }}
-        run: xcodebuild -project apps/mobile/ios/App/App.xcodeproj -scheme App -destination generic/platform=iOS -configuration Release -archivePath ios-archive/MarineTools-0.2.0.xcarchive CODE_SIGNING_ALLOWED=NO archive
-      - name: Preserve Apple bundle permissions
-        if: ${{ !cancelled() }}
-        run: |
-          mkdir -p app-artifacts/ios
-          tar -czf app-artifacts/ios/MarineTools-0.2.0-simulator-app.tar.gz -C ios-build/Build/Products/Debug-iphonesimulator App.app
-          if [ -d ios-archive/MarineTools-0.2.0.xcarchive ]; then
-            tar -czf app-artifacts/ios/MarineTools-0.2.0-unsigned.xcarchive.tar.gz -C ios-archive MarineTools-0.2.0.xcarchive
-          fi
-          shasum -a 256 app-artifacts/ios/*.tar.gz > app-artifacts/ios/SHA256SUMS.txt
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: MarineTools-0.2.0-ios-candidates
-          path: |
-            app-artifacts/ios/
-          if-no-files-found: error
-
   android-emulator:
     concurrency:
       group: app-android-emulator-${{ github.ref }}

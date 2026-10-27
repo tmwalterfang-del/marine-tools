@@ -19,6 +19,6 @@ function restore(){loading=true;try{for(const el of document.querySelectorAll('.
  }
  }finally{loading=false}}
 for(const event of ['input','change'])document.addEventListener(event,capture);
-window.addEventListener('pagehide',flush);window.addEventListener('mt-page-change',()=>queueMicrotask(restore));document.addEventListener('DOMContentLoaded',()=>setTimeout(restore,0));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});window.addEventListener('pagehide',flush);window.addEventListener('mt-page-change',()=>queueMicrotask(restore));document.addEventListener('DOMContentLoaded',()=>setTimeout(restore,0));
 window.MT_APP_DRAFTS={flush,restore};
 })();
