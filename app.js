@@ -73,6 +73,7 @@ function localDateISO(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOf
 function csvCell(v){let s=String(v??'');if(/^[\s\uFEFF]*[=+@\-\t\r]/.test(s)&&!/^\s*-?\d+(?:\.\d+)?\s*$/.test(s))s="'"+s;return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}
 function downloadCsv(filename,rows){
  const csv=rows.map(r=>r.map(csvCell).join(',')).join('\n');
+ if(window.MT_PLATFORM)return window.MT_PLATFORM.saveText(filename,csv,'text/csv;charset=utf-8').catch(()=>{});
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click();URL.revokeObjectURL(a.href)
 }
 function parseLocalDate(s){if(!s)return null;const d=new Date(`${s}T12:00:00`);return Number.isFinite(d.getTime())?d:null}
@@ -107,7 +108,7 @@ function loadSupportWidget(){if(bmcLoaded||document.querySelector('script[data-n
 function scheduleIdle(fn,timeout=2500){if('requestIdleCallback'in window)requestIdleCallback(fn,{timeout});else setTimeout(fn,timeout)}
 const PAGE_RENDERERS={'home':renderHome,'live-experimental':renderLiveExperimental,'route-intelligence':renderRouteIntelligence,'navigation':renderNavigation,'weather':renderWeather,'fuel':renderFuel,'vessel-calcs':renderVessel,'voyage-estimate':renderVoyageEstimate,'voyage-planning-lab':renderVoyagePlanningDraft,'engineering':renderEngineering,'electrical':renderElectrical,'quick':renderQuick,'profile':renderProfile,'settings':renderSettings,'survey':renderSurvey,'suggestions':renderSuggestions,'support':renderSupport,'contact':renderContact,'about':renderAbout,'privacy':renderPrivacy};
 function ensurePage(id){if(renderedPages.has(id))return;const fn=PAGE_RENDERERS[id];if(fn){fn();renderedPages.add(id);syncFavoriteButtons()}}
-function page(id){ensurePage(id);document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();if(id==='settings')renderSettings();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'})}
+function page(id){if(window.MT_APP_PREVIEW&&window.MT_APP_NAV&&!window.MT_APP_NAV.canOpen(id)){window.dispatchEvent(new CustomEvent('mt-app-status',{detail:{message:'This feature is not included in the local app candidate.'}}));return}ensurePage(id);document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===id));const project=$('.nav-project');if(project&&['survey','suggestions','support','contact','about','privacy'].includes(id))project.open=true;$('#sidebar').classList.remove('open');const mb=$('#mobileMenu');if(mb)mb.setAttribute('aria-expanded','false');if(id==='route-intelligence')loadLeaflet().then(()=>setTimeout(initRouteMap,40)).catch(()=>toast('Map library could not be loaded.'));if(id==='support')loadSupportWidget();if(id==='settings')renderSettings();analyticsPageView(id);window.scrollTo({top:0,behavior:'smooth'});if(window.MT_PLATFORM)window.dispatchEvent(new CustomEvent('mt-page-change',{detail:{page:id}}))}
 window.__marineToolsOpenPage=page;
 function requestedInitialPage(){
  const q=new URLSearchParams(location.search).get('page');
@@ -301,6 +302,7 @@ async function shareResult(btn){
  const card=btn.closest('.tool-card');if(!card)return;
  const text=buildShareText(card);
  try{
+   if(window.MT_PLATFORM){await window.MT_PLATFORM.shareText('Marine Tools — '+card.dataset.toolTitle,text);return}
    if(navigator.share)await navigator.share({title:`Marine Tools — ${card.dataset.toolTitle}`,text});
    else{await navigator.clipboard.writeText(text);toast('Share text copied.')}
  }catch(e){if(e?.name!=='AbortError')toast('Share unavailable.')}
@@ -346,6 +348,7 @@ function sanityCheckInput(input){
 function copyResult(el){
  const r=el.closest('.tool-card')?.querySelector('.result');if(!r)return;
  const text=r.innerText.trim();if(!text)return;
+ if(window.MT_PLATFORM){window.MT_PLATFORM.copyText(text).catch(()=>{});return}
  navigator.clipboard?.writeText(text).then(()=>toast('Result copied.')).catch(()=>toast('Copy unavailable.'));
 }
 
@@ -1242,16 +1245,19 @@ function renderSettings(){
 }
 
 function exportData(){
- const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),extraLocal:Object.fromEntries([['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']].map(([n,k])=>[n,store.get(k,null)])),exported:new Date().toISOString()};
+ const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),extraLocal:Object.fromEntries([['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last'],['appToolDrafts','mt.app.tool-drafts.v1']].map(([n,k])=>[n,store.get(k,null)])),exported:new Date().toISOString()};
+ if(window.MT_PLATFORM){window.MT_PLATFORM.saveText('marine-tools-backup-'+localDateISO()+'.json',JSON.stringify(data,null,2),'application/json').catch(()=>{});return}
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=`marine-tools-backup-${localDateISO()}.json`;a.click();URL.revokeObjectURL(a.href);toast('Local backup downloaded.')
 }
 async function importDataBackup(file){
+ if(window.MT_PLATFORM&&file.size>8*1024*1024)return toast('Backup exceeds the 8 MB app limit.');
  try{
   const data=JSON.parse(await file.text());
+  window.MT_PLATFORM?.validateBackup?.(data);
   if(!data||typeof data!=='object'||(!data.profile&&!data.consumption&&!data.bunkering&&!data.settings))return toast('This does not look like a Marine Tools backup.');
   if(!confirm('Restore this Marine Tools backup? Existing local values may be replaced.'))return;
   const mapping=[[K.profile,data.profile],[K.route,data.route],[K.lastAnalysis,data.lastAnalysis],[K.settings,data.settings],[K.theme,data.theme],[K.favorites,data.favorites],[K.recent,data.recent],[K.history,data.history],[K.consumption,data.consumption],[K.bunkHistory,data.bunkering],[K.weatherCache,data.weatherCache]];
-  for(const [key,value] of mapping)if(value!==undefined&&value!==null)store.set(key,value);if(data.extraLocal&&typeof data.extraLocal==='object')for(const [n,k] of [['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']])if(data.extraLocal[n]!=null)store.set(k,data.extraLocal[n]);
+  for(const [key,value] of mapping)if(value!==undefined&&value!==null)store.set(key,value);if(data.extraLocal&&typeof data.extraLocal==='object')for(const [n,k] of [['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last'],['appToolDrafts','mt.app.tool-drafts.v1']])if(data.extraLocal[n]!=null)store.set(k,data.extraLocal[n]);
   toast('Backup restored. Reloading…');setTimeout(()=>location.reload(),500)
  }catch{toast('Could not restore backup JSON.')}
 }

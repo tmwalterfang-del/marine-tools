@@ -1,6 +1,6 @@
 {
   "name": "marine-tools-apps",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Private Marine Tools app prototypes using the existing web calculation tools",
   "scripts": {
@@ -10,15 +10,36 @@
     "app:ios:sync": "node scripts/native-app.mjs ios sync",
     "app:desktop:build": "node scripts/native-app.mjs desktop build",
     "app:desktop:dev": "node scripts/native-app.mjs desktop dev",
-    "test:app": "node tests/app-package-20261027.mjs"
+    "test:app": "node tests/app-package-20261027.mjs",
+    "app:windows:msix": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/app/package-windows.ps1",
+    "app:android:release": "node scripts/native-app.mjs android sync && node scripts/app/android-release.mjs",
+    "test:app:unit": "node tests/app-adapters-20261027.mjs"
   },
   "dependencies": {
-    "@capacitor/core": "8.5.3"
+    "@capacitor/app": "8.1.2",
+    "@capacitor/browser": "8.0.5",
+    "@capacitor/clipboard": "8.0.1",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/share": "8.0.3",
+    "@tauri-apps/api": "2.12.4",
+    "@tauri-apps/plugin-clipboard-manager": "2.5.0",
+    "@tauri-apps/plugin-dialog": "2.8.3",
+    "@tauri-apps/plugin-fs": "2.7.1",
+    "@tauri-apps/plugin-opener": "2.7.2"
   },
   "devDependencies": {
     "@capacitor/android": "8.5.3",
     "@capacitor/cli": "8.5.3",
     "@capacitor/ios": "8.5.3",
-    "@tauri-apps/cli": "2.12.4"
+    "@tauri-apps/cli": "2.12.4",
+    "esbuild": "0.28.2",
+    "plist": "3.1.0",
+    "xcode": "3.0.1"
+  },
+  "overrides": {
+    "xcode": {
+      "uuid": "11.1.1"
+    }
   }
 }

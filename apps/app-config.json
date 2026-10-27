@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "buildNumber": 2,
+  "channel": "preview",
+  "name": "Marine Tools Preview",
+  "publicName": "Marine Tools",
+  "previewId": "app.marinetools.preview",
+  "proposedProductionId": "com.marinetools.app",
+  "productionIdentityVerified": false,
+  "urlScheme": "marinetools-preview",
+  "educationUrl": "https://feature-for-students-formula.marine-tools-frontend-preview.pages.dev/students/interactive.html",
+  "productionApiEnabled": false,
+  "analyticsEnabled": false,
+  "android": {"minSdk": 24, "targetSdk": 36},
+  "ios": {"minimumVersion": "15.4", "family": "1,2"},
+  "windows": {"identity": "MarineTools.Preview", "publisher": "CN=Marine Tools Development", "storeIdentityVerified": false, "minimumVersion": "10.0.19041.0"}
+}

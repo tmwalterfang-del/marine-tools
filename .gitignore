@@ -6,3 +6,9 @@ apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/icons/
 qa-education-*/
 *-audit.json
+
+app-artifacts/
+apps/windows/package/
+ios-build/
+ios-archive/
+store-assets/

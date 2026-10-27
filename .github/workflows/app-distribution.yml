@@ -1,0 +1,221 @@
+name: App distribution candidates
+on:
+  pull_request:
+    branches: ['feature/for-students-formula-library-20261019', 'main']
+    paths-ignore: ['docs/**', 'apps/README.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  web:
+    concurrency:
+      group: app-web-${{ github.ref }}-${{ matrix.browser }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:app
+      - run: npm run test:app:unit
+      - run: node scripts/app/release-readiness.mjs
+      - run: npm install --prefix /tmp/app-browser --no-audit --no-fund playwright@1.62.1
+      - run: node /tmp/app-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
+      - run: node tests/app-browser-20261027.cjs ${{ matrix.browser }}
+        env:
+          NODE_PATH: /tmp/app-browser/node_modules
+      - if: matrix.browser == 'chromium'
+        run: node scripts/app/capture-store-assets.cjs
+        env:
+          NODE_PATH: /tmp/app-browser/node_modules
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-web-${{ matrix.browser }}
+          path: |
+            qa-education-${{ matrix.browser }}/app/
+            app-dist/
+            store-assets/
+            app-artifacts/release-readiness.json
+  quality:
+    concurrency:
+      group: app-quality-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: npm audit --audit-level=moderate
+      - run: npm run test:app
+      - run: npm run test:app:unit
+      - run: node tests/students-worked-cases-20261027.mjs
+      - run: node tests/students-expression-review-ledger-20261020.mjs
+      - run: npm install --prefix /tmp/app-dom --no-audit --no-fund jsdom@26.1.0
+      - run: node tests/site-core-dom-20261020.cjs
+        env:
+          NODE_PATH: /tmp/app-dom/node_modules
+      - run: node tests/site-wide-source-audit-20261020.cjs
+        env:
+          NODE_PATH: /tmp/app-dom/node_modules
+      - run: node tests/navigation-smoke.mjs
+  android:
+    concurrency:
+      group: app-android-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: 'false'
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run app:android:sync
+      - run: chmod +x apps/mobile/android/gradlew
+      - run: apps/mobile/android/gradlew -p apps/mobile/android assembleDebug assembleRelease bundleRelease
+      - run: python3 scripts/app/check-android-package.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-0.2.0-android-candidates
+          path: |
+            apps/mobile/android/app/build/outputs/apk/
+            apps/mobile/android/app/build/outputs/bundle/
+            apps/mobile/android/app/src/main/AndroidManifest.xml
+            app-artifacts/android/
+          if-no-files-found: error
+  desktop:
+    concurrency:
+      group: app-desktop-${{ github.ref }}-${{ matrix.os }}
+      cancel-in-progress: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci --no-audit --no-fund
+      - run: npm run app:desktop:build
+      - if: runner.os == 'Windows'
+        run: npm run app:windows:msix
+      - if: runner.os == 'Windows'
+        run: |
+          npm install --prefix "$env:RUNNER_TEMP/marine-native-test" --no-audit --no-fund playwright@1.62.1
+          $env:NODE_PATH="$env:RUNNER_TEMP/marine-native-test/node_modules"
+          node scripts/app/windows-ci-webview-build.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell -NoProfile -ExecutionPolicy Bypass -File scripts/app/windows-native-smoke.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-0.2.0-${{ matrix.os }}
+          path: |
+            apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
+            apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/Cargo.lock
+            app-artifacts/windows/*.msix
+            app-artifacts/windows/*.json
+            app-artifacts/windows/*.png
+          if-no-files-found: error
+  ios:
+    concurrency:
+      group: app-ios-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: macos-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: xcodebuild -version
+      - run: xcrun --sdk iphoneos --show-sdk-version
+      - run: npm ci --no-audit --no-fund
+      - run: npm run app:ios:sync
+      - run: xcodebuild -project apps/mobile/ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
+      - run: node scripts/app/ios-simulator-smoke.mjs
+      - if: ${{ !cancelled() }}
+        run: xcodebuild -project apps/mobile/ios/App/App.xcodeproj -scheme App -destination generic/platform=iOS -configuration Release -archivePath ios-archive/MarineTools-0.2.0.xcarchive CODE_SIGNING_ALLOWED=NO archive
+      - name: Preserve Apple bundle permissions
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p app-artifacts/ios
+          tar -czf app-artifacts/ios/MarineTools-0.2.0-simulator-app.tar.gz -C ios-build/Build/Products/Debug-iphonesimulator App.app
+          if [ -d ios-archive/MarineTools-0.2.0.xcarchive ]; then
+            tar -czf app-artifacts/ios/MarineTools-0.2.0-unsigned.xcarchive.tar.gz -C ios-archive MarineTools-0.2.0.xcarchive
+          fi
+          shasum -a 256 app-artifacts/ios/*.tar.gz > app-artifacts/ios/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-0.2.0-ios-candidates
+          path: |
+            app-artifacts/ios/
+          if-no-files-found: error
+
+  android-emulator:
+    concurrency:
+      group: app-android-emulator-${{ github.ref }}
+      cancel-in-progress: true
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: MarineTools-0.2.0-android-candidates
+          path: emulator-input
+      - run: npm install --prefix /tmp/android-browser --no-audit --no-fund playwright@1.62.1
+      - name: Enable KVM
+        run: |
+          sudo chmod 666 /dev/kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          profile: pixel_7
+          disable-animations: true
+          script: |
+            adb install $(find emulator-input -name app-debug.apk | head -1)
+            NODE_PATH=/tmp/android-browser/node_modules node scripts/app/android-emulator-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-0.2.0-android-emulator-QA
+          path: app-artifacts/android/
