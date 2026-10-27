@@ -12,14 +12,27 @@ for($i=0;$i -lt 30;$i++) {
 }
 if(!$dialog){throw 'Native Save As dialog did not appear'}
 $editCondition=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::Edit)
-$edits=$dialog.FindAll([System.Windows.Automation.TreeScope]::Descendants,$editCondition)
 $edit=$null
-foreach($item in $edits){if($item.Current.AutomationId -eq '1001' -or $item.Current.Name -match 'File name'){$edit=$item;break}}
-if(!$edit){throw 'File-name control unavailable in native dialog'}
-$value=$edit.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
-$value.SetValue($Destination)
-$buttonCondition=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty,'Save')
-$button=$dialog.FindFirst([System.Windows.Automation.TreeScope]::Descendants,$buttonCondition)
-if(!$button){throw 'Save button unavailable'}
-$invoke=$button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
-$invoke.Invoke()
+for($i=0;$i -lt 30 -and !$edit;$i++) {
+ $edits=$dialog.FindAll([System.Windows.Automation.TreeScope]::Descendants,$editCondition)
+ foreach($item in $edits){if($item.Current.AutomationId -eq '1001' -or $item.Current.Name -match 'File name'){$edit=$item;break}}
+ if(!$edit){Start-Sleep -Milliseconds 500}
+}
+if($edit) {
+ $value=$edit.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
+ $value.SetValue($Destination)
+ $buttonCondition=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty,'Save')
+ $button=$dialog.FindFirst([System.Windows.Automation.TreeScope]::Descendants,$buttonCondition)
+ if($button){$button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke();return}
+}
+# The modern shell can withhold edit controls from UIA while loading. Its
+# documented English filename keyboard accelerator still exercises the OS dialog.
+Add-Type -AssemblyName System.Windows.Forms
+$shell=New-Object -ComObject WScript.Shell
+if(!$shell.AppActivate('Save Marine Tools export')){throw 'Could not activate native Save As dialog'}
+[System.Windows.Forms.SendKeys]::SendWait('%n')
+Start-Sleep -Milliseconds 500
+[System.Windows.Forms.SendKeys]::SendWait('^a')
+$keys=[regex]::Replace($Destination,'([+^%~(){}\[\]])','{$1}')
+[System.Windows.Forms.SendKeys]::SendWait($keys)
+[System.Windows.Forms.SendKeys]::SendWait('{ENTER}')

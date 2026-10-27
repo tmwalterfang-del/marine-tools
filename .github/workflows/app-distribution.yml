@@ -165,15 +165,22 @@ jobs:
       - run: npm run app:ios:sync
       - run: xcodebuild -project apps/mobile/ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
       - run: node scripts/app/ios-simulator-smoke.mjs
-      - if: always()
+      - if: ${{ !cancelled() }}
         run: xcodebuild -project apps/mobile/ios/App/App.xcodeproj -scheme App -destination generic/platform=iOS -configuration Release -archivePath ios-archive/MarineTools-0.2.0.xcarchive CODE_SIGNING_ALLOWED=NO archive
+      - name: Preserve Apple bundle permissions
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p app-artifacts/ios
+          tar -czf app-artifacts/ios/MarineTools-0.2.0-simulator-app.tar.gz -C ios-build/Build/Products/Debug-iphonesimulator App.app
+          if [ -d ios-archive/MarineTools-0.2.0.xcarchive ]; then
+            tar -czf app-artifacts/ios/MarineTools-0.2.0-unsigned.xcarchive.tar.gz -C ios-archive MarineTools-0.2.0.xcarchive
+          fi
+          shasum -a 256 app-artifacts/ios/*.tar.gz > app-artifacts/ios/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: MarineTools-0.2.0-ios-candidates
           path: |
-            ios-build/Build/Products/Debug-iphonesimulator/*.app
-            ios-archive/*.xcarchive
             app-artifacts/ios/
           if-no-files-found: error
 
