@@ -52,11 +52,14 @@ the Actions run; configuration alone is not evidence of a successful build.
   checks, 30 Mollier worker/process checks and 448 single-scroll checks.
   Responsive acceptance covered 15 modules over eight viewport configurations;
   actual scenario/report downloads and print output were exercised.
-- Firefox's completed full-suite checkpoint is `13da1303a71dbc724fef86f7c97e56eabdb99484`
-  in [run 40498894212](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40498894212).
-  The following implementation change only reduces presentation toolbar margins
-  for short laptop viewports; its newer Firefox dependency-install jobs are not
-  counted here as completed acceptance.
+- Final documented checkpoint `68007fe2de3d5f7a76d03b93204f85b7d4e7db36`:
+  Chromium passed in [run 40499891935](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40499891935);
+  Firefox and WebKit passed in [run 40499899220](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40499899220).
+  Source/DOM/symbolic validation also passed. These runs have the same Education,
+  app and test implementation as `3596cd7`; intervening changes were documentation
+  only. Each engine passed all 153 session, 10 app, 30 Mollier and 448 single-scroll
+  checks, alongside responsive and export acceptance. Duplicate jobs waiting on
+  dependency installation are not counted as passes.
 - The staged PWA was reopened after the HTTP fixture server was stopped and
   calculated the independent clearance case 25 - 0.8 - 20 - 1 = 3.20 m.
   Versioned resource URLs resolved from the asset-content-versioned cache.
