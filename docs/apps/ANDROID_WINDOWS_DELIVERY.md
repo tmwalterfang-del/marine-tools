@@ -1,5 +1,14 @@
 # Android and Windows delivery — 27 October 2026
 
+
+**Current delivery:** Android and Windows test candidates are built at
+`f6a1bf727c9d561e48c7e93cd793ef8859bd05cd` (version 0.2.0, build 2).
+Android emulator and Windows installation/native interaction acceptance pass.
+Neither store is ready/submitted/published. Final artifact links, hashes and
+remaining verification limits are in the final delivery section below. The
+supplemental current WebKit job is still installing its browser at this snapshot;
+its earlier 59-check passes are retained separately, not counted as a new pass.
+
 This document is the current Android/Windows mandate and evidence register.
 `FINAL_REPORT.md` describes the inherited, broader PR #42 work; it is historical
 context, not authorization to develop or publish excluded platforms.
@@ -148,15 +157,15 @@ SHA, signing certificate and version for any candidate selected for release.
 | Repository/architecture inspection | Tested | Actual branches, docs, workflows and app code inspected |
 | Development branch | Implemented | feature/android-windows-app |
 | Draft PR | Implemented | #43, open Draft against #42 |
-| Shared core/PWA | Tested | 59 checks in each of Chromium/Firefox/WebKit on 4257372; final import-hardening revision retested in final evidence below |
+| Shared core/PWA | Tested | Final Chromium/Firefox: 59 checks each; previous identical app core WebKit pass; current supplemental WebKit installation pending |
 | Interactive layout fixes | Implemented | Existing #35 natural-height/wide workspace retained; physical QA pending |
 | Android project/configuration | Built | Generated project uploaded separately; source controls also inspected locally |
-| Debug APK / release AAB | Built | Current-branch compilation and merged-manifest inspection passed on 4257372; final candidate below |
-| Windows NSIS/MSIX | In progress | Base builds succeeded; this branch requires its own CI outputs |
-| Native sharing/export/navigation | In progress | Android emulator passed on 4257372; Windows/final revision evidence below |
+| Debug APK / release AAB | Built | Final f6a1bf7 binaries downloaded, hashes and merged manifests checked; debug APK passed emulator acceptance |
+| Windows NSIS/MSIX | Built | Final NSIS install/start/uninstall passed; MSIX validly packaged but unsigned and not installed |
+| Native sharing/export/navigation | Tested | Actual Android emulator and instrumented Windows native interactions pass; physical-device/recipient-delivery limits remain |
 | Automated QA/security report | Implemented | This report plus SECURITY_REVIEW.md; CI and physical acceptance separated |
 | English listings/assets/privacy | Implemented | Drafts, not legal/store approval |
-| CI/CD build configuration | Tested | Current-branch browser/quality/Android jobs; final Windows evidence below |
+| CI/CD build configuration | Tested | Final quality, Android, emulator, Windows, Rust, Chromium/Firefox pass; supplemental WebKit runtime installation pending |
 | Physical-device acceptance | Not started | Android phone/tablet, Windows 10/11, accessibility, upgrade and clean-device tests |
 | Ready for submission | Not started | Identity/signing/privacy/device/release gates outstanding |
 | Submitted | Not started | Not authorized |
@@ -216,7 +225,7 @@ at its own source checkpoint, not represented as a newly executed physical test.
 Remaining technical limits are explicit: physical phone/tablet and Windows 10/11
 clean-device acceptance, signed MSIX installation and upgrades, native print/PDF,
 light theme, external authenticated Education/native delivery, online provider
-security/freshness handling, Rust vulnerability audit and actual deployed
+security/freshness handling, native dependency-path maintenance and actual deployed
 Cloudflare configuration verification. These do not block unsigned local-tool
 test builds; they do block claims that the full website is packaged offline or
 that every requested feature is Store-ready.
@@ -268,3 +277,122 @@ This is recorded as FAIL, not native acceptance. The follow-up test awaits and
 closes the actual dialog before using the calculator. A separate RustSec audit
 job is added to assess the existing native dependency lockfile. Final rerun
 results and their source revision follow below after completion.
+
+## Native dependency audit follow-up
+
+CI run 40529639047 adds a real RustSec scan of the locked native dependency graph,
+with no advisory ignore list or OS/CPU filter. It inspected 498 dependencies
+against 1,380 advisories (database commit
+99670cfc0bc574433034b75876a4b791ccaa2efb, updated 27 October 2026).
+The vulnerability-class list is empty, but there are five informational warnings;
+this must not be summarized as a clean report with no findings.
+
+| Locked package | Version | Warning | Advisory |
+|---|---|---|---|
+| proc-macro-error | 1.0.4 | unmaintained | RUSTSEC-2024-0370 |
+| zbus_names | 4.3.5 | unmaintained | RUSTSEC-2026-0371 |
+| zvariant | 5.15.1 | unmaintained | RUSTSEC-2026-0370 |
+| zvariant_derive | 5.15.1 | unmaintained | RUSTSEC-2026-0372 |
+| glib | 0.18.5 | unsound | RUSTSEC-2024-0429 |
+
+The GLib warning concerns unsound iterator implementation and must not be ignored
+merely because the job exits successfully. The full lockfile includes optional
+platform graphs. None of these five package names appeared in the fresh Windows
+compilation lines of run 40527790674; that is evidence about this build, not a
+replacement for a target-specific dependency-path review. Android uses the
+Java/Kotlin Capacitor shell and does not build this Rust graph. Before enabling
+additional desktop platforms or changing native dependencies, trace/update the
+relevant upstream paths and rerun the audit. No advisory was suppressed and no
+unrelated dependency upgrade was made to force a green status.
+
+[Complete JSON audit artifact](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047/artifacts/12746975060).
+The earlier statement that no Rust scan had been performed describes the inherited
+checkpoint; this scan is new evidence. Source/configuration and physical-device
+security checks remain separate. CI also emits a Node 20 action-runtime
+compatibility warning while forcing older action majors onto Node 24; schedule
+an action-major maintenance pass rather than confusing that with an app CVE.
+
+## Final delivery: Android and Windows test candidates
+
+Source head: `f6a1bf727c9d561e48c7e93cd793ef8859bd05cd`.
+Build-info records GitHub's tested PR merge ref
+`f63e166c1b51a1cfba04515bc06acbc3d883dea3`.
+[Final candidate run](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047).
+The subsequent report commit changes documentation only. No formula, runtime,
+packaging or production code changes after this candidate are implied.
+
+| Job / acceptance | Result | Scope |
+|---|---|---|
+| Quality | PASS | npm audit zero findings; 42 guards, selected 309 worked cases, 1,498 ledger entries, source/DOM/navigation checks |
+| Chromium / Firefox | PASS | 59 checks each; real PWA offline navigation/update and backup download; 40 responsive/theme combinations |
+| WebKit | IN PROGRESS at snapshot | Browser dependency installation; prior 59-check passes at eea5937/4257372 remain separate evidence; app core unchanged in the final Windows-test/audit follow-up |
+| Android build | PASS | Debug APK, unsigned release APK/AAB, merged manifests and package isolation |
+| Android emulator | PASS | API 36, native clipboard, real share chooser/private export contents, system back and offline cold reopen; 1.5 m restored margin gives 2.70 m clearance |
+| Windows build/package | PASS | Release NSIS and MakeAppx-validated unsigned x64 MSIX |
+| Windows installed shipping window | PASS | NSIS install, release-window startup and uninstall on runner |
+| Windows native interactions | PASS | Separate CI instrumentation: 3.20 m calculation, actual OS clipboard, real Save As and exact saved JSON contents |
+| RustSec audit | PASS WITH WARNINGS | 498 dependencies, zero vulnerability-class findings; four unmaintained and one unsound informational warning, documented above |
+| Physical devices / signed Store upgrade | UNVERIFIED | Required before submission; unsigned MSIX installation not credited |
+
+The earlier Windows failure was the test's delayed-modal race. The corrected
+run waits for and clicks the normal Done action; no forced calculator click or
+removed acceptance assertion was used. Shipping installers/MSIX were built
+before CI instrumentation. The debug-port instrumentation executable is not a
+shipping artifact. Its JSON records the unchanged shipping executable hash.
+
+### Downloadable deliverables
+
+| Artifact | Download / contents |
+|---|---|
+| Android binary candidates | [APK/AAB ZIP](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047/artifacts/12746840164): installable debug APK, unsigned release APK/AAB, package inspection |
+| Android native project | [Generated project ZIP](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047/artifacts/12744833791): source/resources; SDK paths and build caches excluded |
+| Android emulator evidence | [Native QA ZIP](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047/artifacts/12746655693): screenshot, progress and actual acceptance result |
+| Windows candidates | [Windows ZIP](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047/artifacts/12747225299): NSIS installer, unsigned MSIX, native screenshot, install/export/package reports |
+| PWA and store assets | [Shared app ZIP](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047/artifacts/12744814668): staged PWA, 12 English shared-UI screenshot references, icon, feature graphic, results and readiness report |
+| Native dependency assessment | [RustSec JSON ZIP](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047/artifacts/12746975060): complete advisories including all five warnings |
+
+Download the Android binary ZIP and select `app-debug.apk` for non-production
+installation. `app-release.aab` is unsigned and cannot be directly installed.
+For Windows local testing, extract and use the NSIS `x64-setup.exe`; the unsigned
+MSIX is for signing/Store preparation, not a trusted installation. Follow
+QA_MATRIX.md for device acceptance and SIGNING_AND_BUILDS.md for developer steps.
+Do not create machine-wide certificate trust as part of this handover.
+
+Both final native screenshots were inspected locally: Android airplane-mode
+reopen with the restored 2.70 m result, and Windows with actual `File saved`
+feedback. They support runner acceptance only. The Android screenshot also shows
+that the legacy ONLINE badge can remain green in airplane mode: treat this as a
+WebView connectivity hint, not proof of reachable services. All live services
+are disabled and explicitly labelled. Correct/replace this indicator before an
+online-service release; do not infer fresh weather/AIS from it.
+
+Final downloaded binary SHA-256 values:
+
+| Binary | SHA-256 |
+|---|---|
+| `app-debug.apk` | `ce523bec506ab9946ed30ff48559b59ee791b16d28ccc60249125f28a6c0052e` |
+| `app-release-unsigned.apk` | `8b21aa7e73e13b4eb6491f7b248dd6867b07fb3c641ac0898d9af15f238b52dd` |
+| `app-release.aab` | `de786bdfaf9050d090fd0a0b48e3b6ea4e5304370991c4ccd1491021fa45c8cf` |
+| `Marine Tools Preview_0.2.0_x64-setup.exe` | `9850efa81ded89739f85405f07f950b50a2c76727ce8b8ebb6fe97c2d20c9eb1` |
+| `MarineToolsPreview_0.2.0_x64_unsigned.msix` | `237370ff700e65ffcf17fc76c2e05bee025e9732673b6d9ff1f95d7563735995` |
+
+### Remaining requirements and responsibility
+
+Owner: complete account verification, confirm exact Google package/Windows Store
+identities, approve public app-specific privacy/support information and ratings,
+participate in physical-device acceptance and explicitly approve the named release.
+Work handles the subsequent identity configuration and secure signed builds; the
+owner is not expected to program or assemble native projects.
+
+Technical follow-up before a full-featured Store release: verify the five native
+advisory dependency paths/maintenance plan, resolve final WebKit infrastructure
+status, fix the native connectivity indicator, complete physical accessibility,
+clean Windows/WebView2 and signed MSIX/same-key upgrade tests. Protected Education
+and live providers remain an independent authenticated-staging/security/privacy
+workstream; native print/PDF and a true light theme are not implemented or claimed.
+OS/browser runtime diagnostics are controlled separately by platform settings;
+absence of an app telemetry SDK is not a claim that the OS sends no diagnostics.
+
+No merge, production deployment, store submission or publication was performed.
+All Store-ready/submitted/published milestones remain **Not started** until the
+technical and owner release gates are actually satisfied.

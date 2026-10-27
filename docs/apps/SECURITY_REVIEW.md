@@ -30,3 +30,37 @@ Residual boundaries: imported operational data must be checked by users; local
 storage is not credential storage, portable exports are user-controlled copies,
 and screenshots/build success do not establish physical-device security. No
 production configuration, analytics setting, credentials or store account changed.
+
+## Native dependency audit follow-up
+
+CI run 40529639047 adds a real RustSec scan of the locked native dependency graph,
+with no advisory ignore list or OS/CPU filter. It inspected 498 dependencies
+against 1,380 advisories (database commit
+99670cfc0bc574433034b75876a4b791ccaa2efb, updated 27 October 2026).
+The vulnerability-class list is empty, but there are five informational warnings;
+this must not be summarized as a clean report with no findings.
+
+| Locked package | Version | Warning | Advisory |
+|---|---|---|---|
+| proc-macro-error | 1.0.4 | unmaintained | RUSTSEC-2024-0370 |
+| zbus_names | 4.3.5 | unmaintained | RUSTSEC-2026-0371 |
+| zvariant | 5.15.1 | unmaintained | RUSTSEC-2026-0370 |
+| zvariant_derive | 5.15.1 | unmaintained | RUSTSEC-2026-0372 |
+| glib | 0.18.5 | unsound | RUSTSEC-2024-0429 |
+
+The GLib warning concerns unsound iterator implementation and must not be ignored
+merely because the job exits successfully. The full lockfile includes optional
+platform graphs. None of these five package names appeared in the fresh Windows
+compilation lines of run 40527790674; that is evidence about this build, not a
+replacement for a target-specific dependency-path review. Android uses the
+Java/Kotlin Capacitor shell and does not build this Rust graph. Before enabling
+additional desktop platforms or changing native dependencies, trace/update the
+relevant upstream paths and rerun the audit. No advisory was suppressed and no
+unrelated dependency upgrade was made to force a green status.
+
+[Complete JSON audit artifact](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40529639047/artifacts/12746975060).
+The earlier statement that no Rust scan had been performed describes the inherited
+checkpoint; this scan is new evidence. Source/configuration and physical-device
+security checks remain separate. CI also emits a Node 20 action-runtime
+compatibility warning while forcing older action majors onto Node 24; schedule
+an action-major maintenance pass rather than confusing that with an app CVE.
