@@ -7,6 +7,9 @@ on:
     paths:
       - 'students/**'
       - 'tests/students-*.mjs'
+      - 'tests/lib/**'
+      - 'tests/fixtures/**'
+      - 'scripts/generate-if97-reference-20261027.py'
       - 'tests/students-*.cjs'
       - 'tests/education-*.cjs'
       - 'tests/analytics-*'
@@ -46,6 +49,13 @@ jobs:
         run: node tests/students-mechanics-mollier-20261020.mjs
       - name: Mollier
         run: node tests/students-mollier-20261020.mjs
+      - name: Full-register dimensional follow-up and expanded IF97
+        run: |
+          node tests/students-dimensions-followup-20261027.mjs students-dimensions-followup.json
+          node tests/students-followup-reference-20261027.mjs
+          node tests/students-review-report-20261027.mjs
+          git diff --exit-code docs/STUDENTS_REVIEW_FOLLOWUP_2026-10-27.csv
+          node tests/students-if97-expanded-20261027.mjs
       - name: IF97 reference points
         run: node tests/students-if97-reference-20261020.mjs
       - name: Published IAPWS reference values
@@ -108,6 +118,7 @@ jobs:
             site-wide-source-audit.json
             site-core-dom-audit.json
             students-dimensional-review.json
+            students-dimensions-followup.json
           if-no-files-found: warn
       - name: Install symbolic mathematics test dependency
         run: python3 -m pip install sympy==1.14.0
@@ -146,6 +157,7 @@ jobs:
           node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}
           node tests/education-acceptance-20261021.cjs ${{ matrix.browser }}
           node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
+          node tests/students-mollier-process-browser-20261027.cjs ${{ matrix.browser }}
       - name: Save screenshots, browser results and report exports
         if: always()
         uses: actions/upload-artifact@v4

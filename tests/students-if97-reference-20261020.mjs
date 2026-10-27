@@ -37,9 +37,9 @@ ok(M.superheated(10,300).source.includes('IF97'),'Mollier uses IF97 superheat pr
 for(const p of [.01,.1,1,2,10,50,100,150,160]){
  const sat=IF.saturation(p);ok(sat.hf<sat.hg&&sat.sf<sat.sg,'Valid saturation distinction '+p)}
 reject(()=>IF.saturation(180),'Reject >160bar saturation from region 1/2 adapter');
-reject(()=>IF.superheated(110,350),'Reject >100bar superheated');
+reject(()=>IF.superheated(160.001,350),'Reject >160bar superheated');
 reject(()=>IF.superheated(10,100),'Reject sub-saturation temperature');
-reject(()=>IF.superheated(10,401),'Reject unplotted T >400 Celsius');
+reject(()=>IF.superheated(10,601),'Reject unplotted T >600 Celsius');
 reject(()=>IF.wet(1,-.01),'Reject x below 0');
 reject(()=>IF.wet(1,1.01),'Reject x above 1');
 reject(()=>M.saturation(200),'No high-pressure fallback in Mollier model');
