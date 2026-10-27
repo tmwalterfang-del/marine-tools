@@ -2,7 +2,7 @@ name: Native app prototypes
 on:
   push:
     branches: ['feature/for-students-formula-library-20261019']
-    paths: ['apps/**', 'scripts/stage-app.mjs', 'scripts/native-app.mjs', 'package.json', 'package-lock.json', 'capacitor.config.json', '.github/workflows/native-app-prototypes.yml']
+    paths: ['apps/**', '*.js', '*.css', 'index.html', 'assets/**', 'scripts/stage-app.mjs', 'scripts/native-app.mjs', 'package.json', 'package-lock.json', 'capacitor.config.json', '.github/workflows/native-app-prototypes.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -47,6 +47,9 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: 'false'
       - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - run: npm ci --no-audit --no-fund
       - run: npm run test:app
