@@ -52,7 +52,8 @@ body.presentation-view>header,body.presentation-view .hero,body.presentation-vie
 body.presentation-view main{max-width:none;padding:20px 24px 48px}
 body.presentation-view .workspace{grid-template-columns:minmax(0,1fr)}
 body.presentation-view #workbench>h2{font-size:clamp(28px,3vw,42px)}
-body.presentation-view iframe{height:calc(100dvh - 190px);min-height:240px}
+/* Module height follows its content in both normal and presentation views. */
+#frames iframe{min-height:0;max-width:100%}
 body.presentation-view .teaching-toolbar{position:relative;padding:10px;background:var(--bg,#071725)}
 body.presentation-view .teaching-results{font-size:18px}body.presentation-view .teaching-results svg{height:var(--teaching-chart-height,45dvh);max-height:none;max-width:100%;overflow:visible}
 body.presentation-view .metric strong,body.presentation-view .metrics b{font-size:clamp(20px,2.1vw,32px)}

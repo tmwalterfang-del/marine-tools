@@ -160,6 +160,7 @@ jobs:
           node tests/education-acceptance-20261021.cjs ${{ matrix.browser }}
           node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
           node tests/students-mollier-process-browser-20261027.cjs ${{ matrix.browser }}
+          node tests/education-single-scroll-20261027.cjs ${{ matrix.browser }}
       - name: Save screenshots, browser results and report exports
         if: always()
         uses: actions/upload-artifact@v4
