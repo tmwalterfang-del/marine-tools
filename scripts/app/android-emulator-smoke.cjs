@@ -1,6 +1,7 @@
 const {assertAppLayout,assertReachable}=require('../../tests/helpers/app-layout.cjs');
 const fs=require('node:fs'),assert=require('node:assert/strict'),{_android:android}=require('playwright');
 const {execFileSync}=require('node:child_process');
+const expectedBuild=JSON.parse(fs.readFileSync('apps/app-config.json','utf8')).buildNumber;
 const watchdog=setTimeout(()=>{fs.writeFileSync('app-artifacts/android/timeout.json',JSON.stringify({status:'FAIL',reason:'Native acceptance exceeded four minutes',physicalDevice:false}));process.exit(1)},240000);
 (async()=>{
  fs.mkdirSync('app-artifacts/android',{recursive:true});const passed=[];
@@ -17,6 +18,22 @@ const watchdog=setTimeout(()=>{fs.writeFileSync('app-artifacts/android/timeout.j
   await page.locator('#mtReleaseDialog[open] #mtReleaseDone').click({timeout:15000});
   await page.waitForFunction(()=>!document.getElementById('mtReleaseDialog')?.open);
   checkpoint('startup HTML dialog dismissed through WebView pointer input');
+  if(process.env.MT_ANDROID_UPGRADE_APK){
+   await page.evaluate(()=>MT_APP_NAV.go('vessel-calcs'));
+   await page.locator('#airMargin').fill('1.5');await page.locator('#airMargin').dispatchEvent('change');await page.evaluate(()=>MT_APP_DRAFTS.flush());
+   await device.shell('input keyevent KEYCODE_HOME');await new Promise(r=>setTimeout(r,2000));
+   await device.shell('am force-stop app.marinetools.preview');
+   execFileSync('adb',['install','-r',process.env.MT_ANDROID_UPGRADE_APK],{timeout:90000,stdio:'inherit'});
+   const packageState=(await device.shell('dumpsys package app.marinetools.preview')).toString();
+   assert.match(packageState,new RegExp('versionCode='+expectedBuild+'\\b'));
+   await device.shell('am start -W -n app.marinetools.preview/.MainActivity');
+   web=await device.webView({pkg:'app.marinetools.preview'});page=await web.page();await page.waitForFunction(()=>!!window.MT_APP_NAV);
+   assert.equal(await page.evaluate(()=>MT_APP_CONFIG.buildNumber),expectedBuild);
+   await page.waitForFunction(()=>document.getElementById('airMargin')?.value==='1.5');
+   await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/2.70 m/);
+   checkpoint('build 4 upgraded to build '+expectedBuild+' using the same test key; input preserved without uninstall');
+   await page.locator('#airMargin').fill('1');await page.locator('#airMargin').dispatchEvent('change');await page.evaluate(()=>MT_APP_DRAFTS.flush());
+  }
   await page.evaluate(()=>{MT_APP_NAV.go('vessel-calcs');window.scrollTo({top:0,behavior:'instant'})});await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/3.20 m/);
   const layouts=[];
   for(const rotation of [0,1,0]){
@@ -34,6 +51,7 @@ const watchdog=setTimeout(()=>{fs.writeFileSync('app-artifacts/android/timeout.j
    const beforeKeyboard=await page.evaluate(()=>visualViewport?.height||innerHeight);
    await page.locator('#airMargin').click();
    await page.waitForFunction(before=>(visualViewport?.height||innerHeight)<before-60,beforeKeyboard,{timeout:15000});
+   await page.waitForFunction(()=>{const field=document.activeElement;if(field?.id!=='airMargin')return false;const r=field.getBoundingClientRect(),h=document.querySelector('.topbar').getBoundingClientRect();return r.top>=h.bottom&&r.bottom<=(visualViewport?.height||innerHeight)},{},{timeout:15000});
    layouts.push(await assertReachable(page,'#airMargin','native keyboard rotation '+rotation));
    await device.screenshot({path:'app-artifacts/android/keyboard-'+(rotation?'landscape':'portrait')+'.png'});
    await device.shell('input keyevent KEYCODE_BACK');
@@ -57,14 +75,9 @@ const watchdog=setTimeout(()=>{fs.writeFileSync('app-artifacts/android/timeout.j
   // cold process restart. Abrupt kill during a storage write remains unverified.
   await device.shell('input keyevent KEYCODE_HOME');await new Promise(r=>setTimeout(r,2000));
   await device.shell('am force-stop app.marinetools.preview');
-  if(process.env.MT_ANDROID_UPGRADE_APK){
-   execFileSync('adb',['install','-r',process.env.MT_ANDROID_UPGRADE_APK],{timeout:90000,stdio:'inherit'});
-   const packageState=(await device.shell('dumpsys package app.marinetools.preview')).toString();
-   assert.match(packageState,/versionCode=5\b/);checkpoint('same-test-key APK upgrade from build 4 to build 5 installed without uninstall');
-  }
   await device.shell('cmd connectivity airplane-mode enable');await device.shell('am start -W -n app.marinetools.preview/.MainActivity');
   web=await device.webView({pkg:'app.marinetools.preview'});page=await web.page();await page.waitForFunction(()=>!!window.MT_APP_NAV);
-  if(process.env.MT_ANDROID_UPGRADE_APK)assert.equal(await page.evaluate(()=>MT_APP_CONFIG.buildNumber),5);
+  assert.equal(await page.evaluate(()=>MT_APP_CONFIG.buildNumber),expectedBuild);
   await page.waitForFunction(()=>document.getElementById('airMargin')?.value==='1.5',{},{timeout:10000});assert.equal(await page.locator('#airMargin').inputValue(),'1.5');await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/2.70 m/);
   fs.mkdirSync('app-artifacts/android',{recursive:true});await device.screenshot({path:'app-artifacts/android/native-emulator.png'});
   await page.evaluate(()=>MT_APP_NAV.go('privacy'));await page.locator('#privacy .privacy-policy').waitFor();

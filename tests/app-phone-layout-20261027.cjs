@@ -47,6 +47,12 @@ module.exports=async function phoneLayouts(page,out){
   await page.evaluate(()=>document.documentElement.style.removeProperty('zoom'));
  }
  await page.evaluate(()=>{for(const side of ['top','right','bottom','left'])document.documentElement.style.removeProperty('--safe-area-inset-'+side)});
+ // Reproduce the usable landscape area left above the Android keyboard.
+ // The native probe separately verifies the real IME and the same field bounds.
+ await page.setViewportSize({width:863,height:392});await page.evaluate(()=>MT_APP_NAV.go('vessel-calcs'));
+ await page.locator('#airMargin').focus();await page.setViewportSize({width:863,height:164});
+ await page.waitForFunction(()=>{const r=document.getElementById('airMargin').getBoundingClientRect(),h=document.querySelector('.topbar').getBoundingClientRect();return r.top>=h.bottom&&r.bottom<=innerHeight});
+ records.push(await assertReachable(page,'#airMargin','landscape field after keyboard-sized viewport reduction'));
  fs.writeFileSync(out+'/phone-layout-results.json',JSON.stringify({status:'PASS',profiles:profiles.length,records,scope:'Simulated viewport and system inset values; native emulator rotation is tested separately'},null,2));
  return records.length;
 };

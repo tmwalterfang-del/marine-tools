@@ -23,7 +23,7 @@ old, new = inspect(baseline), inspect(current)
 assert old['certificatesSha256'] == new['certificatesSha256'], 'Upgrade test APKs have different signers'
 (out / 'upgrade-signing.json').write_text(json.dumps({
     'status': 'PASS', 'baselineSource': '3c68ecda1908ec3d9e96228f0b9a813916a43ad9',
-    'baselineBuildNumber': 4, 'candidateBuildNumber': 5, 'baseline': old, 'candidate': new,
+    'baselineBuildNumber': 4, 'candidateBuildNumber': json.loads(pathlib.Path('apps/app-config.json').read_text())['buildNumber'], 'baseline': old, 'candidate': new,
     'signing': 'EPHEMERAL_CI_DEBUG_KEY_ONLY', 'productionKeyVerified': False,
     'originalDownloadedBuild4UpgradeGuaranteed': False,
 }, indent=2))

@@ -39,6 +39,21 @@ function init(){
  const id=allowed.has(initial)?initial:'home';stack=[id];history.replaceState({mtPage:id,mtPosition:0},'',pageUrl(id));go(id,false);
  const measure=()=>document.documentElement.style.setProperty('--mt-header-height',bar.offsetHeight+'px');
  measure();const size=new ResizeObserver(measure);size.observe(bar);window.addEventListener('resize',measure);window.visualViewport?.addEventListener('resize',measure);
+ // Android's IME can resize a landscape WebView after its initial focus scroll.
+ // Keep the complete focused field between the sticky header and keyboard.
+ let focusFrame=0;
+ const keepFocusedVisible=()=>{
+  focusFrame=0;const field=document.activeElement;
+  if(!field?.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="button"]),textarea,select')||!field.closest('.main-content'))return;
+  const viewport=window.visualViewport,offset=viewport?.offsetTop||0;
+  const safeBottom=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom'))||0;
+  const top=Math.max(bar.getBoundingClientRect().bottom,offset)+8,bottom=offset+(viewport?.height||innerHeight)-safeBottom-12;
+  const rect=field.getBoundingClientRect();if(bottom-top<rect.height)return;
+  const delta=rect.bottom>bottom?rect.bottom-bottom:rect.top<top?rect.top-top:0;
+  if(Math.abs(delta)>.5)window.scrollBy({top:delta,behavior:'instant'});
+ };
+ const queueFocus=()=>{if(!focusFrame)focusFrame=requestAnimationFrame(keepFocusedVisible)};
+ document.addEventListener('focusin',queueFocus);window.addEventListener('resize',queueFocus);window.visualViewport?.addEventListener('resize',queueFocus);
  // Do not advertise network-only pages as available local app features.
  for(const n of document.querySelectorAll('.nav-btn[data-page]'))if(!allowed.has(n.dataset.page))n.hidden=true;
  if(!window.MT_NATIVE_APP&&'serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{

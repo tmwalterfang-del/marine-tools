@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   privacy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -25,17 +25,20 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: node scripts/build-privacy.mjs --check
       - run: npm run lint && npm run test:app && npm run test:app:unit
-      - run: npm install --prefix /tmp/privacy-qa --no-audit --no-fund jsdom@26.1.0 playwright@1.62.1
+      - run: npm install --prefix .qa-deps/privacy-qa --no-audit --no-fund jsdom@26.1.0 playwright@1.62.1
       - run: node tests/privacy-policy-20261027.cjs
         env:
-          NODE_PATH: /tmp/privacy-qa/node_modules
+          NODE_PATH: .qa-deps/privacy-qa/node_modules
       - run: node tests/site-wide-source-audit-20261020.cjs
         env:
-          NODE_PATH: /tmp/privacy-qa/node_modules
-      - run: node /tmp/privacy-qa/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
+          NODE_PATH: .qa-deps/privacy-qa/node_modules
+      - run: node .qa-deps/privacy-qa/node_modules/playwright/cli.js install ${{ matrix.browser }}
       - run: node tests/privacy-browser-20261027.cjs ${{ matrix.browser }}
         env:
-          NODE_PATH: /tmp/privacy-qa/node_modules
+          NODE_PATH: .qa-deps/privacy-qa/node_modules
+      - run: node tests/app-browser-20261027.cjs ${{ matrix.browser }}
+        env:
+          NODE_PATH: .qa-deps/privacy-qa/node_modules
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -83,7 +86,7 @@ jobs:
         run: python3 scripts/app/check-upgrade-signing.py
       - uses: actions/upload-artifact@v4
         with:
-          name: MarineTools-privacy-build5-android
+          name: MarineTools-privacy-build6-android
           path: |
             apps/mobile/android/app/build/outputs/apk/debug/
             apps/mobile/android/app/build/outputs/bundle/release/
@@ -101,7 +104,7 @@ jobs:
           node-version: '22'
       - uses: actions/download-artifact@v4
         with:
-          name: MarineTools-privacy-build5-android
+          name: MarineTools-privacy-build6-android
           path: emulator-input
       - run: npm install --prefix /tmp/android-browser --no-audit --no-fund playwright@1.62.1
       - run: node /tmp/android-browser/node_modules/playwright/cli.js install android
@@ -121,5 +124,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: MarineTools-build5-android-emulator-QA
+          name: MarineTools-build6-android-emulator-QA
           path: app-artifacts/android/

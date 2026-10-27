@@ -29,15 +29,21 @@ collected" answer must be approved by the owner after the external flows,
 privacy URL and SDK inventory are reviewed. Do not reuse these answers for an
 online/analytics-enabled variant.
 
-The public website policy URL is a candidate URL only. It has not been updated
-or approved as the app policy by this work. Host the approved app-specific
-policy at a stable public URL and enter that exact URL in each console.
+The public policy URL is https://www.marinetools.app/privacy. It was published
+through isolated main-based PRs #45/#46 with explicit owner approval. The public
+copy has no editorial draft or internal approval notes. Fresh unauthenticated
+HTTPS access, refresh and no-JS rendering passed on three production viewports.
+This does not complete the app's final Data Safety or signed-device assessment.
 
 ## 27 October privacy-route follow-up
 
 Superseding policy source: `privacy/policy.fragment`; generated existing website,
-standalone and offline app copies share the same revision. Candidate public URL:
-https://www.marinetools.app/privacy. It returned production 404 at inspection.
+standalone and offline app copies share the same revision. Public URL:
+https://www.marinetools.app/privacy. The earlier 404 is superseded by the actual
+production 200/no-JS verification after PR #46 on 27 October 2026.
 See `docs/apps/PRIVACY_AUDIT_2026-10-27.md` for actual data inventory, conditional
-Data Safety answers and controller/legal blockers. The policy remains a visible
-draft, not ready for public/store use. Build 4 integrates it; build 3 does not.
+Data Safety answers and unresolved account/legal questions. Public product copy
+has no draft banner. Build 6 uses the current public text and adds Android
+keyboard-focus handling; builds 4/5 contain the earlier editorial policy copy.
+See docs/apps/CONTINUATION_ANDROID_PRIVACY_2026-10-27.md and the later delivery
+record for exact build/test evidence. No store declaration was submitted.

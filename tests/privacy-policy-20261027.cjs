@@ -8,6 +8,8 @@ const read=p=>fs.readFileSync(p,'utf8');
  assert.equal(staticDom.window.document.querySelector('.privacy-policy').outerHTML,new JSDOM(policy.html).window.document.querySelector('.privacy-policy').outerHTML);
  assert.equal(staticDom.window.document.querySelectorAll('script,iframe,details,form').length,0,'Full text without scripts/accordions/embedded services');
  assert.equal(staticDom.window.document.querySelectorAll('h1').length,1);
+ assert.equal(staticDom.window.document.querySelectorAll('.privacy-review').length,0,'No editorial draft banner in product copy');
+ assert(!/Draft awaiting|implementation draft|Owner confirmation required|controller review|Consent review remains open|before publication/.test(policy.html),'Keep internal approval/review notes out of product copy');
  for(const link of staticDom.window.document.querySelectorAll('a[href^="#"]'))assert(staticDom.window.document.getElementById(link.hash.slice(1)),'Fragment target '+link.hash);
  for(const heading of ['controller','local-storage','analytics','online-services','external-services','android-windows','purposes-bases','recipients-transfers','retention','security','rights','policy-changes'])assert(staticDom.window.document.getElementById(heading));
  const dom=new JSDOM(read('index.html'),{url:'https://qa.marine-tools-frontend-preview.pages.dev/?page=privacy',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()}),w=dom.window,d=w.document;

@@ -7,7 +7,7 @@
   "supportEmail": "contact@marinetools.app",
   "website": "https://marinetools.app",
   "privacyUrlCandidate": "https://www.marinetools.app/privacy",
-  "privacyUrlStatus": "IMPLEMENTED_IN_DRAFT_BRANCH_PRODUCTION_404_OWNER_REVIEW_AND_DEPLOYMENT_REQUIRED",
+  "privacyUrlStatus": "PUBLIC_HTTPS_200_NO_JS_VERIFIED_20261027_APP_RELEASE_REVIEW_STILL_REQUIRED",
   "googlePlay": {
     "title": "Marine Tools",
     "categoryProposal": "Tools",
