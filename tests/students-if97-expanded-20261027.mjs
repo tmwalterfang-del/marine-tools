@@ -54,6 +54,8 @@ for (const p of [0.01, 0.1, 1, 10, 100, 160]) {
     near(z.s, (1 - x) * sat.sf + x * sat.sg, 1e-11, "Mass-weighted s");
   }
 }
+// Published IAPWS Table 15 points now inside the expanded adapter domain.
+for(const [T,h,s]of [[300,2549.91145,8.52238967],[700,3335.68375,10.1749996]]){const z=I.superheated(.035,T-273.15);near(z.h,h,1e-5,'Published Region 2 adapter enthalpy');near(z.s,s,5e-8,'Published Region 2 adapter entropy')}
 const inlet = I.superheated(40, 450);
 for (const pressure of [0.1, 1, 5, 20]) {
   const ideal = I.expansion(inlet, pressure, "isentropic"),

@@ -25,3 +25,5 @@ An independent Python `iapws==1.5.4` implementation generated 225 state fixtures
 Pressure/enthalpy and pressure/entropy inversions use bounded bisection over these equations. No tabular fallback or Region 3 call is introduced. Reversible adiabatic and ideal throttling paths solve intermediate states. An adiabatic turbine with specified isentropic efficiency solves endpoints and work only; its irreversible internal path is not inferred. Kinetic/potential energy changes are neglected and work out is positive. Subcooled endpoints, non-expansion pressure changes and states above the validated bounds are rejected.
 
 The pure `MT_IF97` state/process API has no DOM or network dependency and can be reused by a PWA or mobile WebView. UI, chart and exports remain a separate layer. The vendored engine is unchanged and its CC BY 4.0 attribution remains required in apps and exported distributions.
+
+A plotted throttle curve is an equilibrium constant-enthalpy locus. It is not a resolved flow field inside a valve. Published Region 2 points at 0.0035 MPa / 300 and 700 K are additionally checked through the expanded bar/Celsius adapter.

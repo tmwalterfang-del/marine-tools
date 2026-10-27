@@ -366,7 +366,7 @@
     }
     $("process-result").textContent = lastProcess
       ? lastProcess.mode === "throttle"
-        ? "Isenthalpic throttle: h is constant; no shaft work. Entropy increases for the supported pressure drop."
+        ? "Isenthalpic throttle: h is constant; no shaft work. The curve is an equilibrium constant-h locus, not a resolved valve interior."
         : "Adiabatic turbine: specific work out = " +
           f(lastProcess.work, 3) +
           " kJ/kg. " +
@@ -605,7 +605,7 @@
             " kJ/kg. " +
             (lastProcess.mode === "turbine"
               ? "Only endpoints are solved for the irreversible turbine; no internal path is inferred."
-              : "Intermediate states satisfy the selected constant-h or constant-s condition.")
+              : "Intermediate equilibrium states satisfy the selected constant-h or constant-s condition. A throttle curve does not resolve flow inside a valve.")
           : "No process solved: A and B are independent endpoints.",
         "Local IAPWS-IF97 adapter, saturation 0.01–160 bar(a); superheated Region 2: 0.01–160 bar(a), T above saturation through 600 °C. Subcooled water, Region 3 and the critical point are omitted.",
         "A straight line joining A and B is a comparison connector. A solved reversible isentrope or ideal throttle uses intermediate IF97 states; an irreversible turbine remains endpoint-only.",

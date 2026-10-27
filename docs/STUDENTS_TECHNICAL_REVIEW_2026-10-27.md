@@ -73,7 +73,7 @@ Det lokale Neutrium-biblioteket og CC BY 4.0-attribusjonen er beholdt. Det er ik
 - **Metning/tofase:** 0,01–160 bar(a), IF97 Region 4 med Region 1/2-endepunkter; x er dampens massefraksjon.
 - **Overhetet:** 0,01–160 bar(a), stabil Region 2 over metning, maksimalt 600 °C. Region 3 trengs ikke innen denne avgrensningen; metning ved 16 MPa ligger under 623,15 K.
 - p–h og p–s løses ved braketert biseksjon innen disse grensene. Underkjølte endepunkter og utfall over domenet avvises.
-- Isentropisk ekspansjon og ideell struping beregner mellomtilstander ved avtakende trykk. Turbin med oppgitt isentropisk virkningsgrad beregner endepunkt og positivt arbeid ut. Den irreversible banen blir **ikke** diktet opp.
+- Isentropisk ekspansjon og ideell struping beregner likevektstilstander ved avtakende trykk. Konstant-h-kurven er en likevektskurve, ikke en løsning av strømningen inne i en strupeventil. Turbin med oppgitt isentropisk virkningsgrad beregner endepunkt og positivt arbeid ut. Den irreversible banen blir **ikke** diktet opp.
 - Stasjonær strømning, neglisjerbar kinetisk/potensiell energiforskjell og adiabatisk turbin/ideell struping er eksplisitte forutsetninger.
 - Entalpiaksen er utvidet til 4 200 kJ/kg. Presis numerisk kvalitetsinngang er lagt til. Manuell endring av et punkt fjerner en utdatert prosessforklaring. Prosessresultatet vises også utenfor de sammenfoldbare mobilinngangene, slik at arbeid og modelltype ikke blir skjult sammen med kontrollene.
 - Scenarioeksport kan ta med valgt prosess og virkningsgrad. Gamle A/B-filer støttes fortsatt. Ny import verifiserer endepunktene mot prosessen før begge tilstander erstattes. Rapport/CSV/SVG viser gjeldende gyldige tilstander.
@@ -86,7 +86,7 @@ Nye tester:
 
 - `node tests/students-dimensions-followup-20261027.mjs`: alle 1 498 uttrykk, ingen dimensjonsbrudd, minst 1 333 tolket, minst 322 av de opprinnelige 487 lukket maskinelt; negative kontrolltilfeller for ugyldig addisjon/log/trig-enheter.
 - `node tests/students-followup-reference-20261027.mjs`: 1 535 kontroller; hele registerets kontekstintegritet, 16 kapitler og utvalgte selvstendige regne-/enhetstilfeller. Antallet er ikke 1 535 uavhengige numeriske bevis.
-- `node tests/students-if97-expanded-20261027.mjs`: 1 720 kontroller, 225 uavhengige tilstander, inverse tilstander, fasegrenser, blandingsregler, prosesser, virkningsgrad og feilinput.
+- `node tests/students-if97-expanded-20261027.mjs`: 1 724 kontroller, 225 uavhengige tilstander, inverse tilstander, fasegrenser, blandingsregler, prosesser, virkningsgrad og feilinput.
 - `node tests/students-review-report-20261027.mjs`: reproduserbar individuell CSV med ærlige særdisposisjoner.
 - `node tests/students-mollier-process-browser-20261027.cjs chromium|firefox|webkit`: faktisk UI, utvidet domene, prosess-/scenario-/rapportflyt, feilbevaring og fire skjermstørrelser. CI-resultater følger aktuell commit; ikke forveksle tidligere grønne kjøringer med ny kode.
 

@@ -20,8 +20,8 @@ for(const [p,T,h,s] of [[3,300,115.331273,.392294792],[80,300,184.142828,.368563
 }
 for(const [p,T,h,s] of [[.0035,300,2549.91145,8.52238967],[.0035,700,3335.68375,10.1749996],[30,700,2631.49474,5.17540298]]){
  const z=PT.solve(p,T);
- verify(15,2,{p_MPa:p,T_K:T},'h_kJ_kg',h,z.h,.00001,'vendor; 700 K and 30 MPa outside lab limits');
- verify(15,2,{p_MPa:p,T_K:T},'s_kJ_kgK',s,z.s,.00000005,'vendor; 700 K and 30 MPa outside lab limits');
+ verify(15,2,{p_MPa:p,T_K:T},'h_kJ_kg',h,z.h,.00001,'vendor reference; 30 MPa is outside the lab pressure range');
+ verify(15,2,{p_MPa:p,T_K:T},'s_kJ_kgK',s,z.s,.00000005,'vendor reference; 30 MPa is outside the lab pressure range');
 }
 for(const [T,p] of [[300,.00353658941],[500,2.63889776],[600,12.3443146]])
  verify(35,4,{T_K:T},'p_MPa',p,PT.r4_T_Psat(T),.00000005,'saturation boundary');
