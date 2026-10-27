@@ -16,31 +16,16 @@
     "dataSafety": "See DATA_AND_PRIVACY.md; not a submitted questionnaire",
     "audience": "Maritime professionals and adult technical students; not designed for children"
   },
-  "galaxyStore": {
-    "title": "Marine Tools",
-    "categoryProposal": "Tools",
-    "binary": "Signed universal APK, reusing Android code",
-    "compatibility": "Android 7.0/API 24 or later; phones/tablets subject to device testing",
-    "signing": "Agree cross-store application signing key strategy before first publication"
-  },
   "microsoftStore": {
     "title": "Marine Tools",
     "categoryProposal": "Productivity",
-    "devices": ["PC"],
+    "devices": [
+      "PC"
+    ],
     "binary": "MSIX x64 with owner-assigned Store identity/publisher",
     "minimumOs": "Windows 10 build 19041; Windows 11",
     "runtime": "Microsoft Edge WebView2 Evergreen runtime",
     "certification": "runFullTrust is needed for the packaged Tauri desktop process; no arbitrary shell API is exposed"
-  },
-  "appleAppStore": {
-    "title": "Marine Tools",
-    "subtitle": "Maritime calculation tools",
-    "keywords": "marine,maritime,engineering,vessel,fuel,electrical,calculator,offline",
-    "categoryProposal": "Utilities",
-    "devices": ["iPhone", "iPad"],
-    "reviewNotes": "This is a local calculator application, not a remote website shell. Calculations, local profiles and recent work function without an account or network. Review a vessel air-clearance example: open Vessel Calculations, enter published clearance 25 m, water level 0.8 m, air draft 20 m and margin 1 m; Calculate returns 3.20 m. Native integrations provide clipboard and the system share sheet for text/files. Education is a separate protected online preview and is not bundled; it is not needed to review local functionality. Live AIS/weather and analytics are disabled. No login credentials are needed for local tools. This submission draft must not be used before device/export tests and owner approvals are completed.",
-    "testFlight": "Create App Store Connect record and signing assets only after identity confirmation; upload a signed archive with explicit owner authorization",
-    "encryptionAssessment": "Standard platform HTTPS only; ITSAppUsesNonExemptEncryption=false in candidate. Owner must confirm export-compliance questionnaire."
   },
   "ratingAssessment": {
     "status": "OWNER_QUESTIONNAIRE_REQUIRED",
@@ -54,5 +39,6 @@
     "Education available offline",
     "Physically tested on all supported devices",
     "Published, signed or store-approved before evidence exists"
-  ]
+  ],
+  "scope": "Google Play Android and Microsoft Store Windows only; excluded platforms are outside this release."
 }

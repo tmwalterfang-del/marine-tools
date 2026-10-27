@@ -4,7 +4,7 @@ import path from 'node:path';
 import '../scripts/stage-app.mjs';
 const out=path.resolve('app-dist');
 for(const forbidden of ['students','worker','tests','docs','.git','node_modules','wrangler.jsonc'])assert.ok(!fs.existsSync(path.join(out,forbidden)),forbidden+' must not enter the public app');
-const info=JSON.parse(fs.readFileSync(path.join(out,'build-info.json')));assert.equal(info.educationBundled,false);assert.equal(info.productionApiEnabled,false);assert.equal(info.analyticsEnabled,false);
+const info=JSON.parse(fs.readFileSync(path.join(out,'build-info.json')));assert.deepEqual(info.targets,['android','windows','pwa']);assert.equal(info.educationBundled,false);assert.equal(info.productionApiEnabled,false);assert.equal(info.analyticsEnabled,false);
 const html=fs.readFileSync(path.join(out,'index.html'),'utf8');assert.match(html,/app-preview\.js/);assert.match(html,/native-platform\.js/);assert.doesNotMatch(html,/<script(?![^>]*src=)[^>]*>/);assert.doesNotMatch(html,/script-src 'self' 'unsafe-inline'/);assert.match(html,/connect-src 'self'/);assert.doesNotMatch(html,/<script[^>]*src=["'](?:usage-analytics|analytics-v856)/);
 const js=fs.readFileSync(path.join(out,'app.js'),'utf8');assert.match(js,/const API='https:\/\/offline-app.invalid'/);assert.match(js,/function analyticsEnabled\(\)\{return false\}/);
 const manifest=JSON.parse(fs.readFileSync(path.join(out,'manifest.webmanifest')));assert.equal(manifest.display,'standalone');for(const icon of manifest.icons)assert.ok(fs.existsSync(path.join(out,icon.src)));

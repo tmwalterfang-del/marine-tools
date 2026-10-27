@@ -19,6 +19,7 @@ try {
  Get-Process 'marine-tools-preview' -ErrorAction SilentlyContinue | Stop-Process -Force
  $shipping=Start-Process $exe -PassThru
  if (!$shipping.WaitForInputIdle(30000) -or $shipping.HasExited) { throw 'Installed release window failed to initialize' }
+ & (Join-Path $PSScriptRoot 'windows-window-bounds.ps1') -OutputFile (Join-Path $out 'shipping-window-bounds.json')
  $shipping.Kill();$shipping.WaitForExit()
  # Instrumented binary is separate from the already packaged shipping executable.
  $env:WEBVIEW2_USER_DATA_FOLDER=Join-Path $env:RUNNER_TEMP 'MarineToolsWebViewSmoke'

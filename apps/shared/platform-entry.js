@@ -24,6 +24,7 @@ if(Capacitor.isNativePlatform()){
   open:async url=>{if(url.startsWith('mailto:')){location.href=url;return}await Browser.open({url})},
   exit:isAndroid?()=>App.exitApp():undefined
  });
+ App.addListener('appStateChange',({isActive})=>{if(!isActive)window.MT_APP_DRAFTS?.flush()});
  if(isAndroid)App.addListener('backButton',()=>window.dispatchEvent(new Event('mt-native-back')));
  App.addListener('appUrlOpen',event=>{const id=deepLinkPage(event.url);if(id)window.dispatchEvent(new CustomEvent('mt-app-deep-link',{detail:{page:id}}))});
  App.getLaunchUrl().then(event=>{const id=deepLinkPage(event?.url);if(id){window.__MT_INITIAL_PAGE=id;window.MT_APP_NAV?.go(id)}}).catch(()=>{});

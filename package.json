@@ -13,7 +13,8 @@
     "test:app": "node tests/app-package-20261027.mjs",
     "app:windows:msix": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/app/package-windows.ps1",
     "app:android:release": "node scripts/native-app.mjs android sync && node scripts/app/android-release.mjs",
-    "test:app:unit": "node tests/app-adapters-20261027.mjs"
+    "test:app:unit": "node tests/app-adapters-20261027.mjs",
+    "lint": "node scripts/app/check-source.mjs"
   },
   "dependencies": {
     "@capacitor/app": "8.1.2",

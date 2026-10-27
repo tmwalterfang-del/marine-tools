@@ -33,6 +33,13 @@ export function validateBackup(data){
  for(const k of ['profile','settings','lastAnalysis','weatherCache','extraLocal'])if(data[k]!=null&&!object(data[k]))throw Error('Invalid backup object: '+k);
  for(const k of ['route','favorites','recent','history','consumption','bunkering'])if(data[k]!=null&&(!Array.isArray(data[k])||data[k].length>2000||data[k].some(v=>!object(v))))throw Error('Invalid backup rows: '+k);
  if(data.theme!=null&&!['dark','bridge'].includes(data.theme))throw Error('Unknown theme.');
+ // Legacy profile values are rendered into numeric input attributes. Shape-only
+ // validation is insufficient: imported strings must never become markup there.
+ if(data.profile){
+  if(data.profile.name!==undefined&&typeof data.profile.name!=='string')throw Error('Invalid vessel name.');
+  for(const key of ['loa','draft','serviceSpeed','fuelDay','maxHs','maxWind','maxCurrent','minUKC','cpaAlert','corridor'])
+   if(data.profile[key]!==undefined&&(typeof data.profile[key]!=='number'||!Number.isFinite(data.profile[key])))throw Error('Invalid numeric vessel field: '+key);
+ }
  if(data.extraLocal){
   const e=data.extraLocal;
   if(e.profileV2!=null){if(!object(e.profileV2))throw Error('Invalid vessel profile.');

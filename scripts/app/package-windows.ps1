@@ -3,6 +3,7 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $config = Get-Content (Join-Path $root 'apps/app-config.json') -Raw | ConvertFrom-Json
 $out = Join-Path $root 'app-artifacts/windows'
 $stage = Join-Path $out 'package'
+if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force $stage | Out-Null
 $binary = Join-Path $root 'apps/desktop/src-tauri/target/release/marine-tools-preview.exe'
 if (!(Test-Path $binary)) { throw 'Build the desktop executable first.' }

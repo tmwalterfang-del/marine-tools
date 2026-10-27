@@ -16,4 +16,6 @@ await assert.rejects(()=>p.openUrl('file:///secret'));checks++;
 await assert.rejects(()=>p.copyText({password:'no'}));checks++;
 check(validateBackup({format:'Marine Tools local backup',profile:{name:'Test vessel'},history:[],extraLocal:{profileV2:{vessel:{name:'Test'},carriers:[],machinery:[],tanks:[]}}}).profile.name,'Test vessel');
 for(const data of [{profile:'bad'},{profile:{},history:{}},{profile:{},extraLocal:{energyLog:'bad'}},JSON.parse('{"profile":{},"__proto__":{"x":1}}'),{profile:{},route:[null]},{profile:{},extraLocal:{profileV2:{carriers:'bad'}}}]){assert.throws(()=>validateBackup(data));checks++}
+for(const key of ['loa','draft','serviceSpeed','fuelDay','maxHs','maxWind','maxCurrent','minUKC','cpaAlert','corridor']){assert.throws(()=>validateBackup({profile:{[key]:'"/><img src=x>'}}));checks++}
+check(validateBackup({profile:{name:'Test vessel',loa:80,draft:4}}).profile.loa,80);
 console.log(JSON.stringify({status:'PASS',checks,scope:'Adapter contracts, cancellation, path/size guards and deep-link allowlist; native OS dialogs require device testing.'}));
