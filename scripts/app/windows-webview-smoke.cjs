@@ -1,3 +1,4 @@
+const {assertAppLayout,assertReachable}=require('../../tests/helpers/app-layout.cjs');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{execFileSync}=require('node:child_process'),{chromium}=require('playwright');
 (async()=>{
  let browser,lastError;
@@ -11,6 +12,17 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   // real user action before interacting with content behind the modal.
   await page.locator('#mtReleaseDialog[open] #mtReleaseDone').click();
   await page.locator('#mtReleaseDialog[open]').waitFor({state:'hidden'});
+  const layouts=[];
+  for(const [width,height] of [[640,480],[900,600],[1280,800]]){
+   execFileSync('powershell',['-NoProfile','-ExecutionPolicy','Bypass','-File','scripts/app/windows-window-bounds.ps1','-Width',String(width),'-Height',String(height)],{stdio:'inherit',timeout:30000});
+   for(const route of ['home','vessel-calcs','settings']){
+    await page.evaluate(id=>MT_APP_NAV.go(id),route);
+    layouts.push(await assertAppLayout(page,`native Windows ${width}x${height}/${route}`));
+    if(route==='vessel-calcs')await assertReachable(page,'#calcAirDraft','native resized calculation button');
+   }
+   await page.screenshot({path:`app-artifacts/windows/layout-${width}x${height}.png`,animations:'disabled'});
+  }
+  fs.writeFileSync('app-artifacts/windows/layout-results.json',JSON.stringify({status:'PASS',actualNativeWindowResize:true,layouts,physicalDpiChanges:'UNVERIFIED'},null,2));
   await page.evaluate(()=>MT_APP_NAV.go('vessel-calcs'));await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/3.20 m/);
   assert.equal(await page.evaluate(()=>MT_PLATFORM.kind),'desktop');console.log('MT_WIN_CALC_OK');
   await page.evaluate(()=>MT_PLATFORM.copyText('Marine Tools native clipboard check'));

@@ -6,9 +6,13 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{_android:andro
  const [device]=await android.devices();assert.ok(device,'Android emulator connected');device.setDefaultTimeout(60000);
  let page;
  try{
+  await device.shell('input keyevent KEYCODE_WAKEUP');await device.shell('wm dismiss-keyguard');
   await device.shell('am start -W -n app.marinetools.preview/.MainActivity');
   let web=await device.webView({pkg:'app.marinetools.preview'});page=await web.page();await page.waitForFunction(()=>!!window.MT_APP_NAV);
-  await page.locator('#mtReleaseDialog[open] #mtReleaseDone').click();assert.equal(await page.evaluate(()=>MT_PLATFORM.kind),'android');
+  // Use a real OS accessibility tap: initial modal WebViews may report zero
+  // CDP viewport dimensions even while the native screen is visible.
+  await device.tap({text:'Got it'});
+  await page.waitForFunction(()=>innerWidth>=300&&innerHeight>=200&&document.visibilityState==='visible',null,{timeout:60000});assert.equal(await page.evaluate(()=>MT_PLATFORM.kind),'android');
   await page.evaluate(()=>{MT_APP_NAV.go('vessel-calcs');window.scrollTo({top:0,behavior:'instant'})});await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/3.20 m/);
   const layouts=[];
   for(const rotation of [0,1,0]){

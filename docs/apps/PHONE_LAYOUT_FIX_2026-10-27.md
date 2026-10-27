@@ -55,7 +55,12 @@ selection and calculation, and captures OS-level screenshots for both orientatio
 The native OS keyboard is also opened in each orientation and the focused input
 must remain reachable above it. Existing clipboard, file sharing, system back and
 offline cold-reopen checks remain.
-Numerical source/guard tests and Windows packaging are retained as regressions.
+Windows minimum window height is reduced from 600 to 240 logical pixels. Initial
+window sizing uses the current monitor work area and scale factor, leaving room
+for the taskbar and window decorations. The shipping window must fit the runner
+work area, and the instrumented native window is resized to three real outer
+sizes with the same geometry/hit tests. This is not a claim of physical multi-
+monitor/DPI coverage. Numerical source/guard tests remain as regressions.
 
 Local source/package/adapter checks run before committing. A browser could not be
 installed in this container because its CDN archive was invalid; actual visual/
