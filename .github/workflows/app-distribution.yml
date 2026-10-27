@@ -122,6 +122,8 @@ jobs:
         run: |
           npm install --prefix "$env:RUNNER_TEMP/marine-native-test" --no-audit --no-fund playwright@1.62.1
           $env:NODE_PATH="$env:RUNNER_TEMP/marine-native-test/node_modules"
+          node scripts/app/windows-ci-webview-build.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           powershell -NoProfile -ExecutionPolicy Bypass -File scripts/app/windows-native-smoke.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4

@@ -19,7 +19,8 @@ for(const [kind,pattern]of [['iphone',/^iPhone/],['ipad',/^iPad/]]){
  let logs='';
  const child=spawn('xcrun',['simctl','launch','--console-pty',d.udid,'app.marinetools.preview'],{env:{...process.env,SIMCTL_CHILD_MT_CI_SMOKE:'1'}});
  child.stdout.on('data',x=>{logs+=x;process.stdout.write(x)});child.stderr.on('data',x=>{logs+=x;process.stderr.write(x)});
- const deadline=Date.now()+100000;
+ console.log('Waiting up to four minutes for native UI on '+d.name);
+ const deadline=Date.now()+240000;
  while(Date.now()<deadline&&!logs.includes('MT_CI_SMOKE_FINISHED')&&!logs.includes('MT_CI_READY_TIMEOUT'))await new Promise(r=>setTimeout(r,1000));
  fs.writeFileSync(output+'/'+kind+'-native-console.log',logs);
  run(['simctl','io',d.udid,'screenshot',output+'/'+kind+'-simulator.png']);

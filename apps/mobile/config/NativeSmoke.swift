@@ -14,7 +14,7 @@
             web.evaluateJavaScript("Boolean(window.MT_APP_NAV)") { value, error in
                 if value as? Bool == true {
                     NSLog("MT_CI_APP_READY")
-                    web.evaluateJavaScript("document.getElementById('mtReleaseDialog')?.close();MT_APP_NAV.go('vessel-calcs');document.getElementById('calcAirDraft').click();document.getElementById('resAirDraft').scrollIntoView();document.getElementById('resAirDraft').textContent") { result, _ in
+                    web.evaluateJavaScript("document.getElementById('mtReleaseDone')?.click();MT_APP_NAV.go('vessel-calcs');document.getElementById('calcAirDraft').click();document.getElementById('resAirDraft').scrollIntoView();document.getElementById('resAirDraft').textContent") { result, _ in
                         if let text = result as? String, text.contains("3.20") { NSLog("MT_CI_CALC_OK") }
                         else { NSLog("MT_CI_CALC_FAILED") }
                     }
