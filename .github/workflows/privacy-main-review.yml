@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   website:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -21,11 +21,11 @@ jobs:
           node-version: '22'
       - run: node scripts/build-privacy.mjs --check
       - run: node --check app.js && node --check sw.js && node --check privacy-policy.js
-      - run: npm install --prefix /tmp/privacy-main-qa --no-audit --no-fund playwright@1.62.1
-      - run: node /tmp/privacy-main-qa/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
+      - run: npm install --prefix .qa-deps/browser --no-audit --no-fund playwright@1.62.1
+      - run: node .qa-deps/browser/node_modules/playwright/cli.js install ${{ matrix.browser }}
       - run: node tests/privacy-main-browser.cjs ${{ matrix.browser }}
         env:
-          NODE_PATH: /tmp/privacy-main-qa/node_modules
+          NODE_PATH: .qa-deps/browser/node_modules
       - uses: actions/upload-artifact@v4
         if: always()
         with:

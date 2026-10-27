@@ -1,6 +1,8 @@
 # Website privacy change for owner review — 27 October 2026
 
-Status: DRAFT. No production approval, main merge, deployment or store upload.
+Status: policy text remains DRAFT. The owner subsequently authorized the isolated
+website implementation/deployment in PR #45. Public deployment still needs verification;
+no store upload or app-stack merge is authorized.
 This branch starts at main `6e10a5017428373079cdce26f0fb19175565bb20`.
 It does not depend on Education #35, app #42/#43 or security #40.
 
@@ -11,9 +13,9 @@ It does not depend on Education #35, app #42/#43 or security #40.
 - Reuse that text in existing Privacy & Data through `privacy-policy.js`.
   The only app.js change is the privacy renderer. Preserve main's Education and
   professional links, settings, calculations, providers and analytics behavior.
-- Extend the existing service-worker shell with the policy assets and an explicit
-  `/privacy` → `/privacy/` redirect. The redirect also works offline after shell
-  installation. Rotate only the relevant asset/cache identifiers.
+- Extend the existing service-worker shell with the policy assets and explicit
+  `/privacy` alias handling that serves the canonical cached document when the
+  origin is unavailable. Static hosting redirects to `/privacy/` online. Rotate only the relevant asset/cache identifiers.
 - Limit the generator to the website outputs because main has no native app tree.
   LF attributes make byte-parity checks reproducible on Windows and Linux.
 - Correct one inherited wording error: Suggestions uses email; Survey uses Tally.
@@ -26,7 +28,7 @@ truthfully be replaced with an approved final statement yet.
 
 ## Verification
 
-Local Chromium engine: Microsoft Edge, Windows, automated browser test.
+Local automated engines: Chromium (Microsoft Edge), Firefox and WebKit on Windows.
 Eight profiles: 320×568, 568×320, 412×915, 915×412, 768×1024, 1024×768,
 1366×768 and 2560×1440. Direct directory routing, refresh, no JavaScript,
 complete text, section navigation, local-only page assets and horizontal fit
@@ -35,7 +37,10 @@ passed. The viewport screenshot was visually inspected.
 Existing website navigation, retained profile/preferences, analytics opt-out,
 an actual JSON backup download and independent air-clearance references
 (3.20 m at default inputs, 2.70 m with 1.5 m margin) passed. Actual service-worker
-installation and offline `/privacy` navigation/refresh passed. Generated parity
+installation and `/privacy` navigation/refresh with the origin stopped passed
+in all engines. Chromium additionally passed browser offline emulation. Firefox/
+WebKit offline emulation bypassed the initial controlled navigation; the test
+therefore uses a genuinely unreachable origin for those engines. Generated parity
 and syntax passed. Navigation smoke and release metadata are also checked.
 
 Reproduce:
@@ -50,7 +55,10 @@ node tests/qa-release-metadata-20261018.mjs
 The browser test requires Playwright (`NODE_PATH` can point to its installation).
 `MT_QA_BROWSER_PATH` optionally selects a local Chromium executable. Read-only
 CI checks run Chromium, Firefox and WebKit independently and save screenshots
-and JSON reports. Inspect actual CI results; a workflow definition is not a pass.
+and JSON reports on Windows runners, avoiding the stalled Ubuntu dependency
+installation. Inspect actual CI results; a workflow definition is not a pass.
+Cloudflare email_off markers preserve contact links without a decoding script;
+see [Cloudflare documentation](https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/).
 
 Read-only unauthenticated HTTPS GET still returned **404** for the production
 `https://www.marinetools.app/privacy` in this continuation. Local/CI results

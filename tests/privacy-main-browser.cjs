@@ -40,6 +40,7 @@ let server, browser;
     await page.getByRole('heading', {name: 'Marine Tools Privacy Policy', exact: true}).waitFor();
     assert.equal((await page.locator('main').innerHTML()).trim(), fragment);
     assert.equal(await page.locator('script,iframe,details,form').count(), 0);
+    assert.equal(await page.locator('a[href="mailto:contact@marinetools.app"]').count(), 3);
     assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), 'https://www.marinetools.app/privacy');
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     assert.equal((await page.reload()).status(), 200);
@@ -107,7 +108,11 @@ let server, browser;
   await offlinePage.goto(origin + '/');
   await offlinePage.evaluate(() => navigator.serviceWorker.ready);
   await offlinePage.waitForFunction(() => !!navigator.serviceWorker.controller);
-  await offlineContext.setOffline(true);
+  assert(await offlinePage.evaluate(async()=>!!await caches.match('./privacy/')));
+  // Firefox/WebKit offline emulation can bypass a first controlled navigation.
+  // Stop the actual origin for every engine; Chromium also uses browser offline mode.
+  if(engine==='chromium')await offlineContext.setOffline(true);
+  server.closeAllConnections();await new Promise(resolve=>server.close(resolve));
   await offlinePage.goto(origin + '/privacy');
   await offlinePage.getByRole('heading', {name: 'Marine Tools Privacy Policy', exact: true}).waitFor();
   assert.equal((await offlinePage.locator('main').innerHTML()).trim(), fragment);
