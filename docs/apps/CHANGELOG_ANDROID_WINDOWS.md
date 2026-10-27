@@ -10,7 +10,8 @@ Base: app Draft #42 a9544ff, carrying Education Draft #35 0034688.
 - Flush raw input drafts on document/native background lifecycle events.
 - Clean MSIX staging on each build; include generated Android project in artifacts.
 - Add reproducible shared source syntax validation and expanded viewport/theme
-  and history regressions. Formula engines and production settings unchanged.
+  and history regressions. Release-version and Android package checks follow the
+  shared configuration. Formula engines and production settings unchanged.
 
 Evidence and limitations: ANDROID_WINDOWS_DELIVERY.md. No merge, store upload or
 production deployment is authorized by this changelog.

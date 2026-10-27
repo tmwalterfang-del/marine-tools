@@ -106,6 +106,12 @@ jobs:
             apps/mobile/android/app/build/outputs/bundle/
             apps/mobile/android/app/src/main/AndroidManifest.xml
             app-artifacts/android/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-0.2.0-android-project
+          path: |
             apps/mobile/android/
             !apps/mobile/android/**/build/**
             !apps/mobile/android/.gradle/**

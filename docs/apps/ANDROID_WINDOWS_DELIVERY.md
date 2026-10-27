@@ -12,7 +12,7 @@ Inherited app Draft #42: a9544ff296e0d1808d6c7075379ab77472011879.
 Security Draft #40 remains separate and unmerged.
 
 Development branch: `feature/android-windows-app`, based on the existing app
-work rather than duplicating it. Its Draft PR targets `feature/cross-platform-app`
+work rather than duplicating it. [Draft PR #43](https://github.com/tmwalterfang-del/marine-tools/pull/43) targets `feature/cross-platform-app`
 so the focused changes can be reviewed without repeating #35/#42. Do not merge
 any of these branches without owner approval. Other work may advance those heads;
 these hashes identify the exact inspected baseline.
@@ -93,8 +93,13 @@ smoke and three web engines successful. That establishes evidence for the base,
 not for changes in this branch. Exact artifacts/logs must be used to distinguish
 shipping release window tests from instrumented WebView interaction tests.
 
-Current branch CI: pending first push/PR. Update this section with the exact
-implementation SHA, run URL, failed checks and resolved failures.
+First branch CI: https://github.com/tmwalterfang-del/marine-tools/actions/runs/40525921835
+at 5d60093c2e6361cf15fa9cdf05dd456fd926fa6a. Quality and all three browser
+jobs passed, including the expanded viewport/history checks. Native builds were
+still running at this checkpoint. A follow-up packaging-only revision separates
+Android project source and binary artifacts to preserve both, checks shared
+release versions and removes excluded-store privacy wording. Final results below
+must identify that revision separately.
 
 ## Security and privacy
 
@@ -137,7 +142,7 @@ SHA, signing certificate and version for any candidate selected for release.
 |---|---|---|
 | Repository/architecture inspection | Tested | Actual branches, docs, workflows and app code inspected |
 | Development branch | Implemented | feature/android-windows-app |
-| Draft PR | In progress | Create after focused changes are committed |
+| Draft PR | Implemented | #43, open Draft against #42 |
 | Shared core/PWA | Implemented | Existing #42 implementation plus fixes; current revision CI pending |
 | Interactive layout fixes | Implemented | Existing #35 natural-height/wide workspace retained; physical QA pending |
 | Android project/configuration | Implemented | Reproducible Capacitor generator and overlays; generated project artifact |

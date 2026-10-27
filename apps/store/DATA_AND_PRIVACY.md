@@ -11,7 +11,6 @@ before using these answers in any store questionnaire.
 | Temporary mobile export files | Private cache, cleanup of files older than 24 hours on later app start; OS may clear earlier | Do not promise durable storage until user saves a copy |
 | Clipboard | Explicit copy/share fallback; write-only app capability | Clipboard is a system feature and can be visible to OS/other apps; do not claim private vault storage |
 | Android backups | allowBackup=false | Device installation/data-reset testing still required |
-| iOS/device backups | Governed by OS/device backup configuration | No absolute claim that data can never leave the device |
 | App analytics / crash telemetry / ads | Not enabled or bundled as collectors | Proposed app answers: no analytics/tracking data collection; verify final signed binary and any later SDK changes |
 | AIS/weather / API authentication | Production API disabled; CSP denies production network | Do not claim an authenticated online service or completed backend security approval |
 | Protected Education | Explicit external browser action, website authentication remains separate | Account/email handling belongs to that site's policy and must be considered in final app disclosures |
@@ -20,16 +19,10 @@ before using these answers in any store questionnaire.
 No camera, microphone, precise location, contacts, advertising ID or push
 permission is requested by the app source. File import uses the platform's
 existing file chooser; there is no blanket storage permission. Inspect merged
-Android permissions and all embedded Apple/third-party privacy manifests in
+Android permissions and third-party SDK behavior in
 the final build, not only the source overlay.
 
-Apple PrivacyInfo.xcprivacy declares no tracking/collected-data entries and
-required-reason APIs FileTimestamp (C617.1: private file/cache work) and
-UserDefaults (CA92.1: app settings). These are technical draft declarations,
-not a legal determination. Filesystem uses file timestamps for cache cleanup.
-Capacitor/native dependencies can contribute their own manifests.
-
-For Google Data Safety and Apple App Privacy, assess the final application and
+For Google Data Safety and Microsoft Store privacy declarations, assess the final application and
 its complete user flows, including external Education/support. The draft
 local-only design supports no app telemetry collection, but a final "no data
 collected" answer must be approved by the owner after the external flows,
