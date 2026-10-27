@@ -1,6 +1,7 @@
 /* Explicit public-only app package. Never copy the repository or private Education. */
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 const root=path.resolve(import.meta.dirname,'..'),out=path.join(root,'app-dist');
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
 const preview='https://feature-for-students-formula.marine-tools-frontend-preview.pages.dev/students/';
@@ -31,8 +32,9 @@ document.addEventListener('DOMContentLoaded',()=>{const b=document.createElement
 const manifest={id:'marine-tools-preview',name:'Marine Tools Preview',short_name:'Marine Tools',description:'Local maritime calculator app prototype',start_url:'./index.html',scope:'./',display:'standalone',background_color:'#061c2f',theme_color:'#061c2f',icons:[192,512].map(size=>({src:`assets/icon-${size}.png`,sizes:`${size}x${size}`,type:'image/png',purpose:'any maskable'}))};
 fs.writeFileSync(path.join(out,'manifest.webmanifest'),JSON.stringify(manifest,null,2)+'\n');
 const assets=fs.readdirSync(out).filter(f=>fs.statSync(path.join(out,f)).isFile()&&f!=='sw.js').map(f=>'./'+f).concat(fs.readdirSync(path.join(out,'assets')).map(f=>'./assets/'+f));
-fs.writeFileSync(path.join(out,'sw.js'),`const CACHE='marine-tools-app-preview-0.1.0';const ASSETS=${JSON.stringify(assets)};
-if(!/\\.pages\\.dev$/i.test(self.location.hostname)){self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method==='GET'&&u.origin===self.location.origin)e.respondWith(fetch(e.request).catch(()=>caches.match(e.request).then(r=>r||(e.request.mode==='navigate'?caches.match('./index.html'):Response.error()))));});}
+const digest=crypto.createHash('sha256');for(const asset of assets)digest.update(asset).update(fs.readFileSync(path.join(out,asset)));
+fs.writeFileSync(path.join(out,'sw.js'),`const CACHE='marine-tools-app-preview-0.1.0-${digest.digest('hex').slice(0,16)}';const ASSETS=${JSON.stringify(assets)};
+if(!/\\.pages\\.dev$/i.test(self.location.hostname)){self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('marine-tools-app-preview-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method==='GET'&&u.origin===self.location.origin)e.respondWith(fetch(e.request).catch(()=>caches.match(e.request).then(r=>r||(e.request.mode==='navigate'?caches.match('./index.html'):Response.error()))));});}
 `);
 fs.writeFileSync(path.join(out,'build-info.json'),JSON.stringify({name:'Marine Tools Preview',version:'0.1.0',educationBundled:false,productionApiEnabled:false,analyticsEnabled:false,targets:['android','ios','windows','macos','pwa']},null,2)+'\n');
 console.log('Staged public-only Marine Tools app prototype in app-dist.');
