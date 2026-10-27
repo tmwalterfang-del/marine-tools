@@ -3500,6 +3500,317 @@
       "degrees": false,
       "side": 1,
       "context_sha256": "4c6041b2a828eaa0c219b0a523aa5a4f60f8929ebaa6177336efc30a1955798d"
+    },
+    {
+      "id": "book-c10-p150-r01",
+      "inputs": {
+        "ṁ₁": 10,
+        "h₁": 3000000.0,
+        "ṁ₂": 1,
+        "h₂": 2000000.0,
+        "ṁ₅": 0.5,
+        "h₅": 1000000.0,
+        "ṁ₃": 10,
+        "h₃": 500000.0,
+        "ṁ₄": 1.5,
+        "h₄": 500000.0,
+        "ṁ_f": 1,
+        "LHV": 40000000.0
+      },
+      "expected": 0.66875,
+      "reference": "Balanced 11.5 kg/s water/steam streams: net useful heat 26.75 MW divided by 40 MW fuel input. Terms follow the declared inlet/outlet convention.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "681c24719f9cf732628edafcbdcd765d00143de041410bec23b036285ac78910"
+    },
+    {
+      "id": "book-c10-p151-r02",
+      "inputs": {
+        "h₁": 3000000.0,
+        "h₂": 2600000.0,
+        "h_cond": 500000.0
+      },
+      "expected": 0.16,
+      "reference": "Selected approximate cycle: work 400 kJ/kg over 2500 kJ/kg heat input; omitted pump work remains an assumption.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "dd7751c1036dce32fc1129471daeb70e905395d7de0c7339408847782210aeb9"
+    },
+    {
+      "id": "book-c10-p151-r03",
+      "inputs": {
+        "ṁ_s": 5,
+        "h₁": 3000000.0,
+        "h₂": 2600000.0,
+        "ṁ_f": 0.1,
+        "LHV": 40000000.0
+      },
+      "expected": 0.5,
+      "reference": "Two MW steam work over four MW fuel input, under the stated plant approximation.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "01445a51810bdd2b48be31c625fbb8a3264f3ab3554648b87d27cd19f8d5646e"
+    },
+    {
+      "id": "book-c10-p151-r07",
+      "inputs": {
+        "κ": 1.4
+      },
+      "expected": 0.5282817877171742,
+      "reference": "Ideal-gas sonic throat pressure ratio for heat-capacity ratio 1.4; a selected isentropic-gas reference, not a steam critical-flow calibration.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1f8c28d2e6384f16a499839d71ff834b30b4f407fd74918e7ed800d63e33c097"
+    },
+    {
+      "id": "book-c10-p152-r03",
+      "inputs": {
+        "m": 2,
+        "c₀": 500,
+        "c₁": 400
+      },
+      "expected": 90000,
+      "reference": "Kinetic energy decreases from 250 kJ to 160 kJ for a two-kilogram sample.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "437b38d495f56102c510954bd89a04f9ce3e65cc79cb097863b64ea926227a22"
+    },
+    {
+      "id": "book-c10-p152-r04",
+      "inputs": {
+        "m": 2,
+        "w₁": 200,
+        "w₂": 150
+      },
+      "expected": 17500,
+      "reference": "Relative kinetic energy decreases from 40 kJ to 22.5 kJ.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "44eeddf79e674e0ce7f3a3121c2b09054b83471a0c8d09c3f04cd2c9027af087"
+    },
+    {
+      "id": "book-c10-p152-r05",
+      "inputs": {
+        "m": 2,
+        "c₂": 100
+      },
+      "expected": 10000,
+      "reference": "Two kilograms retain ten kJ exit kinetic energy.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a83e13053177780365f253ef613cdd25a10ed7225e94e0718da931ff23ef41ad"
+    },
+    {
+      "id": "book-c10-p152-r06",
+      "inputs": {
+        "W": 200000,
+        "W_nozzle": 90000,
+        "W_blade": 17500,
+        "W_exit": 10000
+      },
+      "expected": 82500,
+      "reference": "Subtract three separately specified losses from a 200 kJ gross energy budget.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "695fc45476e29f2edcd293a34338780edcd1dfdb38cc5fd3c21bd567023e44f5"
+    },
+    {
+      "id": "book-c10-p152-r07",
+      "inputs": {
+        "c₁": 300,
+        "u": 100,
+        "α₁": 1.0471975511965976
+      },
+      "expected": 70000,
+      "reference": "Cartesian relative velocity components: (150-100)^2 + (150 sqrt(3))^2 = 70000 m2/s2.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "cdf541c36bfcd9c58c6fa41e6bb38300ce406bfac8079467ce0a16d83df63b48"
+    },
+    {
+      "id": "book-c10-p152-r08",
+      "inputs": {
+        "α₁": 1.5707963267948966,
+        "w₁": 200
+      },
+      "expected": 0.005,
+      "reference": "Sine-law specialization matching sin(30 degrees)/100; nonzero speed and the stated triangle angles.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "704d4073ab41b1952c1652c48e921c467ad35699363fd4809cd6eb952c7e5ecb"
+    },
+    {
+      "id": "book-c10-p153-r01",
+      "inputs": {
+        "w₂": 200,
+        "u": 100,
+        "β₂": 1.0471975511965976
+      },
+      "expected": 30000,
+      "reference": "Cartesian exit components: (100-100)^2 + (100 sqrt(3))^2 = 30000 m2/s2.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "45bcc2caff86ee6ae0aa6c382f54b58335a54543331880fa4cc0a6e72b21dc4f"
+    },
+    {
+      "id": "book-c10-p153-r05",
+      "inputs": {
+        "w₂": 300,
+        "w₁": 200,
+        "c₁": 500,
+        "c₂": 400
+      },
+      "expected": 0.35714285714285715,
+      "reference": "Specified reaction model: 50 kJ/kg relative energy difference over 140 kJ/kg combined differences; no empirical stage claim.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "83ff5b11286dd9a783147682fc44f1868c7f1f3548e8aa3c21bbba06d4c9def7"
+    },
+    {
+      "id": "book-c10-p153-r06",
+      "inputs": {
+        "c_y": 100,
+        "c_x": 200,
+        "u₁": 100
+      },
+      "expected": 0.7853981633974483,
+      "reference": "Equal positive axial and relative tangential components give a first-quadrant 45-degree blade angle.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d30f5994f855d4e0bde73df6b9ec055703a843c5a65f3a4573a0610689e52b82"
+    },
+    {
+      "id": "book-c10-p153-r07",
+      "inputs": {
+        "c_y": 100,
+        "c_x": 200,
+        "u₂": 300
+      },
+      "expected": 2.356194490192345,
+      "reference": "Positive axial and negative relative tangential components give a second-quadrant 135-degree angle.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "7edd6553e216dd9897e2e08ae7a3a8204316fba80ae063775b77968632160feb"
+    },
+    {
+      "id": "book-c10-p153-r08",
+      "inputs": {
+        "β_tip": 2.356194490192345,
+        "β_root": 0.7853981633974483
+      },
+      "expected": 1.5707963267948966,
+      "reference": "Tip angle exceeds root angle by ninety degrees under the same angular convention.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "76dbb5fe21442c64033d8ea1193f23d96a8561f7aa09643d2b6401c8954e1623"
+    },
+    {
+      "id": "book-c10-p154-r04",
+      "inputs": {
+        "h₁": 10,
+        "δ": 0.1,
+        "k": 2,
+        "h₂": 20
+      },
+      "expected": 0.2,
+      "reference": "A unit heat flux produces 0.1, 0.05 and 0.05 K drops across two films and a slab.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "54e5898205916e8a1610405c25920374dc82a8841a8cd9dbcd5e5af88945dc36"
+    },
+    {
+      "id": "book-c12-p177-r07",
+      "inputs": {
+        "z": 4,
+        "D": 0.1,
+        "S": 0.1,
+        "n": 5
+      },
+      "expected": 0.015707963267948967,
+      "reference": "Four cylinders each sweep pi times 0.05 squared times 0.1 m3, five working cycles per second.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f85c0cf980778ee0b171957695f49ebca25dd2eccb5f741ef1f5d2a6bb7d2f33"
+    },
+    {
+      "id": "book-c12-p178-r06",
+      "inputs": {
+        "h₁": 20,
+        "A": 3,
+        "T₁": 30,
+        "T_surface": 20
+      },
+      "expected": 600,
+      "reference": "Specified film conductance is 60 W/K under a ten-K temperature difference.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c9d4417e473b3f18ecd225b83e420a7eaec91ab42fc4629b1df5a11067c1f0f8"
+    },
+    {
+      "id": "book-c12-p178-r07",
+      "inputs": {
+        "h₁": 20,
+        "h₂": 30,
+        "δ_j": 0.1,
+        "k_j": 2,
+        "k_air": 10
+      },
+      "expected": 0.23333333333333334,
+      "reference": "One solid layer and one specified air-film conductance: unit heat flux gives drops 1/20, 1/30, .05 and .1 K. The sum is specialized to one term each.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8d08c754e626848f7202ae694ca5b42549561b1f4f65fddefa9ea10da40a3242"
+    },
+    {
+      "id": "book-c12-p179-r03",
+      "inputs": {
+        "r_o": 2,
+        "r_i": 1,
+        "k": 1,
+        "L": 0.15915494309189535
+      },
+      "expected": 0.6931471805599453,
+      "reference": "Radial cylindrical conduction: integral of 1/r from radius one to two, with unit 2pi k L conductance factor.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6db9f31829aad761de7e0aa9962a1a379158074a46b14e579259cc6c1d6db427"
+    },
+    {
+      "id": "book-c12-p179-r04",
+      "inputs": {
+        "ΔT₁": 80,
+        "ΔT₂": 40
+      },
+      "expected": 57.70780163555854,
+      "reference": "Average of the exponential temperature-difference profile 40*2^x over x in [0,1], giving the logarithmic mean.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a360afd586310ab35323c901aab3c5611bd550b7ba496b9e91f4c7114c949d5a"
+    },
+    {
+      "id": "book-c12-p179-r05",
+      "inputs": {
+        "ΔT₁": 80,
+        "ΔT₂": 20
+      },
+      "expected": 40,
+      "reference": "Selected geometric-mean approximation only. It is not the exact LMTD for this terminal-temperature ratio.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c3e082e010a924bd8b0f0e897d38b8c8e3adf0dd80abdbad57bdd2e8925e5446"
+    },
+    {
+      "id": "book-c12-p179-r06",
+      "inputs": {
+        "U": 20,
+        "A": 3,
+        "LMTD": 50
+      },
+      "expected": 3000,
+      "reference": "Overall conductance 60 W/K acts across a specified 50-K logarithmic mean difference.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d4bf1e0f45b8a9e45491ea9213854dfe2d138da7e430dda910e573c415bed0ca"
     }
   ]
 }

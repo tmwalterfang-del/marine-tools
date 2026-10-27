@@ -35,10 +35,10 @@ for(const test of cases){
 if(failures.length)console.error(JSON.stringify(failures,null,2));
 assert.equal(failures.length,0);
 assert.equal(Object.keys(counts).length,16);
-assert.equal(cases.length,286);
-assert.equal(new Set(cases.map(c=>c.id)).size,276);
+assert.equal(cases.length,309);
+assert.equal(new Set(cases.map(c=>c.id)).size,299);
 // Guard the test interpreter itself, including precedence and rejection paths.
 for(const [expr,inputs,expected] of [['2x²',{x:3},18],['-x²',{x:3},-9],['sin²(x)',{x:Math.PI/2},1],['2^3^2',{},512],['x+y²',{x:2,y:3},11]])assert.equal(evaluate(expr,inputs),expected);
 for(const expr of ['x.constructor','process.exit()','sqrt(-1)','1/0','x + unknown'])assert.throws(()=>evaluate(expr,{x:1}));
 assert.notEqual(evaluate('I/t',{I:2,t:30}),60,'A reversed charge formula must fail the independent fixture');
-console.log(JSON.stringify({status:'PASS',cases:cases.length,expressions:276,chapters:counts,scope:'Individually explained authored worked cases against the shipped RHS; not full-domain or historical-coefficient validation.'}));
+console.log(JSON.stringify({status:'PASS',cases:cases.length,expressions:299,chapters:counts,scope:'Individually explained authored worked cases against the shipped RHS; not full-domain or historical-coefficient validation.'}));

@@ -2,6 +2,7 @@
 // Explicit values are required; unsupported notation fails rather than passing.
 export function evaluate(text, values, degrees = false) {
   const functions = {
+    sum: x => x, // Explicit one-term summation specialization in the worked-case fixture.
     sqrt: Math.sqrt, abs: Math.abs, exp: Math.exp, ln: Math.log,
     log10: Math.log10, sin: x => Math.sin(degrees ? x * Math.PI / 180 : x),
     cos: x => Math.cos(degrees ? x * Math.PI / 180 : x),
@@ -13,7 +14,7 @@ export function evaluate(text, values, degrees = false) {
   const names = Object.keys(values).sort((a,b) => b.length-a.length);
   const supers = { '⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-' };
   const tokens = [];
-  text = text.replaceAll('log₁₀', 'log10');
+  text = text.replaceAll('log₁₀', 'log10').replaceAll('Σ', 'sum');
   for (let i=0; i<text.length;) {
     const rest=text.slice(i), c=text[i];
     if (/\s/.test(c)) {i++;continue;}

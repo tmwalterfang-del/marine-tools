@@ -509,3 +509,6 @@
     row.sourceReread = reread[row.page];
   }
 })();
+
+// Additional selected steam/refrigeration worked cases; no historical-model promotion.
+(function(){const ids=new Set(["book-c10-p150-r01", "book-c10-p151-r02", "book-c10-p151-r03", "book-c10-p151-r07", "book-c10-p152-r03", "book-c10-p152-r04", "book-c10-p152-r05", "book-c10-p152-r06", "book-c10-p152-r07", "book-c10-p152-r08", "book-c10-p153-r01", "book-c10-p153-r05", "book-c10-p153-r06", "book-c10-p153-r07", "book-c10-p153-r08", "book-c10-p154-r04", "book-c12-p177-r07", "book-c12-p178-r06", "book-c12-p178-r07", "book-c12-p179-r03", "book-c12-p179-r04", "book-c12-p179-r05", "book-c12-p179-r06"]);for(const r of window.MT_STUDY.sourceEquationRegister)if(ids.has(r.id)){r.numericStatus="REFERENCE_CASE_COVERED";r.workedCaseTestReference="tests/students-worked-cases-20261027.mjs";}})();

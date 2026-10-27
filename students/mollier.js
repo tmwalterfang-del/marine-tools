@@ -517,11 +517,21 @@
       $("process-mode").value !== "turbine";
   });
   svg.addEventListener("click", (event) => {
-    const rect = svg.getBoundingClientRect(),
-      scale = Math.min(rect.width / W, rect.height / H);
-    const px =
-        (event.clientX - rect.left - (rect.width - W * scale) / 2) / scale,
-      py = (event.clientY - rect.top - (rect.height - H * scale) / 2) / scale;
+    const matrix = typeof svg.getScreenCTM === "function" ? svg.getScreenCTM() : null;
+    let px, py;
+    if (matrix) {
+      const pointer = svg.createSVGPoint();
+      pointer.x = event.clientX; pointer.y = event.clientY;
+      const position = pointer.matrixTransform(matrix.inverse());
+      px = position.x; py = position.y;
+    } else {
+      const rect = svg.getBoundingClientRect(),
+        box = (svg.getAttribute("viewBox") || "0 0 980 580").split(/[ ,]+/).map(Number),
+        scale = Math.min(rect.width / box[2], rect.height / box[3]);
+      if (!Number.isFinite(scale) || scale <= 0) return;
+      px = box[0] + (event.clientX - rect.left - (rect.width - box[2] * scale) / 2) / scale;
+      py = box[1] + (event.clientY - rect.top - (rect.height - box[3] * scale) / 2) / scale;
+    }
     if (px < left || px > W - right || py < top || py > H - bottom) {
       fail("Select within the plot.");
       return;
@@ -737,6 +747,7 @@
     }
     fail("");
     update();
+    document.dispatchEvent(new Event("mt-study-changed"));
   }
   $("export-scenario")?.addEventListener("click", () => {
     try {

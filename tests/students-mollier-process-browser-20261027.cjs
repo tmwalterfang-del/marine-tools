@@ -101,6 +101,7 @@ const ok = (v, s) => {
     (await page.locator("#process-result").textContent()).includes("0.850"),
     "Scenario restores and verifies process efficiency",
   );
+  await page.locator('#export-report').evaluate(el=>{for(let p=el.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true});
   const download = page.waitForEvent("download");
   await page.locator("#export-report").click();
   const d = await download;

@@ -1,0 +1,79 @@
+name: Native app prototypes
+on:
+  push:
+    branches: ['feature/for-students-formula-library-20261019']
+    paths: ['apps/**', 'scripts/stage-app.mjs', 'scripts/native-app.mjs', 'package.json', 'package-lock.json', 'capacitor.config.json', '.github/workflows/native-app-prototypes.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:app
+      - run: npm run app:desktop:build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: marine-tools-desktop-${{ matrix.os }}
+          path: |
+            apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
+            apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/Cargo.lock
+          if-no-files-found: warn
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:app
+      - run: npm run app:android:sync
+      - run: chmod +x apps/mobile/android/gradlew
+      - run: apps/mobile/android/gradlew -p apps/mobile/android assembleDebug
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: marine-tools-android-debug
+          path: apps/mobile/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+  ios-simulator:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run app:ios:sync
+      - run: xcodebuild -project apps/mobile/ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: marine-tools-ios-simulator
+          path: ios-build/Build/Products/Debug-iphonesimulator/*.app
+          if-no-files-found: warn

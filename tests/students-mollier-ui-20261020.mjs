@@ -7,7 +7,7 @@ function load(engine=true){
  const nodes={};
  for(const id of [...read('mollier.html').matchAll(/id="([^"]+)"/g)].map(m=>m[1]))nodes[id]={
   value:'',textContent:'',hidden:false,disabled:false,listeners:{},lastChild:null,
-  addEventListener(type,fn){this.listeners[type]=fn},appendChild(){},setAttribute(){},
+  addEventListener(type,fn){this.listeners[type]=fn},appendChild(){},setAttribute(){},getAttribute(){return null},
   getBoundingClientRect(){return {left:0,top:0,width:980,height:580}}
  };
  const ctx={navigator:{},document:{getElementById:id=>{assert.ok(nodes[id],id);return nodes[id]},createElementNS:()=>({setAttribute(){}})}};

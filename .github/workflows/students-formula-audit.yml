@@ -100,6 +100,7 @@ jobs:
           timeout 45s node tests/site-core-dom-20261020.cjs
           node tests/students-explorers-dom-20261020.cjs
           node tests/students-mollier-export-20261020.cjs
+          node tests/students-session-tools-20261027.cjs
           node tests/analytics-dashboard-20261021.mjs
           node tests/analytics-usage-20261021.mjs
       - name: Existing whole-site regressions with simulated providers
@@ -161,6 +162,7 @@ jobs:
           node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
           node tests/students-mollier-process-browser-20261027.cjs ${{ matrix.browser }}
           node tests/education-single-scroll-20261027.cjs ${{ matrix.browser }}
+          node tests/students-session-browser-20261027.cjs ${{ matrix.browser }}
       - name: Save screenshots, browser results and report exports
         if: always()
         uses: actions/upload-artifact@v4
