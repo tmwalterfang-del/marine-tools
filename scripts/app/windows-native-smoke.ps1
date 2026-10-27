@@ -6,6 +6,11 @@ $installer=Get-ChildItem (Join-Path $root 'apps/desktop/src-tauri/target/release
 $target=Join-Path $env:RUNNER_TEMP 'MarineToolsNativeSmoke'
 if (!$installer) { throw 'NSIS candidate missing' }
 $app=$null
+# Disposable CI runner policy only: Wry supplies options which override the
+# environment switch on current WebView2. Test the actual release executable.
+$debugPolicy='HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
+New-Item -Path $debugPolicy -Force | Out-Null
+New-ItemProperty -Path $debugPolicy -Name 'marine-tools-preview.exe' -Value '--remote-debugging-port=9222' -PropertyType String -Force | Out-Null
 $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS='--remote-debugging-port=9222'
 $env:WEBVIEW2_USER_DATA_FOLDER=Join-Path $env:RUNNER_TEMP 'MarineToolsWebViewSmoke'
 try {
@@ -35,4 +40,5 @@ try {
  if ($app -and !$app.HasExited) { $app.Kill() }
  Remove-Item Env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS -ErrorAction SilentlyContinue
  Remove-Item Env:WEBVIEW2_USER_DATA_FOLDER -ErrorAction SilentlyContinue
+ Remove-ItemProperty -Path $debugPolicy -Name 'marine-tools-preview.exe' -ErrorAction SilentlyContinue
 }

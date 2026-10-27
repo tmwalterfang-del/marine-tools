@@ -23,6 +23,7 @@ function init(){
  document.getElementById('mt-app-back').onclick=back;document.getElementById('mt-app-install').hidden=!installPrompt;
  document.getElementById('mt-app-install').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;document.getElementById('mt-app-install').hidden=true}};
  status('Local calculators · live AIS/weather disabled · no app analytics.');
+ const offlineCopy=document.querySelector('#offlineBanner span');if(offlineCopy)offlineCopy.textContent='Local calculators and saved inputs remain available. This app candidate includes no live or cached weather/AIS. Protected Education requires an internet connection.';
  let saved='home';try{saved=localStorage.getItem('mt.app.last-page.v1')||'home'}catch{}
  const initial=window.__MT_INITIAL_PAGE||(location.hash.startsWith('#page=')?location.hash.slice(6):new URL(location.href).searchParams.get('page'))||saved;
  const id=allowed.has(initial)?initial:'home';stack=[id];history.replaceState({mtPage:id},'',pageUrl(id));go(id,false);

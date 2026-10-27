@@ -1,9 +1,8 @@
 name: App distribution candidates
 on:
-  push:
-    branches: ['feature/cross-platform-app']
   pull_request:
-    branches: ['feature/for-students-formula-library-20261019']
+    branches: ['feature/for-students-formula-library-20261019', 'main']
+    paths-ignore: ['docs/**', 'apps/README.md']
   workflow_dispatch:
 permissions:
   contents: read

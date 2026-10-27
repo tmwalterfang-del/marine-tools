@@ -8,6 +8,7 @@ const config=JSON.parse(fs.readFileSync(path.join(root,'apps/app-config.json')))
 if(config.productionApiEnabled||config.analyticsEnabled||config.channel!=='preview')throw Error('Only isolated preview packaging is enabled.');
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
 const csp="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ipc: http://ipc.localhost; font-src 'self' data:; worker-src 'self' blob:; frame-src 'none'; object-src 'none'";
+const appPrivacy=fs.readFileSync(path.join(root,'apps/store/privacy-draft.html'),'utf8').match(/<body>([\s\S]*)<\/body>/)[1];
 const excluded=new Set(['sw.js','analytics-v856.js','usage-analytics.js','support-widget-v857.js']);
 for(const name of fs.readdirSync(root).filter(n=>/\.(?:html|js|css)$/.test(n)&&!excluded.has(n))){
  let text=fs.readFileSync(path.join(root,name),'utf8');
@@ -23,6 +24,7 @@ for(const name of fs.readdirSync(root).filter(n=>/\.(?:html|js|css)$/.test(n)&&!
   });
  }
  if(name==='app.js'){
+  text=text.replace('function renderPrivacy(){', 'function renderPrivacy(){document.getElementById(\"privacy\").innerHTML='+JSON.stringify('<article class=\"panel\"><div class=\"panel-body\">'+appPrivacy+'</div></article>')+';return;');
   text=text.replace(/const API=.*?;/,"const API='https://offline-app.invalid';");
   text=text.replace(/function analyticsEnabled\(\)\{[^}]*\}/,'function analyticsEnabled(){return false}');
   text=text.replace("if('serviceWorker' in navigator)","if(!window.MT_NATIVE_APP && 'serviceWorker' in navigator)");

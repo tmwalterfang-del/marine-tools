@@ -15,6 +15,7 @@ const root=path.resolve('app-dist'),out=path.resolve('store-assets/0.2.0');let s
    await page.evaluate(id=>MT_APP_NAV.go(id),scene);
    if(scene==='vessel-calcs'){await page.locator('#calcAirDraft').click();await page.locator('#resAirDraft').scrollIntoViewIfNeeded()}
    if(scene==='electrical'){await page.locator('#calc3p').click();await page.locator('#res3p').scrollIntoViewIfNeeded()}
+   if(profile.name==='windows-web-reference')await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
    const file=profile.name+'-'+scene+'.png';await page.screenshot({path:path.join(out,file),animations:'disabled'});captures.push({file,scene,pixels:[profile.width*profile.scale,profile.height*profile.scale],source:'Actual shared app in Chromium; NOT a native or physical-device capture'});
   }await context.close();
  }
