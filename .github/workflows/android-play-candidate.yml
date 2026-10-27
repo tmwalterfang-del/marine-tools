@@ -1,0 +1,43 @@
+name: Android Play candidate
+on:
+  pull_request:
+    branches: ['feature/privacy-policy']
+    paths: ['apps/app-config.json', '.github/workflows/android-play-candidate.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: 'false'
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:app
+      - run: npm run test:app:unit
+      - run: npm run app:android:sync
+      - run: chmod +x apps/mobile/android/gradlew
+      - run: apps/mobile/android/gradlew -p apps/mobile/android assembleRelease bundleRelease
+      - name: Check packaged version, identity, permissions and Education exclusion
+        run: python3 scripts/app/check-android-package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MarineTools-android-play-candidate
+          path: |
+            apps/mobile/android/app/build/outputs/apk/release/
+            apps/mobile/android/app/build/outputs/bundle/release/
+            app-artifacts/android/
+          if-no-files-found: error
