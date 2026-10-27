@@ -23,10 +23,15 @@ for(const [kind,pattern]of [['iphone',/^iPhone/],['ipad',/^iPad/]]){
  const deadline=Date.now()+240000;
  while(Date.now()<deadline&&!logs.includes('MT_CI_SMOKE_FINISHED')&&!logs.includes('MT_CI_READY_TIMEOUT'))await new Promise(r=>setTimeout(r,1000));
  fs.writeFileSync(output+'/'+kind+'-native-console.log',logs);
- run(['simctl','io',d.udid,'screenshot',output+'/'+kind+'-simulator.png']);
- execFileSync('sips',['-s','format','jpeg',output+'/'+kind+'-simulator.png','--out',output+'/'+kind+'-simulator.jpg'],{stdio:'ignore'});
+ // Image export is a separate diagnostic, never proof of native behavior.
+ // Simulator image encoding can exceed a minute on a cold shared runner.
+ let captureStatus='PASS',captureError=null;
+ try{
+  run(['simctl','io',d.udid,'screenshot',output+'/'+kind+'-simulator.png'],180000);
+  execFileSync('sips',['-s','format','jpeg',output+'/'+kind+'-simulator.png','--out',output+'/'+kind+'-simulator.jpg'],{stdio:'ignore',timeout:60000});
+ }catch(e){captureStatus='FAIL';captureError=e.message;console.error('Native screenshot unavailable for '+kind+': '+e.message);fs.rmSync(output+'/'+kind+'-simulator.png',{force:true});fs.rmSync(output+'/'+kind+'-simulator.jpg',{force:true});}
  const required=['MT_CI_APP_READY','MT_CI_CALC_OK','MT_CI_CLIPBOARD_OK','MT_CI_SHARE_PRESENTED','MT_CI_EXPORT_CACHE_OK','MT_CI_SMOKE_FINISHED'],missing=required.filter(marker=>!logs.includes(marker));
- tests.push({kind,device:d.name,status:missing.length?'FAIL':'PASS',missing,physicalDevice:false,scope:'Actual WKWebView calculation, system clipboard write/read, share sheet presentation, private export contents; recipient delivery not tested'});
+ tests.push({kind,device:d.name,status:missing.length?'FAIL':'PASS',captureStatus,captureError,missing,physicalDevice:false,scope:'Actual WKWebView calculation, system clipboard write/read, share sheet presentation, private export contents; recipient delivery not tested'});
  child.kill();
  }catch(e){tests.push({kind,device:d.name,status:'FAIL',physicalDevice:false,error:e.message});fs.writeFileSync(output+'/'+kind+'-runner-failure.txt',String(e.stack||e));
  }finally{
