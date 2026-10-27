@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#061725"/><stop offset="1" stop-color="#123d54"/></linearGradient></defs>
+<rect width="1024" height="500" fill="url(#bg)"/>
+<path d="M0 420 Q400 330 1024 410" fill="none" stroke="#52cce5" stroke-opacity=".18" stroke-width="2"/>
+<path d="M0 446 Q450 365 1024 445" fill="none" stroke="#edbc64" stroke-opacity=".2" stroke-width="2"/>
+<image href="/assets/icon-512.png" x="70" y="80" width="230" height="230"/>
+<text x="350" y="156" font-family="Arial,sans-serif" font-size="18" letter-spacing="5" fill="#68cde7">MARITIME CALCULATION TOOLS</text>
+<text x="346" y="225" font-family="Arial,sans-serif" font-size="62" font-weight="700" fill="#edf5f8">Marine Tools</text>
+<text x="350" y="272" font-family="Arial,sans-serif" font-size="26" fill="#aec6d5">Practical tools for seafarers</text>
+<rect x="350" y="312" width="560" height="56" rx="12" fill="#0a2334" stroke="#31596c"/>
+<text x="375" y="347" font-family="Arial,sans-serif" font-size="21" fill="#e4bc76">Local calculators · Clear inputs · Offline tools</text>
+<text x="74" y="460" font-family="Arial,sans-serif" font-size="15" fill="#8aaabd">Walterfang Design</text>
+</svg>

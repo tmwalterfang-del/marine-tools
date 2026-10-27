@@ -8,9 +8,11 @@ import {save} from '@tauri-apps/plugin-dialog';
 import {writeTextFile} from '@tauri-apps/plugin-fs';
 import {writeText} from '@tauri-apps/plugin-clipboard-manager';
 import {openUrl} from '@tauri-apps/plugin-opener';
-import {createPlatform,deepLinkPage} from './platform-core.mjs';
+import {createPlatform,deepLinkPage,validateBackup} from './platform-core.mjs';
+window.MT_NATIVE_APP=Capacitor.isNativePlatform()||!!window.__TAURI_INTERNALS__;
+if(window.MT_NATIVE_APP&&'serviceWorker'in navigator){navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('marine-tools-app-preview-')).map(k=>caches.delete(k)))).catch(()=>{});}
 const report=message=>window.dispatchEvent(new CustomEvent('mt-app-status',{detail:{message}}));
-const done=async promise=>{try{const result=await promise;if(result?.message)report(result.message);return result}catch(e){report('Action failed: '+(e.message||'Please try again.'));throw e}};
+const done=async promise=>{try{const result=await promise;if(result?.message)report(result.message);return result}catch(e){if(e?.name==='AbortError'||/cancel/i.test(e?.message||'')){report('Action cancelled.');return {cancelled:true}}report('Action failed: '+(e.message||'Please try again.'));throw e}};
 let adapter;
 if(Capacitor.isNativePlatform()){
  const isAndroid=Capacitor.getPlatform()==='android';
@@ -34,7 +36,7 @@ if(Capacitor.isNativePlatform()){
  adapter=createPlatform('desktop',{
   copy:writeText,
   share:async(title,text)=>{await writeText(text);return {message:'Calculation copied for sharing.'}},
-  save:async(name,text)=>{const file=await save({defaultPath:name,filters:[{name:'Marine Tools export',extensions:[name.split('.').pop()]}]});if(!file)return {cancelled:true,message:'Save cancelled.'};await writeTextFile(file,text);return {message:'File saved.'}},
+  save:async(name,text)=>{const file=await save({title:'Save Marine Tools export',defaultPath:name,filters:[{name:'Marine Tools export',extensions:[name.split('.').pop()]}]});if(!file)return {cancelled:true,message:'Save cancelled.'};await writeTextFile(file,text);return {message:'File saved.'}},
   open:openUrl
  });
 }else{
@@ -45,4 +47,4 @@ if(Capacitor.isNativePlatform()){
   open:async url=>{window.open(url,'_blank','noopener,noreferrer')}
  });
 }
-window.MT_PLATFORM={...adapter,copyText:text=>done(adapter.copyText(text)),shareText:(title,text)=>done(adapter.shareText(title,text)),saveText:(name,text,mime)=>done(adapter.saveText(name,text,mime))};
+window.MT_PLATFORM={...adapter,validateBackup,copyText:text=>done(adapter.copyText(text)),shareText:(title,text)=>done(adapter.shareText(title,text)),saveText:(name,text,mime)=>done(adapter.saveText(name,text,mime))};

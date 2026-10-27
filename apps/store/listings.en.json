@@ -1,0 +1,58 @@
+{
+  "status": "DRAFT_FOR_OWNER_REVIEW_NOT_SUBMITTED",
+  "candidateVersion": "0.2.0",
+  "publicName": "Marine Tools",
+  "shortDescription": "Practical maritime calculators with local inputs, exports and offline tools.",
+  "fullDescription": "Marine Tools brings practical maritime calculations to your phone, tablet or computer.\n\nUse local tools for vessel allowances, anchoring geometry, air-draft clearance, fuel and energy conversions, electrical power and engineering estimates. Enter your own values and units, review assumptions, and recalculate before using a result.\n\nKeep vessel profiles and recent calculations locally. Reopen supported calculator inputs, copy results, and export or share files using the options available on your device. Core bundled calculators work without an internet connection.\n\nThis candidate does not provide live AIS or weather. The separate Education workspace requires online, protected access and is not included in the offline package. No account is needed for the bundled local calculators.\n\nMarine Tools is a planning and calculation aid. It is not approved navigation equipment, a certified safety system, an official record book or a replacement for vessel-specific documentation and professional judgement. Verify inputs, assumptions and results before operational use.",
+  "supportEmail": "contact@marinetools.app",
+  "website": "https://marinetools.app",
+  "privacyUrlCandidate": "https://marinetools.app/?page=privacy",
+  "privacyUrlStatus": "OWNER_MUST_APPROVE_AND_HOST_APP_SPECIFIC_POLICY_BEFORE_SUBMISSION",
+  "googlePlay": {
+    "title": "Marine Tools",
+    "categoryProposal": "Tools",
+    "binary": "Signed Android App Bundle",
+    "trackProposal": "Internal testing first",
+    "dataSafety": "See DATA_AND_PRIVACY.md; not a submitted questionnaire",
+    "audience": "Maritime professionals and adult technical students; not designed for children"
+  },
+  "galaxyStore": {
+    "title": "Marine Tools",
+    "categoryProposal": "Tools",
+    "binary": "Signed universal APK, reusing Android code",
+    "compatibility": "Android 7.0/API 24 or later; phones/tablets subject to device testing",
+    "signing": "Agree cross-store application signing key strategy before first publication"
+  },
+  "microsoftStore": {
+    "title": "Marine Tools",
+    "categoryProposal": "Productivity",
+    "devices": ["PC"],
+    "binary": "MSIX x64 with owner-assigned Store identity/publisher",
+    "minimumOs": "Windows 10 build 19041; Windows 11",
+    "runtime": "Microsoft Edge WebView2 Evergreen runtime",
+    "certification": "runFullTrust is needed for the packaged Tauri desktop process; no arbitrary shell API is exposed"
+  },
+  "appleAppStore": {
+    "title": "Marine Tools",
+    "subtitle": "Maritime calculation tools",
+    "keywords": "marine,maritime,engineering,vessel,fuel,electrical,calculator,offline",
+    "categoryProposal": "Utilities",
+    "devices": ["iPhone", "iPad"],
+    "reviewNotes": "This is a local calculator application, not a remote website shell. Calculations, local profiles and recent work function without an account or network. Review a vessel air-clearance example: open Vessel Calculations, enter published clearance 25 m, water level 0.8 m, air draft 20 m and margin 1 m; Calculate returns 3.20 m. Native integrations provide clipboard and the system share sheet for text/files. Education is a separate protected online preview and is not bundled; it is not needed to review local functionality. Live AIS/weather and analytics are disabled. No login credentials are needed for local tools. This submission draft must not be used before device/export tests and owner approvals are completed.",
+    "testFlight": "Create App Store Connect record and signing assets only after identity confirmation; upload a signed archive with explicit owner authorization",
+    "encryptionAssessment": "Standard platform HTTPS only; ITSAppUsesNonExemptEncryption=false in candidate. Owner must confirm export-compliance questionnaire."
+  },
+  "ratingAssessment": {
+    "status": "OWNER_QUESTIONNAIRE_REQUIRED",
+    "content": "No in-app chat, advertising SDK, gambling, violent or sexual content is part of this candidate.",
+    "caution": "Engineering calculations are not regulatory or safety certification. Do not guess a final age rating; complete each store questionnaire."
+  },
+  "claimsNotPermitted": [
+    "All formulas independently verified",
+    "Certified or approved for navigation",
+    "Live AIS or weather in this candidate",
+    "Education available offline",
+    "Physically tested on all supported devices",
+    "Published, signed or store-approved before evidence exists"
+  ]
+}

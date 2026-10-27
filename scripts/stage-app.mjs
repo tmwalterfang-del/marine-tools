@@ -25,6 +25,7 @@ for(const name of fs.readdirSync(root).filter(n=>/\.(?:html|js|css)$/.test(n)&&!
  if(name==='app.js'){
   text=text.replace(/const API=.*?;/,"const API='https://offline-app.invalid';");
   text=text.replace(/function analyticsEnabled\(\)\{[^}]*\}/,'function analyticsEnabled(){return false}');
+  text=text.replace("if('serviceWorker' in navigator)","if(!window.MT_NATIVE_APP && 'serviceWorker' in navigator)");
   text=text.replace('function loadSupportWidget(){','function loadSupportWidget(){return;');
  }
  if(name==='release-v860.js')text=text.replace('async function initSW(){','async function initSW(){if(window.MT_APP_PREVIEW)return;').replace('async function check(){','async function check(){if(window.MT_APP_PREVIEW)return;');
@@ -40,7 +41,7 @@ for(const name of ['app-shell.js','app-shell.css','app-drafts.js'])fs.copyFileSy
 if(fs.existsSync(path.join(root,'apps/store/privacy-draft.html')))fs.copyFileSync(path.join(root,'apps/store/privacy-draft.html'),path.join(out,'app-privacy.html'));
 const manifest={id:'marine-tools-preview',name:config.name,short_name:'Marine Tools',description:'Local maritime calculator app candidate',start_url:'./index.html',scope:'./',display:'standalone',background_color:'#061c2f',theme_color:'#061c2f',icons:[192,512].map(size=>({src:'assets/icon-'+size+'.png',sizes:size+'x'+size,type:'image/png',purpose:'any maskable'})),shortcuts:[{name:'Vessel calculations',url:'./index.html?page=vessel-calcs'},{name:'Electrical tools',url:'./index.html?page=electrical'}]};
 fs.writeFileSync(path.join(out,'manifest.webmanifest'),JSON.stringify(manifest,null,2)+'\n');
-fs.writeFileSync(path.join(out,'build-info.json'),JSON.stringify({name:config.name,version:config.version,buildNumber:config.buildNumber,channel:config.channel,educationBundled:false,productionApiEnabled:false,analyticsEnabled:false,targets:['android','ios','windows','macos','pwa']},null,2)+'\n');
+fs.writeFileSync(path.join(out,'build-info.json'),JSON.stringify({name:config.name,version:config.version,buildNumber:config.buildNumber,sourceCommit:/^[a-f0-9]{40}$/.test(process.env.GITHUB_SHA||'')?process.env.GITHUB_SHA:'local-working-tree',channel:config.channel,educationBundled:false,productionApiEnabled:false,analyticsEnabled:false,targets:['android','ios','windows','macos','pwa']},null,2)+'\n');
 const assets=fs.readdirSync(out).filter(f=>fs.statSync(path.join(out,f)).isFile()).map(f=>'./'+f).concat(fs.readdirSync(path.join(out,'assets')).map(f=>'./assets/'+f));
 const digest=crypto.createHash('sha256');for(const asset of assets)digest.update(asset).update(fs.readFileSync(path.join(out,asset)));
 const cache='marine-tools-app-preview-'+config.version+'-'+digest.digest('hex').slice(0,16);
@@ -51,7 +52,7 @@ const worker=[
  "self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting()});",
  "self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('marine-tools-app-preview-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));",
  "self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin)return;",
- "if(e.request.mode==='navigate'){e.respondWith(fetch(e.request).catch(()=>caches.match(e.request,{ignoreSearch:true}).then(r=>r||caches.match('./index.html'))));return}",
+ "if(e.request.mode==='navigate'){e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(r=>r||caches.match('./index.html')).then(r=>r||fetch(e.request)));return}",
  "e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(r=>r||fetch(e.request)));});",
  "}"
 ].join('\n');

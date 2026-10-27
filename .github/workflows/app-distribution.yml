@@ -27,9 +27,14 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run test:app
       - run: npm run test:app:unit
+      - run: node scripts/app/release-readiness.mjs
       - run: npm install --prefix /tmp/app-browser --no-audit --no-fund playwright@1.62.1
       - run: node /tmp/app-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
       - run: node tests/app-browser-20261027.cjs ${{ matrix.browser }}
+        env:
+          NODE_PATH: /tmp/app-browser/node_modules
+      - if: matrix.browser == 'chromium'
+        run: node scripts/app/capture-store-assets.cjs
         env:
           NODE_PATH: /tmp/app-browser/node_modules
       - uses: actions/upload-artifact@v4
@@ -39,6 +44,30 @@ jobs:
           path: |
             qa-education-${{ matrix.browser }}/app/
             app-dist/
+            store-assets/
+            app-artifacts/release-readiness.json
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: npm audit --audit-level=moderate
+      - run: npm run test:app
+      - run: npm run test:app:unit
+      - run: node tests/students-worked-cases-20261027.mjs
+      - run: node tests/students-expression-review-ledger-20261020.mjs
+      - run: npm install --prefix /tmp/app-dom --no-audit --no-fund jsdom@26.1.0
+      - run: node tests/site-core-dom-20261020.cjs
+        env:
+          NODE_PATH: /tmp/app-dom/node_modules
+      - run: node tests/site-wide-source-audit-20261020.cjs
+        env:
+          NODE_PATH: /tmp/app-dom/node_modules
+      - run: node tests/navigation-smoke.mjs
   android:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -61,6 +90,7 @@ jobs:
       - run: npm run app:android:sync
       - run: chmod +x apps/mobile/android/gradlew
       - run: apps/mobile/android/gradlew -p apps/mobile/android assembleDebug assembleRelease bundleRelease
+      - run: python3 scripts/app/check-android-package.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -69,6 +99,7 @@ jobs:
             apps/mobile/android/app/build/outputs/apk/
             apps/mobile/android/app/build/outputs/bundle/
             apps/mobile/android/app/src/main/AndroidManifest.xml
+            app-artifacts/android/
           if-no-files-found: error
   desktop:
     strategy:
@@ -85,11 +116,15 @@ jobs:
           cache: npm
       - uses: dtolnay/rust-toolchain@stable
       - run: npm ci --no-audit --no-fund
-      # Temporary bootstrap: commit generated lock and remove resolution step.
-      - run: cargo generate-lockfile --manifest-path apps/desktop/src-tauri/Cargo.toml
       - run: npm run app:desktop:build
       - if: runner.os == 'Windows'
         run: npm run app:windows:msix
+      - if: runner.os == 'Windows'
+        run: |
+          npm install --prefix "$env:RUNNER_TEMP/marine-native-test" --no-audit --no-fund playwright@1.62.1
+          $env:NODE_PATH="$env:RUNNER_TEMP/marine-native-test/node_modules"
+          powershell -NoProfile -ExecutionPolicy Bypass -File scripts/app/windows-native-smoke.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -100,6 +135,7 @@ jobs:
             apps/desktop/src-tauri/Cargo.lock
             app-artifacts/windows/*.msix
             app-artifacts/windows/*.json
+            app-artifacts/windows/*.png
           if-no-files-found: error
   ios:
     runs-on: macos-latest
@@ -126,3 +162,36 @@ jobs:
             ios-archive/*.xcarchive
             app-artifacts/ios/
           if-no-files-found: error
+
+  android-emulator:
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: MarineTools-0.2.0-android-candidates
+          path: emulator-input
+      - run: npm install --prefix /tmp/android-browser --no-audit --no-fund playwright@1.62.1
+      - name: Enable KVM
+        run: |
+          sudo chmod 666 /dev/kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          profile: pixel_7
+          disable-animations: true
+          script: |
+            adb install $(find emulator-input -name app-debug.apk | head -1)
+            NODE_PATH=/tmp/android-browser/node_modules node scripts/app/android-emulator-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-0.2.0-android-emulator-QA
+          path: app-artifacts/android/

@@ -36,3 +36,18 @@ are insufficient, decide authenticated Education delivery, then configure
 release signing, developer accounts and store listings. No native sharing,
 Education offline distribution, live-data integration or store release is
 claimed by this foundation.
+
+## Distribution candidate 0.2.0
+
+Further work is on feature/cross-platform-app / Draft PR #42, stacked on #35.
+Central settings: apps/app-config.json. Native adapters and app navigation:
+apps/shared. Mobile version/signing/privacy/deep-link overlays:
+apps/mobile/config and scripts/app/configure-mobile.mjs. Windows MSIX:
+scripts/app/package-windows.ps1. Read docs/apps for architecture, privacy,
+owner tasks, QA and signing requirements; store text/assets are in apps/store.
+
+Native packages use bundled assets directly; PWA service workers are disabled
+and old candidate worker caches unregistered in native shells. Browser PWA
+updates wait for user application and preserve local data. Native integration
+tests are distinct from browser references and physical-device acceptance.
+No store submission or production signing/upload job is configured.

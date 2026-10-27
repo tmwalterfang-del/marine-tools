@@ -30,6 +30,7 @@ export function configureMobile(platform){
   if(!project.hasFile('PrivacyInfo.xcprivacy')){if(!project.pbxGroupByName('Resources'))project.addPbxGroup([],'Resources','Resources');project.addResourceFile('PrivacyInfo.xcprivacy',{target},group);}
   let projectText=project.writeSync().replace(/MARKETING_VERSION = [^;]+;/g,'MARKETING_VERSION = '+config.version+';').replace(/CURRENT_PROJECT_VERSION = [^;]+;/g,'CURRENT_PROJECT_VERSION = '+config.buildNumber+';');
   fs.writeFileSync(projectFile,projectText);
+  const sceneFile=path.join(app,'SceneDelegate.swift');let scene=fs.readFileSync(sceneFile,'utf8');if(!scene.includes('MarineNativeSmoke.start')){scene=scene.replace('window?.makeKeyAndVisible()','window?.makeKeyAndVisible()\n#if DEBUG\n        MarineNativeSmoke.start(window?.rootViewController as? CAPBridgeViewController)\n#endif');scene+='\n'+fs.readFileSync(path.join(root,'apps/mobile/config/NativeSmoke.swift'),'utf8');fs.writeFileSync(sceneFile,scene);}
   const splash=path.join(app,'Assets.xcassets/Splash.imageset');for(const name of fs.readdirSync(splash).filter(n=>n.endsWith('.png')))fs.copyFileSync(path.join(root,'assets/icon-512.png'),path.join(splash,name));
  }
 }
