@@ -19,7 +19,10 @@ for p in root.glob('intermediates/merged_manifests/**/AndroidManifest.xml'):
  assert app.attrib.get(ns+'allowBackup')=='false' and app.attrib.get(ns+'usesCleartextTraffic')=='false'
  assert sdk.attrib.get(ns+'targetSdkVersion')=='36' and sdk.attrib.get(ns+'minSdkVersion')=='24'
  permissions=[n.attrib[ns+'name'] for n in tree.findall('uses-permission')]
- assert set(permissions)<=set(['android.permission.INTERNET','android.permission.ACCESS_NETWORK_STATE']),permissions
+ internal='app.marinetools.preview.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+ declarations={n.attrib[ns+'name']:n.attrib.get(ns+'protectionLevel') for n in tree.findall('permission')}
+ if internal in permissions:assert declarations.get(internal)=='signature',declarations
+ assert set(permissions)<=set(['android.permission.INTERNET','android.permission.ACCESS_NETWORK_STATE',internal]),permissions
  manifests.append({'file':str(p),'permissions':permissions,'targetSdk':36,'minSdk':24,'allowBackup':False,'cleartext':False})
 assert reports and manifests,'No built packages or merged manifests inspected'
 (out/'package-inspection.json').write_text(json.dumps({'packages':reports,'mergedManifests':manifests,'physicalDeviceTest':'UNVERIFIED'},indent=2))

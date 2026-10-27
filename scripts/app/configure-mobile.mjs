@@ -11,6 +11,7 @@ export function configureMobile(platform){
   if(!text.includes('android:usesCleartextTraffic'))text=text.replace('<application','<application android:usesCleartextTraffic="false"');
   if(!text.includes(config.urlScheme))text=text.replace('</activity>','<intent-filter><action android:name="android.intent.action.VIEW"/><category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/><data android:scheme="'+config.urlScheme+'" android:host="tool"/></intent-filter></activity>');
   fs.writeFileSync(manifest,text);
+  const variables=path.join(base,'variables.gradle');fs.writeFileSync(variables,fs.readFileSync(variables,'utf8').replace(/minSdkVersion = \d+/,'minSdkVersion = '+config.android.minSdk).replace(/targetSdkVersion = \d+/,'targetSdkVersion = '+config.android.targetSdk));
   const gradle=path.join(base,'app/build.gradle');text=fs.readFileSync(gradle,'utf8').replace(/versionCode \d+/,'versionCode '+config.buildNumber).replace(/versionName "[^"]+"/,'versionName "'+config.version+'"');
   if(!text.includes('marine-release.gradle'))text+="\napply from: 'marine-release.gradle'\n";
   fs.writeFileSync(gradle,text);fs.copyFileSync(path.join(root,'apps/mobile/config/release.gradle'),path.join(base,'app/marine-release.gradle'));
@@ -29,6 +30,7 @@ export function configureMobile(platform){
   const group=project.findPBXGroupKey({path:'App'}),target=project.getFirstTarget().uuid;
   if(!project.hasFile('PrivacyInfo.xcprivacy')){if(!project.pbxGroupByName('Resources'))project.addPbxGroup([],'Resources','Resources');project.addResourceFile('PrivacyInfo.xcprivacy',{target},group);}
   let projectText=project.writeSync().replace(/MARKETING_VERSION = [^;]+;/g,'MARKETING_VERSION = '+config.version+';').replace(/CURRENT_PROJECT_VERSION = [^;]+;/g,'CURRENT_PROJECT_VERSION = '+config.buildNumber+';');
+  projectText=projectText.replace(/IPHONEOS_DEPLOYMENT_TARGET = [^;]+;/g,'IPHONEOS_DEPLOYMENT_TARGET = '+config.ios.minimumVersion+';').replace(/TARGETED_DEVICE_FAMILY = [^;]+;/g,'TARGETED_DEVICE_FAMILY = \"'+config.ios.family+'\";');
   fs.writeFileSync(projectFile,projectText);
   const sceneFile=path.join(app,'SceneDelegate.swift');let scene=fs.readFileSync(sceneFile,'utf8');if(!scene.includes('MarineNativeSmoke.start')){scene=scene.replace('window?.makeKeyAndVisible()','window?.makeKeyAndVisible()\n#if DEBUG\n        MarineNativeSmoke.start(window?.rootViewController as? CAPBridgeViewController)\n#endif');scene+='\n'+fs.readFileSync(path.join(root,'apps/mobile/config/NativeSmoke.swift'),'utf8');fs.writeFileSync(sceneFile,scene);}
   const splash=path.join(app,'Assets.xcassets/Splash.imageset');for(const name of fs.readdirSync(splash).filter(n=>n.endsWith('.png')))fs.copyFileSync(path.join(root,'assets/icon-512.png'),path.join(splash,name));

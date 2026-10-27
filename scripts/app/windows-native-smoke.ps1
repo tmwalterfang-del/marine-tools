@@ -6,6 +6,8 @@ $installer=Get-ChildItem (Join-Path $root 'apps/desktop/src-tauri/target/release
 $target=Join-Path $env:RUNNER_TEMP 'MarineToolsNativeSmoke'
 if (!$installer) { throw 'NSIS candidate missing' }
 $app=$null
+$env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS='--remote-debugging-port=9222'
+$env:WEBVIEW2_USER_DATA_FOLDER=Join-Path $env:RUNNER_TEMP 'MarineToolsWebViewSmoke'
 try {
  $install=Start-Process $installer.FullName -ArgumentList @('/S',"/D=$target") -PassThru
  if (!$install.WaitForExit(180000)) { $install.Kill();throw 'Installer timed out' }
@@ -14,7 +16,10 @@ try {
  if (!(Test-Path $exe)) { throw 'Installed executable not found' }
  # Test environment only; no debug port is configured in distributed app source.
  $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS='--remote-debugging-port=9222'
+ Get-Process 'marine-tools-preview' -ErrorAction SilentlyContinue | Stop-Process -Force
  $app=Start-Process $exe -PassThru
+ Start-Sleep -Seconds 2
+ Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'marine-tools|msedgewebview2' } | Select-Object Name,ProcessId,CommandLine | ConvertTo-Json | Set-Content (Join-Path $out 'runtime-processes.json')
  node (Join-Path $PSScriptRoot 'windows-webview-smoke.cjs')
  if ($LASTEXITCODE -ne 0) { throw 'Native WebView/clipboard/save acceptance failed' }
  if (!$app.HasExited) { $app.Kill();$app.WaitForExit() }
@@ -23,9 +28,11 @@ try {
  $uninstall=Start-Process $uninstaller.FullName -ArgumentList '/S' -PassThru
  if (!$uninstall.WaitForExit(120000)) { $uninstall.Kill();throw 'Uninstall timed out' }
  if ($uninstall.ExitCode -ne 0) { throw "Uninstall failed: $($uninstall.ExitCode)" }
+ for ($i=0; $i -lt 30 -and (Test-Path $exe); $i++) { Start-Sleep -Seconds 1 }
  if (Test-Path $exe) { throw 'Executable remained after uninstall' }
  @{version='0.2.0';nsisInstall='PASS';nsisUninstall='PASS';runtime='GitHub Windows runner, not physical Windows 10/11';msixInstall='UNVERIFIED: unsigned package'} | ConvertTo-Json | Set-Content (Join-Path $out 'install-results.json')
 } finally {
  if ($app -and !$app.HasExited) { $app.Kill() }
  Remove-Item Env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS -ErrorAction SilentlyContinue
+ Remove-Item Env:WEBVIEW2_USER_DATA_FOLDER -ErrorAction SilentlyContinue
 }

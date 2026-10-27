@@ -1,8 +1,8 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{execFileSync}=require('node:child_process'),{chromium}=require('playwright');
 (async()=>{
- let browser;
- for(let i=0;i<60;i++){try{browser=await chromium.connectOverCDP('http://127.0.0.1:9222');break}catch{await new Promise(r=>setTimeout(r,500))}}
- if(!browser)throw Error('Native WebView2 debug target unavailable');
+ let browser,lastError;
+ for(let i=0;i<60;i++){try{browser=await chromium.connectOverCDP('http://127.0.0.1:9222');break}catch(e){lastError=String(e);await new Promise(r=>setTimeout(r,500))}}
+ if(!browser)throw Error('Native WebView2 debug target unavailable: '+lastError);
  try{
   const context=browser.contexts()[0];let page;
   for(let i=0;i<60;i++){page=context.pages().find(p=>/tauri\.localhost|tauri:/.test(p.url()));if(page)break;await new Promise(r=>setTimeout(r,500))}

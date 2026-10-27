@@ -1,13 +1,19 @@
 import fs from 'node:fs';
 import {execFileSync,spawn} from 'node:child_process';
-const run=args=>execFileSync('xcrun',args,{encoding:'utf8',timeout:240000});
+const run=args=>{console.log('xcrun '+args.join(' '));return execFileSync('xcrun',args,{encoding:'utf8',timeout:240000})};
+const bootReady=udid=>new Promise((resolve,reject)=>{
+ const child=spawn('xcrun',['simctl','bootstatus',udid,'-b']);
+ child.stdout.on('data',x=>process.stdout.write(x));child.stderr.on('data',x=>process.stderr.write(x));
+ const timer=setTimeout(()=>{child.kill();reject(Error('Simulator first boot exceeded ten minutes'))},600000);
+ child.on('error',e=>{clearTimeout(timer);reject(e)});child.on('exit',code=>{clearTimeout(timer);code===0?resolve():reject(Error('Simulator boot failed: '+code))});
+});
 const devices=JSON.parse(run(['simctl','list','devices','available','--json'])).devices;
 const available=Object.entries(devices).filter(([runtime])=>runtime.includes('iOS')).flatMap(([,list])=>list).filter(d=>d.isAvailable);
 const output='app-artifacts/ios';fs.mkdirSync(output,{recursive:true});const tests=[];
 for(const [kind,pattern]of [['iphone',/^iPhone/],['ipad',/^iPad/]]){
  const d=available.find(d=>pattern.test(d.name)&&(kind==='iphone'?d.name.includes('Pro Max'):d.name.includes('13-inch')))||available.find(d=>pattern.test(d.name));
  if(!d){tests.push({kind,status:'UNVERIFIED',reason:'No available simulator'});continue}
- if(d.state!=='Booted')run(['simctl','boot',d.udid]);run(['simctl','bootstatus',d.udid,'-b']);
+ if(d.state!=='Booted')run(['simctl','boot',d.udid]);await bootReady(d.udid);
  run(['simctl','install',d.udid,'ios-build/Build/Products/Debug-iphonesimulator/App.app']);
  let logs='';
  const child=spawn('xcrun',['simctl','launch','--console-pty',d.udid,'app.marinetools.preview'],{env:{...process.env,SIMCTL_CHILD_MT_CI_SMOKE:'1'}});
