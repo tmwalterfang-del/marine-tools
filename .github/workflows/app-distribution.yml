@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: app-candidates-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
   web:
+    concurrency:
+      group: app-web-${{ github.ref }}-${{ matrix.browser }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -46,6 +46,9 @@ jobs:
             store-assets/
             app-artifacts/release-readiness.json
   quality:
+    concurrency:
+      group: app-quality-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -68,6 +71,9 @@ jobs:
           NODE_PATH: /tmp/app-dom/node_modules
       - run: node tests/navigation-smoke.mjs
   android:
+    concurrency:
+      group: app-android-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -101,6 +107,9 @@ jobs:
             app-artifacts/android/
           if-no-files-found: error
   desktop:
+    concurrency:
+      group: app-desktop-${{ github.ref }}-${{ matrix.os }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
@@ -139,6 +148,9 @@ jobs:
             app-artifacts/windows/*.png
           if-no-files-found: error
   ios:
+    concurrency:
+      group: app-ios-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: macos-latest
     timeout-minutes: 35
     steps:
@@ -166,6 +178,9 @@ jobs:
           if-no-files-found: error
 
   android-emulator:
+    concurrency:
+      group: app-android-emulator-${{ github.ref }}
+      cancel-in-progress: true
     needs: android
     runs-on: ubuntu-latest
     timeout-minutes: 30
