@@ -1,0 +1,33 @@
+name: Website privacy review
+on:
+  pull_request:
+    branches: [main]
+    paths: ['privacy/**', 'privacy-policy.*', 'scripts/build-privacy.mjs', 'tests/privacy-main-browser.cjs', 'app.js', 'index.html', 'sw.js', '.github/workflows/privacy-main-review.yml', '.gitattributes']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/build-privacy.mjs --check
+      - run: node --check app.js && node --check sw.js && node --check privacy-policy.js
+      - run: npm install --prefix /tmp/privacy-main-qa --no-audit --no-fund playwright@1.62.1
+      - run: node /tmp/privacy-main-qa/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
+      - run: node tests/privacy-main-browser.cjs ${{ matrix.browser }}
+        env:
+          NODE_PATH: /tmp/privacy-main-qa/node_modules
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: website-privacy-${{ matrix.browser }}
+          path: qa-privacy-main/

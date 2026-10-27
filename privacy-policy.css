@@ -1,0 +1,14 @@
+/* Shared policy presentation. No external fonts, trackers or fixed-height panels. */
+.mt-privacy-document{margin:0;background:#061724;color:#eaf4fb;font:17px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif;padding:clamp(16px,4vw,48px);color-scheme:dark}
+.mt-privacy-document main,.mt-privacy-document footer,.privacy-brand{max-width:1060px;margin:0 auto}
+.privacy-brand{display:flex;align-items:center;gap:12px;margin-bottom:24px;font-weight:700}
+.privacy-brand img{border-radius:10px}.mt-privacy-document footer{padding:24px 0}
+.privacy-policy{min-width:0;line-height:1.65;overflow-wrap:anywhere}
+.privacy-policy h1{font-size:clamp(1.8rem,5vw,3rem);line-height:1.2;margin:.5em 0}.privacy-policy h2{font-size:clamp(1.15rem,3vw,1.4rem);line-height:1.35;margin:0 0 .7em}
+.privacy-policy .panel{padding:clamp(16px,3vw,28px);border:1px solid #29516a;border-radius:16px;background:#0a2334;margin:20px 0}
+.privacy-policy .privacy-review{border-color:#bd9450}.privacy-policy p{margin:.7em 0}.privacy-policy li+li{margin-top:12px}
+.privacy-policy .eyebrow{color:#79d7f1;font-weight:700;letter-spacing:.1em}.privacy-policy a,.mt-privacy-document a{color:#8cdcf8;text-decoration:underline;text-underline-offset:3px}
+.privacy-policy nav{padding:12px 0;line-height:2.2}.privacy-policy section{scroll-margin-top:calc(var(--mt-header-height,80px) + 24px)}
+.privacy-policy a:focus-visible,.mt-privacy-document a:focus-visible{outline:3px solid #f0bd62;outline-offset:4px}.privacy-skip{position:absolute;left:16px;top:-100px}.privacy-skip:focus{top:8px;background:#061724;padding:12px;z-index:10}
+@media(max-width:480px){.mt-privacy-document{font-size:16px}.privacy-policy ul{padding-left:1.2em}}
+@media print{.mt-privacy-document{background:white;color:black}.privacy-policy .panel{background:white;color:black;border-color:#777;break-inside:avoid}.privacy-policy a,.mt-privacy-document a{color:#123b56}.privacy-skip{display:none}}
