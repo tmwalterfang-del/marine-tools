@@ -1,0 +1,1412 @@
+[
+  {
+    "id": "book-c11-p163-r04",
+    "before": {
+      "formula": "h ≈ 1.13·(g·ρ_l·(ρ_l−ρ_v)·h_fg·k³/(μ·ΔT·L))^0.25",
+      "conditions": "Historical source correlation with coefficient 1.13, not the classical smooth-film Nusselt coefficient 0.943. Requires a correlation-specific justification for film regime and coefficient; Re<1800 alone does not establish accuracy. Pure vapour, positive Tsat−Twall, liquid film properties; noncondensable gas and vapour shear excluded.",
+      "symbols": [
+        {
+          "symbol": "h",
+          "meaning": "Plate-averaged liquid-film heat-transfer coefficient",
+          "unit": "W/(m²·K)"
+        },
+        {
+          "symbol": "L",
+          "meaning": "Vertical plate height from the leading condensation edge",
+          "unit": "m"
+        },
+        {
+          "symbol": "k",
+          "meaning": "Fluid thermal conductivity",
+          "unit": "W/(m·K)"
+        },
+        {
+          "symbol": "μ",
+          "meaning": "Liquid-film dynamic viscosity at film temperature",
+          "unit": "Pa·s"
+        },
+        {
+          "symbol": "ρ_l,ρ_v",
+          "meaning": "Liquid-film and saturated-vapour densities, respectively",
+          "unit": "kg/m³"
+        },
+        {
+          "symbol": "g",
+          "meaning": "Gravity",
+          "unit": "m/s²"
+        },
+        {
+          "symbol": "ΔT",
+          "meaning": "Positive saturation-to-wall temperature difference Tsat−Twall",
+          "unit": "K"
+        },
+        {
+          "symbol": "h_fg",
+          "meaning": "Latent heat of vaporization at saturation pressure",
+          "unit": "J/kg"
+        }
+      ]
+    },
+    "after": {
+      "formula": "h ≈ 0.943·(g·ρ_l·(ρ_l−ρ_v)·h_fg·k³/(μ·ΔT·L))^0.25",
+      "conditions": "Independent Nusselt teaching replacement for a smooth, gravity-driven laminar condensate film on a vertical isothermal flat plate of height L. Pure saturated quiescent vapour; ΔT=Tsat−Twall>0; ρ_l>ρ_v; constant liquid properties at film temperature (Tsat+Twall)/2, latent heat at saturation. Neglect vapour shear, inertia, noncondensable gas, film waves and condensate subcooling. Establish smooth-film regime separately; Re<1800 alone is insufficient. h is the plate-averaged film coefficient, not overall U.",
+      "symbols": [
+        {
+          "symbol": "h",
+          "meaning": "Plate-averaged liquid-film heat-transfer coefficient",
+          "unit": "W/(m²·K)"
+        },
+        {
+          "symbol": "L",
+          "meaning": "Vertical plate height from the leading condensation edge",
+          "unit": "m"
+        },
+        {
+          "symbol": "k",
+          "meaning": "Fluid thermal conductivity",
+          "unit": "W/(m·K)"
+        },
+        {
+          "symbol": "μ",
+          "meaning": "Liquid-film dynamic viscosity at film temperature",
+          "unit": "Pa·s"
+        },
+        {
+          "symbol": "ρ_l,ρ_v",
+          "meaning": "Liquid-film and saturated-vapour densities, respectively",
+          "unit": "kg/m³"
+        },
+        {
+          "symbol": "g",
+          "meaning": "Gravity",
+          "unit": "m/s²"
+        },
+        {
+          "symbol": "ΔT",
+          "meaning": "Positive saturation-to-wall temperature difference Tsat−Twall",
+          "unit": "K"
+        },
+        {
+          "symbol": "h_fg",
+          "meaning": "Latent heat of vaporization at saturation pressure",
+          "unit": "J/kg"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c11-p161-r04",
+    "before": {
+      "formula": "Nu ≈ 0.027·Re^0.8·Pr^(1/3)·(μ/μ_w)^0.14",
+      "conditions": "Turbulent tubes, source Re>10000,0.7<Pr<700; printed length condition corrupt, require developed flow/correlation reference.",
+      "symbols": [
+        {
+          "symbol": "Nu,Re,Pr",
+          "meaning": "Nusselt, Reynolds and Prandtl numbers based on the tube inner diameter and bulk properties",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "μ,μ_w",
+          "meaning": "Bulk and wall dynamic viscosity",
+          "unit": "Pa·s"
+        }
+      ]
+    },
+    "after": {
+      "formula": "Nu ≈ 0.027·Re^0.8·Pr^(1/3)·(μ/μ_w)^0.14",
+      "conditions": "Independent teaching version of the documented 0.027 Sieder–Tate correlation: smooth circular tube, fully developed turbulent forced flow, Re>10000 and conservative source interval 0.7<Pr<700. Evaluate Re, Pr and μ at bulk temperature; μ_w at wall temperature; positive viscosities. Entrance effects excluded: establish developed flow separately, do not infer it from a fixed L/D. The corrupt printed length inequality is not reconstructed.",
+      "symbols": [
+        {
+          "symbol": "Nu,Re,Pr",
+          "meaning": "Nusselt, Reynolds and Prandtl numbers based on the tube inner diameter and bulk properties",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "μ,μ_w",
+          "meaning": "Bulk and wall dynamic viscosity",
+          "unit": "Pa·s"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c14-p198-r06",
+    "before": {
+      "formula": "tan(θ) = x_pend/l_pend",
+      "conditions": "Same linear horizontal deflection/pendulum length, small-angle inclining setup.",
+      "symbols": [
+        {
+          "symbol": "θ",
+          "meaning": "Heel",
+          "unit": "rad"
+        },
+        {
+          "symbol": "x_pend,l_pend",
+          "meaning": "Tank dimensions, pendulum geometry, roll radius and transverse suspension offset",
+          "unit": "m"
+        }
+      ]
+    },
+    "after": {
+      "formula": "tan(θ) = x_pend/l_pend",
+      "conditions": "x_pend is horizontal deflection at a measuring plane fixed to the vessel; l_pend is the PERPENDICULAR suspension-to-plane distance measured along the vessel vertical reference, not the inclined length of string. The tangent ratio is then geometric; inclining interpretation remains small-angle.",
+      "symbols": [
+        {
+          "symbol": "θ",
+          "meaning": "Heel angle from upright",
+          "unit": "rad"
+        },
+        {
+          "symbol": "x_pend",
+          "meaning": "Signed horizontal deflection at the vessel-fixed measuring plane",
+          "unit": "m"
+        },
+        {
+          "symbol": "l_pend",
+          "meaning": "Perpendicular suspension-to-measuring-plane distance in vessel coordinates",
+          "unit": "m"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c14-p198-r03",
+    "before": {
+      "formula": "GZ = KN−KG_eff·sin(θ)",
+      "conditions": "Common displacement/trim and correct vertical datum; effective KG includes the appropriate free-surface correction.",
+      "symbols": [
+        {
+          "symbol": "KN,GZ",
+          "meaning": "Lengths, vertical/longitudinal CG and buoyancy locations and stability levers",
+          "unit": "m"
+        },
+        {
+          "symbol": "θ",
+          "meaning": "Heel",
+          "unit": "rad"
+        },
+        {
+          "symbol": "KG_eff",
+          "meaning": "Corrected GM/CG and righting-lever terms",
+          "unit": "m"
+        }
+      ]
+    },
+    "after": {
+      "formula": "GZ = KN−KG_eff·sin(θ)",
+      "conditions": "Common displacement/trim and correct vertical datum; effective KG includes the appropriate free-surface correction. Centreline CG (TCG=0); with nonzero transverse CG subtract TCG·cos(θ) under the stated signed-heel convention.",
+      "symbols": [
+        {
+          "symbol": "KN,GZ",
+          "meaning": "Lengths, vertical/longitudinal CG and buoyancy locations and stability levers",
+          "unit": "m"
+        },
+        {
+          "symbol": "θ",
+          "meaning": "Heel",
+          "unit": "rad"
+        },
+        {
+          "symbol": "KG_eff",
+          "meaning": "Corrected GM/CG and righting-lever terms",
+          "unit": "m"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c11-p172-r05",
+    "before": {
+      "formula": "F_normal = ρ·A·(v−u)²·sin(α_plate)",
+      "conditions": "Plate translates along jet, entire relative incoming jet intercepted, exits tangentially, no losses; v>u.",
+      "symbols": [
+        {
+          "symbol": "A",
+          "meaning": "Flow areas",
+          "unit": "m²"
+        },
+        {
+          "symbol": "v,u",
+          "meaning": "Flow speeds, sound speed and moving-surface speed",
+          "unit": "m/s"
+        },
+        {
+          "symbol": "ρ",
+          "meaning": "Densities",
+          "unit": "kg/m³"
+        },
+        {
+          "symbol": "F_normal",
+          "meaning": "Forces",
+          "unit": "N"
+        },
+        {
+          "symbol": "α_plate",
+          "meaning": "Jet-to-plate angle",
+          "unit": "rad"
+        }
+      ]
+    },
+    "after": {
+      "formula": "F_normal = ρ·A·(v−u)²·sin(α_plate)",
+      "conditions": "Plate translates along the jet; α_plate is the angle BETWEEN THE INCIDENT JET AND THE PLATE SURFACE. Entire relative incoming jet is intercepted and exits tangentially without losses; v>u. This is the force normal to the plate, not the axial thrust component.",
+      "symbols": [
+        {
+          "symbol": "A",
+          "meaning": "Flow areas",
+          "unit": "m²"
+        },
+        {
+          "symbol": "v,u",
+          "meaning": "Flow speeds, sound speed and moving-surface speed",
+          "unit": "m/s"
+        },
+        {
+          "symbol": "ρ",
+          "meaning": "Densities",
+          "unit": "kg/m³"
+        },
+        {
+          "symbol": "F_normal",
+          "meaning": "Forces",
+          "unit": "N"
+        },
+        {
+          "symbol": "α_plate",
+          "meaning": "Jet-to-plate angle",
+          "unit": "rad"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c11-p169-r02",
+    "before": {
+      "formula": "P_h = ρ·g·Q·H = Δp·Q",
+      "conditions": "Hydraulic output; shaft inputPh/η. Low-Mach fan approximation alsoΔpQ.",
+      "symbols": [
+        {
+          "symbol": "Q",
+          "meaning": "Volume flows at declared states",
+          "unit": "m³/s"
+        },
+        {
+          "symbol": "ρ",
+          "meaning": "Densities",
+          "unit": "kg/m³"
+        },
+        {
+          "symbol": "Δp",
+          "meaning": "Absolute pressures, increments and pressure components",
+          "unit": "Pa"
+        },
+        {
+          "symbol": "H",
+          "meaning": "Elevations and heads",
+          "unit": "m"
+        },
+        {
+          "symbol": "g",
+          "meaning": "Gravity",
+          "unit": "m/s²"
+        },
+        {
+          "symbol": "P_h",
+          "meaning": "Input/reference/hydraulic powers",
+          "unit": "W"
+        }
+      ]
+    },
+    "after": {
+      "formula": "P_h = ρ·g·Q·H = Δp·Q",
+      "conditions": "Hydraulic output power. H is total pump head and Δp=ρgH its equivalent TOTAL pressure rise, including any velocity/elevation change; static flange pressure difference alone is sufficient only when those other changes vanish. Shaft input is P_h/η. Low-Mach fan approximation uses total Δp·Q.",
+      "symbols": [
+        {
+          "symbol": "Q",
+          "meaning": "Volume flows at declared states",
+          "unit": "m³/s"
+        },
+        {
+          "symbol": "ρ",
+          "meaning": "Densities",
+          "unit": "kg/m³"
+        },
+        {
+          "symbol": "Δp",
+          "meaning": "Absolute pressures, increments and pressure components",
+          "unit": "Pa"
+        },
+        {
+          "symbol": "H",
+          "meaning": "Elevations and heads",
+          "unit": "m"
+        },
+        {
+          "symbol": "g",
+          "meaning": "Gravity",
+          "unit": "m/s²"
+        },
+        {
+          "symbol": "P_h",
+          "meaning": "Input/reference/hydraulic powers",
+          "unit": "W"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c11-p163-r03",
+    "before": {
+      "formula": "Nu ≈ Ra^0.14",
+      "conditions": "Source10⁻²<Ra<10³; empirical limited-range approximation.",
+      "symbols": [
+        {
+          "symbol": "Nu,Ra",
+          "meaning": "Dimensionless transport groups, emissivity, correlation exponent and coefficient",
+          "unit": "dimensionless"
+        }
+      ]
+    },
+    "after": {
+      "formula": "Nu ≈ Ra^0.14",
+      "conditions": "Legacy natural-convection fit for a HORIZONTAL CYLINDER with diameter as characteristic length, source 1e-2<Ra<1e3. Empirical limited-range approximation, not a vertical-plate correlation.",
+      "symbols": [
+        {
+          "symbol": "Nu,Ra",
+          "meaning": "Dimensionless transport groups, emissivity, correlation exponent and coefficient",
+          "unit": "dimensionless"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c11-p163-r02",
+    "before": {
+      "formula": "Nu ≈ 0.683·Pr^0.5·(Gr/(0.861+Pr))^0.25",
+      "conditions": "Source Gr<1e9, laminar positive buoyancy magnitude, representative properties.",
+      "symbols": [
+        {
+          "symbol": "Nu,Pr,Gr",
+          "meaning": "Dimensionless transport groups, emissivity, correlation exponent and coefficient",
+          "unit": "dimensionless"
+        }
+      ]
+    },
+    "after": {
+      "formula": "Nu ≈ 0.683·Pr^0.5·(Gr/(0.861+Pr))^0.25",
+      "conditions": "Legacy laminar natural-convection correlation for a VERTICAL PLATE, average Nusselt number based on its height; source Gr<1e9. Positive buoyancy magnitude and representative properties. Empirical coefficient calibration is separate; not applicable to arbitrary cylinders or orientations.",
+      "symbols": [
+        {
+          "symbol": "Nu,Pr,Gr",
+          "meaning": "Dimensionless transport groups, emissivity, correlation exponent and coefficient",
+          "unit": "dimensionless"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c11-p160-r15",
+    "before": {
+      "formula": "ΔS = m·R·ln(V₂/V₁)",
+      "conditions": "Ideal gas state change; entropy formula independent of actual path.",
+      "symbols": [
+        {
+          "symbol": "m",
+          "meaning": "Gas mass",
+          "unit": "kg"
+        },
+        {
+          "symbol": "R",
+          "meaning": "Specific gas constant",
+          "unit": "J/(kg·K)"
+        },
+        {
+          "symbol": "V₁,V₂",
+          "meaning": "Volumes",
+          "unit": "m³"
+        },
+        {
+          "symbol": "ΔS",
+          "meaning": "Entropy change",
+          "unit": "J/K"
+        }
+      ]
+    },
+    "after": {
+      "formula": "ΔS = m·R·ln(V₂/V₁)",
+      "conditions": "Fixed calorically perfect ideal gas with equal endpoint temperatures T₂=T₁>0. Entropy is a state change, so the actual path need not be reversible or isothermal; unequal endpoint temperatures require the additional heat-capacity logarithm.",
+      "symbols": [
+        {
+          "symbol": "m",
+          "meaning": "Gas mass",
+          "unit": "kg"
+        },
+        {
+          "symbol": "R",
+          "meaning": "Specific gas constant",
+          "unit": "J/(kg·K)"
+        },
+        {
+          "symbol": "V₁,V₂",
+          "meaning": "Volumes",
+          "unit": "m³"
+        },
+        {
+          "symbol": "ΔS",
+          "meaning": "Entropy change",
+          "unit": "J/K"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c11-p160-r13",
+    "before": {
+      "formula": "W = m·R·T₁·ln(V₂/V₁)",
+      "conditions": "Fixed ideal mass, positive absolute state values.",
+      "symbols": [
+        {
+          "symbol": "m",
+          "meaning": "Gas mass",
+          "unit": "kg"
+        },
+        {
+          "symbol": "R",
+          "meaning": "Specific gas constant",
+          "unit": "J/(kg·K)"
+        },
+        {
+          "symbol": "T₁",
+          "meaning": "Absolute temperatures",
+          "unit": "K"
+        },
+        {
+          "symbol": "V₁,V₂",
+          "meaning": "Volumes",
+          "unit": "m³"
+        },
+        {
+          "symbol": "W",
+          "meaning": "Work done by the system; positive outward",
+          "unit": "J"
+        }
+      ]
+    },
+    "after": {
+      "formula": "W = m·R·T₁·ln(V₂/V₁)",
+      "conditions": "Reversible/quasistatic ISOTHERMAL expansion or compression of a fixed ideal-gas mass, T₂=T₁>0; work out is positive. At equal endpoint temperatures a non-isothermal or irreversible path generally has different work.",
+      "symbols": [
+        {
+          "symbol": "m",
+          "meaning": "Gas mass",
+          "unit": "kg"
+        },
+        {
+          "symbol": "R",
+          "meaning": "Specific gas constant",
+          "unit": "J/(kg·K)"
+        },
+        {
+          "symbol": "T₁",
+          "meaning": "Absolute temperatures",
+          "unit": "K"
+        },
+        {
+          "symbol": "V₁,V₂",
+          "meaning": "Volumes",
+          "unit": "m³"
+        },
+        {
+          "symbol": "W",
+          "meaning": "Work done by the system; positive outward",
+          "unit": "J"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c10-p153-r05",
+    "before": {
+      "formula": "R_stage = (w₂²−w₁²)/((c₁²−c₂²)+(w₂²−w₁²))",
+      "conditions": "Equal radius, adiabatic idealized stage; denominator positive/nonzero. Relative energy rise corresponds rotor enthalpy drop.",
+      "symbols": [
+        {
+          "symbol": "c₁,c₂,w₁,w₂",
+          "meaning": "Absolute, ideal, relative, blade and signed velocity components",
+          "unit": "m/s"
+        },
+        {
+          "symbol": "R_stage",
+          "meaning": "Stage reaction fraction",
+          "unit": "dimensionless"
+        }
+      ]
+    },
+    "after": {
+      "formula": "R_stage = (w₂²−w₁²)/((c₁²−c₂²)+(w₂²−w₁²))",
+      "conditions": "Equal blade radius, adiabatic ideal rotor; denominator is positive nonzero Euler work from the velocity triangles. It equals stage STATIC enthalpy drop only when stage inlet/outlet absolute kinetic energies are equal. Otherwise use the actual stage static enthalpy drop for degree of reaction. Relative-speed rise gives rotor static enthalpy drop.",
+      "symbols": [
+        {
+          "symbol": "c₁,c₂,w₁,w₂",
+          "meaning": "Absolute, ideal, relative, blade and signed velocity components",
+          "unit": "m/s"
+        },
+        {
+          "symbol": "R_stage",
+          "meaning": "Stage reaction fraction",
+          "unit": "dimensionless"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c7-p111-r03",
+    "before": {
+      "formula": "R₄ = 2·Q²·R₂",
+      "conditions": "R₂ freely selected positive; same notch topology and equal capacitors.",
+      "symbols": [
+        {
+          "symbol": "R₂,R₄",
+          "meaning": "Resistors in the declared filter topology",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Designed quality factor",
+          "unit": "dimensionless"
+        }
+      ]
+    },
+    "after": {
+      "formula": "R₄ = 2·Q²·R₂",
+      "conditions": "Same notch topology and equal capacitors. Choose R₂>0, then R₄=2Q²R₂. Ideal node equations give a numerator proportional to s²+ω₀²; finite op-amp limits remain separate.",
+      "symbols": [
+        {
+          "symbol": "R₂,R₄",
+          "meaning": "Resistors in the declared filter topology",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Designed quality factor",
+          "unit": "dimensionless"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c7-p111-r02",
+    "before": {
+      "formula": "R₁ = R₃/(4·Q²)",
+      "conditions": "Same notch topology, positive Q.",
+      "symbols": [
+        {
+          "symbol": "R₁,R₃",
+          "meaning": "Resistors in the declared filter topology",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Designed quality factor",
+          "unit": "dimensionless"
+        }
+      ]
+    },
+    "after": {
+      "formula": "R₁ = R₃/(4·Q²)",
+      "conditions": "Same explicitly connected equal-C notch as adjacent R₃ expression. R₁=R₃/(4Q²), positive Q. Pole quality factor Q is distinct from the nonunity passband gain.",
+      "symbols": [
+        {
+          "symbol": "R₁,R₃",
+          "meaning": "Resistors in the declared filter topology",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Designed quality factor",
+          "unit": "dimensionless"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c7-p111-r01",
+    "before": {
+      "formula": "R₃ = 2·Q/(ω₀·C)",
+      "conditions": "Specified equal-C active notch topology.",
+      "symbols": [
+        {
+          "symbol": "R₃",
+          "meaning": "Resistors in the declared filter topology",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Designed quality factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ω₀",
+          "meaning": "Centre angular frequency",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Equal filter capacitors",
+          "unit": "F"
+        }
+      ]
+    },
+    "after": {
+      "formula": "R₃ = 2·Q/(ω₀·C)",
+      "conditions": "Ideal equal-C notch: R₁ from input to node A; C₁ from A to output; C₂ from A to inverting input; R₃ from output to inverting input. R₂ from input to noninverting node and R₄ from that node to ground. C=C₁=C₂, Q,ω₀,C>0; formulas below set the notch at ω₀ with pole Q. DC/high-frequency gain is 2Q²/(1+2Q²), not unity.",
+      "symbols": [
+        {
+          "symbol": "R₃",
+          "meaning": "Resistors in the declared filter topology",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Designed quality factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ω₀",
+          "meaning": "Centre angular frequency",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Equal filter capacitors",
+          "unit": "F"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c7-p110-r05",
+    "before": {
+      "formula": "R₁ = Q/(A₀·ω₀·C)",
+      "conditions": "Multiple-feedback equal-C bandpass topology, positive A₀,ω₀,C.",
+      "symbols": [
+        {
+          "symbol": "R₁",
+          "meaning": "Resistors in the declared filter topology",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Designed quality factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "A₀",
+          "meaning": "Positive centre-gain magnitude",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ω₀",
+          "meaning": "Centre angular frequency",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Equal filter capacitors",
+          "unit": "F"
+        }
+      ]
+    },
+    "after": {
+      "formula": "R₁ = Q/(A₀·ω₀·C)",
+      "conditions": "Ideal equal-C MFB bandpass: R₁ from input to node A; R₂ from A to ground; C₁ from A to output; C₂ from A to inverting input; R₃ from output to inverting input; noninverting input grounded. C=C₁=C₂. A₀ is positive centre-gain magnitude, Q,ω₀,C>0.",
+      "symbols": [
+        {
+          "symbol": "R₁",
+          "meaning": "Resistors in the declared filter topology",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Designed quality factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "A₀",
+          "meaning": "Positive centre-gain magnitude",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ω₀",
+          "meaning": "Centre angular frequency",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Equal filter capacitors",
+          "unit": "F"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c7-p110-r02",
+    "before": {
+      "formula": "tan(δ) = ω·C·R₁",
+      "conditions": "Specified small-loss equivalent circuit; not universal capacitor tanδ.",
+      "symbols": [
+        {
+          "symbol": "R₁",
+          "meaning": "Explicit input/feedback/divider resistances",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Physical or simulated capacitance",
+          "unit": "F"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Angular/centre frequency",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "δ",
+          "meaning": "Loss angle",
+          "unit": "rad"
+        }
+      ]
+    },
+    "after": {
+      "formula": "tan(δ) = ω·C·R₂",
+      "conditions": "Same follower topology and physical capacitor C as adjacent multiplier expression. tanδ=Re(Z_in)/abs(Im(Z_in))=ω·C_sim·R_series with R_series=R₁R₂/(R₁+R₂). If written with C_sim and R₁ it is only the large-R₂/R₁ approximation. This is not ω·C·R₁ with physical C.",
+      "symbols": [
+        {
+          "symbol": "R₂",
+          "meaning": "Input-port to noninverting-node resistor",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Physical noninverting-node-to-ground capacitance, not C_sim",
+          "unit": "F"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Angular frequency",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "δ",
+          "meaning": "Series loss angle",
+          "unit": "rad"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c7-p110-r01",
+    "before": {
+      "formula": "C_sim = R₂·C/R₁",
+      "conditions": "Specified ideal active capacitance-multiplier topology, operation band and losses matter.",
+      "symbols": [
+        {
+          "symbol": "R₁,R₂",
+          "meaning": "Explicit input/feedback/divider resistances",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "C,C_sim",
+          "meaning": "Physical or simulated capacitance",
+          "unit": "F"
+        }
+      ]
+    },
+    "after": {
+      "formula": "C_sim = C·(1+R₂/R₁)",
+      "conditions": "Ideal follower: R₁ connects input port to output; R₂ connects input port to noninverting node; C connects that node to ground; inverting node follows output. Exact series equivalent Z_in=R₁R₂/(R₁+R₂)+1/[jωC(1+R₂/R₁)]. The source R₂C/R₁ is only a large-R₂/R₁ approximation.",
+      "symbols": [
+        {
+          "symbol": "R₁,R₂",
+          "meaning": "Explicit input/feedback/divider resistances",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "C,C_sim",
+          "meaning": "Physical or simulated capacitance",
+          "unit": "F"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c7-p109-r05",
+    "before": {
+      "formula": "Q = ω·L_sim/R₁",
+      "conditions": "Equivalent SERIES loss R₁, stated small-signal gyrator model; not a universal Q expression for arbitrary gyrators.",
+      "symbols": [
+        {
+          "symbol": "R₁",
+          "meaning": "Explicit input/feedback/divider resistances",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "L_sim",
+          "meaning": "Simulated inductance",
+          "unit": "H"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Angular/centre frequency",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Quality factor",
+          "unit": "dimensionless"
+        }
+      ]
+    },
+    "after": {
+      "formula": "Q = ω·C·(R₂−R₁)/(1+ω²·R₁·R₂·C²)",
+      "conditions": "Same voltage-follower topology as the adjacent gyrator inductance, R₂>R₁>0. Q=Im(Z_in)/Re(Z_in). The source estimate ωR₂C also needs R₂≫R₁ and ω²R₁R₂C²≪1; it is not exact over the operating band.",
+      "symbols": [
+        {
+          "symbol": "Q",
+          "meaning": "Inductive port reactance divided by port resistance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Positive angular frequency",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Port-to-noninverting-node capacitor",
+          "unit": "F"
+        },
+        {
+          "symbol": "R₁,R₂",
+          "meaning": "Port-to-output and noninverting-to-ground resistances",
+          "unit": "Ω"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c7-p109-r04",
+    "before": {
+      "formula": "L_sim = R₁·R₂·C",
+      "conditions": "Specified ideal gyrator topology; effective loss and finite op-amp bandwidth must be considered.",
+      "symbols": [
+        {
+          "symbol": "R₁,R₂",
+          "meaning": "Explicit input/feedback/divider resistances",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "L_sim",
+          "meaning": "Simulated inductance",
+          "unit": "H"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Physical or simulated capacitance",
+          "unit": "F"
+        }
+      ]
+    },
+    "after": {
+      "formula": "L_eff = R₁·C·(R₂−R₁)/(1+(ω·R₁·C)²)",
+      "conditions": "Ideal voltage follower: R₁ connects input port to output; C connects input port to noninverting node; R₂ connects that node to ground. Inverting node follows output. At angular frequency ω>0, Z_in=R₁(1+jωR₂C)/(1+jωR₁C) and L_eff=Im(Z_in)/ω. Inductive only for R₂>R₁. The familiar R₁R₂C estimate additionally needs R₂≫R₁ and ωR₁C≪1. Op-amp bandwidth/output limits excluded.",
+      "symbols": [
+        {
+          "symbol": "L_eff",
+          "meaning": "Frequency-specific equivalent series inductance Im(Z_in)/ω",
+          "unit": "H"
+        },
+        {
+          "symbol": "R₁,R₂",
+          "meaning": "Port-to-output and noninverting-to-ground resistances, respectively",
+          "unit": "Ω"
+        },
+        {
+          "symbol": "C",
+          "meaning": "Port-to-noninverting-node capacitor",
+          "unit": "F"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Positive angular frequency",
+          "unit": "rad/s"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c6-p83-r07",
+    "before": {
+      "formula": "E = F/q",
+      "conditions": "Magnitudes or signed collinear components; q nonzero test charge small enough not to disturb field.",
+      "symbols": [
+        {
+          "symbol": "E",
+          "meaning": "Field",
+          "unit": "V/m"
+        },
+        {
+          "symbol": "F",
+          "meaning": "Electric force",
+          "unit": "N"
+        },
+        {
+          "symbol": "q",
+          "meaning": "Test charge",
+          "unit": "C"
+        }
+      ]
+    },
+    "after": {
+      "formula": "E = F/q",
+      "conditions": "Signed collinear force and charge: E=F/q, q≠0. For magnitudes use |F|/|q|, or restrict the test charge to q>0. The test charge is small enough not to disturb the field.",
+      "symbols": [
+        {
+          "symbol": "E",
+          "meaning": "Field",
+          "unit": "V/m"
+        },
+        {
+          "symbol": "F",
+          "meaning": "Electric force",
+          "unit": "N"
+        },
+        {
+          "symbol": "q",
+          "meaning": "Test charge",
+          "unit": "C"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-machine-p51-r09",
+    "before": {
+      "formula": "ψ = K₁·sqrt(η·ω/p)",
+      "conditions": "Source-specific hydrodynamic chart correlation; consistent viscosity at actual temperature and valid chart geometry. K₁ must be supplied from a separately validated model; no source curve is embedded.",
+      "symbols": [
+        {
+          "symbol": "p",
+          "meaning": "Projected average bearing pressure",
+          "unit": "Pa"
+        },
+        {
+          "symbol": "F",
+          "meaning": "Radial load",
+          "unit": "N"
+        },
+        {
+          "symbol": "d",
+          "meaning": "Shaft diameter",
+          "unit": "m"
+        },
+        {
+          "symbol": "l",
+          "meaning": "Bearing length",
+          "unit": "m"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Angular velocity magnitude",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "n",
+          "meaning": "Revolutions per second",
+          "unit": "s⁻¹"
+        },
+        {
+          "symbol": "ψ",
+          "meaning": "Relative DIAMETRAL clearance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "D",
+          "meaning": "Bore diameter",
+          "unit": "m"
+        },
+        {
+          "symbol": "R",
+          "meaning": "Bore radius",
+          "unit": "m"
+        },
+        {
+          "symbol": "r",
+          "meaning": "Journal radius",
+          "unit": "m"
+        },
+        {
+          "symbol": "η",
+          "meaning": "Dynamic lubricant viscosity",
+          "unit": "Pa·s"
+        },
+        {
+          "symbol": "K₁",
+          "meaning": "Chart-dependent dimensionless clearance factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "K₂",
+          "meaning": "Chart-dependent dimensionless friction factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ε_f",
+          "meaning": "MINIMUM FILM thickness divided by radial clearance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "h_min",
+          "meaning": "Minimum film thickness",
+          "unit": "m"
+        },
+        {
+          "symbol": "μ",
+          "meaning": "Friction coefficient",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "s",
+          "meaning": "Absolute DIAMETRAL clearance",
+          "unit": "m"
+        }
+      ]
+    },
+    "after": {
+      "formula": "ψ = K₁·sqrt(η·ω/p)",
+      "conditions": "Historical hydrodynamic source-chart model. The original p.52 chart is available and parameterizes K₁ by l/d and minimum-film fraction ε_f=h_min/(R−r); the visible l/d axis spans about 0.8 to 2.0. Do not replace K₁ by a universal constant or extrapolate. Dynamic viscosity must match lubricant temperature; p=F/(d·l), ω=2πn. No independent calibration or operational applicability of the historical chart has been established here.",
+      "symbols": [
+        {
+          "symbol": "p",
+          "meaning": "Projected average bearing pressure",
+          "unit": "Pa"
+        },
+        {
+          "symbol": "F",
+          "meaning": "Radial load",
+          "unit": "N"
+        },
+        {
+          "symbol": "d",
+          "meaning": "Shaft diameter",
+          "unit": "m"
+        },
+        {
+          "symbol": "l",
+          "meaning": "Bearing length",
+          "unit": "m"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Angular velocity magnitude",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "n",
+          "meaning": "Revolutions per second",
+          "unit": "s⁻¹"
+        },
+        {
+          "symbol": "ψ",
+          "meaning": "Relative DIAMETRAL clearance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "D",
+          "meaning": "Bore diameter",
+          "unit": "m"
+        },
+        {
+          "symbol": "R",
+          "meaning": "Bore radius",
+          "unit": "m"
+        },
+        {
+          "symbol": "r",
+          "meaning": "Journal radius",
+          "unit": "m"
+        },
+        {
+          "symbol": "η",
+          "meaning": "Dynamic lubricant viscosity",
+          "unit": "Pa·s"
+        },
+        {
+          "symbol": "K₁",
+          "meaning": "Chart-dependent dimensionless clearance factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "K₂",
+          "meaning": "Chart-dependent dimensionless friction factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ε_f",
+          "meaning": "MINIMUM FILM thickness divided by radial clearance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "h_min",
+          "meaning": "Minimum film thickness",
+          "unit": "m"
+        },
+        {
+          "symbol": "μ",
+          "meaning": "Friction coefficient",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "s",
+          "meaning": "Absolute DIAMETRAL clearance",
+          "unit": "m"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-machine-p52-r02",
+    "before": {
+      "formula": "μ = K₂·sqrt(η·ω/p)",
+      "conditions": "Source-specific chart geometry/film fraction required for K₂; no chart interpolation or universal constant is supplied.",
+      "symbols": [
+        {
+          "symbol": "p",
+          "meaning": "Projected average bearing pressure",
+          "unit": "Pa"
+        },
+        {
+          "symbol": "F",
+          "meaning": "Radial load",
+          "unit": "N"
+        },
+        {
+          "symbol": "d",
+          "meaning": "Shaft diameter",
+          "unit": "m"
+        },
+        {
+          "symbol": "l",
+          "meaning": "Bearing length",
+          "unit": "m"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Angular velocity magnitude",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "n",
+          "meaning": "Revolutions per second",
+          "unit": "s⁻¹"
+        },
+        {
+          "symbol": "ψ",
+          "meaning": "Relative DIAMETRAL clearance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "D",
+          "meaning": "Bore diameter",
+          "unit": "m"
+        },
+        {
+          "symbol": "R",
+          "meaning": "Bore radius",
+          "unit": "m"
+        },
+        {
+          "symbol": "r",
+          "meaning": "Journal radius",
+          "unit": "m"
+        },
+        {
+          "symbol": "η",
+          "meaning": "Dynamic lubricant viscosity",
+          "unit": "Pa·s"
+        },
+        {
+          "symbol": "K₁",
+          "meaning": "Chart-dependent dimensionless clearance factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "K₂",
+          "meaning": "Chart-dependent dimensionless friction factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ε_f",
+          "meaning": "MINIMUM FILM thickness divided by radial clearance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "h_min",
+          "meaning": "Minimum film thickness",
+          "unit": "m"
+        },
+        {
+          "symbol": "μ",
+          "meaning": "Friction coefficient",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "s",
+          "meaning": "Absolute DIAMETRAL clearance",
+          "unit": "m"
+        }
+      ]
+    },
+    "after": {
+      "formula": "μ = K₂·sqrt(η·ω/p)",
+      "conditions": "Historical hydrodynamic source-chart model. The original p.52 chart is available and parameterizes K₂ by l/d and minimum-film fraction ε_f=h_min/(R−r); the visible l/d axis spans about 0.8 to 2.0. Do not replace K₂ by a universal constant or extrapolate. Dynamic viscosity must match lubricant temperature; p=F/(d·l), ω=2πn. No independent calibration or operational applicability of the historical chart has been established here.",
+      "symbols": [
+        {
+          "symbol": "p",
+          "meaning": "Projected average bearing pressure",
+          "unit": "Pa"
+        },
+        {
+          "symbol": "F",
+          "meaning": "Radial load",
+          "unit": "N"
+        },
+        {
+          "symbol": "d",
+          "meaning": "Shaft diameter",
+          "unit": "m"
+        },
+        {
+          "symbol": "l",
+          "meaning": "Bearing length",
+          "unit": "m"
+        },
+        {
+          "symbol": "ω",
+          "meaning": "Angular velocity magnitude",
+          "unit": "rad/s"
+        },
+        {
+          "symbol": "n",
+          "meaning": "Revolutions per second",
+          "unit": "s⁻¹"
+        },
+        {
+          "symbol": "ψ",
+          "meaning": "Relative DIAMETRAL clearance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "D",
+          "meaning": "Bore diameter",
+          "unit": "m"
+        },
+        {
+          "symbol": "R",
+          "meaning": "Bore radius",
+          "unit": "m"
+        },
+        {
+          "symbol": "r",
+          "meaning": "Journal radius",
+          "unit": "m"
+        },
+        {
+          "symbol": "η",
+          "meaning": "Dynamic lubricant viscosity",
+          "unit": "Pa·s"
+        },
+        {
+          "symbol": "K₁",
+          "meaning": "Chart-dependent dimensionless clearance factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "K₂",
+          "meaning": "Chart-dependent dimensionless friction factor",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "ε_f",
+          "meaning": "MINIMUM FILM thickness divided by radial clearance",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "h_min",
+          "meaning": "Minimum film thickness",
+          "unit": "m"
+        },
+        {
+          "symbol": "μ",
+          "meaning": "Friction coefficient",
+          "unit": "dimensionless"
+        },
+        {
+          "symbol": "s",
+          "meaning": "Absolute DIAMETRAL clearance",
+          "unit": "m"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c16-p223-r04",
+    "before": {
+      "formula": "δT = (T_mean−T_M)/3",
+      "conditions": "Historical empirical deflection model; the sign is already carried by the difference.",
+      "symbols": [
+        {
+          "symbol": "T_M,T_mean,δT",
+          "meaning": "Drafts, longitudinal signed positions, trim and correction lengths",
+          "unit": "m"
+        }
+      ]
+    },
+    "after": {
+      "formula": "δT = (T_mean−T_M)/3",
+      "conditions": "Independent teaching derivation: constant longitudinal waterplane breadth, small draft/volume changes, a quadratic longitudinal draft/deflection profile and readings at the forward perpendicular, midpoint and aft perpendicular. Integrating that quadratic gives T_equiv=(T_F+4T_M+T_A)/6=(T_mean+2T_M)/3, where T_mean=(T_F+T_A)/2. This is not a universal ship draft-survey rule or the quarter-mean rule; actual hull waterplanes require vessel hydrostatics and an appropriate survey procedure. δT=T_equiv−T_M carries its sign.",
+      "symbols": [
+        {
+          "symbol": "T_M,T_mean,δT",
+          "meaning": "T_M: midpoint draft; T_mean: arithmetic mean of end drafts; T_equiv: volume-equivalent uniform draft; δT: signed correction (only the listed symbols occur in this row)",
+          "unit": "m"
+        }
+      ]
+    }
+  },
+  {
+    "id": "book-c16-p223-r05",
+    "before": {
+      "formula": "T_equiv = T_M+δT",
+      "conditions": "Use the algebraic sign once; do not apply a second± sign to an already signed correction. This model differs from the quarter-mean rule.",
+      "symbols": [
+        {
+          "symbol": "T_M,T_equiv,δT",
+          "meaning": "Drafts, longitudinal signed positions, trim and correction lengths",
+          "unit": "m"
+        }
+      ]
+    },
+    "after": {
+      "formula": "T_equiv = T_M+δT",
+      "conditions": "Independent teaching derivation: constant longitudinal waterplane breadth, small draft/volume changes, a quadratic longitudinal draft/deflection profile and readings at the forward perpendicular, midpoint and aft perpendicular. Integrating that quadratic gives T_equiv=(T_F+4T_M+T_A)/6=(T_mean+2T_M)/3, where T_mean=(T_F+T_A)/2. This is not a universal ship draft-survey rule or the quarter-mean rule; actual hull waterplanes require vessel hydrostatics and an appropriate survey procedure. Add the signed δT once; no second ± sign.",
+      "symbols": [
+        {
+          "symbol": "T_M,T_equiv,δT",
+          "meaning": "T_M: midpoint draft; T_mean: arithmetic mean of end drafts; T_equiv: volume-equivalent uniform draft; δT: signed correction (only the listed symbols occur in this row)",
+          "unit": "m"
+        }
+      ]
+    }
+  }
+]

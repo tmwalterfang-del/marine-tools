@@ -1,0 +1,27 @@
+const fs=require('fs'),path=require('path'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
+const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
+(async()=>{
+ const dom=new JSDOM(read('students/index.html'),{url:'https://example.test/students/#chapter-14',runScripts:'outside-only'}),w=dom.window,d=w.document;
+ await new Promise(r=>w.addEventListener('load',r,{once:true}));for(const m of read('students/index.html').matchAll(/src="([^"?]+\.js)/g))w.eval(read('students/'+m[1]));
+ assert.equal(d.getElementById('chapter-filter'),null);assert.equal(d.querySelectorAll('#formula-controls select').length,2);
+ assert.ok(!d.getElementById('chapter-context').hidden);
+ d.getElementById('study-group').value='electrical';d.getElementById('study-group').dispatchEvent(new w.Event('change'));
+ assert.ok(d.getElementById('chapter-context').hidden,'Choosing a discipline releases legacy chapter constraints');
+ const expected=w.MT_FORMULAS.filter(f=>w.MT_STUDY.groups.find(g=>g.id==='electrical').categories.includes(f.category)).length;
+ assert.equal(d.getElementById('formula-count').textContent,expected+' / 575');
+ d.getElementById('topic-filter').value='Power Electronics';d.getElementById('topic-filter').dispatchEvent(new w.Event('change'));
+ assert.ok([...d.querySelectorAll('#formula-grid .topic-pill')].every(x=>x.textContent==='Power Electronics'));
+ const main=new JSDOM(read('index.html')).window.document,links=[...main.querySelectorAll('.nav-project-items a')];
+ assert.equal(links.filter(a=>a.textContent.trim().endsWith('Education')).length,1);
+ assert.ok(!links.some(a=>/For Students|For professionals/.test(a.textContent)));
+ assert.equal(links.find(a=>a.textContent.trim().endsWith('Education')).getAttribute('href'),'/students/');
+ const workspace=new JSDOM(read('students/interactive.html'),{url:'https://example.test/students/interactive.html#tank',runScripts:'outside-only'}),q=workspace.window;
+ q.eval(read('students/interactive.js'));const select=q.document.getElementById('module-quick');
+ assert.ok(q.document.getElementById('module-picker').hidden);
+ const listToggle=q.document.getElementById('toggle-module-list');listToggle.click();assert.equal(listToggle.getAttribute('aria-expanded'),'true');assert.ok(!q.document.getElementById('module-picker').hidden);listToggle.click();assert.ok(q.document.getElementById('module-picker').hidden);
+ assert.equal(select.options.length,15);assert.equal(select.querySelectorAll('optgroup').length,5);assert.equal(select.value,'tank');
+ select.value='pump';select.dispatchEvent(new q.Event('change'));q.dispatchEvent(new q.Event('hashchange'));
+ assert.equal(q.location.hash,'#pump');assert.equal(q.document.getElementById('selected-title').textContent,'Pump & system curves');
+ assert.equal(q.document.querySelectorAll('iframe').length,2,'Compact selector preserves the existing tank inputs');
+ console.log(JSON.stringify({status:'PASS',scope:'Education menu, discipline/subject-only dropdowns, legacy chapter release and compact module selection'}));w.close();q.close();
+})().catch(e=>{console.error(e);process.exit(1)});

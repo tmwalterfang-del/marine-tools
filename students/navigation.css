@@ -1,0 +1,93 @@
+/* Same three study destinations on every student page. */
+.student-nav{display:flex!important;align-items:center;gap:8px!important;flex-wrap:wrap}
+.student-nav a{padding:9px 12px;border-radius:8px;text-decoration:none;font-size:13px;color:var(--muted,#a8c2d3);border:1px solid transparent}
+.student-nav a:hover,.student-nav a:focus-visible{color:var(--text,#ecf5fa);border-color:var(--border,var(--line,#28465a))}
+.student-nav a[aria-current="page"]{background:var(--raised,#173146);color:var(--accent,var(--blue,#63daed));border-color:var(--border,var(--line,#28465a));font-weight:700}
+.student-nav .main-site-link{font-size:12px;text-decoration:underline;text-underline-offset:4px}
+.module-picker{min-width:0}.module-picker>label{margin-bottom:16px}.module-picker input{width:100%}
+#module-list h3{font-size:11px;line-height:1.5;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:20px 0 1px;grid-column:1/-1}
+#module-list h3:first-child{margin-top:0}#module-list a{font-size:13px;line-height:1.4}
+.module-no-results{font-size:13px;color:var(--muted)}
+@media(max-width:650px){.student-nav{width:100%;gap:4px!important}.student-nav a{padding:8px;font-size:12px}.student-nav .main-site-link{margin-left:auto}header .brand{font-size:14px}.module-picker>label{margin-bottom:10px}}
+@media print{.student-nav,.module-picker{display:none!important}}
+
+body>header{position:sticky;top:0;z-index:30;background:var(--bg,#071321)}
+#study-tools,.lab{scroll-margin-top:110px}
+@media(max-width:650px){#study-tools,.lab{scroll-margin-top:165px}}
+
+/* Fluid header and compact touch navigation for the shared Education workspace. */
+.topbar{height:auto;min-height:84px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+.module-quick-picker{display:none}
+@media(max-width:800px){
+ .module-quick-picker{display:block;margin-bottom:14px}
+ .module-quick-picker select{min-height:48px;width:100%}
+ .module-picker .module-search-label,.module-picker #module-list{display:none}
+ .workspace{gap:8px}
+ #workbench{scroll-margin-top:160px;min-width:0}
+}
+@media(max-width:650px){
+ .topbar{padding:12px 16px;gap:10px}
+ .student-nav a{min-height:44px;display:inline-flex;align-items:center}
+ .hero{padding-top:28px;padding-bottom:28px;gap:24px}
+ .hero h1{font-size:clamp(30px,8vw,42px)}
+ .stats-grid>div{min-height:86px;padding:16px;gap:7px}
+ .stats-grid b{font-size:28px}
+ .hero-buttons a{flex:1 1 100%}
+ .controls .filter-select{flex-basis:calc(50% - 5px)}
+ .controls .search-field{flex-basis:100%}
+ .controls .saved-check{flex-basis:100%}
+}
+@media(max-width:380px){.controls .filter-select{flex-basis:100%}}
+
+/* Teaching layouts preserve the actual forms, outputs and scenarios. */
+.teaching-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 22px}
+.teaching-toolbar button{margin:0;min-height:44px}.teaching-toolbar span{font-size:12px;color:var(--muted)}
+.teaching-inputs{min-width:0}.teaching-inputs>summary{padding:12px 14px;border:1px solid var(--line,var(--border));border-radius:9px;margin-bottom:12px;cursor:pointer;font-weight:650}
+@media(min-width:801px){.teaching-inputs>summary{font-size:12px;padding:5px 10px;margin-bottom:8px}}
+@media(max-width:800px){
+ .teaching-grid{display:flex;flex-direction:column}.teaching-grid>.teaching-results{order:0;width:100%}.teaching-grid>.teaching-inputs{order:1;width:100%}
+ body>header{position:static}.teaching-results svg{margin-top:12px}
+}
+body.presentation-view>header,body.presentation-view .hero,body.presentation-view .module-picker,body.presentation-view .lab-nav{display:none!important}
+body.presentation-view main{max-width:none;padding:20px 24px 48px}
+body.presentation-view .workspace{grid-template-columns:minmax(0,1fr)}
+body.presentation-view #workbench>h2{font-size:clamp(28px,3vw,42px)}
+/* Module height follows its content in both normal and presentation views. */
+#frames iframe{min-height:0;max-width:100%}
+body.presentation-view .teaching-toolbar{position:relative;padding:10px;background:var(--bg,#071725)}
+body.presentation-view .teaching-results{font-size:18px}body.presentation-view .teaching-results svg{height:var(--teaching-chart-height,45dvh);max-height:none;max-width:100%;overflow:visible}
+body.presentation-view .metric strong,body.presentation-view .metrics b{font-size:clamp(20px,2.1vw,32px)}
+body.presentation-view .teaching-results .tick{font-size:16px}
+body.presentation-view .teaching-grid{grid-template-columns:minmax(240px,.65fr) minmax(0,1.8fr)}
+@media print{.teaching-toolbar,.teaching-inputs>summary{display:none!important}}
+body.presentation-view .layout.teaching-grid{grid-template-columns:minmax(0,1.8fr) minmax(240px,.65fr)}
+body.presentation-view #workbench>h2{margin:8px 0 14px}
+/* Assumptions, captions and the full-window link remain available in presentation. */
+body.presentation-view main{padding:12px 16px 24px}
+body.presentation-view .teaching-toolbar{margin-bottom:12px}
+body.presentation-view #workbench>h2{font-size:clamp(22px,3vw,32px);margin:4px 0}
+body.presentation-view #workbench>p{margin:4px 0 10px}
+body.presentation-view .panel{padding:16px}
+body.presentation-view .heading{margin:12px 0}
+body.presentation-view .teaching-grid{align-items:start}
+@media(max-width:800px){body.presentation-view main{padding:10px}body.presentation-view .teaching-toolbar span{flex:1 1 140px}}
+@media(max-height:650px) and (min-width:801px){body.presentation-view .metric strong,body.presentation-view .metrics b{font-size:20px}body.presentation-view .metric{padding:8px}}
+body.presentation-view .metric strong.teaching-text-result{display:block;font-size:16px;line-height:1.35}
+body.presentation-view .metric strong.teaching-numeric-result{display:block;white-space:nowrap;overflow-wrap:normal;word-break:normal}
+/* On wide, shallow teaching screens, place metrics beside the plot instead of
+   spending the available height on two rows of result cards above it. */
+@media(min-width:1600px) and (min-height:650px){
+ body.presentation-view .two-col>.teaching-results:has(>.metrics):has(>svg){display:grid;grid-template-columns:minmax(180px,.55fr) minmax(0,2fr);gap:12px;align-items:start}
+ body.presentation-view .two-col>.teaching-results>.metrics{grid-column:1;grid-row:1/span 2;grid-template-columns:1fr}
+ body.presentation-view .two-col>.teaching-results>svg{grid-column:2;grid-row:1;margin:0}
+ body.presentation-view .two-col>.teaching-results>.legend{grid-column:2;grid-row:2;margin:0}
+ body.presentation-view .two-col>.teaching-results>*:not(.metrics):not(svg):not(.legend){grid-column:1/-1}
+}
+@media(min-width:1600px) and (min-height:650px){
+ body.presentation-view .two-col>.teaching-results>.metrics>.metric{padding:8px}
+ body.presentation-view .two-col>.teaching-results>.metrics .metric strong{font-size:clamp(20px,1.5vw,28px);line-height:1.25}
+ body.presentation-view .two-col>.teaching-results>.metrics .metric strong.teaching-text-result{font-size:16px;line-height:1.35}
+ body.presentation-view .teaching-inputs .fields{gap:10px}
+ body.presentation-view .teaching-inputs label{line-height:1.35}
+ body.presentation-view .teaching-inputs input,body.presentation-view .teaching-inputs select{padding:8px}
+}

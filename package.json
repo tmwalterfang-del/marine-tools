@@ -1,0 +1,24 @@
+{
+  "name": "marine-tools-apps",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private Marine Tools app prototypes using the existing web calculation tools",
+  "scripts": {
+    "app:stage": "node scripts/stage-app.mjs",
+    "app:serve": "node scripts/serve-app.mjs",
+    "app:android:sync": "node scripts/native-app.mjs android sync",
+    "app:ios:sync": "node scripts/native-app.mjs ios sync",
+    "app:desktop:build": "node scripts/native-app.mjs desktop build",
+    "app:desktop:dev": "node scripts/native-app.mjs desktop dev",
+    "test:app": "node tests/app-package-20261027.mjs"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/cli": "8.5.3",
+    "@capacitor/ios": "8.5.3",
+    "@tauri-apps/cli": "2.12.4"
+  }
+}

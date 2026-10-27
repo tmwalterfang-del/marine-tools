@@ -1,0 +1,289 @@
+{
+  "source": "IAPWS R7-97(2012)",
+  "referenceURL": "https://iapws.org/technical-guidance/release/IF97-Rev.download",
+  "cases": [
+    {
+      "table": 5,
+      "region": 1,
+      "inputs": {
+        "p_MPa": 3,
+        "T_K": 300
+      },
+      "quantity": "h_kJ_kg",
+      "expected": 115.331273,
+      "computed": 115.33127302143839,
+      "absoluteError": 2.1438395947370736e-8,
+      "relativeError": 1.8588536647272363e-10,
+      "absoluteTolerance": 0.00001,
+      "scope": "vendor only; compressed liquid is outside lab",
+      "status": "PASS"
+    },
+    {
+      "table": 5,
+      "region": 1,
+      "inputs": {
+        "p_MPa": 3,
+        "T_K": 300
+      },
+      "quantity": "s_kJ_kgK",
+      "expected": 0.392294792,
+      "computed": 0.39229479240262427,
+      "absoluteError": 4.026242672594549e-10,
+      "relativeError": 1.0263309008177067e-9,
+      "absoluteTolerance": 5e-8,
+      "scope": "vendor only; compressed liquid is outside lab",
+      "status": "PASS"
+    },
+    {
+      "table": 5,
+      "region": 1,
+      "inputs": {
+        "p_MPa": 80,
+        "T_K": 300
+      },
+      "quantity": "h_kJ_kg",
+      "expected": 184.142828,
+      "computed": 184.14282773425435,
+      "absoluteError": 2.6574565481496393e-7,
+      "relativeError": 1.4431496339078919e-9,
+      "absoluteTolerance": 0.00001,
+      "scope": "vendor only; compressed liquid is outside lab",
+      "status": "PASS"
+    },
+    {
+      "table": 5,
+      "region": 1,
+      "inputs": {
+        "p_MPa": 80,
+        "T_K": 300
+      },
+      "quantity": "s_kJ_kgK",
+      "expected": 0.368563852,
+      "computed": 0.36856385239848066,
+      "absoluteError": 3.9848063737579764e-10,
+      "relativeError": 1.081171241328891e-9,
+      "absoluteTolerance": 5e-8,
+      "scope": "vendor only; compressed liquid is outside lab",
+      "status": "PASS"
+    },
+    {
+      "table": 5,
+      "region": 1,
+      "inputs": {
+        "p_MPa": 3,
+        "T_K": 500
+      },
+      "quantity": "h_kJ_kg",
+      "expected": 975.542239,
+      "computed": 975.542239097225,
+      "absoluteError": 9.722498361952603e-8,
+      "relativeError": 9.966250535618892e-11,
+      "absoluteTolerance": 0.00001,
+      "scope": "vendor only; compressed liquid is outside lab",
+      "status": "PASS"
+    },
+    {
+      "table": 5,
+      "region": 1,
+      "inputs": {
+        "p_MPa": 3,
+        "T_K": 500
+      },
+      "quantity": "s_kJ_kgK",
+      "expected": 2.58041912,
+      "computed": 2.58041912005181,
+      "absoluteError": 5.1809667667157555e-11,
+      "relativeError": 2.007800487354843e-11,
+      "absoluteTolerance": 5e-8,
+      "scope": "vendor only; compressed liquid is outside lab",
+      "status": "PASS"
+    },
+    {
+      "table": 15,
+      "region": 2,
+      "inputs": {
+        "p_MPa": 0.0035,
+        "T_K": 300
+      },
+      "quantity": "h_kJ_kg",
+      "expected": 2549.91145,
+      "computed": 2549.9114508400203,
+      "absoluteError": 8.400202204938978e-7,
+      "relativeError": 3.294311339689454e-10,
+      "absoluteTolerance": 0.00001,
+      "scope": "vendor; 700 K and 30 MPa outside lab limits",
+      "status": "PASS"
+    },
+    {
+      "table": 15,
+      "region": 2,
+      "inputs": {
+        "p_MPa": 0.0035,
+        "T_K": 300
+      },
+      "quantity": "s_kJ_kgK",
+      "expected": 8.52238967,
+      "computed": 8.522389667335792,
+      "absoluteError": 2.664208409441926e-9,
+      "relativeError": 3.126128366108758e-10,
+      "absoluteTolerance": 5e-8,
+      "scope": "vendor; 700 K and 30 MPa outside lab limits",
+      "status": "PASS"
+    },
+    {
+      "table": 15,
+      "region": 2,
+      "inputs": {
+        "p_MPa": 0.0035,
+        "T_K": 700
+      },
+      "quantity": "h_kJ_kg",
+      "expected": 3335.68375,
+      "computed": 3335.683753731224,
+      "absoluteError": 0.0000037312238418962806,
+      "relativeError": 1.1185784149640327e-9,
+      "absoluteTolerance": 0.00001,
+      "scope": "vendor; 700 K and 30 MPa outside lab limits",
+      "status": "PASS"
+    },
+    {
+      "table": 15,
+      "region": 2,
+      "inputs": {
+        "p_MPa": 0.0035,
+        "T_K": 700
+      },
+      "quantity": "s_kJ_kgK",
+      "expected": 10.1749996,
+      "computed": 10.174999578595989,
+      "absoluteError": 2.1404011008030466e-8,
+      "relativeError": 2.103588388153889e-9,
+      "absoluteTolerance": 5e-8,
+      "scope": "vendor; 700 K and 30 MPa outside lab limits",
+      "status": "PASS"
+    },
+    {
+      "table": 15,
+      "region": 2,
+      "inputs": {
+        "p_MPa": 30,
+        "T_K": 700
+      },
+      "quantity": "h_kJ_kg",
+      "expected": 2631.49474,
+      "computed": 2631.494744844808,
+      "absoluteError": 0.000004844807790505001,
+      "relativeError": 1.8410858729305312e-9,
+      "absoluteTolerance": 0.00001,
+      "scope": "vendor; 700 K and 30 MPa outside lab limits",
+      "status": "PASS"
+    },
+    {
+      "table": 15,
+      "region": 2,
+      "inputs": {
+        "p_MPa": 30,
+        "T_K": 700
+      },
+      "quantity": "s_kJ_kgK",
+      "expected": 5.17540298,
+      "computed": 5.17540298229907,
+      "absoluteError": 2.2990693793190076e-9,
+      "relativeError": 4.4423002193328866e-10,
+      "absoluteTolerance": 5e-8,
+      "scope": "vendor; 700 K and 30 MPa outside lab limits",
+      "status": "PASS"
+    },
+    {
+      "table": 35,
+      "region": 4,
+      "inputs": {
+        "T_K": 300
+      },
+      "quantity": "p_MPa",
+      "expected": 0.00353658941,
+      "computed": 0.003536589414783226,
+      "absoluteError": 4.78322633237771e-12,
+      "relativeError": 1.3524969335859971e-9,
+      "absoluteTolerance": 5e-8,
+      "scope": "saturation boundary",
+      "status": "PASS"
+    },
+    {
+      "table": 35,
+      "region": 4,
+      "inputs": {
+        "T_K": 500
+      },
+      "quantity": "p_MPa",
+      "expected": 2.63889776,
+      "computed": 2.6388977572463403,
+      "absoluteError": 2.7536595226251848e-9,
+      "relativeError": 1.0434885217474984e-9,
+      "absoluteTolerance": 5e-8,
+      "scope": "saturation boundary",
+      "status": "PASS"
+    },
+    {
+      "table": 35,
+      "region": 4,
+      "inputs": {
+        "T_K": 600
+      },
+      "quantity": "p_MPa",
+      "expected": 12.3443146,
+      "computed": 12.344314587903197,
+      "absoluteError": 1.2096803558847569e-8,
+      "relativeError": 9.79949389725337e-10,
+      "absoluteTolerance": 5e-8,
+      "scope": "saturation boundary",
+      "status": "PASS"
+    },
+    {
+      "table": 36,
+      "region": 4,
+      "inputs": {
+        "p_MPa": 0.1
+      },
+      "quantity": "T_K",
+      "expected": 372.755919,
+      "computed": 372.7559186005891,
+      "absoluteError": 3.99410907903075e-7,
+      "relativeError": 1.0715078890620513e-9,
+      "absoluteTolerance": 0.000005,
+      "scope": "adapter; bar/MPa and Celsius/Kelvin conversion",
+      "status": "PASS"
+    },
+    {
+      "table": 36,
+      "region": 4,
+      "inputs": {
+        "p_MPa": 1
+      },
+      "quantity": "T_K",
+      "expected": 453.035632,
+      "computed": 453.03563237634074,
+      "absoluteError": 3.7634072214132175e-7,
+      "relativeError": 8.307088792991932e-10,
+      "absoluteTolerance": 0.000005,
+      "scope": "adapter; bar/MPa and Celsius/Kelvin conversion",
+      "status": "PASS"
+    },
+    {
+      "table": 36,
+      "region": 4,
+      "inputs": {
+        "p_MPa": 10
+      },
+      "quantity": "T_K",
+      "expected": 584.149488,
+      "computed": 584.1494879533678,
+      "absoluteError": 4.6632180783490185e-8,
+      "relativeError": 7.982919054358596e-11,
+      "absoluteTolerance": 0.000005,
+      "scope": "adapter; bar/MPa and Celsius/Kelvin conversion",
+      "status": "PASS"
+    }
+  ],
+  "passed": 18
+}

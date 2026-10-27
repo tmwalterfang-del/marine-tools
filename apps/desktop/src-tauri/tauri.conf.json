@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Marine Tools Preview",
+  "version": "0.1.0",
+  "identifier": "app.marinetools.preview",
+  "build": {"frontendDist": "../../../app-dist"},
+  "app": {
+    "windows": [{"label": "main", "title": "Marine Tools Preview", "width": 1440, "height": 960, "minWidth": 360, "minHeight": 600}],
+    "security": {"csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self' data:; worker-src 'self' blob:; frame-src 'none'; object-src 'none'"}
+  },
+  "bundle": {"active": true, "targets": ["nsis", "dmg"], "icon": ["icons/icon.ico", "icons/icon.icns", "icons/128x128.png"]}
+}
