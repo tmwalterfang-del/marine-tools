@@ -26,3 +26,6 @@
 These are technical preparation references, not legal approval or proof that a
 console registration/signing step has been completed. Recheck requirements and
 account-specific portal validation before the final submission.
+
+Compatibility floor: iOS/iPadOS 15.4. The shared UI uses native HTML dialog and Array.prototype.at; Apple's Safari 15.4 notes identify their introduction. This is a configured minimum, not a claim of physical-device acceptance on every supported version.
+https://developer.apple.com/documentation/safari-release-notes/safari-15_4-release-notes

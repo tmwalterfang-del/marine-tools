@@ -12,6 +12,6 @@
   "productionApiEnabled": false,
   "analyticsEnabled": false,
   "android": {"minSdk": 24, "targetSdk": 36},
-  "ios": {"minimumVersion": "15.0", "family": "1,2"},
+  "ios": {"minimumVersion": "15.4", "family": "1,2"},
   "windows": {"identity": "MarineTools.Preview", "publisher": "CN=Marine Tools Development", "storeIdentityVerified": false, "minimumVersion": "10.0.19041.0"}
 }
