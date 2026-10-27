@@ -50,6 +50,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -68,10 +70,56 @@ jobs:
       - run: chmod +x apps/mobile/android/gradlew
       - run: apps/mobile/android/gradlew -p apps/mobile/android assembleDebug bundleRelease
       - run: python3 scripts/app/check-android-package.py
+      - name: Rebuild the exact previous build-4 source using the same ephemeral debug key
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/upgrade-base" 3c68ecda1908ec3d9e96228f0b9a813916a43ad9
+          cd "$RUNNER_TEMP/upgrade-base"
+          npm ci --no-audit --no-fund
+          GITHUB_SHA=3c68ecda1908ec3d9e96228f0b9a813916a43ad9 npm run app:android:sync
+          chmod +x apps/mobile/android/gradlew
+          apps/mobile/android/gradlew -p apps/mobile/android assembleDebug
+          cp apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/app-artifacts/android/upgrade-base.apk"
+      - name: Compare APK signing certificates without exporting private keys
+        run: python3 scripts/app/check-upgrade-signing.py
       - uses: actions/upload-artifact@v4
         with:
-          name: MarineTools-privacy-build4-android
+          name: MarineTools-privacy-build5-android
           path: |
             apps/mobile/android/app/build/outputs/apk/debug/
             apps/mobile/android/app/build/outputs/bundle/release/
             app-artifacts/android/package-inspection.json
+            app-artifacts/android/upgrade-base.apk
+            app-artifacts/android/upgrade-signing.json
+  android-emulator:
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: MarineTools-privacy-build5-android
+          path: emulator-input
+      - run: npm install --prefix /tmp/android-browser --no-audit --no-fund playwright@1.62.1
+      - run: node /tmp/android-browser/node_modules/playwright/cli.js install android
+      - name: Enable KVM
+        run: sudo chmod 666 /dev/kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 9
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          profile: pixel_7
+          disable-animations: true
+          script: |
+            adb install "$(find emulator-input -name upgrade-base.apk -print -quit)"
+            MT_ANDROID_UPGRADE_APK="$(find emulator-input -path '*/apk/debug/app-debug.apk' -print -quit)" NODE_PATH=/tmp/android-browser/node_modules timeout 270s node scripts/app/android-emulator-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-build5-android-emulator-QA
+          path: app-artifacts/android/

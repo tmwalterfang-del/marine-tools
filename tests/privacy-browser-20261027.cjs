@@ -6,7 +6,7 @@ const engine=process.argv[2]||'chromium',out=path.resolve('app-artifacts/privacy
  // Model static-directory hosting used by GitHub Pages and Cloudflare Pages.
  server=http.createServer((req,res)=>{const u=new URL(req.url,'http://localhost'),isApp=u.pathname.startsWith('/candidate/'),base=isApp?app:repo,route=isApp?u.pathname.slice('/candidate'.length):u.pathname;let file=path.resolve(base,'.'+route);if(!file.startsWith(base+path.sep)&&file!==base)return res.writeHead(403).end();if(fs.existsSync(file)&&fs.statSync(file).isDirectory()){if(!u.pathname.endsWith('/'))return res.writeHead(301,{Location:u.pathname+'/'+u.search}).end();file=path.join(file,'index.html')}if(!fs.existsSync(file)||!fs.statSync(file).isFile())return res.writeHead(404).end();res.setHeader('Content-Type',({'.html':'text/html;charset=utf-8','.js':'application/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file))});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
- browser=await pw[engine].launch();const results=[];
+ browser=await pw[engine].launch(process.env.MT_QA_BROWSER_PATH?{executablePath:process.env.MT_QA_BROWSER_PATH}:{});const results=[];
  for(const size of [[320,568],[568,320],[412,915],[915,412],[768,1024],[1024,768],[1366,768],[2560,1440]]){
   const context=await browser.newContext({viewport:{width:size[0],height:size[1]},javaScriptEnabled:false,serviceWorkers:'block'}),page=await context.newPage(),requests=[];page.on('request',r=>requests.push(r.url()));
   const response=await page.goto(origin+'/privacy');assert.equal(response.status(),200);assert(page.url().endsWith('/privacy/'));
