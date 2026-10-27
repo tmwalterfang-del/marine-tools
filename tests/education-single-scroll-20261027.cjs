@@ -20,11 +20,15 @@ const ok=(value,label)=>{assert.ok(value,label);checks++;};
  async function choose(id){await page.evaluate(id=>location.hash=id,id);await page.waitForFunction(id=>document.getElementById('module-quick').value===id,id);}
  async function active(){const el=await page.locator('#frames iframe:not([hidden])').elementHandle();const frame=await el.contentFrame();await frame.waitForSelector('#workspace-content');return {el,frame};}
  async function fitted(label){
+  await page.evaluate(()=>window.__qaStableFrame=null);
   await page.waitForFunction(()=>{const f=document.querySelector('#frames iframe:not([hidden])');if(!f?.dataset.contentSized)return false;const d=f.contentDocument;return d.scrollingElement.scrollHeight<=d.scrollingElement.clientHeight+2;});
+  // Natural-height and chart-fit observers can require several animation frames
+  // after a presentation toggle; require convergence before measuring stability.
+  await page.waitForFunction(()=>{const f=document.querySelector('#frames iframe:not([hidden])'),h=f.getBoundingClientRect().height,state=window.__qaStableFrame;if(!state||Math.abs(state.height-h)>1){window.__qaStableFrame={height:h,count:0};return false}return ++state.count>=10;});
   const {el,frame}=await active();
   // Content changes must settle rather than growing on every layout frame.
   const sizes=await page.evaluate(async()=>{const f=document.querySelector('#frames iframe:not([hidden])'),values=[];for(let i=0;i<8;i++){await new Promise(r=>requestAnimationFrame(r));values.push(f.getBoundingClientRect().height);}return values;});
-  ok(Math.max(...sizes)-Math.min(...sizes)<=2,'Stable content height: '+label);
+  ok(Math.max(...sizes)-Math.min(...sizes)<=2,'Stable content height: '+label+' '+JSON.stringify(sizes));
   const m=await frame.evaluate(()=>({viewport:innerHeight,content:document.scrollingElement.scrollHeight,scroll:scrollY,width:document.documentElement.clientWidth,fullWidth:document.documentElement.scrollWidth,overflow:getComputedStyle(document.documentElement).overflowY,gutter:innerWidth-document.documentElement.clientWidth}));
   ok(m.content<=m.viewport+2&&m.scroll===0,'No inner vertical scroll: '+label);
   ok(m.fullWidth<=m.width+2,'No page-wide horizontal overflow: '+label);
