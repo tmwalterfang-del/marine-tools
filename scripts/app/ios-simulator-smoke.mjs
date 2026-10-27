@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import {execFileSync,spawn} from 'node:child_process';
-const run=args=>{console.log('xcrun '+args.join(' '));return execFileSync('xcrun',args,{encoding:'utf8',timeout:240000})};
+const run=(args,timeout=60000)=>{console.log('xcrun '+args.join(' '));return execFileSync('xcrun',args,{encoding:'utf8',timeout})};
 const bootReady=udid=>new Promise((resolve,reject)=>{
  const child=spawn('xcrun',['simctl','bootstatus',udid,'-b']);
  child.stdout.on('data',x=>process.stdout.write(x));child.stderr.on('data',x=>process.stderr.write(x));
@@ -13,6 +13,7 @@ const output='app-artifacts/ios';fs.mkdirSync(output,{recursive:true});const tes
 for(const [kind,pattern]of [['iphone',/^iPhone/],['ipad',/^iPad/]]){
  const d=available.find(d=>pattern.test(d.name)&&(kind==='iphone'?d.name.includes('Pro Max'):d.name.includes('13-inch')))||available.find(d=>pattern.test(d.name));
  if(!d){tests.push({kind,status:'UNVERIFIED',reason:'No available simulator'});continue}
+ try{
  if(d.state!=='Booted')run(['simctl','boot',d.udid]);await bootReady(d.udid);
  run(['simctl','install',d.udid,'ios-build/Build/Products/Debug-iphonesimulator/App.app']);
  let logs='';
@@ -25,7 +26,13 @@ for(const [kind,pattern]of [['iphone',/^iPhone/],['ipad',/^iPad/]]){
  execFileSync('sips',['-s','format','jpeg',output+'/'+kind+'-simulator.png','--out',output+'/'+kind+'-simulator.jpg'],{stdio:'ignore'});
  const required=['MT_CI_APP_READY','MT_CI_CALC_OK','MT_CI_CLIPBOARD_OK','MT_CI_SHARE_PRESENTED','MT_CI_EXPORT_CACHE_OK','MT_CI_SMOKE_FINISHED'],missing=required.filter(marker=>!logs.includes(marker));
  tests.push({kind,device:d.name,status:missing.length?'FAIL':'PASS',missing,physicalDevice:false,scope:'Actual WKWebView calculation, system clipboard write/read, share sheet presentation, private export contents; recipient delivery not tested'});
- run(['simctl','terminate',d.udid,'app.marinetools.preview']);child.kill();run(['simctl','shutdown',d.udid]);
+ child.kill();
+ }catch(e){tests.push({kind,device:d.name,status:'FAIL',physicalDevice:false,error:e.message});fs.writeFileSync(output+'/'+kind+'-runner-failure.txt',String(e.stack||e));
+ }finally{
+ try{run(['simctl','terminate',d.udid,'app.marinetools.preview'],15000)}catch{}
+ try{run(['simctl','shutdown',d.udid],30000)}catch{}
+ fs.writeFileSync(output+'/simulator-results.json',JSON.stringify(tests,null,2));
+ }
 }
 fs.writeFileSync(output+'/simulator-results.json',JSON.stringify(tests,null,2));console.log(JSON.stringify(tests));
 if(!tests.length||tests.some(t=>t.status!=='PASS'))throw Error('Native simulator acceptance failed; inspect console and screenshots');
