@@ -94,6 +94,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,'workspace-'+device+'.png'),fullPage:true});
   if(device==='desktop'){
    await page.goto(base+'/students/mollier.html');await page.waitForSelector('#hs-chart path',{state:'attached'});
+   await page.locator('#export-report').evaluate(el=>{for(let p=el.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true});
    const pending=page.waitForEvent('download');await page.locator('#export-report').click();const download=await pending,reportPath=path.join(output,'mollier-report.html');await download.saveAs(reportPath);
    const report=fs.readFileSync(reportPath,'utf8');check(report.includes('study-snapshot')&&report.includes('<svg'),'actual HTML download',{scope});
    const reportPage=await context.newPage();await reportPage.goto('file://'+reportPath);await reportPage.waitForSelector('svg');await reportPage.emulateMedia({media:'print'});await reportPage.screenshot({path:path.join(output,'report-print.png'),fullPage:true});
