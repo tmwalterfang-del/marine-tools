@@ -1,7 +1,7 @@
 name: Privacy policy acceptance
 on:
   pull_request:
-    paths: ['privacy/**', 'privacy-policy.*', 'scripts/build-privacy.mjs', 'scripts/stage-app.mjs', 'apps/shared/app-shell.js', 'apps/app-config.json', 'apps/store/**', 'index.html', 'app.js', 'sw.js', 'tests/privacy-*', '.github/workflows/privacy-policy.yml']
+    paths: ['privacy/**', 'privacy-policy.*', 'scripts/build-privacy.mjs', 'scripts/stage-app.mjs', 'scripts/app/**', 'apps/shared/**', 'apps/app-config.json', 'apps/store/**', 'capacitor.config.json', 'index.html', 'app.js', 'sw.js', 'tests/privacy-*', 'tests/app-*', '.github/workflows/privacy-policy.yml']
   workflow_dispatch:
 permissions:
   contents: read

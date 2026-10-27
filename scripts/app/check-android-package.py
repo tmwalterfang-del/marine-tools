@@ -1,5 +1,6 @@
 import pathlib,zipfile,json,xml.etree.ElementTree as ET,subprocess,os
 config=json.loads(pathlib.Path('apps/app-config.json').read_text())
+app_id=config.get('appId',config['previewId'])
 root=pathlib.Path('apps/mobile/android/app/build');out=pathlib.Path('app-artifacts/android');out.mkdir(parents=True,exist_ok=True)
 reports=[]
 for p in sorted(root.glob('outputs/**/*')):
@@ -22,12 +23,12 @@ ns='{http://schemas.android.com/apk/res/android}'
 manifests=[]
 for p in root.glob('intermediates/merged_manifests/**/AndroidManifest.xml'):
  tree=ET.parse(p).getroot();app=tree.find('application');sdk=tree.find('uses-sdk')
- assert tree.attrib.get('package')==config.get('appId',config['previewId'])
+ assert tree.attrib.get('package')==app_id
  assert tree.attrib.get(ns+'versionCode')==str(config['buildNumber']) and tree.attrib.get(ns+'versionName')==config['version']
  assert app.attrib.get(ns+'allowBackup')=='false' and app.attrib.get(ns+'usesCleartextTraffic')=='false'
  assert sdk.attrib.get(ns+'targetSdkVersion')==str(config['android']['targetSdk']) and sdk.attrib.get(ns+'minSdkVersion')==str(config['android']['minSdk'])
  permissions=[n.attrib[ns+'name'] for n in tree.findall('uses-permission')]
- internal=config['previewId']+'.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+ internal=app_id+'.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
  declarations={n.attrib[ns+'name']:n.attrib.get(ns+'protectionLevel') for n in tree.findall('permission')}
  if internal in permissions:assert declarations.get(internal)=='signature',declarations
  assert set(permissions)<=set(['android.permission.INTERNET','android.permission.ACCESS_NETWORK_STATE',internal]),permissions
