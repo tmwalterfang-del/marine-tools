@@ -11,7 +11,7 @@ const manifest=JSON.parse(fs.readFileSync(path.join(out,'manifest.webmanifest'))
 const config=JSON.parse(fs.readFileSync('apps/app-config.json'));
 assert.match(fs.readFileSync(path.join(out,'privacy-policy.js'),'utf8'),/does not enable app analytics/);
 assert.match(js,/window.MT_PRIVACY_POLICY/);
-const bridge=JSON.parse(fs.readFileSync('capacitor.config.json'));assert.equal(bridge.appId,config.previewId);assert.equal(bridge.webDir,'app-dist');assert.ok(!bridge.server?.url,'No remote website is installed as the app UI');
+const bridge=JSON.parse(fs.readFileSync('capacitor.config.json'));assert.equal(bridge.appId,config.appId||config.previewId);assert.equal(bridge.webDir,'app-dist');assert.ok(!bridge.server?.url,'No remote website is installed as the app UI');
 const desktop=JSON.parse(fs.readFileSync('apps/desktop/src-tauri/tauri.conf.json'));assert.equal(path.resolve('apps/desktop/src-tauri',desktop.build.frontendDist),out);
 assert.ok(fs.existsSync('apps/desktop/src-tauri/Cargo.lock'),'Native Rust dependencies are locked');
 const capability=JSON.parse(fs.readFileSync('apps/desktop/src-tauri/capabilities/default.json'));assert.ok(capability.permissions.includes('dialog:allow-save'));assert.ok(capability.permissions.includes('fs:allow-write-text-file'));assert.ok(!capability.remote,'Remote native origins are not permitted');assert.ok(!capability.permissions.includes('fs:default'));

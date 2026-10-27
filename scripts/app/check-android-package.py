@@ -22,7 +22,7 @@ ns='{http://schemas.android.com/apk/res/android}'
 manifests=[]
 for p in root.glob('intermediates/merged_manifests/**/AndroidManifest.xml'):
  tree=ET.parse(p).getroot();app=tree.find('application');sdk=tree.find('uses-sdk')
- assert tree.attrib.get('package')==config['previewId']
+ assert tree.attrib.get('package')==config.get('appId',config['previewId'])
  assert tree.attrib.get(ns+'versionCode')==str(config['buildNumber']) and tree.attrib.get(ns+'versionName')==config['version']
  assert app.attrib.get(ns+'allowBackup')=='false' and app.attrib.get(ns+'usesCleartextTraffic')=='false'
  assert sdk.attrib.get(ns+'targetSdkVersion')==str(config['android']['targetSdk']) and sdk.attrib.get(ns+'minSdkVersion')==str(config['android']['minSdk'])

@@ -25,7 +25,7 @@ function init(){
  const menu=document.getElementById('mobileMenu');if(menu)nav.prepend(menu);bar.prepend(nav);
  const title=bar.querySelector('.top-brand');title.className='top-brand mt-app-title';
  title.replaceChildren();const name=document.createElement('strong');name.textContent='Marine Tools';
- const version=document.createElement('small');version.id='mt-app-version';version.textContent='Preview '+window.MT_APP_CONFIG.version+' · '+window.MT_APP_CONFIG.buildNumber;
+ const version=document.createElement('small');version.id='mt-app-version';version.textContent=(window.MT_APP_CONFIG.channelLabel||'Preview')+' '+window.MT_APP_CONFIG.version+' · '+window.MT_APP_CONFIG.buildNumber;
  title.append(name,version);
  const info=document.createElement('section');info.className='mt-app-info';info.setAttribute('aria-label','Application status');
  info.innerHTML='<span id="mt-app-status" role="status" aria-live="polite"></span><button id="mt-app-install" type="button" hidden>Install app</button><button id="mt-app-update" type="button" hidden>Apply update</button>';

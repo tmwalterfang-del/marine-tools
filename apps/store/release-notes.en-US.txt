@@ -1,0 +1,8 @@
+<en-US>
+Local maritime calculators for offline use.
+Saved inputs, backup and export/sharing.
+Improved navigation and phone layout in portrait and landscape.
+Fixed input visibility when the keyboard is open.
+Integrated privacy policy.
+Live AIS/weather and offline Education are not included.
+</en-US>

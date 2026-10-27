@@ -50,8 +50,10 @@ This avoids treating the old baseline's known geometry defect as a new-candidate
 failure. It still asserts real Android keyboard visibility and focused-field
 bounds, native clipboard/share contents, Back and offline cold restart.
 
-CI results for build 6 must be checked separately after this source commit.
-Do not infer a native pass from the passing browser regression or workflow code.
+Build 6 native acceptance PASSED in run 40564921693 / job 122405399585.
+The downloaded emulator-results.json confirms build 6, same-debug-key upgrade,
+clipboard, share chooser/private contents, Back, offline cold reopen and offline
+policy. Actual portrait/landscape keyboard screenshots were reviewed.
 The debug key is temporary; stable production signing and a physically installed
 signed-release upgrade remain unverified. Only preview identity
 `app.marinetools.preview` is selected. Windows native work remains paused.
@@ -72,3 +74,42 @@ Trygve's remaining release actions are physical phone acceptance in both
 orientations/with keyboard/offline/export, future production identity/signing
 decisions, actual account evidence, final app/owned-browser Data Safety/rating/
 reviewer-access review and a separate explicit approval for any store upload.
+
+## Exact build-6 evidence and delivery
+
+Runtime head: e180dcc6f59faffc9398957365e6f56f1cd15aae.
+CI temporary integration source: ca89b9791577196107d8c49506369cd6d644a0f5
+(not a merge into main). Any following test-fixture/documentation commit leaves
+app runtime code unchanged.
+
+- Build/package and emulator: https://github.com/tmwalterfang-del/marine-tools/actions/runs/40564921693
+- APK/AAB and signing/package reports: https://github.com/tmwalterfang-del/marine-tools/actions/runs/40564921693/artifacts/12763330424
+- Native screenshots/results: https://github.com/tmwalterfang-del/marine-tools/actions/runs/40564921693/artifacts/12763161709
+- APK SHA-256: 5379617bb86076c8759e6e7042693b5f78d793d31d658d335fee6057227c58c0
+- AAB SHA-256: 451d899c73b588c5dc8d0417e8b8c9f4017bb9b96b7bf3ef3975924ea997e655
+
+Downloaded APK/AAB bytes match CI hashes, build 6, complete packaged configuration,
+current policy and keyboard-focus source. A test APK copy is delivered locally as
+deliverables/MarineTools-Preview-0.2.0-build6.apk. This is debug-signed for direct
+testing; the AAB is unsigned. Neither is a signed Play submission candidate.
+
+Chromium and WebKit full browser regressions passed in CI; local Firefox full
+regression passed all 456 checks. The first Firefox privacy CI fixture expected
+an unrelated release dialog already acknowledged in its reused context. The
+fixture now seeds that acknowledgement for the privacy test; a separate fresh
+full app test continues exercising the real startup dialog. The repaired Firefox
+privacy test passed eight profiles locally. No claim that the original failed
+Firefox CI job passed is made. Later test-only CI is distinct from the validated
+runtime/APK source above.
+
+The public SPA was also inspected with synthetic local settings and outgoing
+writes blocked: current policy matches, no editorial notes, and 3.20 m/2.70 m
+calculations pass. A same-origin Cloudflare challenge-platform POST was observed
+and blocked by the probe. This confirms an infrastructure browser flow, not its
+retention settings; account-level review remains necessary. No analytics events
+or other write requests were sent by the test.
+
+Release metadata supplied to the owner: Marine Tools Preview 0.2.0 (6), 30/50
+characters; English en-US notes, 282/500 characters, in apps/store/release-*.txt.
+Language tags must match a language enabled in Play Console. These are copyable
+texts only; no console field or store release was created or submitted.
