@@ -51,7 +51,7 @@ const worker=[
  'const CACHE='+JSON.stringify(cache)+';const ASSETS='+JSON.stringify(assets)+';',
  "if(!/\\.pages\\.dev$/i.test(self.location.hostname)){",
  "self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));",
- "self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting()});",
+ "self.addEventListener('message',e=>{if(e.data?.type!=='SKIP_WAITING')return;e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(clients=>{if(clients.length>1){e.source?.postMessage({type:'UPDATE_BLOCKED'});return}return self.skipWaiting()}))});",
  "self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('marine-tools-app-preview-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));",
  "self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin)return;",
  "if(e.request.mode==='navigate'){e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(r=>r||caches.match('./index.html')).then(r=>r||fetch(e.request)));return}",

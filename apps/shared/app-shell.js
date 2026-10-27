@@ -42,8 +42,11 @@ function init(){
  // Do not advertise network-only pages as available local app features.
  for(const n of document.querySelectorAll('.nav-btn[data-page]'))if(!allowed.has(n.dataset.page))n.hidden=true;
  if(!window.MT_NATIVE_APP&&'serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{
-  const show=()=>{if(!reg.waiting)return;const b=document.getElementById('mt-app-update');b.hidden=false;b.onclick=()=>{status('Applying update. Local drafts remain on this device.');navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});reg.waiting.postMessage({type:'SKIP_WAITING'})}};
+  navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='UPDATE_BLOCKED')status('Close other Marine Tools tabs/windows before applying this update. Your current work remains open.')});
+  const show=()=>{if(!reg.waiting)return;const b=document.getElementById('mt-app-update');b.hidden=false;b.onclick=()=>{window.MT_APP_DRAFTS?.flush();status('Applying update. Local drafts remain on this device.');navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});reg.waiting.postMessage({type:'SKIP_WAITING'})}};
   show();reg.addEventListener('updatefound',()=>reg.installing?.addEventListener('statechange',show));
+  let checked=0;const check=()=>{if(document.visibilityState==='hidden'||!navigator.onLine||Date.now()-checked<60000)return;checked=Date.now();reg.update().catch(()=>{})};
+  check();setInterval(check,15*60*1000);window.addEventListener('online',check);document.addEventListener('visibilitychange',check);
  }).catch(()=>{});
  window.MT_APP_NAV={go,back,canOpen:id=>allowed.has(id),get current(){return stack[position]}};
 }
