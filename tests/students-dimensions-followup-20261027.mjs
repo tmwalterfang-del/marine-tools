@@ -74,7 +74,7 @@ assert.equal(
   0,
   "No dimensional contradictions in parsed rows",
 );
-assert.ok(counts.DIMENSIONAL_PASS >= 1333, "Parser coverage regression");
+assert.ok(counts.DIMENSIONAL_PASS >= 1346, "Parser coverage regression");
 const baseline = JSON.parse(
   fs.readFileSync("tests/fixtures/dimensional-baseline-20261027.json"),
 );
@@ -86,4 +86,10 @@ const gained = results.filter(
   (r) =>
     baseline.unparsedIDs.includes(r.id) && r.outcome === "DIMENSIONAL_PASS",
 ).length;
-assert.ok(gained >= 322, "Coverage of the original 487 gaps must not regress");
+assert.ok(gained >= 335, "Coverage of the original 487 gaps must not regress");
+assert.throws(() => parse("KN(θ,Δ,trim)", {θ:U.rad,Δ:U.t,trim:U.s}), DimensionError);
+assert.throws(() => parse("KN(θ,Δ,trim)", {θ:U.m,Δ:U.t,trim:U.m}), DimensionError);
+assert.throws(() => parse("KN(θ,Δ)", {θ:U.rad,Δ:U.t}));
+const bending = w.MT_STUDY.sourceEquationRegister.find(r=>r.id==='book-c14-p214-r02');
+assert.throws(()=>checkRow({...bending,symbols:bending.symbols.map(s=>s.symbol==='V'?{...s,unit:'m'}:s)}),DimensionError);
+assert.throws(()=>checkRow({...bending,formula:bending.formula+'+x'}));

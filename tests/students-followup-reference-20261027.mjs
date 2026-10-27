@@ -110,7 +110,7 @@ for (const c of w.MT_STUDY.chapters) {
   checks++;
 }
 const repaired = w.MT_STUDY.reviewFollowup.changedSymbolRows;
-assert.equal(repaired.length, 12);
+assert.equal(repaired.length, 21);
 checks++;
 assert.equal(
   rows.filter(
@@ -121,6 +121,8 @@ assert.equal(
 checks++;
 for (const id of w.MT_STUDY.reviewFollowup.openReviewed) {
   assert.ok(by.get(id).analyticalReview.finding.includes("2026-10-27"));
+  assert.equal(by.get(id).sourceReread.printedPage,by.get(id).page);
+  assert.match(by.get(id).sourceReread.sha256,/^[a-f0-9]{64}$/);
   checks++;
 }
 console.log(
@@ -129,7 +131,7 @@ console.log(
     checks,
     chapters: 16,
     expressions: 1498,
-    correctedSymbolRows: 12,
+    correctedSymbolRows: 21,
     openModels: 6,
     scope:
       "Full-register local-context integrity plus targeted independent numerical conventions; no claim of numerical proof for every expression.",

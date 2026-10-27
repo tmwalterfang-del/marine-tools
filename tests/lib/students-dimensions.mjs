@@ -86,6 +86,7 @@ const sup = {
   ⁿ: "n",
 };
 const funcs = [
+  "KN",
   "sum",
   "wrap2π",
   "wrap360",
@@ -206,7 +207,7 @@ export function parse(text, vars) {
         same(exponent.d, Z);
         if (exponent.n === null) throw Error("Function power must be numeric");
       }
-      let a, b;
+      let a, b, third;
       if (tokens[i] === "(") {
         i++;
         a = expr();
@@ -214,10 +215,19 @@ export function parse(text, vars) {
           i++;
           b = expr();
         }
+        if (tokens[i] === ",") {
+          i++;
+          third = expr();
+        }
         if (tokens[i++] !== ")") throw Error("Unclosed function");
       } else a = power();
       let result;
-      if (t.fn === "sqrt") result = val(scale(a.d, 0.5));
+      if (t.fn === "KN") {
+        if (!b || !third) throw Error("KN requires heel, displacement and trim");
+        same(a.d, Z); same(b.d, U.t); same(third.d, U.m);
+        result = val(U.m);
+      } else if (third) throw Error("Unexpected third function argument");
+      else if (t.fn === "sqrt") result = val(scale(a.d, 0.5));
       else if (["abs", "mean", "sum"].includes(t.fn)) result = a;
       else if (["max", "min"].includes(t.fn)) {
         if (!b) throw Error("Two arguments required");
@@ -317,6 +327,23 @@ export function dimensions(row) {
 }
 export function checkRow(row) {
   const vars = dimensions(row);
+  // Dimensional calculus only: the measure contributes its own dimension.
+  // These exact source grammars are not evaluated as numerical quotients or
+  // rectangular integrals. Changed/unknown calculus notation remains unparsed.
+  const calculus = {
+    "book-c7-p112-r01": [
+      "V_out(t) = V_out(t₀)−(1/(R·C))·∫[t₀,t] V_in(τ)dτ",
+      "V_out = V_out−(1/(R·C))·V_in·τ",
+    ],
+    "book-c7-p112-r02": ["V_out = −R·C·dV_in/dt", "V_out = −R·C·V_in/t"],
+    "book-c13-p191-r05": ["abs(dC/ds) = abs(tan(φ)·sin(C))/R", "abs(C/s) = abs(tan(φ)·sin(C))/R"],
+    "book-c14-p214-r01": ["V(x) = integral₀ˣ(q_w−q_b)·dx", "V = (q_w−q_b)·x"],
+    "book-c14-p214-r02": ["M(x) = integral₀ˣV(ξ)·dξ", "M = V·ξ"],
+  }[row.id];
+  if (calculus) {
+    if (row.formula !== calculus[0]) throw Error("Changed calculus notation requires renewed dimensional review");
+    row = {...row, formula: calculus[1]};
+  }
   if (row.id === "book-c7-p111-r04")
     row = { ...row, formula: row.formula.replace("H(s)", "H") };
   if (

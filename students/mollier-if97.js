@@ -91,15 +91,18 @@
       throw RangeError("Target is in the unsupported subcooled-liquid region.");
     if (value <= high + tol)
       return wet(pBar, Math.max(0, Math.min(1, (value - low) / (high - low))));
-    let a = sat.T + 1e-6,
+    // Use the same lower boundary as the forward solver. A larger inversion
+    // margin used to reject valid forward states between 1e-7 and 1e-6 °C.
+    let a = sat.T + 1.00001e-7,
       b = 600,
       max = superheated(pBar, b);
     if (value > max[key] + tol)
       throw RangeError("Target exceeds the 600 °C Region 2 limit.");
-    if (value < superheated(pBar, a)[key])
-      throw RangeError(
-        "Target is too close to saturation for the stated numerical tolerance.",
-      );
+    const minimum = superheated(pBar, a);
+    if (value < minimum[key]) {
+      if (minimum[key] - value <= tol) return minimum;
+      throw RangeError("Target falls within the excluded saturation margin.");
+    }
     for (let i = 0; i < 65; i++) {
       const mid = (a + b) / 2,
         z = superheated(pBar, mid);
@@ -127,6 +130,10 @@
       throw RangeError("Outlet pressure must be lower than inlet pressure.");
     if (!["isentropic", "throttle", "turbine"].includes(mode))
       throw RangeError("Select a supported expansion model.");
+    // Preserve exact domain endpoints rather than recomputing them through a
+    // floating-point product/power (notably the 0.01 bar lower boundary).
+    const pressureAt = (i) =>
+      i === 0 ? inlet.p : i === 32 ? pOut : inlet.p * Math.pow(pOut / inlet.p, i / 32);
     if (mode === "throttle") {
       const outlet = statePH(pOut, inlet.h);
       if (outlet.s < inlet.s - 1e-7)
@@ -137,7 +144,7 @@
         work: 0,
         mode,
         path: Array.from({ length: 33 }, (_, i) =>
-          statePH(inlet.p * Math.pow(pOut / inlet.p, i / 32), inlet.h),
+          statePH(pressureAt(i), inlet.h),
         ),
       };
     }
@@ -167,7 +174,7 @@
       path:
         mode === "isentropic"
           ? Array.from({ length: 33 }, (_, i) =>
-              statePS(inlet.p * Math.pow(pOut / inlet.p, i / 32), inlet.s),
+              statePS(pressureAt(i), inlet.s),
             )
           : [],
     };
@@ -185,4 +192,4 @@
     license: "CC BY 4.0",
     source: "NeutriumJS.thermo.IAPWS97 (deprecated)",
   };
-})(window);
+})(typeof window === "undefined" ? globalThis : window);

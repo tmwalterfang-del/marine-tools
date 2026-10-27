@@ -1,5 +1,7 @@
 # Marine Tools Education — teknisk og faglig revisjon 27. oktober 2026
 
+**Senere oppfølging samme dag:** Se [oppdatert kontroll og appberedskap](STUDENTS_COMPLETION_FOLLOWUP_2026-10-27.md). Den oppfølgingen oppdaterer tallene nedenfor, dokumenterer ny tilgang til originalskannene og beholder denne rapportens tidligere kontrollgrunnlag.
+
 Arbeid i eksisterende Draft PR #35, fra `df66bb27c923d9e25a30b344d5f27c38a8dc56ac`. Ingen merge eller produksjonsdeploy er godkjent eller utført. Alt nytt studentrettet innhold er på engelsk.
 
 ## Resultat og avgrensning

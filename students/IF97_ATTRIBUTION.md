@@ -27,3 +27,5 @@ Pressure/enthalpy and pressure/entropy inversions use bounded bisection over the
 The pure `MT_IF97` state/process API has no DOM or network dependency and can be reused by a PWA or mobile WebView. UI, chart and exports remain a separate layer. The vendored engine is unchanged and its CC BY 4.0 attribution remains required in apps and exported distributions.
 
 A plotted throttle curve is an equilibrium constant-enthalpy locus. It is not a resolved flow field inside a valve. Published Region 2 points at 0.0035 MPa / 300 and 700 K are additionally checked through the expanded bar/Celsius adapter.
+
+Later 27 October follow-up: inverse p–h/p–s solvers now use the same near-saturation exclusion margin as the forward solver. Process paths preserve exact inlet/outlet pressure bounds. The adapter can attach to `globalThis` in a classic Web Worker as well as `window`; the vendor implementation and physical domain remain unchanged. Regression tests cover both contexts and near-boundary roundtrips. See `docs/STUDENTS_COMPLETION_FOLLOWUP_2026-10-27.md` for the current evidence and remaining acceptance work.

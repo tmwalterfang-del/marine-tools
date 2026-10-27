@@ -1,0 +1,3505 @@
+{
+  "provenance": "Authored independent worked examples. Constants and balances are explained per case; waveform results use midpoint integration. No source-book examples or tables copied. These are selected-case checks, not full-domain proofs.",
+  "cases": [
+    {
+      "id": "book-math-p9-r10",
+      "inputs": {
+        "a": 3,
+        "b": 5
+      },
+      "expected": 15,
+      "reference": "A 3 by 5 rectangle contains fifteen unit squares.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "cea6a640c451c592cc961c5f9d996b82c52b12863f60209cb18a3bd8164b031e"
+    },
+    {
+      "id": "book-math-p9-r11",
+      "inputs": {
+        "a": 4
+      },
+      "expected": 16,
+      "reference": "Four rows of four unit squares.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d41fc099789146a53530123d353e1e1ab975ddf72cab7748f7ca4d09446d5659"
+    },
+    {
+      "id": "book-math-p10-r01",
+      "inputs": {
+        "a": 4,
+        "h": 3
+      },
+      "expected": 12,
+      "reference": "Shearing a 4 by 3 rectangle preserves area.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "86b1c861cb903d79e485feaf925eed916d2b45254e23c65773e12c974b03eefd"
+    },
+    {
+      "id": "book-math-p10-r02",
+      "inputs": {
+        "d₁": 6,
+        "d₂": 4
+      },
+      "expected": 12,
+      "reference": "Four right triangles of legs 3 and 2.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "4c7e6d59dcde39c6c434aa9e7c3600e839bb96db2600eaefe94e216ef77e162e"
+    },
+    {
+      "id": "book-math-p10-r03",
+      "inputs": {
+        "a": 2,
+        "b": 6,
+        "h": 3
+      },
+      "expected": 12,
+      "reference": "Two copies form an 8 by 3 parallelogram.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "9edc6ba6edb1e4d6675288b6baeb9154d304833889188d66a8cf5ef20512b188"
+    },
+    {
+      "id": "book-math-p10-r04",
+      "inputs": {
+        "a": 4,
+        "h": 3
+      },
+      "expected": 6,
+      "reference": "Half a 4 by 3 rectangle.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f620299f49cf0c7ee2f66e84b462ed8c7434ed0231990a716e4ced39b7b3f497"
+    },
+    {
+      "id": "book-math-p10-r09",
+      "inputs": {
+        "r": 2
+      },
+      "expected": 12.566370614359172,
+      "reference": "Unit disk area scales by four under doubling.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "74b90fda871616205095be4350fbe44e19718f9a33d2d4910afcb0b21ad58e8b"
+    },
+    {
+      "id": "book-math-p10-r10",
+      "inputs": {
+        "d": 4
+      },
+      "expected": 12.566370614359172,
+      "reference": "A diameter-four disk is the same radius-two disk.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "fc9920086421eb59ccfcce5ddd06bcdb67791660dd07e293e8bed17f4b29fa75"
+    },
+    {
+      "id": "book-math-p10-r12",
+      "inputs": {
+        "r": 2
+      },
+      "expected": 4,
+      "reference": "Diameter spans two radii.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6c9f3aaed5ff3d432c22adbfe795a1b8eb93816bbb23bc126200f4b3ee5b42ed"
+    },
+    {
+      "id": "book-math-p10-r13",
+      "inputs": {
+        "r": 2
+      },
+      "expected": 12.566370614359172,
+      "reference": "Circumference of a radius-two circle.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f3a6b8069f1c40b0cb314b3a25aad02840fb12664e0434338e53b3e04a1a1c1b"
+    },
+    {
+      "id": "book-math-p10-r14",
+      "inputs": {
+        "d": 4
+      },
+      "expected": 12.566370614359172,
+      "reference": "Same circle expressed by diameter.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a8d4c72a092c6580c681c133c1389002785e9b302b5c13bc8fdf9e29f8fd9971"
+    },
+    {
+      "id": "book-math-p11-r09",
+      "inputs": {
+        "A_base": 12,
+        "h": 5
+      },
+      "expected": 60,
+      "reference": "Five unit-thickness layers of area twelve.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "36367b6e87595d80f35bac2967e259a71784bccf3125678f20c69c27b19cd8db"
+    },
+    {
+      "id": "book-math-p11-r10",
+      "inputs": {
+        "r": 2,
+        "h": 3
+      },
+      "expected": 37.69911184307752,
+      "reference": "Three layers of a radius-two disk.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "88e7e06154c941ffd12a2df777f85c1e1bc8ac1299295b7e8073adbe77e37858"
+    },
+    {
+      "id": "book-math-p11-r11",
+      "inputs": {
+        "d": 4,
+        "h": 3
+      },
+      "expected": 37.69911184307752,
+      "reference": "Same cylinder specified by diameter.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e2e94b85398d4bb9098947398ab48ac74cf9d80ecd78e8ebad46b748a8fbd461"
+    },
+    {
+      "id": "book-math-p11-r14",
+      "inputs": {
+        "A_base": 12,
+        "h": 3
+      },
+      "expected": 12,
+      "reference": "Integrating similar cross sections: 12 times integral_0^3 (z/3)^2 dz.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "93e444758ab5afdbca0dee4cccddb7464e5414790f05d9a676a2cc3cea1b5b58"
+    },
+    {
+      "id": "book-math-p11-r15",
+      "inputs": {
+        "r": 2,
+        "h": 3
+      },
+      "expected": 12.566370614359172,
+      "reference": "Cone occupies one third of the corresponding cylinder.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a017272dd46f83a856aaf055797e5bf988a335b2a5a784cb234dcca08aaf805b"
+    },
+    {
+      "id": "book-math-p12-r03",
+      "inputs": {
+        "r": 3
+      },
+      "expected": 113.09733552923255,
+      "reference": "Integrate circular slices pi*(9-z*z) over -3 to 3.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "803a2e7035035c83e3bee99a4ab9f22e6600b0458130af0fda647fab117e63cb"
+    },
+    {
+      "id": "book-math-p12-r04",
+      "inputs": {
+        "d": 6
+      },
+      "expected": 113.09733552923255,
+      "reference": "Same sphere specified by diameter.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "889bb3f39842706af052e76694b8992f51a665a05354f88b160fb2bf04d3e456"
+    },
+    {
+      "id": "book-math-p12-r05",
+      "inputs": {
+        "r": 3
+      },
+      "expected": 113.09733552923255,
+      "reference": "Derivative of sphere volume with respect to radius.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "822f858dc736f9b5e9499701e3a99ed4b9ea1046b6d70d250def7b5731a9a5fb"
+    },
+    {
+      "id": "book-math-p12-r06",
+      "inputs": {
+        "d": 6
+      },
+      "expected": 113.09733552923255,
+      "reference": "Same sphere area specified by diameter.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8d1418c1349fba7faf09c2e9d667dffa0721b1d9ee843efdab57f693b9760e5e"
+    },
+    {
+      "id": "book-physics-p23-r01",
+      "inputs": {
+        "F": 600,
+        "A": 0.3
+      },
+      "expected": 2000,
+      "reference": "600 N distributed over three tenths square metre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a101d656ab937d3d5e69763ec52735caa413396ccf70b5f94cc0a56bff0e5d87"
+    },
+    {
+      "id": "book-physics-p23-r04",
+      "inputs": {
+        "p₀": 100000,
+        "ρ": 1000,
+        "g": 10,
+        "h": 3
+      },
+      "expected": 130000,
+      "reference": "A three-metre water column adds 30 kPa to a 100 kPa datum.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e6af7acc0ccf7a5da26850984a95319b640d8078bdba95fc21971c6d1c2662a6"
+    },
+    {
+      "id": "book-physics-p23-r05",
+      "inputs": {
+        "ρ": 1000,
+        "g": 10,
+        "V": 0.2
+      },
+      "expected": 2000,
+      "reference": "Displaced mass is 200 kg, weight is 2000 N.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c0e93c5969abdf7269b01b9105d69d05f052193082c0ace9f7c306030fda600d"
+    },
+    {
+      "id": "book-physics-p23-r06",
+      "inputs": {
+        "m": 200,
+        "V": 0.2
+      },
+      "expected": 1000,
+      "reference": "200 kg in 200 litres gives 1 kg per litre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "cf825e46668b0fb74c9b4333145fd103ea4adfc17682a6816df683ec664b0730"
+    },
+    {
+      "id": "book-physics-p23-r07",
+      "inputs": {
+        "V": 0.2,
+        "m": 200
+      },
+      "expected": 0.001,
+      "reference": "One kilogram occupies one litre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1b0f1b3d2278011f065bc28b88cab8a967cd3415bdc3992d011346357f1adf9c"
+    },
+    {
+      "id": "book-physics-p23-r08",
+      "inputs": {
+        "ρ": 1000
+      },
+      "expected": 0.001,
+      "reference": "Reciprocal density for that same litre per kilogram.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e6edf4252b4ae7c74fe241a32720bbabafb49b8ed9b4cd8c8b786749d029acd7"
+    },
+    {
+      "id": "book-physics-p23-r09",
+      "inputs": {
+        "V": 0.024,
+        "n": 1
+      },
+      "expected": 0.024,
+      "reference": "One mole occupies the specified 24 litres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "7d3c60b125750ee3cc0e275892857535e83091aacd0e52d12f7bc17478a026da"
+    },
+    {
+      "id": "book-physics-p23-r10",
+      "inputs": {
+        "M": 0.024,
+        "ρ": 1
+      },
+      "expected": 0.024,
+      "reference": "One mole has mass .024 kg at 1 kg per cubic metre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "4aab3487d69d8bc18a30cca4e86402fed74d255af1966a799c85bf86f80212b3"
+    },
+    {
+      "id": "book-physics-p23-r11",
+      "inputs": {
+        "W": 2000,
+        "V": 0.2
+      },
+      "expected": 10000,
+      "reference": "2000 N spread through 200 litres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5aec0c7cf7506b61e3ea19aced4f4ce9055ca4e70b2f2e453f3008a40f4f4ce5"
+    },
+    {
+      "id": "book-physics-p23-r12",
+      "inputs": {
+        "ρ": 1000,
+        "g": 10
+      },
+      "expected": 10000,
+      "reference": "Each cubic metre has a 10000 N weight.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d543642075688162e78307a03052b9cc418cc1f62a06f6eb3862c053f4415455"
+    },
+    {
+      "id": "book-physics-p24-r09",
+      "inputs": {
+        "t_C": 100
+      },
+      "expected": 373.15,
+      "reference": "Boiling point at exactly 100 Celsius expressed on the kelvin scale.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0d87cd7dfb0a0e1f820faf206d3b4703144bf2eebd1103fdf3aa0b14496c8d65"
+    },
+    {
+      "id": "book-physics-p24-r10",
+      "inputs": {
+        "T_K": 300
+      },
+      "expected": 540,
+      "reference": "A kelvin interval contains 1.8 Rankine degrees.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6b104bcae3cea2f54a637fbd6271a51de66a267d9571cd09d08d75550720e5c3"
+    },
+    {
+      "id": "book-physics-p24-r11",
+      "inputs": {
+        "t_F": 32
+      },
+      "expected": 491.67,
+      "reference": "Water freezing temperature on the Rankine scale.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "513b9d7b3095aa03ec013399a706586bb2cadfaf9f39a0c5f081a0e850be3bee"
+    },
+    {
+      "id": "book-physics-p24-r12",
+      "inputs": {
+        "t_F": 212
+      },
+      "expected": 100,
+      "reference": "Fahrenheit boiling and freezing points span 180 degrees for 100 Celsius.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e469b800679940b0e33ecf591a34987717746510c255058094eee1a75d5ef3d4"
+    },
+    {
+      "id": "book-physics-p24-r13",
+      "inputs": {
+        "t_C": -40
+      },
+      "expected": -40,
+      "reference": "Celsius and Fahrenheit scales coincide at minus forty.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d9690954ec36e6884cf682e7bed5fd71d57ef2da02b5c61c5d7df1d68b653636"
+    },
+    {
+      "id": "book-mechanics-p30-r01",
+      "inputs": {
+        "F": 200,
+        "l": 0.5
+      },
+      "expected": 100,
+      "reference": "A 200 N normal force at half a metre gives 100 N m.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d3bcd0cf83e8517cf6b5e98df66180fec28447ba1a6dc14812a4deae2fed1d94"
+    },
+    {
+      "id": "book-mechanics-p30-r02",
+      "inputs": {
+        "k": 1000,
+        "x": 0.02
+      },
+      "expected": 20,
+      "reference": "A 1000 N/m spring extends 20 mm under 20 N.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "2c87f64109737af9dbf548f3794d9c11d81b9b59f259393695625fcbae962598"
+    },
+    {
+      "id": "book-mechanics-p30-r08",
+      "inputs": {
+        "r": 3.141592653589793
+      },
+      "expected": 2,
+      "reference": "Centroid of a semicircular wire of radius pi.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b701673cd11d7c74df5b7829b37c400080ddae07e34e1e2f2ea7d1d88517f5db"
+    },
+    {
+      "id": "book-mechanics-p30-r09",
+      "inputs": {
+        "h": 3
+      },
+      "expected": 1,
+      "reference": "Triangle centroid is one metre above the base for height three.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bc85730a026a94abab98986a90c9db0254f1c8c5366bb227ca175ead29eb2c66"
+    },
+    {
+      "id": "book-mechanics-p30-r10",
+      "inputs": {
+        "h": 3,
+        "a": 2,
+        "b": 4
+      },
+      "expected": 1.6666666666666667,
+      "reference": "Area-weighted decomposition of trapezoid into rectangle and triangle.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5bb5255f5874c780a0a3c23f61b683ecc2f8df8947fc89dcb719f73eaabefcd9"
+    },
+    {
+      "id": "book-mechanics-p31-r03",
+      "inputs": {
+        "r": 9.42477796076938
+      },
+      "expected": 4,
+      "reference": "Semicircle first area moment divided by its area.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a76f716808307a6ffd8db81c85e5d2eebbb33b09b82078ba70a77e7aba6db596"
+    },
+    {
+      "id": "book-mechanics-p31-r05",
+      "inputs": {
+        "h": 4
+      },
+      "expected": 1,
+      "reference": "Integrate similar pyramid slices, giving quarter-height above the base.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1744445fed28bfc611ce0af56d5c39ece33540b6275a7cb0fbea5ec528e8a4e3"
+    },
+    {
+      "id": "book-mechanics-p33-r04",
+      "inputs": {
+        "m": 0.005,
+        "z": 20
+      },
+      "expected": 0.1,
+      "reference": "Twenty teeth each contribute five millimetres of module to pitch diameter.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "69d87d5d20a3c9ac9114702ebc04b6528071c03d11b0918dcdd6d531e28ae90a"
+    },
+    {
+      "id": "book-mechanics-p33-r06",
+      "inputs": {
+        "z_s": 20,
+        "z_p": 30
+      },
+      "expected": 80,
+      "reference": "Pitch radii require ring teeth equal sun plus two planets.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "87abe059bc36288168e9b011fb6218cc81651ae5ef19087b1b5fac7ecdf3c383"
+    },
+    {
+      "id": "book-mechanics-p33-r07",
+      "inputs": {
+        "n_s": 10,
+        "z_s": 20,
+        "z_r": 80
+      },
+      "expected": 2,
+      "reference": "Willis relation with stationary ring: (10-2)*20=(2-0)*80.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a9c672d91fc48d44cb24862c3aefec24569def49662af3c6cbcc3ce4d3e94a04"
+    },
+    {
+      "id": "book-mechanics-p33-r09",
+      "inputs": {
+        "n_s": 10,
+        "z_s": 20,
+        "z_r": 80
+      },
+      "expected": -2.5,
+      "reference": "Fixed carrier balances opposite sun/ring pitch-line velocities.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "2b35ede32d42c358a1ee29c182c50e348bd63f1cd346a7e111eaa7b4556b07fe"
+    },
+    {
+      "id": "book-mechanics-p34-r01",
+      "inputs": {
+        "n": 4,
+        "h": 2
+      },
+      "expected": 8,
+      "reference": "Four supporting rope parts each shorten by two metres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "426088c7968fa951fef7a588ac208857bbcb8352e5faa40bd7bd621b436c1cfd"
+    },
+    {
+      "id": "book-mechanics-p34-r02",
+      "inputs": {
+        "G": 800,
+        "n": 4
+      },
+      "expected": 200,
+      "reference": "Equal load sharing between four ideal rope parts.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "eda6db07b51d6631af51a6d1781418050417951f13b37f19f0f27e2f7572520e"
+    },
+    {
+      "id": "book-mechanics-p34-r04",
+      "inputs": {
+        "G": 800,
+        "h": 2,
+        "F": 250,
+        "l": 8
+      },
+      "expected": 0.8,
+      "reference": "Useful lifting energy 1600 J versus input 2000 J.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ba33b772b08389d324b38e751a6286136e70b39904277f094629f6c5dfeb7412"
+    },
+    {
+      "id": "book-mechanics-p35-r03",
+      "inputs": {
+        "R": 0.2,
+        "s": 0.01
+      },
+      "expected": 125.66370614359172,
+      "reference": "One handle turn travels .4pi metres for .01 metre rise.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "753ba9e25901e4f13dad83bbff8bc449706140f5f51a6c3bd4f05ddfb7c34d83"
+    },
+    {
+      "id": "book-machine-p49-r05",
+      "inputs": {
+        "F_t": 200,
+        "d₂": 0.02
+      },
+      "expected": 2,
+      "reference": "Tangential thread force of 200 N on a 10 mm radius.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "dc86bba669b4c52618f113171ef4b481ec4a49656d0ebffe07cb04805b23450e"
+    },
+    {
+      "id": "book-machine-p49-r08",
+      "inputs": {
+        "μ_c": 0.1,
+        "G": 1000,
+        "r_m": 0.02
+      },
+      "expected": 2,
+      "reference": "100 N collar friction at 20 mm radius.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e747759ba0566f0b39bb212a4e09df993ac2e0512ae1d35f37f0326eec022047"
+    },
+    {
+      "id": "book-machine-p49-r09",
+      "inputs": {
+        "N": 0.06,
+        "d_h": 0.02
+      },
+      "expected": 0.02,
+      "reference": "Uniform-wear mean radius lies halfway between .01 and .03 m.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8b0540cbe087f6eebfc7935614ac79f3394770e3ae48ec8de299ee3e26200b42"
+    },
+    {
+      "id": "book-machine-p49-r10",
+      "inputs": {
+        "T_thread": 2,
+        "T_collar": 3
+      },
+      "expected": 5,
+      "reference": "Independent resisting torques add.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8b644086bd3106b88ffe439272c01555ca26146e67c60be625cea324daeb01ae"
+    },
+    {
+      "id": "book-machine-p50-r01",
+      "inputs": {
+        "F": 10000,
+        "A": 0.001
+      },
+      "expected": 10000000.0,
+      "reference": "Ten kilonewtons over ten square centimetres gives ten MPa.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6cae9e8666c937007076a18de265ab04be206c55b4b2129ea400a75063463f32"
+    },
+    {
+      "id": "book-machine-p50-r02",
+      "inputs": {
+        "F": 10000,
+        "d_core": 0.02
+      },
+      "expected": 31830988.618379068,
+      "reference": "Circular core area is pi times 0.01 squared.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "128aeee685bab0c807fea34ed77ca2db47622a2e27795381d2e05c268994c78b"
+    },
+    {
+      "id": "book-machine-p50-r03",
+      "inputs": {
+        "F": 10000,
+        "A_t": 0.001
+      },
+      "expected": 10000000.0,
+      "reference": "Specified tensile area gives the same ten MPa stress.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c98f1914a7daac489ab18db0c19d910ab8ccd30da726686c8418c65f2990c629"
+    },
+    {
+      "id": "book-machine-p50-r05",
+      "inputs": {
+        "σ": 4000000.0,
+        "τ": 2000000.0
+      },
+      "expected": 5291502.622129181,
+      "reference": "Principal-stress invariant for axial stress and shear.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6b65c7523f9cb225dafd39c4967bbe01c7886b307669f45e635d8facd7a3e070"
+    },
+    {
+      "id": "book-machine-p50-r08",
+      "inputs": {
+        "s": 0.01
+      },
+      "expected": 0.007071067811865476,
+      "reference": "Altitude of a right isosceles weld triangle.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5bab029836b3d763f29985e2bf5fa397097c61c3af05eb22fa4ed449ccadf7c5"
+    },
+    {
+      "id": "book-machine-p50-r09",
+      "inputs": {
+        "F": 10000,
+        "A_w": 0.001
+      },
+      "expected": 10000000.0,
+      "reference": "Applied force divided by a specified effective throat area.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e3bb2c5992379c74b09ec6417f71b70bfe1efb6066453de318eb63cae377f6bb"
+    },
+    {
+      "id": "book-machine-p50-r10",
+      "inputs": {
+        "a": 0.005,
+        "l_eff": 0.2
+      },
+      "expected": 0.001,
+      "reference": "A 5 mm throat extending for 200 mm.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b4640e7df52e8cadc9989867a5c009628e62b0e9544656369919ff84a2c06da2"
+    },
+    {
+      "id": "book-machine-p50-r12",
+      "inputs": {
+        "σ_allow": 100000000.0,
+        "σ_w": 50000000.0
+      },
+      "expected": 2,
+      "reference": "Allowable stress is twice the applied stress; allowable supplied independently.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "82d70dc124bd706cdbf7e067e5aaa352ee439c595bb396f32989e7104825a455"
+    },
+    {
+      "id": "book-machine-p51-r05",
+      "inputs": {
+        "F": 1000,
+        "d": 0.1,
+        "l": 0.2
+      },
+      "expected": 50000,
+      "reference": "Bearing projected rectangle is .02 square metres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5a35ef35acb410e20232c268f216cdb2d3828a278301ae413b3d44948b4a325f"
+    },
+    {
+      "id": "book-machine-p51-r06",
+      "inputs": {
+        "n": 5
+      },
+      "expected": 31.41592653589793,
+      "reference": "Five full revolutions each sweep two pi radians.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "dc22a020497b125e10bcfcd6ad623383976c2cffc3007f0c95f5d15108b6eadd"
+    },
+    {
+      "id": "book-machine-p51-r07",
+      "inputs": {
+        "D": 0.1002,
+        "d": 0.1
+      },
+      "expected": 0.002,
+      "reference": "A 0.2 mm diametral clearance relative to 100 mm shaft.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ede526400e9944d0fefbd194d7c24b06a2e7719c0324f218246e630f49e5c722"
+    },
+    {
+      "id": "book-machine-p51-r08",
+      "inputs": {
+        "R": 0.0501,
+        "r": 0.05
+      },
+      "expected": 0.002,
+      "reference": "Same clearance expressed through radii.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c323b1ed26ede16d5e3e51b63ed91255c94c3bce7ba7c850195f34b19339137c"
+    },
+    {
+      "id": "book-machine-p51-r10",
+      "inputs": {
+        "h_min": 5e-05,
+        "R": 0.0501,
+        "r": 0.05
+      },
+      "expected": 0.5,
+      "reference": "Fifty micrometres is half the radial clearance.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "133d0377020d2c4d109233540df17201e2bf777f6de4f0bc00a2253c099cea5a"
+    },
+    {
+      "id": "book-machine-p52-r01",
+      "inputs": {
+        "ε_f": 0.5,
+        "r": 0.05,
+        "ψ": 0.002
+      },
+      "expected": 5e-05,
+      "reference": "Half of the same one-hundred-micrometre radial clearance.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "7680e79a1c098306c6717d3c9d4418527600c8f00659d0733e45c44d62099158"
+    },
+    {
+      "id": "book-machine-p52-r03",
+      "inputs": {
+        "D": 0.1002,
+        "d": 0.1
+      },
+      "expected": 0.0002,
+      "reference": "Difference of measured diameters; no empirical bearing coefficient.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1769d0a497e5acde48d42cfb247a2bc21ea4098386c3504be9de422d09b142a4"
+    },
+    {
+      "id": "book-chemistry-p55-r01",
+      "inputs": {
+        "Z": 6,
+        "N": 8
+      },
+      "expected": 14,
+      "reference": "Six protons and eight neutrons form carbon-14.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "3984a00a7fd5e350775e33dd4d9511a0145c23b10813f0b3e51a49ef94e7e4cd"
+    },
+    {
+      "id": "book-chemistry-p59-r01",
+      "inputs": {
+        "A_p": 238
+      },
+      "expected": 234,
+      "reference": "An alpha particle carries four nucleons.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "db4d20855febe5ac2405da923f4c3f35f89d03cd650b422360e150d867e5e98a"
+    },
+    {
+      "id": "book-chemistry-p59-r02",
+      "inputs": {
+        "Z_p": 92
+      },
+      "expected": 90,
+      "reference": "An alpha particle carries two protons.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b76b1902644e455968affc438c7686bd5d5adea4faf31b5f0df2fbf2733045c3"
+    },
+    {
+      "id": "book-chemistry-p59-r04",
+      "inputs": {
+        "Z_p": 6
+      },
+      "expected": 7,
+      "reference": "Beta-minus converts a neutron to a proton.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0aaa3236f39cc502cdd3b9d9b4431d87a7fd3de5bc5b7937de5fffe7d1885b8b"
+    },
+    {
+      "id": "book-chemistry-p59-r06",
+      "inputs": {
+        "Z_p": 9
+      },
+      "expected": 8,
+      "reference": "Beta-plus converts a proton to a neutron.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0c9be4f1b7c53717f30b89ad01d9caa1743de915a210ce60bfba004bfc45913a"
+    },
+    {
+      "id": "book-chemistry-p68-r01",
+      "inputs": {
+        "a_H": 1e-07
+      },
+      "expected": 7,
+      "reference": "Hydrogen activity one ten-millionth gives pH seven.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "20f353739fe0da640a09ec2b76719b33bd6ff1b7da4f9169aba1caafef392765"
+    },
+    {
+      "id": "book-chemistry-p68-r02",
+      "inputs": {
+        "c_H": 1e-07,
+        "c°": 1
+      },
+      "expected": 7,
+      "reference": "Ideal dilute activity normalized by the same concentration unit.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0442b17b74e2310d6a20094d522363b0dfa2c2d67ba6dbeb512bf732a6d086db"
+    },
+    {
+      "id": "book-chemistry-p68-r03",
+      "inputs": {
+        "a_OH": 1e-05
+      },
+      "expected": 5,
+      "reference": "Hydroxide activity one hundred-thousandth gives pOH five.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "66c444afb35b6e685938536be3c7ecf558dadce23bd6e231b8da5fd76058361a"
+    },
+    {
+      "id": "book-chemistry-p68-r04",
+      "inputs": {
+        "K_w": 1e-14
+      },
+      "expected": 14,
+      "reference": "Specified water ion product has negative common logarithm fourteen.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "7b82e2b2091a2fa37ba1f00e2273e9497e8aea0403d0a8e883740c938cd00dc5"
+    },
+    {
+      "id": "book-chemistry-p68-r06",
+      "inputs": {
+        "pK_w": 14
+      },
+      "expected": 7,
+      "reference": "At neutrality equal hydrogen/hydroxide activities split pKw equally.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "73b80db96573f0169b5f253817a564988140ac86694be3bbc2d2434c49bc452a"
+    },
+    {
+      "id": "book-chemistry-p68-r07",
+      "inputs": {
+        "K_a": 1e-05
+      },
+      "expected": 5,
+      "reference": "Acid constant one hundred-thousandth has pKa five.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "9b77e59be2fe0392ee2f7b05c13951c54bd611b3f116cb975d7daf39a01e83c0"
+    },
+    {
+      "id": "book-chemistry-p68-r08",
+      "inputs": {
+        "pK_a": 5,
+        "a_A": 0.1,
+        "a_HA": 0.01
+      },
+      "expected": 6,
+      "reference": "Tenfold conjugate-base activity raises pH by one.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6a26b308c788e7977966db994e4aea941abb4e14cc10546024ce6d97e49bc003"
+    },
+    {
+      "id": "book-chemistry-p68-r09",
+      "inputs": {
+        "pK_a": 5,
+        "c_A": 0.1,
+        "c_HA": 0.01
+      },
+      "expected": 6,
+      "reference": "Same ideal dilute buffer with a ten-to-one concentration ratio.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a0faecc442ef7cc67e8c87591734f07347ee73e727b76586bb270618beecaba3"
+    },
+    {
+      "id": "book-chemistry-p69-r01",
+      "inputs": {
+        "n": 3
+      },
+      "expected": 8,
+      "reference": "Propane has eight hydrogen atoms.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b66b8346325b036874e43d825fe2d76c85a469f3a9e4ee2fb75414657ac0e95d"
+    },
+    {
+      "id": "book-chemistry-p70-r01",
+      "inputs": {
+        "n": 3
+      },
+      "expected": 7,
+      "reference": "A propyl group has seven hydrogen atoms.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0a3a6b347babcba949f8837e58cb4deb27f23223d0abb03039f5553c90b653c2"
+    },
+    {
+      "id": "book-chemistry-p70-r02",
+      "inputs": {
+        "n": 3
+      },
+      "expected": 6,
+      "reference": "Propene has six hydrogen atoms.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "3d16d5e32298895c724077e67afb7fa795e3003d065a2f6ef162501f41feeaac"
+    },
+    {
+      "id": "book-chemistry-p70-r03",
+      "inputs": {
+        "n": 3
+      },
+      "expected": 4,
+      "reference": "Propyne has four hydrogen atoms.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "17faf522544dfbe917d99df665826293128bc5e0d757e101427c80a6c9ff6df7"
+    },
+    {
+      "id": "book-c6-p79-r01",
+      "inputs": {
+        "I": 2,
+        "t": 30
+      },
+      "expected": 60,
+      "reference": "Two coulombs per second transferred for thirty seconds.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8a155b2fc2792658f7c5b9f26e5f3bfe0a82ddce57f7cafc7207a8bb5df0435a"
+    },
+    {
+      "id": "book-c6-p79-r02",
+      "inputs": {
+        "ρ": 2e-08,
+        "l": 10,
+        "A": 2e-06
+      },
+      "expected": 0.1,
+      "reference": "Ten metres of 2 square mm conductor with stated resistivity.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "92cc258fa7cb56e5d99501152333e9330ec495f2941cd4b8b89d3e93f26e4199"
+    },
+    {
+      "id": "book-c6-p79-r03",
+      "inputs": {
+        "r": 0.001
+      },
+      "expected": 3.141592653589793e-06,
+      "reference": "Circular conductor radius one millimetre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0186aa3cacdc204a749a6a1c7646fe80f123b67aa2d3fd3e3dddb3fa6b9041a8"
+    },
+    {
+      "id": "book-c6-p79-r04",
+      "inputs": {
+        "R₀": 10,
+        "α": 0.004,
+        "ΔT": 50
+      },
+      "expected": 12,
+      "reference": "Linear coefficient increases resistance by twenty percent.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "dab398a890a11b37e86d887d7783416d137611bb9f95ee9aa202955449934b3c"
+    },
+    {
+      "id": "book-c6-p79-r05",
+      "inputs": {
+        "R": 4
+      },
+      "expected": 0.25,
+      "reference": "Four ohms means one quarter siemens.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "802b824a3b06dc2173d3fefd50ee8d8c4a124ebe505393e7ca42ca4fd66ef8ec"
+    },
+    {
+      "id": "book-c6-p79-r06",
+      "inputs": {
+        "ρ": 2e-08
+      },
+      "expected": 50000000.0,
+      "reference": "Conductivity is reciprocal resistivity.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c099feb71fdbc36712d966339036d0aaf77025bd5efd6437703cfb1711da8bcf"
+    },
+    {
+      "id": "book-c6-p79-r07",
+      "inputs": {
+        "R": 4,
+        "I": 3
+      },
+      "expected": 12,
+      "reference": "Three amperes through four ohms needs twelve volts.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "36015430369fb0c4befaedfdc02ae0d43d52db96b0b033c5a217b897f258db94"
+    },
+    {
+      "id": "book-c6-p80-r03",
+      "inputs": {
+        "n": 3,
+        "R₁": 4
+      },
+      "expected": 12,
+      "reference": "Three identical four-ohm resistors in series.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "766e31fcb6c8f27e45bc203a001e46a7ee3479955e1b78358969116d63663d69"
+    },
+    {
+      "id": "book-c6-p80-r05",
+      "inputs": {
+        "R₁": 6,
+        "R₂": 3
+      },
+      "expected": 2,
+      "reference": "At six volts parallel branches carry one and two amperes.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "37f9ea986201c8d7ea068068f7ebed653a15725385303ab1bf0dab701ce31b1d"
+    },
+    {
+      "id": "book-c6-p82-r07",
+      "inputs": {
+        "C": 0.002,
+        "U": 10
+      },
+      "expected": 0.1,
+      "reference": "Integrate capacitor voltage from zero to charge .02 C.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8386bac1faa635791966b3b52d2ae4fb88044430d0d0f059cbab5d0aeeec5c81"
+    },
+    {
+      "id": "book-c6-p82-r08",
+      "inputs": {
+        "U": 10,
+        "t": 2,
+        "R": 1000,
+        "C": 0.002
+      },
+      "expected": 6.321205588285577,
+      "reference": "After one time constant the uncharged fraction is exp(-1).",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "2ca10835d500d8a25e15fa1720fa54723037dcbe77cd9c660f180bf5a59921bf"
+    },
+    {
+      "id": "book-c6-p83-r01",
+      "inputs": {
+        "U₀": 10,
+        "t": 2,
+        "R": 1000,
+        "C": 0.002
+      },
+      "expected": 3.6787944117144233,
+      "reference": "After one time constant the charged fraction remaining is exp(-1).",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "58cee9d8a0f8d8c4e7d28d56ff19d30195ae56345f51373846bfdb9264b3d7f2"
+    },
+    {
+      "id": "book-c6-p83-r02",
+      "inputs": {
+        "R": 1000,
+        "C": 0.002
+      },
+      "expected": 2,
+      "reference": "A 1 kohm, 2 mF RC has a two-second time constant.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0337a281dacc2a80a226bdeb4d810bd5e1e640c11d69a914d4c5b5cdb475adc2"
+    },
+    {
+      "id": "book-c6-p83-r07",
+      "inputs": {
+        "F": 0.02,
+        "q": 1e-05
+      },
+      "expected": 2000,
+      "reference": "A 10 microcoulomb probe experiences .02 newton.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "042e242ddf648235a3c430fdfa2c6c901017f6c486e0680b6e3ca08624388b83"
+    },
+    {
+      "id": "book-c6-p84-r02",
+      "inputs": {
+        "U": 20,
+        "d": 0.01
+      },
+      "expected": 2000,
+      "reference": "Twenty volt potential difference across ten millimetres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a3c2dc87fee2e44692e60e4713d89c2622c5917311a1a2c9ef979f23c367d65b"
+    },
+    {
+      "id": "book-c6-p84-r04",
+      "inputs": {
+        "Q": 0.01,
+        "A": 0.2
+      },
+      "expected": 0.05,
+      "reference": "Ten millicoulombs distributed over .2 square metres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5fa16a432a1192f2b013a39e197eed667cd98f7bee3a96c450dde06a9c1e243e"
+    },
+    {
+      "id": "book-c6-p84-r05",
+      "inputs": {
+        "D": 0.05,
+        "A": 0.2
+      },
+      "expected": 0.01,
+      "reference": "Specified uniform electric displacement through the area.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "23943e891abe27f34262e8e8e298d6e90a27af5c1bb128f4788b6222c5762e0d"
+    },
+    {
+      "id": "book-c6-p84-r06",
+      "inputs": {
+        "B": 0.2,
+        "A": 0.01
+      },
+      "expected": 0.002,
+      "reference": "Uniform normal magnetic field through one hundred square centimetres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "26f871116ea33998259228abe95a5b9342f2e7acf7c19008e0008ed368bd7f84"
+    },
+    {
+      "id": "book-c6-p84-r08",
+      "inputs": {
+        "μ₀": 1.2566370614359173e-06,
+        "μ_r": 100
+      },
+      "expected": 0.00012566370614359174,
+      "reference": "Relative permeability one hundred scales the specified vacuum value.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "789abb0cfcbd9d61f0242863d08fa50d97db0d7584ee45248026b80e9b68a70e"
+    },
+    {
+      "id": "book-c6-p84-r10",
+      "inputs": {
+        "N": 200,
+        "I": 2,
+        "l": 0.4
+      },
+      "expected": 1000,
+      "reference": "Four hundred ampere-turns over forty centimetres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d8a2a814b96a90f98261b5c7a0c36b8fd84f9a0537fe98a3c36fb3476bcb1a08"
+    },
+    {
+      "id": "book-c7-p102-r01",
+      "inputs": {
+        "I_C": 0.1,
+        "I_B": 0.001
+      },
+      "expected": 100,
+      "reference": "Collector current is one hundred times base current.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a6b0fcea17802e78894700f66249cddcc0352b95cc9419a7a58e814456ebab07"
+    },
+    {
+      "id": "book-c7-p102-r02",
+      "inputs": {
+        "ΔI_C": 0.01,
+        "ΔI_B": 0.0001
+      },
+      "expected": 100,
+      "reference": "Small-signal increment ratio is one hundred.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "4ac4fe60416f256009e81abcb99f729fd689760ac9dde58edd09dd21a9a237bf"
+    },
+    {
+      "id": "book-c7-p102-r03",
+      "inputs": {
+        "α_ac": 0.98
+      },
+      "expected": 49,
+      "reference": "For fifty units emitter increment, forty-nine go to collector.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6be55d6080341ef367a4ee804ed835479ff96ed0c68fda1a87cfd1746fc5e3e1"
+    },
+    {
+      "id": "book-c7-p102-r04",
+      "inputs": {
+        "α_DC": 0.98
+      },
+      "expected": 49,
+      "reference": "The same current split in the defined DC model.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "537d4d79d9f0776ccacdca8d8ee7c8c1cb2736af5675324508698ea15f55d706"
+    },
+    {
+      "id": "book-c7-p102-r05",
+      "inputs": {
+        "β_DC": 49
+      },
+      "expected": 0.98,
+      "reference": "Forty-nine collector units plus one base unit make fifty emitter units.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5d1af87e481208b58f47852ff8adfe552a877452d6b7498520e7c8f9827ee721"
+    },
+    {
+      "id": "book-c7-p102-r06",
+      "inputs": {
+        "ΔV_BE": 0.01,
+        "ΔI_B": 0.0001
+      },
+      "expected": 100,
+      "reference": "Ten millivolts per hundred microamperes.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "fb7c135e550526288d0ba13e99f1c0e0b27aa725ad04994d8bcf9fa1704d8c3f"
+    },
+    {
+      "id": "book-c7-p102-r07",
+      "inputs": {
+        "ΔV_CE": 2,
+        "ΔI_C": 0.001
+      },
+      "expected": 2000,
+      "reference": "Two volts per milliampere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ec124991ec83c0c0372505e2b377040e5a3a4267d2b27587e5cfb5341118827e"
+    },
+    {
+      "id": "book-c7-p102-r08",
+      "inputs": {
+        "h_oe": 0.0005
+      },
+      "expected": 2000,
+      "reference": "Inverse output conductance of half a millisiemens.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1b21692418a579d3521febce86e0549f8e108373eae6b77c6808045f4dd8237e"
+    },
+    {
+      "id": "book-c7-p103-r01",
+      "inputs": {
+        "I_B": 0.001,
+        "I_C": 0.099
+      },
+      "expected": 0.1,
+      "reference": "Kirchhoff current balance at transistor terminals.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "40d6860a9fc40156b31d38d4b396c25853b8fab2f61cdb90268cfeb1469eb621"
+    },
+    {
+      "id": "book-c7-p103-r03",
+      "inputs": {
+        "I_out": 0.02,
+        "I_in": 0.001
+      },
+      "expected": 20,
+      "reference": "Current gain of twenty.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bd17218ab436c59bbd3362e8886d36ce20abc69ff31913e41ad844e79f73968e"
+    },
+    {
+      "id": "book-c7-p103-r04",
+      "inputs": {
+        "V_out": -5,
+        "V_in": 0.1
+      },
+      "expected": 50,
+      "reference": "Magnitude gain ignores the separately defined inversion sign.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "9ce3176b03cf568744c31a443708951b9c7592a83018f202174212e9fcb71a32"
+    },
+    {
+      "id": "book-c7-p103-r06",
+      "inputs": {
+        "I_C": 0.01,
+        "V_T": 0.025
+      },
+      "expected": 0.4,
+      "reference": "Ten milliamperes divided by a specified 25 mV thermal voltage.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "84a94f37980fe5dc6f3bd9bd215b496e1a20929744190efbc0b741c4849bb0e3"
+    },
+    {
+      "id": "book-c7-p107-r03",
+      "inputs": {
+        "R_f": 10000,
+        "V_in": 0.2,
+        "R_in": 1000
+      },
+      "expected": -2,
+      "reference": "Virtual-ground input current .2 mA exits through 10 kohm feedback.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "13260d61c08e1c7dd75c92db12bf15bbc7fc92484a3804cd8c5c58a4f13c04a0"
+    },
+    {
+      "id": "book-c7-p108-r01",
+      "inputs": {
+        "R_f": 9000,
+        "R₁": 1000,
+        "V_in": 0.2
+      },
+      "expected": 2,
+      "reference": "Feedback divider returns one tenth of output to the noninverting input.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0ebae1fe2d2c496b5f525ddf91a69e3c62b15089839076f2a3c00c5a4f12f411"
+    },
+    {
+      "id": "book-c7-p108-r02",
+      "inputs": {
+        "V₂": 0.3,
+        "V₁": 0.1,
+        "R₂": 10000,
+        "R₁": 1000
+      },
+      "expected": 2,
+      "reference": "Matched difference amplifier with gain ten and 0.2 V differential input.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "740d5244a80381156514e572562317bd659a0ee29120cf79269f5e74285a28a1"
+    },
+    {
+      "id": "book-c7-p108-r03",
+      "inputs": {
+        "V_in": 2
+      },
+      "expected": 2,
+      "reference": "Ideal voltage follower unity gain.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "244943d8f9ec0f6abb17635fbabfc3c7333d1b9705696bd6881119723dbf8aa1"
+    },
+    {
+      "id": "book-c7-p109-r01",
+      "inputs": {
+        "I_in": 0.0002,
+        "R_f": 10000
+      },
+      "expected": -2,
+      "reference": "Transimpedance feedback balances injected .2 mA.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "88e8f8a9f926c414ad38e5f8e4ed433855b2cfa32209e309dbf388b2e71c6fa4"
+    },
+    {
+      "id": "book-c7-p109-r02",
+      "inputs": {
+        "V_in": 2,
+        "R₁": 1000
+      },
+      "expected": 0.002,
+      "reference": "Specified positive-direction controlled current.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "2fef96ac6cec14ac83d0d7f5b7cc3591fe9ff2501ad040889786a86951da7c69"
+    },
+    {
+      "id": "book-c7-p109-r03",
+      "inputs": {
+        "V_in": 2,
+        "R₁": 1000
+      },
+      "expected": -0.002,
+      "reference": "Same circuit with the opposite declared direction.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ae738ec871acfe86bff7c237899d25cd43a4f33a6337243de786c9d4d8067ded"
+    },
+    {
+      "id": "book-c7-p110-r01",
+      "inputs": {
+        "C": 1e-06,
+        "R₂": 9000,
+        "R₁": 1000
+      },
+      "expected": 1e-05,
+      "reference": "Miller multiplication factor ten for the stated ideal network.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6a4bb5e7a689efb7e81d411450ee455d735920591e8836fd743ce2c7a2c28819"
+    },
+    {
+      "id": "book-c8-p122-r01",
+      "inputs": {
+        "V_m": 100
+      },
+      "expected": 31.830988618379067,
+      "reference": "Integrate a positive sine over half a period, divide by full period.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ff4a00f76e0ed04302a2854e6d948217f4d1585e7bca50a637a06eb0388e72e9"
+    },
+    {
+      "id": "book-c8-p122-r02",
+      "inputs": {
+        "V_m": 100
+      },
+      "expected": 63.66197723675813,
+      "reference": "Integral of absolute sine over its full period is four.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "4f8cb27de6f9da3dc205473319eba56387836a507c5f8d971dd81cf1df7397c5"
+    },
+    {
+      "id": "book-c8-p128-r02",
+      "inputs": {
+        "V_m": 100
+      },
+      "expected": 50,
+      "reference": "Half-wave sine mean-square is a quarter of peak squared.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "19615c4cea5ac6c442736c2fce0ea3c34d407007500b02415373cf963fc131b5"
+    },
+    {
+      "id": "book-c8-p128-r03",
+      "inputs": {
+        "V_m": 100
+      },
+      "expected": 70.71067811865474,
+      "reference": "Full sine mean-square is half of peak squared.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "440762a21161c8ca6f327b074c7f82b20a9fedd7d1d9d2772848532fe0f28ae4"
+    },
+    {
+      "id": "book-c8-p128-r04",
+      "inputs": {
+        "V_m": 100
+      },
+      "expected": 57.73502691896258,
+      "reference": "Integrate t squared from zero to one for a linear ramp.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "39c27dffbdebece5a4cfbf15834328ac34e321be308ca99fa339f2aefbb7e08b"
+    },
+    {
+      "id": "book-c8-p128-r05",
+      "inputs": {
+        "V_m": 100
+      },
+      "expected": 100,
+      "reference": "Constant-magnitude square wave.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1cf8d2f2b009be75aa47612b24c02f743fb115d87756681cb0776e53bc49e5c2"
+    },
+    {
+      "id": "book-c8-p128-r06",
+      "inputs": {
+        "V_m": 100,
+        "D": 0.25
+      },
+      "expected": 50,
+      "reference": "Squared pulse occupies one quarter of the period.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "3b2436ac72be54f38451e957fcb2b6282501838c94f54dc5d707f1c3f691335f"
+    },
+    {
+      "id": "book-c8-p128-r07",
+      "inputs": {
+        "V_m": 100,
+        "D": 0.25
+      },
+      "expected": 25,
+      "reference": "One hundred volts present for one quarter period.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "24f92a1e12b8c6e6e308a54edb9ed414c384cbebb325327588d3c9d8ab7f287a"
+    },
+    {
+      "id": "book-c8-p129-r02",
+      "inputs": {
+        "R_θJC": 1,
+        "R_θCS": 0.5,
+        "R_θSA": 2
+      },
+      "expected": 3.5,
+      "reference": "Three serial thermal drops at one watt total 3.5 kelvin.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "660823be1c0787b626a1a3379c6d2f1128c487f1f5570d3709b4c8c57affc829"
+    },
+    {
+      "id": "book-c8-p128-r08",
+      "inputs": {
+        "V_m": 100,
+        "β": 0.4
+      },
+      "expected": 5.734367149513284,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "641b7473bdf62c086f0638ddf30492a341479f2a55f4267ee51f0a468e0acf52"
+    },
+    {
+      "id": "book-c8-p128-r09",
+      "inputs": {
+        "V_m": 100,
+        "β": 0.4
+      },
+      "expected": 1.2563533007411005,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "67ae63d9b736f0b53c14ad7bbd4a2c0c2066501afb7805f24beeda086edc1f6b"
+    },
+    {
+      "id": "book-c8-p128-r10",
+      "inputs": {
+        "V_m": 100,
+        "β": 0.4
+      },
+      "expected": 2.512706601482201,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "893eed824ff56503dedca27accac5fcfe4dd543bbba9ef2e7a917a0bfc910ece"
+    },
+    {
+      "id": "book-c8-p128-r11",
+      "inputs": {
+        "V_m": 100,
+        "β": 0.4
+      },
+      "expected": 8.109619794468433,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bc035d45a9057911578bc8f1b80768fee59e9ab98d6578559693992d10521b3c"
+    },
+    {
+      "id": "book-c8-p128-r08",
+      "inputs": {
+        "V_m": 100,
+        "β": 1.2
+      },
+      "expected": 26.194873510610705,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "641b7473bdf62c086f0638ddf30492a341479f2a55f4267ee51f0a468e0acf52"
+    },
+    {
+      "id": "book-c8-p128-r09",
+      "inputs": {
+        "V_m": 100,
+        "β": 1.2
+      },
+      "expected": 10.148391531447597,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "67ae63d9b736f0b53c14ad7bbd4a2c0c2066501afb7805f24beeda086edc1f6b"
+    },
+    {
+      "id": "book-c8-p128-r10",
+      "inputs": {
+        "V_m": 100,
+        "β": 1.2
+      },
+      "expected": 20.296783062895194,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "893eed824ff56503dedca27accac5fcfe4dd543bbba9ef2e7a917a0bfc910ece"
+    },
+    {
+      "id": "book-c8-p128-r11",
+      "inputs": {
+        "V_m": 100,
+        "β": 1.2
+      },
+      "expected": 37.045145383353386,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bc035d45a9057911578bc8f1b80768fee59e9ab98d6578559693992d10521b3c"
+    },
+    {
+      "id": "book-c8-p128-r08",
+      "inputs": {
+        "V_m": 100,
+        "β": 2.5
+      },
+      "expected": 48.69271645278088,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "641b7473bdf62c086f0638ddf30492a341479f2a55f4267ee51f0a468e0acf52"
+    },
+    {
+      "id": "book-c8-p128-r09",
+      "inputs": {
+        "V_m": 100,
+        "β": 2.5
+      },
+      "expected": 28.666090981933106,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "67ae63d9b736f0b53c14ad7bbd4a2c0c2066501afb7805f24beeda086edc1f6b"
+    },
+    {
+      "id": "book-c8-p128-r10",
+      "inputs": {
+        "V_m": 100,
+        "β": 2.5
+      },
+      "expected": 57.33218196386621,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "893eed824ff56503dedca27accac5fcfe4dd543bbba9ef2e7a917a0bfc910ece"
+    },
+    {
+      "id": "book-c8-p128-r11",
+      "inputs": {
+        "V_m": 100,
+        "β": 2.5
+      },
+      "expected": 68.86189999631026,
+      "reference": "Independent midpoint integration of the conducting sine segment; zero elsewhere.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bc035d45a9057911578bc8f1b80768fee59e9ab98d6578559693992d10521b3c"
+    },
+    {
+      "id": "book-c8-p129-r03",
+      "inputs": {
+        "V_m": 100,
+        "α": 0.3
+      },
+      "expected": 31.12014679140467,
+      "reference": "Numerical integral from firing angle to pi, divided by full 2pi period.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "28282586c25d47d4ae28e4706cbae5b098f82d575cfa751f147a85ad1d01ffb2"
+    },
+    {
+      "id": "book-c8-p129-r03",
+      "inputs": {
+        "V_m": 100,
+        "α": 1.1
+      },
+      "expected": 23.134700808453314,
+      "reference": "Numerical integral from firing angle to pi, divided by full 2pi period.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "28282586c25d47d4ae28e4706cbae5b098f82d575cfa751f147a85ad1d01ffb2"
+    },
+    {
+      "id": "book-c8-p129-r03",
+      "inputs": {
+        "V_m": 100,
+        "α": 2.4
+      },
+      "expected": 4.17950882610015,
+      "reference": "Numerical integral from firing angle to pi, divided by full 2pi period.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "28282586c25d47d4ae28e4706cbae5b098f82d575cfa751f147a85ad1d01ffb2"
+    },
+    {
+      "id": "book-c9-p134-r05",
+      "inputs": {
+        "V₁": 0.001,
+        "V₂": 0.0001
+      },
+      "expected": 10,
+      "reference": "Initial cylinder volume is ten times clearance volume.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c46e95dda534c7e2d6d02c87b45446d09f9e3baa4b27598c1bd78d06b2e74132"
+    },
+    {
+      "id": "book-c9-p135-r02",
+      "inputs": {
+        "c_p": 1000,
+        "c_v": 800
+      },
+      "expected": 1.25,
+      "reference": "Specified heat capacities in a consistent mass basis.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5ba2e0961729492d19b702de2d7fef2dc8aa06488638c1baea93a163e8153a47"
+    },
+    {
+      "id": "book-c9-p135-r03",
+      "inputs": {
+        "V₃": 0.0002,
+        "V₂": 0.0001
+      },
+      "expected": 2,
+      "reference": "Diesel cutoff volume doubles from state two.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e3d751db593c2c71bf7d1445bbcf19177d3a57003d41aa9e67a4f25f1bc4f449"
+    },
+    {
+      "id": "book-c9-p135-r04",
+      "inputs": {
+        "p₁": 100000,
+        "r": 10,
+        "n_p": 1.3
+      },
+      "expected": 1995262.3149688798,
+      "reference": "Compression under specified polytropic model; a worked case, not empirical calibration.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a98e3a18becd63770ebfa426024c5c816b9ebd00e91f9466e4c0abcd40c4605d"
+    },
+    {
+      "id": "book-c9-p135-r05",
+      "inputs": {
+        "T₁": 300,
+        "r": 10,
+        "n_p": 1.3
+      },
+      "expected": 598.5786944906639,
+      "reference": "Temperature from the same ideal gas compression model.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "4b956ba4f41fd5e356bc72e3ae6474896859f64d93dd51792bba548fcb537463"
+    },
+    {
+      "id": "book-c9-p135-r06",
+      "inputs": {
+        "W": 300,
+        "Q_in": 1000
+      },
+      "expected": 0.3,
+      "reference": "Three hundred joules useful work per kilojoule heat supplied.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "cec63bd051e7591712f4f5de6b588de79508c29639d705d2a4c51a3067f16854"
+    },
+    {
+      "id": "book-c9-p135-r07",
+      "inputs": {
+        "P_i": 300000,
+        "ṁ_f": 0.02,
+        "LHV": 50000000.0
+      },
+      "expected": 0.3,
+      "reference": "Fuel supplies one megawatt; indicated power is .3 MW.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "2273f7adc5ccaf599cba2b54762f8d2c2ba0a3acb6026fd8af736bfe41d88c8a"
+    },
+    {
+      "id": "book-c9-p138-r01",
+      "inputs": {
+        "η_m": 0.8,
+        "p_mi": 1000000.0
+      },
+      "expected": 800000,
+      "reference": "Mechanical output retains eighty percent of the indicated work per swept volume.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ae9e97c1291957ee5de025da2d4cd2252ee734933dce8e2ab8821cc58b7a5cf1"
+    },
+    {
+      "id": "book-c9-p138-r03",
+      "inputs": {
+        "S": 0.2,
+        "n": 5
+      },
+      "expected": 2,
+      "reference": "Piston travels .4 metre per revolution at five revolutions per second.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "696e577d00a05ec3014f9fa5fec86a5dd860dd45b490a573b6c5c5d388b881fb"
+    },
+    {
+      "id": "book-c9-p138-r04",
+      "inputs": {
+        "w_C": 1,
+        "w_H": 0,
+        "w_S": 0,
+        "w_O": 0
+      },
+      "expected": 2.6666666666666665,
+      "reference": "Twelve mass units carbon combine with thirty-two oxygen.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5cd386bcfebed892aade9c73586dcf7a14612816f261cb61f9cc4744c8c0510a"
+    },
+    {
+      "id": "book-c9-p138-r07",
+      "inputs": {
+        "λ": 1.2,
+        "AFR_st": 15
+      },
+      "expected": 18,
+      "reference": "Twenty percent excess over fifteen-to-one stoichiometric air.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "17903df15c18ff72e80f9f967f652a24737997995f5a56f17eae90dab207aac0"
+    },
+    {
+      "id": "book-c9-p139-r02",
+      "inputs": {
+        "ṁ_f": 0.01,
+        "λ": 1.2,
+        "AFR_st": 15
+      },
+      "expected": 0.18,
+      "reference": "Ten grams per second fuel with eighteen units air per fuel mass.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "33f3ab68d5ea60dd64f02de23439638c4480f5ac97abd43043b7b34384e73def"
+    },
+    {
+      "id": "book-c9-p140-r02",
+      "inputs": {
+        "n_C": 1,
+        "n_H": 4
+      },
+      "expected": 2,
+      "reference": "Methane needs two molecules of oxygen per molecule.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "40390ad843edebd15c6c4180bf53ee7a0fcfe72f8c64b30500d002020ca53d42"
+    },
+    {
+      "id": "book-c9-p141-r02",
+      "inputs": {
+        "m_del": 0.02,
+        "m_ref": 0.01
+      },
+      "expected": 2,
+      "reference": "Delivery is twice the reference mass.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "dd9e4ce45149ca64b8f964a33e7de68d34a0123fc9a0241f3233585b3c224f05"
+    },
+    {
+      "id": "book-c9-p141-r03",
+      "inputs": {
+        "m_ret": 0.015,
+        "m_ref": 0.01
+      },
+      "expected": 1.5,
+      "reference": "Retained mass is one and a half times reference mass.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a5382a6095a14828568611f0c6d94bb6b6533e6e50e95d89b5c3bb3e9777f8d4"
+    },
+    {
+      "id": "book-c9-p141-r04",
+      "inputs": {
+        "m_short": 0.005,
+        "m_del": 0.02
+      },
+      "expected": 0.25,
+      "reference": "Five grams of twenty delivered grams short-circuit.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c48c3617cea706488fbb4ce1c2b6bf40412166d99a2567b8b9e529cd0a7d19c4"
+    },
+    {
+      "id": "book-c9-p141-r05",
+      "inputs": {
+        "m_ret": 0.015,
+        "m_short": 0.005
+      },
+      "expected": 0.02,
+      "reference": "Retained plus bypassed mass recovers delivered mass.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6225189c820db0b19814d9b2ef01ece1207e03f286f9178a5ad5f4af6a68ea5e"
+    },
+    {
+      "id": "book-c9-p141-r06",
+      "inputs": {
+        "λ_delivery": 2,
+        "f_short": 0.25
+      },
+      "expected": 1.5,
+      "reference": "Two reference masses delivered, with one quarter lost.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c7cdffb2c95f4be88b5deda2270a92e2b22c114ac1500e69a394670592bced47"
+    },
+    {
+      "id": "book-c9-p141-r07",
+      "inputs": {
+        "m_ret": 0.015,
+        "m_res": 0.005
+      },
+      "expected": 0.75,
+      "reference": "Fresh retained mass is three quarters of trapped charge.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e22119fcf47ae24e7ab026f2de6b59444f59576d27d9f12f173014f04e51b47e"
+    },
+    {
+      "id": "book-c9-p141-r08",
+      "inputs": {
+        "λ": 2,
+        "f_short": 0.25
+      },
+      "expected": 1.5,
+      "reference": "Retained air ratio after the specified bypass fraction.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e6789a565a39da26cce622803ef5eb4832becd9595c5073306465745a5334ee2"
+    },
+    {
+      "id": "book-c10-p149-r01",
+      "inputs": {
+        "h_g": 2800000,
+        "f_wet": 0.1,
+        "h_fg": 2000000
+      },
+      "expected": 2600000,
+      "reference": "Ten percent of the mixture lacks the latent enthalpy of saturated vapour.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "479b599350b3fc1c9a176757ce5d18882e096859a78d67e8c9ed157694049028"
+    },
+    {
+      "id": "book-c10-p149-r02",
+      "inputs": {
+        "h_f": 800000,
+        "x": 0.9,
+        "h_fg": 2000000
+      },
+      "expected": 2600000,
+      "reference": "Mass weighting 10 percent liquid and 90 percent vapour.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1155d5bd57d44c4b047f593d17a8fe970526b44f4da2ba816fb43b7010a85f0e"
+    },
+    {
+      "id": "book-c10-p149-r03",
+      "inputs": {
+        "h_g": 2800000,
+        "c_p": 2000,
+        "ΔT": 100
+      },
+      "expected": 3000000,
+      "reference": "Specified constant heat capacity adds 200 kJ per kilogram.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8c589e6e598cbeb4bc5202d5c102281e73d898a396604dc4583b6377d145b166"
+    },
+    {
+      "id": "book-c10-p149-r04",
+      "inputs": {
+        "h_sh": 3000000,
+        "h_g": 2800000,
+        "ΔT": 100
+      },
+      "expected": 2000,
+      "reference": "A 200 kJ/kg rise over 100 kelvin.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "eea260d39b17cc7ba66d0baef57b725a8ac52d93da1a25a8cb81e416635e8fa2"
+    },
+    {
+      "id": "book-c10-p149-r05",
+      "inputs": {
+        "v": 0.2
+      },
+      "expected": 5,
+      "reference": "Five kilograms occupy a cubic metre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6573851f9f71e613a9867856d81f50b63619a7eb275a1e003267fb0643d1f2ce"
+    },
+    {
+      "id": "book-c10-p149-r06",
+      "inputs": {
+        "x": 0.9,
+        "v_f": 0.001,
+        "v_g": 0.2
+      },
+      "expected": 0.1801,
+      "reference": "One kilogram comprises .1 kg liquid and .9 kg vapour.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "158198a8d09bd52e9ee5e15e3109bf005aec09e3c10b2bb4696472e953a3b130"
+    },
+    {
+      "id": "book-c10-p149-r07",
+      "inputs": {
+        "P_sh": 800000,
+        "P_i": 1000000
+      },
+      "expected": 0.8,
+      "reference": "Shaft output retains eighty percent of indicated power.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f9a768159e71241bb6283c03b13a20618696877aeed8b800c9c01ebcb77a8e88"
+    },
+    {
+      "id": "book-c10-p151-r01",
+      "inputs": {
+        "h₁": 3000000,
+        "h₂": 2600000,
+        "h₂s": 2500000
+      },
+      "expected": 0.8,
+      "reference": "Actual work 400 kJ/kg divided by ideal work 500 kJ/kg.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "037e4dcfc06ff28fde9f950381c85ee050f25e17cbdab242d3039154ff864775"
+    },
+    {
+      "id": "book-c10-p151-r04",
+      "inputs": {
+        "c₁": 100,
+        "h₁": 3000000,
+        "h₂": 2955000
+      },
+      "expected": 316.22776601683796,
+      "reference": "Nozzle energy adds 45000 J/kg to initial kinetic energy 5000 J/kg.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bb16c899cb70383b24da84405bc68fbf1ee7b88b04f52d967fcfd482888d70f9"
+    },
+    {
+      "id": "book-c10-p151-r05",
+      "inputs": {
+        "Δh_kJ": 50
+      },
+      "expected": 316.22776601683796,
+      "reference": "Fifty kJ/kg converts to fifty thousand J/kg kinetic energy.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "007236c990ab0e561ce4075067bdcd49d118675be8dd81ee8da42aa08f784669"
+    },
+    {
+      "id": "book-c10-p151-r06",
+      "inputs": {
+        "φ": 0.95,
+        "c_ideal": 500
+      },
+      "expected": 475,
+      "reference": "Specified velocity coefficient is ninety-five percent.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e1db24261fc7bfc717d323108a3559b58f326e1c269486f7bd7943f565ae6e9a"
+    },
+    {
+      "id": "book-c10-p152-r01",
+      "inputs": {
+        "A": 0.01,
+        "c": 100,
+        "v": 0.2
+      },
+      "expected": 5,
+      "reference": "One cubic metre per second at five kg per cubic metre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "62a912734d6634238204e65c6a38453bbc62ad2a704cc7e00d860f852263c6b3"
+    },
+    {
+      "id": "book-c10-p152-r02",
+      "inputs": {
+        "m": 2,
+        "c": 100
+      },
+      "expected": 10000,
+      "reference": "Two kilograms at one hundred metres per second.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c96b04b5f34e74bdc5111507d5d998841ffbe404fc4a2f57468dc689926ccabd"
+    },
+    {
+      "id": "book-c10-p153-r02",
+      "inputs": {
+        "c_θ1": 200,
+        "c_θ2": -100
+      },
+      "expected": 300,
+      "reference": "Outlet swirl reverses sign, increasing swirl change.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ce7f0277a6c221a14765a043a36fd75e3e82e6e65c361d5ff62c50a6e709c246"
+    },
+    {
+      "id": "book-c10-p153-r03",
+      "inputs": {
+        "ṁ": 5,
+        "u": 100,
+        "Δc_θ": 300
+      },
+      "expected": 150000,
+      "reference": "Torque from angular momentum times rotation rate gives 150 kW.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "fdefd287621aa68bde4763b6c1cf4fc0ec67c560b70edbac97e9860f3f7f107a"
+    },
+    {
+      "id": "book-c10-p154-r01",
+      "inputs": {
+        "k": 2,
+        "A": 3,
+        "ΔT": 10,
+        "δ": 0.1
+      },
+      "expected": 600,
+      "reference": "Plane slab resistance is .1/(2*3) kelvin per watt.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f8ed61b50cce6373f44b257a0ebf9617f53802895447501fff247cf5b86c0b77"
+    },
+    {
+      "id": "book-c10-p154-r02",
+      "inputs": {
+        "h": 20,
+        "A": 3,
+        "ΔT": 10
+      },
+      "expected": 600,
+      "reference": "Sixty watts per kelvin conductance across ten kelvin.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1027179c0fcdec91d05903c656c154c4e0c92ea112e9397d50ae7ad2cdc13d15"
+    },
+    {
+      "id": "book-c10-p154-r03",
+      "inputs": {
+        "U": 20,
+        "A": 3,
+        "ΔT": 10
+      },
+      "expected": 600,
+      "reference": "Overall conductance sixty watts per kelvin.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "924fb4cbaf3e87a362febdb72768a8b24ffaf1d563fbd0fed69f9f82f8d2709a"
+    },
+    {
+      "id": "book-c11-p155-r01",
+      "inputs": {
+        "Q": 1000,
+        "W": 300
+      },
+      "expected": 700,
+      "reference": "One kilojoule heat in minus three hundred joules work out.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6c227ee8d72b151c9850f6b58aaf6725da6d15078818ffbeb5f01c8d24012cf5"
+    },
+    {
+      "id": "book-c11-p155-r02",
+      "inputs": {
+        "Q_in": 1000,
+        "Q_out": 700
+      },
+      "expected": 0.3,
+      "reference": "Energy balance leaves three hundred joules useful work.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "15460578f9f1c9c6452742f8e36dc7b5b78aa08fa24f41cb693ba844c4cfdf6b"
+    },
+    {
+      "id": "book-c11-p155-r03",
+      "inputs": {
+        "Q_rev": 600,
+        "T": 300
+      },
+      "expected": 2,
+      "reference": "Reversible isothermal transfer at 300 kelvin.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "9b174759818d7dd29c4500cf7a70dc4c84333201a570284a4f491f17dd1f6db0"
+    },
+    {
+      "id": "book-c11-p155-r04",
+      "inputs": {
+        "T_c": 300,
+        "T_h": 600
+      },
+      "expected": 0.5,
+      "reference": "Reversible engine operating between a two-to-one absolute-temperature ratio.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "199f09d4f0b7c5b4eebde9cd6fb7ce151325e00ab98a851a2948490466a142b3"
+    },
+    {
+      "id": "book-c11-p155-r05",
+      "inputs": {
+        "T_c": 250,
+        "T_h": 300
+      },
+      "expected": 5,
+      "reference": "Reversible refrigerator lifts 250 units of cold heat for fifty work units.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "3f67a5ebb82a1acb8ba369665f7e1fdfd7dfbc9298814e74e6cb09e79abdf417"
+    },
+    {
+      "id": "book-c11-p155-r06",
+      "inputs": {
+        "p_v": 2000,
+        "p_sat": 4000
+      },
+      "expected": 0.5,
+      "reference": "Vapour partial pressure is half saturation pressure.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f260fb344494310f16edd506d668c157ffd38eb9b520c2d18926223d824b6c63"
+    },
+    {
+      "id": "book-c11-p155-r07",
+      "inputs": {
+        "p_a": 98000,
+        "p_v": 2000
+      },
+      "expected": 100000,
+      "reference": "Dalton partial pressures sum to one bar.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c6b19a453b8c4a23f6944126435dd7735ae9e5fa25ad4d56f575cf2a7bd2de65"
+    },
+    {
+      "id": "book-c11-p156-r03",
+      "inputs": {
+        "m₁": 1,
+        "h₁": 100,
+        "m₂": 3,
+        "h₂": 200
+      },
+      "expected": 175,
+      "reference": "Total enthalpy 700 shared over four mass units.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5a8d7190f5e55a296ac29164aed4521f46c4260e327480da7b440f1dd1787536"
+    },
+    {
+      "id": "book-c11-p156-r04",
+      "inputs": {
+        "m₁": 1,
+        "x₁": 0.01,
+        "m₂": 3,
+        "x₂": 0.02
+      },
+      "expected": 0.0175,
+      "reference": "Water mass .07 shared over four dry-air mass units.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "4b1d872e30353269aaf24a99bf6ee5263a040b0b36b4862c79524e722bfbfe1e"
+    },
+    {
+      "id": "book-c11-p156-r05",
+      "inputs": {
+        "x₁": 0.01,
+        "m_water": 0.03,
+        "m_da": 3
+      },
+      "expected": 0.02,
+      "reference": "Ten grams per kilogram injected into a ten-gram initial humidity ratio.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f54bb7ca45599f25e5800567d24e052f3c7ca79dd6fa0c81f282adf9597bb873"
+    },
+    {
+      "id": "book-c11-p157-r13",
+      "inputs": {
+        "m": 1,
+        "R": 287,
+        "T": 300
+      },
+      "expected": 86100,
+      "reference": "One kilogram ideal air at the stated gas constant and temperature.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "585d7ad7277c7b3f2c990cfdaa6274e2e7df76a376074d1d9aa296531a0a42c4"
+    },
+    {
+      "id": "book-c11-p157-r14",
+      "inputs": {
+        "ρ": 1,
+        "R": 287,
+        "T": 300
+      },
+      "expected": 86100,
+      "reference": "The same one-kilogram sample occupies one cubic metre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ee08698f5b391bcbe2b60f7c78e69d0576f99ddba1549fd54a792bec2c492f75"
+    },
+    {
+      "id": "book-c11-p158-r01",
+      "inputs": {
+        "p": 86100,
+        "v": 1,
+        "R": 287,
+        "T": 300
+      },
+      "expected": 1,
+      "reference": "Ideal gas gives compressibility one.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1e84c65de6d89f3809c9809f17ff66b60f95d3815a55cd9efadae078f1b6dc6c"
+    },
+    {
+      "id": "book-c11-p158-r02",
+      "inputs": {
+        "p": 100000,
+        "p_c": 200000
+      },
+      "expected": 0.5,
+      "reference": "Pressure normalized by supplied critical pressure.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b545f8ce40a2fe35ce358d58350b80080f2b13609e7643e16988af326a23a26b"
+    },
+    {
+      "id": "book-c11-p158-r03",
+      "inputs": {
+        "T": 300,
+        "T_c": 600
+      },
+      "expected": 0.5,
+      "reference": "Absolute temperature normalized by supplied critical temperature.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "49228d59e5e6343141824d750a705c0689cdd2cb0a0b5c330b6d87445d39a285"
+    },
+    {
+      "id": "book-c11-p159-r01",
+      "inputs": {
+        "m": 0.028,
+        "n": 1
+      },
+      "expected": 0.028,
+      "reference": "One mole weighs twenty-eight grams.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f4c8d8bceac746f0d6b5945c7a6e83944be28f6714154eb49666612ef5160b91"
+    },
+    {
+      "id": "book-c11-p159-r05",
+      "inputs": {
+        "c_p": 1000,
+        "c_v": 800
+      },
+      "expected": 1.25,
+      "reference": "Consistent mass-specific heat capacities.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "831e635c5e805b90ee0b5b98d7ce07fd8c0a55064c1b15f4dfaa89b9a98b1a5f"
+    },
+    {
+      "id": "book-c11-p160-r04",
+      "inputs": {
+        "m": 2,
+        "c_v": 800,
+        "T₂": 400,
+        "T₁": 300
+      },
+      "expected": 160000,
+      "reference": "Two kilograms gain 80 kJ/kg internal energy.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "775ee438a242b2508dcc56cb2fb5f878eb51e560804628c98c9d58afc8910ea8"
+    },
+    {
+      "id": "book-c11-p160-r05",
+      "inputs": {
+        "m": 2,
+        "c_p": 1000,
+        "T₂": 400,
+        "T₁": 300
+      },
+      "expected": 200000,
+      "reference": "Two kilograms gain 100 kJ/kg enthalpy.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "dbbd73fc3223cddfc2d8e73f16a34e51ce2d7e9350577ec47837df5bb83461d9"
+    },
+    {
+      "id": "book-c12-p177-r01",
+      "inputs": {
+        "p_v": 2000,
+        "p_sat": 4000
+      },
+      "expected": 0.5,
+      "reference": "Vapour partial pressure is half saturation pressure.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "291beec86a72cd1fd20789394f3237107bed6b3d5583331174151dc55f2d1dcd"
+    },
+    {
+      "id": "book-c12-p177-r02",
+      "inputs": {
+        "V̇_suc": 0.08,
+        "V̇_swept": 0.1
+      },
+      "expected": 0.8,
+      "reference": "Actual suction volume is eighty percent of swept flow.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "05158c3c93c3b7fca269a884cfcd549f249db57b6cc05b41e28de88d147daa25"
+    },
+    {
+      "id": "book-c12-p177-r03",
+      "inputs": {
+        "h₁": 400000,
+        "h₄": 250000,
+        "h₂": 450000
+      },
+      "expected": 3,
+      "reference": "Refrigerating effect 150 kJ/kg for 50 kJ/kg compressor work.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "3ee613212953f7036b40f72253439f40ae1a57f719dc79f64b52334871720e39"
+    },
+    {
+      "id": "book-c12-p177-r04",
+      "inputs": {
+        "Q̇_L": 150000,
+        "h₁": 400000,
+        "h₄": 250000
+      },
+      "expected": 1,
+      "reference": "One kilogram per second supplies the specified 150 kW duty.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "70c586b8abb6dd5feebd9840ba3652ae06a93b9fd2bf143a9c3947616daaa04f"
+    },
+    {
+      "id": "book-c12-p177-r05",
+      "inputs": {
+        "Q̇_L": 150000,
+        "h₁": 400000,
+        "h₄": 250000,
+        "ρ_suc": 10,
+        "η_v": 0.8
+      },
+      "expected": 0.125,
+      "reference": "Required mass flow 1 kg/s, actual suction .1 m3/s, swept .125 m3/s.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "06f134fa8bbf5ee10065ce3aa12b0b60b436a546841217ec61e534fa4ac4f4b5"
+    },
+    {
+      "id": "book-c12-p177-r06",
+      "inputs": {
+        "v_suc": 0.1
+      },
+      "expected": 10,
+      "reference": "One kilogram occupies one tenth of a cubic metre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "2606740ebb6af718c0c26c7fbc259f10f27c17569167a685f18fd51745f435f2"
+    },
+    {
+      "id": "book-c12-p178-r01",
+      "inputs": {
+        "p_low": 100000.0,
+        "p_high": 900000.0
+      },
+      "expected": 300000.0,
+      "reference": "Equal pressure ratios of three in two stages.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1bdf4ac223fa102da2993e668fc775c87a004b74c5e89ef9811ab79dcf910df9"
+    },
+    {
+      "id": "book-c12-p178-r02",
+      "inputs": {
+        "ṁ": 1,
+        "h₂": 450000,
+        "h₁": 400000
+      },
+      "expected": 50000,
+      "reference": "One kilogram per second gains fifty kJ/kg.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0a81981700fb5a293e694e8f69a1433ebc588879a3866de52e34f773daf57765"
+    },
+    {
+      "id": "book-c12-p178-r03",
+      "inputs": {
+        "P_fluid": 50000,
+        "η_mech": 0.8
+      },
+      "expected": 62500,
+      "reference": "Fluid gets eighty percent of 62.5 kW shaft power.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "565cf2437444252122a000c5eed4308b818b56d9d070cf399fc3bf39923920c9"
+    },
+    {
+      "id": "book-c12-p178-r04",
+      "inputs": {
+        "P_shaft": 62500,
+        "η_belt": 0.95,
+        "η_motor": 0.9
+      },
+      "expected": 73099.41520467837,
+      "reference": "Cascade belt and motor efficiencies.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1d81885ccdd1d670359f0d260530323987b7898a1bf5bed787154fc4c275a67e"
+    },
+    {
+      "id": "book-c12-p178-r05",
+      "inputs": {
+        "k": 2,
+        "A": 3,
+        "T₁": 30,
+        "T₂": 20,
+        "δ": 0.1
+      },
+      "expected": 600,
+      "reference": "Plane-slab conductance sixty watts per kelvin.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bee38fb942aeb990b93b76268434a9804fe700e849aa38c57514606bbde4ec1c"
+    },
+    {
+      "id": "book-c12-p179-r01",
+      "inputs": {
+        "U": 20,
+        "A": 3,
+        "T₁": 30,
+        "T₂": 20
+      },
+      "expected": 600,
+      "reference": "Ten kelvin across sixty watts per kelvin conductance.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "70580fbbedaaec7639a23bd12ac2996bb2e77dd4e38584cd31738ab90dfd776f"
+    },
+    {
+      "id": "book-c12-p179-r02",
+      "inputs": {
+        "T₁": 30,
+        "T₂": 20,
+        "R_th": 0.02
+      },
+      "expected": 500,
+      "reference": "A .02 K/W resistance under ten kelvin.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8e3e70ed6f4a5259db4958be5b5c967cf1789ed52dd2881af608df1848a0e717"
+    },
+    {
+      "id": "book-c12-p179-r07",
+      "inputs": {
+        "V̇": 2,
+        "Δp": 300,
+        "η_fan": 0.6
+      },
+      "expected": 1000,
+      "reference": "Air receives 600 W from 1000 W input.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ed33e19ed891cfba4c123cccfe3e1994345921196980362bbe0ce545fa2707b3"
+    },
+    {
+      "id": "book-c12-p180-r01",
+      "inputs": {
+        "q_resp": 0.1,
+        "m": 1000
+      },
+      "expected": 100,
+      "reference": "A tonne respiring at .1 watt per kilogram.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "95426a24e5ff05969bfcdb86b70536ac7b345059b4255ed3c03aac5959ce38ce"
+    },
+    {
+      "id": "book-c12-p180-r02",
+      "inputs": {
+        "ṁ_da": 2,
+        "h_out": 50000,
+        "h_in": 30000
+      },
+      "expected": 40000,
+      "reference": "Two kilograms dry air per second gain twenty kJ/kg.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8550c7bd2d9ac48543f0011d33b3785f34c7953447e6aee9ac8920816e8ca019"
+    },
+    {
+      "id": "book-c12-p180-r04",
+      "inputs": {
+        "Q": 3600000,
+        "t": 3600
+      },
+      "expected": 1000,
+      "reference": "One kWh removed in one hour.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "3ac83c70a9e4957699d6a22625e9e0e9eec5682d010b7bec374284d593caca79"
+    },
+    {
+      "id": "book-c12-p180-r05",
+      "inputs": {
+        "P_product": 1000,
+        "P_resp": 100,
+        "P_fresh": 400,
+        "P_fan": 200,
+        "P_light": 50
+      },
+      "expected": 1750,
+      "reference": "Sum of five separately specified thermal loads.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "3461ebde3f332276107a1f402b345a3cc75188f6bb9a75875700f33d163fb979"
+    },
+    {
+      "id": "book-c13-p185-r01",
+      "inputs": {
+        "H_comp": 358,
+        "dev": 5
+      },
+      "expected": 3,
+      "reference": "Five degrees east of 358 crosses north.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "e231abcf4994516a555a4d061332b8f92e0295cf11b797370b393f64829b9433"
+    },
+    {
+      "id": "book-c13-p185-r02",
+      "inputs": {
+        "H_mag": 3,
+        "var": -8
+      },
+      "expected": 355,
+      "reference": "Eight degrees west of 003 crosses north.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "81f0a4b2663bb43025e0fbbe958a0dfd46bdae2ec0be6a054c18d593c9194e02"
+    },
+    {
+      "id": "book-c13-p185-r03",
+      "inputs": {
+        "H_true": 355,
+        "var": -8,
+        "dev": 5
+      },
+      "expected": 358,
+      "reference": "Reverse the same compass/deviation/variation correction.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "780b00f75a3b23d4f67ff8aab104c1d3735515b61a361cbe3a59daa141084be3"
+    },
+    {
+      "id": "book-c13-p186-r01",
+      "inputs": {
+        "φ₁": 30,
+        "Δφ": -5
+      },
+      "expected": 25,
+      "reference": "Five degrees south of thirty north.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "ca088d22c62640091aa24c69de17c0d0463f072aa9f5707cd30fe294db3ce017"
+    },
+    {
+      "id": "book-c13-p186-r02",
+      "inputs": {
+        "φ₂": 25,
+        "φ₁": 30
+      },
+      "expected": -5,
+      "reference": "Signed southward latitude difference.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "5d849a4f7ec45de6c27e159cbfe9bd89fe19a42d5cd4177723e43acc1785588c"
+    },
+    {
+      "id": "book-c13-p187-r01",
+      "inputs": {
+        "φ₂": 25,
+        "φ₁": 30
+      },
+      "expected": -5,
+      "reference": "Same signed latitude difference.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "a7e37b256ab5f22b98f6b71fca668acf03d215792e9b5060e2e58d7edaff8881"
+    },
+    {
+      "id": "book-c13-p187-r02",
+      "inputs": {
+        "λ₁": 179,
+        "Δλ": 5
+      },
+      "expected": -176,
+      "reference": "Five degrees eastward across the date line.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "f81ed3415b35a15b5ef7599b08813c10b31604a1a0c6ec32fe1fd456a4cb6b83"
+    },
+    {
+      "id": "book-c13-p188-r01",
+      "inputs": {
+        "λ₂": -176,
+        "λ₁": 179
+      },
+      "expected": 5,
+      "reference": "Shortest signed separation across the date line.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "64a08fc53da08b91a0f5b6fa5175eaa4eb65da5418920e8674a99a30c6ecf53d"
+    },
+    {
+      "id": "book-c13-p189-r01",
+      "inputs": {
+        "φ₁": 20,
+        "φ₂": 40
+      },
+      "expected": 30,
+      "reference": "Midpoint of two specified latitudes.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "f362b43f7ddb5d4529fa26fd1c3fa7a410490dc8fd5b6be762bbe6c8607cf70b"
+    },
+    {
+      "id": "book-c13-p189-r02",
+      "inputs": {
+        "d": 10,
+        "C": 60
+      },
+      "expected": 5,
+      "reference": "Northward component for a sixty-degree course.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "9107c4ff375c330c9b209fe9a55ec01f4ec2f8ba0e838b8f16c1e2e08e816225"
+    },
+    {
+      "id": "book-c13-p189-r03",
+      "inputs": {
+        "d": 10,
+        "C": 30
+      },
+      "expected": 5,
+      "reference": "Eastward component for a thirty-degree course.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "27bfc7af9844106f9077efc64c25394549e0352de0a65f21c30909510b112e99"
+    },
+    {
+      "id": "book-c13-p189-r04",
+      "inputs": {
+        "Δλ": 1,
+        "φ_m": 60
+      },
+      "expected": 30,
+      "reference": "At latitude sixty, one longitude degree has thirty NM departure in this model.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "4ef46d03484bd1586d249f12ae682e21794d5f01b5e68cfd26b7be2dad2b12b0"
+    },
+    {
+      "id": "book-c13-p189-r05",
+      "inputs": {
+        "Dep": 30,
+        "φ_m": 60
+      },
+      "expected": 1,
+      "reference": "The inverse local plane-sailing longitude convention.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "3c9f07d0cd24695d9910a8ab2951636480644ee6f4ec4503ff62726d50716b6c"
+    },
+    {
+      "id": "book-c13-p189-r06",
+      "inputs": {
+        "Dep": 3,
+        "DLat": -3
+      },
+      "expected": 135,
+      "reference": "Southeast vector must use the second atan2 quadrant.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "19c1722f2f6ae0f5d10d90b357301d883497cd9c6b0b2d3231387379addde113"
+    },
+    {
+      "id": "book-c13-p189-r07",
+      "inputs": {
+        "DLat": 3,
+        "Dep": 4
+      },
+      "expected": 5,
+      "reference": "Three-four-five plane-sailing triangle.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "3b8ef0ea3796fc8b6b551ead26bf1213a4e558c40fc4e7a181f6464473c43128"
+    },
+    {
+      "id": "book-c13-p189-r08",
+      "inputs": {
+        "DLat": 5,
+        "C": 60
+      },
+      "expected": 10,
+      "reference": "Northward projection of ten NM on a sixty-degree course.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "5589f8c929de5ad089b4d1b122582aaf9ce75702945c24217f22c1defdf97709"
+    },
+    {
+      "id": "book-c13-p189-r09",
+      "inputs": {
+        "Dep": 5,
+        "C": 30
+      },
+      "expected": 10,
+      "reference": "Eastward projection of ten NM on a thirty-degree course.",
+      "degrees": true,
+      "side": 1,
+      "context_sha256": "c1752b1039c04e31ad97e35d645ea012a0111f3fdd65f4e3cfd7ecbe95294b58"
+    },
+    {
+      "id": "book-c14-p195-r01",
+      "inputs": {
+        "Δ_table": 1000,
+        "ρ": 1,
+        "ρ_table": 1.025
+      },
+      "expected": 975.6097560975611,
+      "reference": "Fixed immersed volume in fresh water rather than the table seawater density.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ec054c652fa31c3b5b0a6d4221f26c3d05cf4ced2c9364e9838e25d3345d6dc3"
+    },
+    {
+      "id": "book-c14-p195-r02",
+      "inputs": {
+        "TPC_table": 10,
+        "ρ": 1,
+        "ρ_table": 1.025
+      },
+      "expected": 9.756097560975611,
+      "reference": "Same waterplane area with changed water density.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "ec930bebb32cdc3ae0de3afe5244ec332a71f421dd3da376d9823feebfe62214"
+    },
+    {
+      "id": "book-c14-p195-r03",
+      "inputs": {
+        "MCT_table": 100,
+        "ρ": 1,
+        "ρ_table": 1.025
+      },
+      "expected": 97.5609756097561,
+      "reference": "Declared approximation holds geometry fixed while density scales buoyancy moments.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "65409a9c0b7f1d072f28cf6af43da31c67e2bc332c441777aab3b0ca24c2549b"
+    },
+    {
+      "id": "book-c14-p196-r01",
+      "inputs": {
+        "w": 100,
+        "d": 2,
+        "Δ": 1000
+      },
+      "expected": 0.2,
+      "reference": "Internal transfer changes total first moment by 200 tonne-metres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "2f753c500689c5ac84e0db12c73c497d0019fa1fb1ba200626709d2a844577b8"
+    },
+    {
+      "id": "book-c14-p196-r02",
+      "inputs": {
+        "Δ": 1000,
+        "KG": 5,
+        "w": 100,
+        "kg_i": 10
+      },
+      "expected": 5.454545454545454,
+      "reference": "Initial vertical moment 5000 plus 1000 over 1100 tonnes.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "712a4f149924532a3e7f49212220ef100b8912293c9aa4c1da171146ca79d6fc"
+    },
+    {
+      "id": "book-c14-p196-r03",
+      "inputs": {
+        "Δ": 1000,
+        "KG": 5,
+        "w": 100,
+        "kg_i": 10
+      },
+      "expected": 4.444444444444445,
+      "reference": "Remove 1000 tonne-metres and 100 tonnes.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "117a374c365954eaeefd1e62cb337b55875304ef2596f076757a2dbb2d4223cb"
+    },
+    {
+      "id": "book-c14-p196-r04",
+      "inputs": {
+        "ρ_l": 1,
+        "I_FS": 200,
+        "Δ": 1000
+      },
+      "expected": 0.2,
+      "reference": "Free-surface mass moment two hundred tonne-metres divided by displacement.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6f2a774408eaf022feb3bb6bfd974be0fe834ebe39f1012d53e3da8469cdb75a"
+    },
+    {
+      "id": "book-c14-p196-r05",
+      "inputs": {
+        "l_tank": 12,
+        "b_tank": 2
+      },
+      "expected": 8,
+      "reference": "Integrate y squared across rectangular free surface from -1 to 1 over length twelve.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c824b1a847d762115d1b8834f844f45a1f294ece04675e9214ed2f7853956c0c"
+    },
+    {
+      "id": "book-c14-p196-r06",
+      "inputs": {
+        "SF": 2
+      },
+      "expected": 0.5,
+      "reference": "Two cubic metres per tonne corresponds to half a tonne per cubic metre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "640bbf855388f8ac0d80a084d3535c644d522c7ec929f4ff5e31266763685e13"
+    },
+    {
+      "id": "book-c14-p196-r07",
+      "inputs": {
+        "L": 100,
+        "B": 20,
+        "C_wp": 0.8
+      },
+      "expected": 1600,
+      "reference": "Waterplane is eighty percent of the enclosing 2000 m2 rectangle.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a458e86c8e3970df7cddceb7656e3285301c926ea8754118888282ce60b1e7cc"
+    },
+    {
+      "id": "book-c14-p196-r08",
+      "inputs": {
+        "A_w": 1600,
+        "L": 100,
+        "B": 20
+      },
+      "expected": 0.8,
+      "reference": "Same waterplane ratio.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bb9be44867ec92a6e8b4ce8474398995935c31e41700dd665cf31b36a69cd901"
+    },
+    {
+      "id": "book-c14-p197-r01",
+      "inputs": {
+        "B": 20,
+        "T": 5,
+        "C_m": 0.9
+      },
+      "expected": 90,
+      "reference": "Immersed midship section occupies ninety percent of its 100 m2 box.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "4703fe7f66a976e03e9a07a311d72cf0f9c8a65fa1f98f8e676fbf10b2e40458"
+    },
+    {
+      "id": "book-c14-p197-r02",
+      "inputs": {
+        "A_m": 90,
+        "B": 20,
+        "T": 5
+      },
+      "expected": 0.9,
+      "reference": "Same midship area ratio.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8794eb5504bc8325648fb49ac6c85d496ae869f3673ec0a3bc942ad7cdd42df6"
+    },
+    {
+      "id": "book-c14-p197-r03",
+      "inputs": {
+        "∇": 7000,
+        "L": 100,
+        "B": 20,
+        "T": 5
+      },
+      "expected": 0.7,
+      "reference": "Displaced volume occupies seventy percent of the bounding box.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1ed94021d07ddfc60f4e24babcc7b3b602ab70ec486488342920b3709c9e9227"
+    },
+    {
+      "id": "book-c14-p197-r04",
+      "inputs": {
+        "ρ": 1.025,
+        "A_w": 1600
+      },
+      "expected": 16.4,
+      "reference": "One centimetre immersion adds sixteen cubic metres of seawater.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "f4182c65f11e85ff99e06f551de581131f7e786f2f0daa73c2218746d28680c9"
+    },
+    {
+      "id": "book-c14-p199-r03",
+      "inputs": {
+        "TCG": 0,
+        "w": 100,
+        "y_hook": 4,
+        "y_old": 2,
+        "Δ": 1000
+      },
+      "expected": 0.2,
+      "reference": "Suspension point shifts transverse moment by 200 tonne-metres.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b7610998c156ba7df8c7cc78c43e064f1131fdb9036e599e5d4007cc8b779b2b"
+    },
+    {
+      "id": "book-c14-p200-r01",
+      "inputs": {
+        "Δ": 1000,
+        "w": 100
+      },
+      "expected": 1100,
+      "reference": "Adding a suspended external load increases total mass.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6d3d13a900f6e65d82a1c17f2ffc9ce73e0664cdd892c416adfe00f83a41b5ca"
+    },
+    {
+      "id": "book-c14-p200-r02",
+      "inputs": {
+        "Δ": 1000,
+        "KG": 5,
+        "w": 100,
+        "z_hook": 10
+      },
+      "expected": 5.454545454545454,
+      "reference": "Suspended weight acts at the stated hook height.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "80b2e143ad34a4fed4bee55ac2c86740fa99e476cc2481e50ebdb5e04de65d26"
+    },
+    {
+      "id": "book-c14-p200-r03",
+      "inputs": {
+        "Δ": 1000,
+        "TCG": 0,
+        "w": 100,
+        "y_hook": 2
+      },
+      "expected": 0.18181818181818182,
+      "reference": "External suspended load gives 200 tonne-metres over 1100 tonnes.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6e00b9dfda84a81fc515577e4362f0abae66ac14be8e6dcc284a40bd0bc680c5"
+    },
+    {
+      "id": "book-c14-p201-r01",
+      "inputs": {
+        "Δ": 1000
+      },
+      "expected": 1000,
+      "reference": "Internal transfer preserves displacement.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "17b7b7356068f28ca06e1e71352996335be814c59b51751ff4cc7900f7ea6987"
+    },
+    {
+      "id": "book-c15-p219-r01",
+      "inputs": {
+        "i": 0.1,
+        "π_infl": 0.05
+      },
+      "expected": 0.04761904761904767,
+      "reference": "Real end value is nominal end value deflated by the price index.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b16eed298b6fb26664e9f6543539b63868641a32a597489eb1cd67a9fee642fe"
+    },
+    {
+      "id": "book-c15-p219-r02",
+      "inputs": {
+        "i": 0.1,
+        "π_infl": 0.05,
+        "e": 0.02
+      },
+      "expected": 0.027077497665732864,
+      "reference": "Apply both specified price indices to the same nominal end value.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "db95e08817bb044b454a225c8ab32f08a12c178fb469b4a2de33dd4682ae23b0"
+    },
+    {
+      "id": "book-c15-p219-r03",
+      "inputs": {
+        "A": 1000,
+        "r": 0.1,
+        "n": 10,
+        "I₀": 5000
+      },
+      "expected": 1144.5671057046802,
+      "reference": "Sum all ten individually discounted end-of-year cash flows, less initial outlay.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "af70b892fbe96459669d938fe6a876019139d6d4c11c6e6352724eed2925bad2"
+    },
+    {
+      "id": "book-c15-p219-r04",
+      "inputs": {
+        "NPV": 1000,
+        "I₀": 5000
+      },
+      "expected": 0.2,
+      "reference": "This record explicitly defines NPV over investment, not conventional gross PI.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "2a5cd100a602e66ff326178338e9612237472a26fc086dd38ff3b07026532e6a"
+    },
+    {
+      "id": "book-c15-p219-r05",
+      "inputs": {
+        "I₀": 5000,
+        "A": 1000
+      },
+      "expected": 5,
+      "reference": "Five equal undiscounted annual receipts recover the investment.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "71a760ca424d7bc2f4a55a0abec4e40b57d18cf0c83505cc4ec6be49b8505fde"
+    },
+    {
+      "id": "book-c15-p219-r06",
+      "inputs": {
+        "I₀": 6144.56710570468,
+        "r": 0.1,
+        "A": 1000
+      },
+      "expected": 10,
+      "reference": "Ten explicit discounted receipts exactly recover the chosen initial amount.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "70ce269eb27e32703f2bbf37f6fb7a82ce4f0761b8040a204ffa6da59a40e945"
+    },
+    {
+      "id": "book-c15-p220-r01",
+      "inputs": {
+        "A": 1000,
+        "r": 0.1,
+        "n": 10
+      },
+      "expected": 6144.56710570468,
+      "reference": "Individually discount each of ten receipts.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "fd9f003060ce15490cbdcde408cfa989ff9f4d716c52f48a67a901bc6cbcdf64"
+    },
+    {
+      "id": "book-c15-p220-r02",
+      "inputs": {
+        "I₀": 6144.56710570468,
+        "r": 0.1,
+        "n": 10
+      },
+      "expected": 1000,
+      "reference": "Each of ten 1000-unit receipts repays the chosen discounted principal.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "bd3c702547d6130f37d20a8f2df78d51b717b0dcf13223a02ebe1f6704c382df"
+    },
+    {
+      "id": "book-c15-p220-r03",
+      "inputs": {
+        "Loan": 6144.56710570468,
+        "r": 0.1,
+        "N": 10
+      },
+      "expected": 1000,
+      "reference": "The same principal amortizes in ten end-of-period payments of 1000.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "c039389bb648437abde4310ba3d51b05f34351ac8ce107e406e02c3aed079d51"
+    },
+    {
+      "id": "book-c15-p220-r04",
+      "inputs": {
+        "Loan": 10000,
+        "N": 10,
+        "Balance_prev": 8000,
+        "r": 0.1
+      },
+      "expected": 1800,
+      "reference": "Fixed principal repayment 1000 plus 800 interest on remaining balance.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "938af3280cce4cd4f60d52436e9e7c2e7808cd2b8b6b50878c8431cf59ce82ba"
+    },
+    {
+      "id": "book-c15-p220-r05",
+      "inputs": {
+        "r_nom": 0.12,
+        "m_periods": 12
+      },
+      "expected": 0.01,
+      "reference": "Nominal annual rate divided over twelve equal periods.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "26808446e6cdb6a7c99c0a47a538970999f89006174cddeb2aa446b60e78c7cc"
+    },
+    {
+      "id": "book-c15-p221-r01",
+      "inputs": {
+        "d": 0.1,
+        "m_periods": 2
+      },
+      "expected": 0.23456790123456783,
+      "reference": "Two successive discounted loans each return one unit for .9 units advanced.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1eb5a2b5fd89d5d5768fd95cc65216c1f7925feeafe5528ba7af7065a6c1cdef"
+    },
+    {
+      "id": "book-c15-p221-r02",
+      "inputs": {
+        "r": 0.01,
+        "m_periods": 12
+      },
+      "expected": 0.12682503013196977,
+      "reference": "Compound twelve one-percent monthly returns.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e43adf64f03a5b9ec70b762176e61612a4bfcafbca9c5196c3783d16d46ca034"
+    },
+    {
+      "id": "book-c15-p221-r03",
+      "inputs": {
+        "I₀": 10000,
+        "CRF": 0.1,
+        "ΔC_annual": 200,
+        "B_demand": 100,
+        "E_saved": 1000
+      },
+      "expected": 1.1,
+      "reference": "Annual net cost 1100 spread over 1000 saved energy units.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "6591035c167273932a2ddeb9576b80f0b3f50532ad33daa677dcdeebb59d268b"
+    },
+    {
+      "id": "book-c16-p222-r01",
+      "inputs": {
+        "T_P": 5.2,
+        "T_S": 4.8
+      },
+      "expected": 5,
+      "reference": "Equal-weight mean of port and starboard marks.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "dbd28893805a6a30a25bb924833abbf296e00911f9212ccd56212b5e7da7d68e"
+    },
+    {
+      "id": "book-c16-p222-r02",
+      "inputs": {
+        "T_A_mark": 6,
+        "T_F_mark": 4
+      },
+      "expected": 2,
+      "reference": "Aft marks lie two metres deeper under the declared sign convention.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "8ef5f865e48fd22f78ad623919678ae2a7deca37cf211b64d0757c814603b2ed"
+    },
+    {
+      "id": "book-c16-p222-r03",
+      "inputs": {
+        "T_mark": 4,
+        "x_target": 10,
+        "x_mark": 0,
+        "trim_marks": 2,
+        "L_marks": 100
+      },
+      "expected": 4.2,
+      "reference": "Linear draft rises .02 metre per longitudinal metre.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "0beed250fd7ebe598c270014e0be11a05b13ee1557aea72885881d7bf413e06c"
+    },
+    {
+      "id": "book-c16-p223-r01",
+      "inputs": {
+        "T_M_mark": 5,
+        "x_mid": 50,
+        "x_M_mark": 45,
+        "trim": 2,
+        "L": 100
+      },
+      "expected": 5.1,
+      "reference": "Correct five metres along a .02 m/m draft gradient.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "1177386b6855c6aec4904c5c1bee45481f3a9f2b09038c34807136f222932918"
+    },
+    {
+      "id": "book-c16-p223-r02",
+      "inputs": {
+        "T_A": 6,
+        "T_F": 4
+      },
+      "expected": 2,
+      "reference": "Aft-positive trim from corrected perpendicular drafts.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5e84332f5259d88abd9ea3b5bc7fe9da229034cae0b5046232343abcec440148"
+    },
+    {
+      "id": "book-c16-p223-r03",
+      "inputs": {
+        "T_F": 4,
+        "T_A": 6
+      },
+      "expected": 5,
+      "reference": "Arithmetic mean of perpendicular drafts.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "554f25cfc7a108a5cb2305a5dd13ac6fe63294d743d9cbb20cdf58db77ecdaf2"
+    },
+    {
+      "id": "book-c16-p223-r04",
+      "inputs": {
+        "T_mean": 5.3,
+        "T_M": 5
+      },
+      "expected": 0.1,
+      "reference": "The declared quadratic breadth model gives one third of the 0.3 m difference.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "025c880f24deda5cf41a9e589a6789f6f509ed5ece21521f45046ead780e6c2e"
+    },
+    {
+      "id": "book-c16-p223-r05",
+      "inputs": {
+        "T_M": 5,
+        "δT": 0.1
+      },
+      "expected": 5.1,
+      "reference": "Equivalent draft under that same quadratic approximation.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "530af1a604381136a5dc842810954cc6a4cb82c02b8665b0a38d02793c59bd2d"
+    },
+    {
+      "id": "book-c16-p223-r06",
+      "inputs": {
+        "T_equiv": 5.1,
+        "LCF": 10,
+        "L": 100,
+        "trim": 2
+      },
+      "expected": 5.3,
+      "reference": "Positive LCF offset follows the same linear draft gradient.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "810fcfa1ea254c7a8535b5d5aa6b9594d8b64cef454d1c7a355bc10543841ca8"
+    },
+    {
+      "id": "book-c16-p224-r01",
+      "inputs": {
+        "Δ_table": 1000,
+        "ρ_actual": 1,
+        "ρ_table": 1.025
+      },
+      "expected": 975.6097560975611,
+      "reference": "Same immersed volume under the actual fluid density.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "4c6041b2a828eaa0c219b0a523aa5a4f60f8929ebaa6177336efc30a1955798d"
+    }
+  ]
+}

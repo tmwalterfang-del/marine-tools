@@ -80,7 +80,9 @@ const out = w.MT_STUDY.sourceEquationRegister.map((r) => {
     numeric_status: r.numericStatus || "PENDING",
     symbolic_status: r.symbolicStatus || "PENDING",
     review_basis: basis[chapter][r.page],
-    source_reread: "NO; existing source-reading record retained",
+    source_reread: r.sourceReread
+      ? "YES; printed p." + r.page + "; " + r.sourceReread.filename + "; SHA256=" + r.sourceReread.sha256 + "; historical model validity remains OPEN"
+      : "NO; existing source-reading record retained",
   };
 });
 if (

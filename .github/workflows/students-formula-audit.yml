@@ -56,6 +56,8 @@ jobs:
           node tests/students-review-report-20261027.mjs
           git diff --exit-code docs/STUDENTS_REVIEW_FOLLOWUP_2026-10-27.csv
           node tests/students-if97-expanded-20261027.mjs
+          node tests/students-if97-boundaries-20261027.mjs
+          node tests/students-worked-cases-20261027.mjs
       - name: IF97 reference points
         run: node tests/students-if97-reference-20261020.mjs
       - name: Published IAPWS reference values
