@@ -1,0 +1,20 @@
+// No keys or passwords in source. Unsigned candidates are built without these.
+def keyPath = System.getenv('MT_ANDROID_KEYSTORE')
+android {
+    signingConfigs {
+        release {
+            if (keyPath) {
+                storeFile file(keyPath)
+                storePassword System.getenv('MT_ANDROID_STORE_PASSWORD')
+                keyAlias System.getenv('MT_ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('MT_ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            debuggable false
+            if (keyPath) signingConfig signingConfigs.release
+        }
+    }
+}

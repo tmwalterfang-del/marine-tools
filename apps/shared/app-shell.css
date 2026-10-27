@@ -1,0 +1,18 @@
+:root{--mt-app-bar-height:54px}
+html.mt-app{scroll-padding-top:calc(var(--mt-app-bar-height) + 74px)}
+.mt-app body{padding-top:var(--mt-app-bar-height);padding-bottom:env(safe-area-inset-bottom,0)}
+.mt-app-bar{position:fixed;inset:0 0 auto;z-index:100;display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:calc(8px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));background:var(--panel,#0a2437);border-bottom:1px solid var(--border,#29495e);font-size:12px}
+.mt-app-bar button{min-height:44px;padding:8px 12px;border:1px solid var(--border,#29495e);border-radius:8px;background:var(--bg,#071725);color:var(--text,#eef5f9)}
+.mt-app-bar button:disabled{opacity:.5}.mt-app-bar button:focus-visible{outline:3px solid #e6b55b;outline-offset:2px}
+#mt-app-status{flex:1 1 250px;color:var(--muted,#a4bac8)}
+.mt-app .sidebar{top:var(--mt-app-bar-height);padding-left:env(safe-area-inset-left,0)}
+.mt-app .topbar{top:var(--mt-app-bar-height)}
+.mt-app .main-content{max-width:none;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.mt-app button,.mt-app input,.mt-app select{min-height:44px}
+.mt-app .site-footer{padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
+@media(max-width:600px){#mt-app-status{flex-basis:100%;font-size:11px}.mt-app-bar{gap:4px 10px}.mt-app .top-brand{display:none}.mt-app .topbar{padding-left:10px;padding-right:10px}}
+@media(prefers-reduced-motion:reduce){.mt-app *{scroll-behavior:auto!important;transition:none!important}}
+
+.mt-app [hidden]{display:none!important}
+
+.mt-app #mtInstallPanel{display:none!important}
