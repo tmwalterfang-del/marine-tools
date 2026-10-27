@@ -1,4 +1,9 @@
-# Marine Tools app implementation report — 27 October 2026
+# Inherited cross-platform implementation report — 27 October 2026
+
+For the current Android/Windows-only mandate, Draft PR #43 and current build/QA
+status, use [ANDROID_WINDOWS_DELIVERY.md](ANDROID_WINDOWS_DELIVERY.md). The broader
+platform scope below records inherited #42 work and is not authorization to
+continue excluded platform development.
 
 Version 0.2.0, build 2, preview identity `app.marinetools.preview`.
 Development branch: `feature/cross-platform-app`.

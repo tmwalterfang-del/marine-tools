@@ -1,6 +1,7 @@
 # Reproducible builds and signing
 
-Node 22+, npm ci; Android Java 21/SDK 36; desktop Rust; iOS/macOS Xcode.
+Current phase: Android and Windows only. Node 22+, npm ci; Android Java 21/SDK 36;
+Windows Rust, Windows SDK MakeAppx and WebView2.
 Generated native projects remain ignored; pinned templates plus checked-in
 overlays reproduce them. The preview identity is not a reserved production ID.
 
@@ -11,14 +12,18 @@ overlays reproduce them. The preview identity is not a reserved production ID.
     npm run app:serve
     npm run app:android:sync
     npm run app:android:release
-    npm run app:ios:sync
     npm run app:desktop:build
     npm run app:windows:msix
 
 Android unsigned outputs:
 apps/mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk
 apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
-Debug APK: outputs/apk/debug/app-debug.apk. Release AAB/APK are not upload-ready
+Debug APK: outputs/apk/debug/app-debug.apk.
+The Android source project is uploaded separately as
+`MarineTools-0.2.0-android-project`; binary candidates remain in
+`MarineTools-0.2.0-android-candidates`. Restore files under apps/mobile/android
+in a checkout of the same source revision and run npm ci / Android sync before
+building. Generated build caches and local SDK paths are intentionally excluded. Release AAB/APK are not upload-ready
 without correct signing. The debug APK uses a debug key and is not a release key.
 
 The Gradle overlay accepts MT_ANDROID_KEYSTORE (secure runner-local file path),
@@ -39,13 +44,8 @@ installation; do not turn on machine-wide test trust on the owner's PC through
 automation. MSIX packaging success is not install/uninstall or Store certification.
 WebView2 Evergreen must be present; test a clean target Windows system.
 
-Apple CI produces a Simulator .app and an unsigned generic iOS .xcarchive.
-The archive is not an IPA/TestFlight upload. Use the confirmed Bundle ID/Team,
-distribution certificate and provisioning profile to sign/archive/export in
-Xcode. apps/mobile/config/ExportOptions.plist is a template with a deliberately
-unresolved Team ID. Do not export or upload using that placeholder. Archive
-validation, export compliance and App Store Connect metadata require owner review.
-No Apple account/key is needed to compile the unsigned archive or simulator app.
+Previously committed Apple helpers are inherited source and are outside this
+phase. Current distribution CI builds Android, Windows and shared PWA only.
 
 ## Release controls
 

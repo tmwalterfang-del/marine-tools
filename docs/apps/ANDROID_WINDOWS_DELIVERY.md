@@ -37,6 +37,8 @@ by pushes or PRs on this branch.
 
 - Browser Back/Forward now tracks a history cursor; Forward no longer removes the
   previous page from the app's stack. New navigation truncates the forward branch.
+- Imported legacy vessel numeric fields must be finite numbers before rendering;
+  malicious markup in numeric attributes is rejected before any storage write.
 - Pending calculator drafts flush when the document becomes hidden and on native
   app backgrounding, in addition to pagehide and the normal debounce.
 - Explicit distribution target metadata restricts build reports to this mandate.
@@ -98,8 +100,11 @@ at 5d60093c2e6361cf15fa9cdf05dd456fd926fa6a. Quality and all three browser
 jobs passed, including the expanded viewport/history checks. Native builds were
 still running at this checkpoint. A follow-up packaging-only revision separates
 Android project source and binary artifacts to preserve both, checks shared
-release versions and removes excluded-store privacy wording. Final results below
-must identify that revision separately.
+release versions and removes excluded-store privacy wording. That revision passed all three web engines (59 checks each), quality, Android
+compilation/inspection and Android emulator. Windows was still compiling at
+this checkpoint. A final import-hardening change adds 11 numeric-profile
+regressions (42 adapter/guard checks total); final results below identify its
+separate candidate revision.
 
 ## Security and privacy
 
