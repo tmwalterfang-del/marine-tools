@@ -6,7 +6,7 @@
 .privacy-policy{min-width:0;line-height:1.65;overflow-wrap:anywhere}
 .privacy-policy h1{font-size:clamp(1.8rem,5vw,3rem);line-height:1.2;margin:.5em 0}.privacy-policy h2{font-size:clamp(1.15rem,3vw,1.4rem);line-height:1.35;margin:0 0 .7em}
 .privacy-policy .panel{padding:clamp(16px,3vw,28px);border:1px solid #29516a;border-radius:16px;background:#0a2334;margin:20px 0}
-.privacy-policy .privacy-review{border-color:#bd9450}.privacy-policy p{margin:.7em 0}.privacy-policy li+li{margin-top:12px}
+.privacy-policy p{margin:.7em 0}.privacy-policy li+li{margin-top:12px}
 .privacy-policy .eyebrow{color:#79d7f1;font-weight:700;letter-spacing:.1em}.privacy-policy a,.mt-privacy-document a{color:#8cdcf8;text-decoration:underline;text-underline-offset:3px}
 .privacy-policy nav{padding:12px 0;line-height:2.2}.privacy-policy section{scroll-margin-top:calc(var(--mt-header-height,80px) + 24px)}
 .privacy-policy a:focus-visible,.mt-privacy-document a:focus-visible{outline:3px solid #f0bd62;outline-offset:4px}.privacy-skip{position:absolute;left:16px;top:-100px}.privacy-skip:focus{top:8px;background:#061724;padding:12px;z-index:10}
