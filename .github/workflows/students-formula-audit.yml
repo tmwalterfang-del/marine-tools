@@ -58,6 +58,7 @@ jobs:
           node tests/students-if97-expanded-20261027.mjs
           node tests/students-if97-boundaries-20261027.mjs
           node tests/students-worked-cases-20261027.mjs
+          node tests/students-worked-examples-data-20261027.mjs --check
       - name: IF97 reference points
         run: node tests/students-if97-reference-20261020.mjs
       - name: Published IAPWS reference values
@@ -94,6 +95,7 @@ jobs:
           node tests/students-cargo-workspace-20261020.cjs
           node tests/students-example-workshops-20261020.cjs
           node tests/students-symbol-navigation-20261020.cjs
+          node tests/students-worked-examples-ui-20261027.cjs
           node tests/students-education-navigation-20261020.cjs
           node tests/students-teaching-view-20261020.cjs
           node tests/site-wide-source-audit-20261020.cjs
@@ -157,6 +159,7 @@ jobs:
         env:
           NODE_PATH: /tmp/education-browser/node_modules
         run: |
+          node tests/students-worked-examples-browser-20261027.cjs ${{ matrix.browser }}
           node tests/students-session-browser-20261027.cjs ${{ matrix.browser }}
           node tests/app-browser-20261027.cjs ${{ matrix.browser }}
           node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}

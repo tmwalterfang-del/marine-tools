@@ -12,7 +12,7 @@ const retrieve=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))
 const persist=(key,val)=>{try{localStorage.setItem(key,JSON.stringify(val))}catch{}};
 const state={
  tab:"formulas",chapter:"All",query:"",topic:"All",group:"All",practiceGroup:"All",practiceLevel:"All",attempted:false,favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
- completed:new Set(retrieve("mt-student-practice-v1",[])),savedOnly:false,
+ completed:new Set(retrieve("mt-student-practice-v1",[])),savedOnly:false,workedOnly:false,
  display:48,calcid:calc[0]&&calc[0].id,examIndex:0,showSteps:true,
  theme:retrieve("mt-student-theme-v1","maritime")
 };
@@ -54,6 +54,7 @@ function filtered(){
   if(state.group!=="All"&&!study.groups.find(g=>g.id===state.group)?.categories.includes(f.category))return false;
   if(state.topic!=="All"&&f.category!==state.topic)return false;
   if(state.savedOnly&&!state.favorites.has(f.id))return false;
+  if(state.workedOnly&&!exampleCount(f))return false;
   const txt=norm([f.name,f.formula,f.category,f.note,f.tags,...(f.related||[]).flatMap(r=>[r.name,r.formula,r.conditions])].join(" "));
   return terms.every(x=>txt.includes(x)||txt.includes(searchAliases[x]||"###"));
  });
@@ -77,12 +78,23 @@ function numericReviewText(r){
  if(r.symbolicStatus?.startsWith('PASS'))return 'Symbolic rule checked under stated assumptions; numerical evidence is recorded separately.';
  return 'No individual numerical test recorded; analytical review is not a numerical test.';
 }
+function exampleCount(f){return (f.related||[]).filter(r=>study.workedExamples?.[r.id]).length;}
+function workedExampleHtml(r){
+ const c=study.workedExamples?.[r.id];if(!c)return '';
+ const unit=symbol=>r.symbols.find(v=>v.symbol.split(',').some(s=>s.trim()===symbol))?.unit||'';
+ const value=(symbol,n)=>enc(symbol)+' = '+enc(fmt(n))+(unit(symbol)==='dimensionless'?' (dimensionless)':' '+enc(unit(symbol)));
+ const resultSymbol=r.formula.split(/=|≈/)[0].trim();
+ return '<details class="worked-example"><summary>Worked example · '+value(resultSymbol,c.expected)+'</summary>'+
+ '<div class="worked-example-body"><h6>Given</h6><ul>'+Object.entries(c.inputs).map(([symbol,n])=>'<li><code>'+value(symbol,n)+'</code></li>').join('')+'</ul>'+
+ '<h6>Method</h6><p>'+enc(c.reference)+'</p><p class="worked-result"><strong>Result:</strong> '+value(resultSymbol,c.expected)+'</p>'+
+ '<p class="worked-scope">Synthetic teaching values; displayed values rounded to 5 decimal places. This selected reference case is checked automatically. It does not validate the full model domain. Apply the conditions above.</p></div></details>';
+}
 function relatedHtml(f){
  const related=f.related||[];if(!related.length)return "";
  return '<details class="related-equations"><summary>Related expressions and variants ('+related.length+')</summary>'+related.map(r=>
  '<article class="related-expression" id="'+enc(r.id)+'"><h5>'+enc(r.name)+'</h5><div class="equation" role="math" aria-label="'+enc(r.formula)+'">'+enc(r.formula)+'</div><p><strong>Conditions:</strong> '+enc(r.conditions)+'</p><div class="symbol-grid">'+r.symbols.map(v=>'<div><code>'+enc(v.symbol)+'</code><span>'+enc(v.meaning)+'</span><small>'+enc(v.unit)+'</small></div>').join('')+'</div>'+
  (r.sourceIssue?'<p class="source-correction"><strong>Source interpretation:</strong> '+enc(r.sourceIssue)+'</p>':"")+
- analyticalReviewHtml(r)+'<p class="photo-review">Printed p. '+r.page+' · '+enc(numericReviewText(r))+'</p></article>').join('')+'</details>';
+ workedExampleHtml(r)+analyticalReviewHtml(r)+'<p class="photo-review">Printed p. '+r.page+' · '+enc(numericReviewText(r))+'</p></article>').join('')+'</details>';
 }
 function formulaMarkup(f,forSheet=false){
  const saved=state.favorites.has(f.id),d=study.details[f.id]||{},
@@ -92,6 +104,7 @@ function formulaMarkup(f,forSheet=false){
  const figure=d.figure&&study.figures[d.figure]?
   '<div class="study-diagram">'+study.figures[d.figure]+'</div>':"";
  const actions=forSheet?"":'<div class="card-actions"><button type="button" data-copy="'+enc(f.id)+'">Copy</button>'+
+  (exampleCount(f)?'<button type="button" data-examples="'+enc(f.id)+'">'+exampleCount(f)+' worked '+(exampleCount(f)===1?'example':'examples')+' →</button>':'')+
   (candidate?'<button type="button" data-open="'+enc(candidate.id)+'">Open '+enc(candidate.name)+' →</button>':"")+'</div>';
  return '<article data-formula-id="'+enc(f.id)+'" class="formula-card'+(forSheet?' sheet-card':'')+'"><div class="card-line"><span class="topic-pill">'+enc(f.category)+'</span>'+
  (forSheet?"":'<button type="button" data-fav="'+enc(f.id)+'" aria-pressed="'+saved+'" aria-label="'+(saved?"Unsave":"Save")+' '+enc(f.name)+'">'+(saved?'★':'☆')+'</button>')+'</div>'+
@@ -241,14 +254,14 @@ function route(){
  const match=location.hash.match(/^#chapter-(\d+)$/);
  state.chapter=match&&study.chapters?.some(c=>c.number===Number(match[1]))?match[1]:"All";
  renderChapterContext();
- if(match){state.group="All";state.topic="All";state.query="";state.savedOnly=false;state.display=48;el("study-group").value="All";el("formula-search").value="";el("saved-only").checked=false;refreshTopics()}
+ if(match){state.group="All";state.topic="All";state.query="";state.savedOnly=false;state.workedOnly=false;el("worked-only").checked=false;state.display=48;el("study-group").value="All";el("formula-search").value="";el("saved-only").checked=false;refreshTopics()}
  setTab(match?"formulas":location.hash.slice(1)||"formulas");
  if(pendingSymbolVariant){openSymbolVariant(pendingSymbolVariant);pendingSymbolVariant=null}else if(location.hash)el("study-tools").scrollIntoView?.({block:'start'});
 }
 function init(){
  el("clear-chapter").addEventListener("click",()=>{state.chapter="All";renderChapterContext();location.hash="formulas";renderFormulas()});
  for(const id of ['library-home-link','library-browse'])el(id).addEventListener('click',()=>{
-  pendingSymbolVariant=null;state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.display=48;
+  pendingSymbolVariant=null;state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.workedOnly=false;el("worked-only").checked=false;state.display=48;
   renderChapterContext();el('study-group').value='All';el('formula-search').value='';el('saved-only').checked=false;refreshTopics();location.hash='formulas';setTab('formulas');el('study-tools').scrollIntoView?.({block:'start'});
  });
  const selector=el("topic-filter"),groupSelector=el("study-group");
@@ -266,7 +279,7 @@ function init(){
  el("symbol-results").addEventListener("click",ev=>{
   const b=ev.target.closest("button[data-symbol-formula]");if(!b)return;
   const f=byFormula.get(b.dataset.symbolFormula);if(!f)return;
-  state.chapter="All";renderChapterContext();state.group="All";state.topic="All";state.savedOnly=false;state.query=f.name;state.display=48;
+  state.chapter="All";renderChapterContext();state.group="All";state.topic="All";state.savedOnly=false;state.workedOnly=false;el("worked-only").checked=false;state.query=f.name;state.display=48;
   el("study-group").value="All";refreshTopics();el("saved-only").checked=false;el("formula-search").value=f.name;
   pendingSymbolVariant=b.dataset.symbolVariant||null;
   location.hash="formulas";setTab("formulas");
@@ -275,11 +288,16 @@ function init(){
  el("formula-search").addEventListener("input",ev=>{state.query=ev.target.value;state.display=48;renderFormulas()});
  selector.addEventListener("change",ev=>{state.chapter="All";renderChapterContext();state.topic=ev.target.value;state.display=48;renderFormulas()});
  groupSelector.addEventListener("change",ev=>{state.chapter="All";renderChapterContext();state.group=ev.target.value;state.display=48;refreshTopics();renderFormulas()});
+ el("worked-only").addEventListener("change",ev=>{state.workedOnly=ev.target.checked;state.display=48;renderFormulas()});
  el("saved-only").addEventListener("change",ev=>{state.savedOnly=ev.target.checked;renderFormulas()});
  el("load-more").addEventListener("click",()=>{state.display+=48;renderFormulas()});
  el("formula-grid").addEventListener("click",ev=>{
  const b=ev.target.closest("button");if(!b)return;
- if(b.dataset.fav){
+ if(b.dataset.examples){
+  const card=b.closest('.formula-card');
+  card.querySelectorAll('.formula-explanation,.related-equations,.worked-example').forEach(d=>{d.open=true});
+  const first=card.querySelector('.worked-example summary');first?.focus();first?.scrollIntoView?.({block:'center',behavior:'smooth'});
+ }else if(b.dataset.fav){
   state.favorites.has(b.dataset.fav)?state.favorites.delete(b.dataset.fav):state.favorites.add(b.dataset.fav);
   persist("mt-student-formulas-fav-v1",[...state.favorites]);el("saved-total").textContent=state.favorites.size;renderFormulas();renderSheet();
  }else if(b.dataset.copy){
