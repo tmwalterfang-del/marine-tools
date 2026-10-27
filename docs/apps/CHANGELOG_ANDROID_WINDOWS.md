@@ -17,3 +17,13 @@ Base: app Draft #42 a9544ff, carrying Education Draft #35 0034688.
 
 Evidence and limitations: ANDROID_WINDOWS_DELIVERY.md. No merge, store upload or
 production deployment is authorized by this changelog.
+
+## Windows acceptance follow-up
+
+The first final-candidate Windows native smoke failed because the delayed
+first-run release dialog opened after a conditional presence check and blocked
+the calculator click. Compilation/MSIX creation succeeded; native interaction
+acceptance was not credited. The test now awaits the visible dialog and clicks
+its real Done button, then waits for it to close. No forced clicks, removed
+assertions or application UI suppression are used. Add a separate RustSec audit
+job so the dependency report includes the native Rust lockfile as well as npm.

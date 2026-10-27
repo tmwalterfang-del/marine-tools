@@ -7,7 +7,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   const context=browser.contexts()[0];let page;
   for(let i=0;i<60;i++){page=context.pages().find(p=>/tauri\.localhost|tauri:/.test(p.url()));if(page)break;await new Promise(r=>setTimeout(r,500))}
   assert.ok(page,'Tauri application page');await page.waitForFunction(()=>!!window.MT_APP_NAV);
-  if(await page.locator('#mtReleaseDialog[open]').count())await page.locator('#mtReleaseDone').click();
+  // The first-run dialog opens asynchronously after the app shell. Await its
+  // real user action before interacting with content behind the modal.
+  await page.locator('#mtReleaseDialog[open] #mtReleaseDone').click();
+  await page.locator('#mtReleaseDialog[open]').waitFor({state:'hidden'});
   await page.evaluate(()=>MT_APP_NAV.go('vessel-calcs'));await page.locator('#calcAirDraft').click();assert.match(await page.locator('#resAirDraft').textContent(),/3.20 m/);
   assert.equal(await page.evaluate(()=>MT_PLATFORM.kind),'desktop');console.log('MT_WIN_CALC_OK');
   await page.evaluate(()=>MT_PLATFORM.copyText('Marine Tools native clipboard check'));

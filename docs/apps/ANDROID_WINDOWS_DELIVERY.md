@@ -148,15 +148,15 @@ SHA, signing certificate and version for any candidate selected for release.
 | Repository/architecture inspection | Tested | Actual branches, docs, workflows and app code inspected |
 | Development branch | Implemented | feature/android-windows-app |
 | Draft PR | Implemented | #43, open Draft against #42 |
-| Shared core/PWA | Implemented | Existing #42 implementation plus fixes; current revision CI pending |
+| Shared core/PWA | Tested | 59 checks in each of Chromium/Firefox/WebKit on 4257372; final import-hardening revision retested in final evidence below |
 | Interactive layout fixes | Implemented | Existing #35 natural-height/wide workspace retained; physical QA pending |
-| Android project/configuration | Implemented | Reproducible Capacitor generator and overlays; generated project artifact |
-| Debug APK / release AAB | In progress | Base builds succeeded; this branch requires its own CI outputs |
+| Android project/configuration | Built | Generated project uploaded separately; source controls also inspected locally |
+| Debug APK / release AAB | Built | Current-branch compilation and merged-manifest inspection passed on 4257372; final candidate below |
 | Windows NSIS/MSIX | In progress | Base builds succeeded; this branch requires its own CI outputs |
-| Native sharing/export/navigation | Implemented | Base emulator/Windows smoke; retest current branch |
-| Automated QA/security report | In progress | Local checks above; CI and physical acceptance separated |
+| Native sharing/export/navigation | In progress | Android emulator passed on 4257372; Windows/final revision evidence below |
+| Automated QA/security report | Implemented | This report plus SECURITY_REVIEW.md; CI and physical acceptance separated |
 | English listings/assets/privacy | Implemented | Drafts, not legal/store approval |
-| CI/CD build configuration | Implemented | Android/Windows/PWA only; artifacts, no release job |
+| CI/CD build configuration | Tested | Current-branch browser/quality/Android jobs; final Windows evidence below |
 | Physical-device acceptance | Not started | Android phone/tablet, Windows 10/11, accessibility, upgrade and clean-device tests |
 | Ready for submission | Not started | Identity/signing/privacy/device/release gates outstanding |
 | Submitted | Not started | Not authorized |
@@ -175,3 +175,96 @@ Next release priorities: authenticated Education delivery decision, security #40
 staging acceptance before online services, verified native print/PDF if needed,
 physical accessibility and safe same-identity upgrades. Preserve the outstanding
 scientific model/numerical review ledger rather than representing it as complete.
+
+## Current source change inventory
+
+Relative to the inspected app base a9544ff; inherited #35/#42 code is deliberately
+not claimed as newly authored in this batch.
+
+| Files | Result |
+|---|---|
+| `.github/workflows/app-distribution.yml` | Focused target builds and separate generated Android source artifact |
+| `apps/app-config.json`, `scripts/stage-app.mjs` | Explicit Android/Windows/PWA distribution metadata |
+| `apps/shared/app-shell.js` | Correct Back/Forward cursor and forward-history truncation |
+| `apps/shared/app-drafts.js`, `apps/shared/platform-entry.js` | Background lifecycle draft flush |
+| `apps/shared/platform-core.mjs`, `tests/app-adapters-20261027.mjs` | Numeric profile import guard and 42 regression checks |
+| `scripts/app/check-source.mjs`, `package.json` | Shared release version/syntax validation command |
+| `scripts/app/check-android-package.py` | Package checks follow shared identity, SDK, version and targets |
+| `scripts/app/package-windows.ps1` | Clean staging before MSIX generation |
+| `scripts/app/release-readiness.mjs` | Android/Windows-specific release status and blockers |
+| `tests/app-browser-20261027.cjs`, `tests/app-package-20261027.mjs` | History, responsive overflow, packaging target regression |
+| `scripts/app/capture-store-assets.cjs`, `apps/store/listings.en.json`, `apps/store/DATA_AND_PRIVACY.md` | Focused English store drafts and 12 shared-UI screenshot references |
+| `docs/apps/ANDROID_WINDOWS_DELIVERY.md`, `CHANGELOG_ANDROID_WINDOWS.md`, `FINAL_REPORT.md`, `SIGNING_AND_BUILDS.md`, `SECURITY_REVIEW.md` | Current evidence, scope, handover and security documentation |
+
+## Acceptance distinctions
+
+A successful unsigned AAB/MSIX compilation is **Built**, not Store-ready. The
+Android debug APK can be installed by a tester; the unsigned release artifacts
+require the intended identity/signing path. The Windows NSIS runner test covers
+installation/uninstallation of that installer, not a signed Store MSIX. Windows
+native interaction testing uses a separate instrumented executable; the normal
+shipping executable receives its own installed-window startup check.
+
+The 42 guard tests use mocked adapters; native OS interactions require the
+separate emulator/Windows jobs. Browser clipboard is stubbed only in the web
+suite; browser file download and PWA server-stopped reload/update are real.
+The 40 overflow combinations cover five viewport sizes, two existing themes and
+four representative routes; they are not exhaustive app/device accessibility
+acceptance. Education's previous 15-module scroll/diagram evidence is retained
+at its own source checkpoint, not represented as a newly executed physical test.
+
+Remaining technical limits are explicit: physical phone/tablet and Windows 10/11
+clean-device acceptance, signed MSIX installation and upgrades, native print/PDF,
+light theme, external authenticated Education/native delivery, online provider
+security/freshness handling, Rust vulnerability audit and actual deployed
+Cloudflare configuration verification. These do not block unsigned local-tool
+test builds; they do block claims that the full website is packaged offline or
+that every requested feature is Store-ready.
+
+## Initial candidate evidence register
+
+Initial runtime source head: `eea5937c9b53432d875f80cd92603c16746b73e2`.
+CI run: https://github.com/tmwalterfang-del/marine-tools/actions/runs/40527790674.
+GitHub built its PR merge ref `66506066c17eb62d2b8fb1f328587caded8db299`, as
+recorded inside build-info.json and the downloaded Android package inspection.
+Later documentation-only changes do not change this runtime candidate.
+
+At this revision, quality and all three browser jobs passed. Each browser passed
+59 checks; the guard suite passed 42 checks, source syntax/version validation
+passed 31 script checks, worked cases passed 309 cases/299 expressions and the
+1,498-row expression ledger passed its context checks. npm audit reported zero
+findings. This is not a Rust audit or certification of the whole formula domain.
+
+Android compilation and package inspection passed. Downloaded APK/AAB bytes were
+independently hashed locally and matched the CI report. Merged debug and release
+manifests contain only INTERNET plus AndroidX's signature-protected internal
+receiver permission; target 36/min 24, allowBackup=false, cleartext=false.
+No .so library is packaged in these candidates. Protected Education and live API
+configuration remain excluded/disabled.
+
+| Android binary | SHA-256 |
+|---|---|
+| `app-debug.apk` | `2f1170873cab8cb3cd4b03b288bc345d2ab48501d449d6ce9be4366d4ed4c1b1` |
+| `app-release-unsigned.apk` | `494357c623f1419bd2839381da2b4793dd8101c7c56b769d7dee30b704951662` |
+| `app-release.aab` | `6e8c0504873176d152ed0f615ae92d014a92c3cde6f53c0cb5030b953abc060a` |
+
+Android artifacts in that run:
+
+- [Binary candidates](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40527790674/artifacts/12745720075): debug APK, unsigned release APK/AAB and inspection report.
+- [Generated Android project](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40527790674/artifacts/12744278910): platform sources/resources without build caches or local SDK paths.
+- [PWA and English store graphics](https://github.com/tmwalterfang-del/marine-tools/actions/runs/40527790674/artifacts/12744273710): staged app, 12 Chromium screenshot references, icon, feature graphic, capture manifest and web QA results.
+
+Graphics reviewed locally: mobile air-clearance workspace, widescreen electrical
+workspace and branded feature graphic. They show the actual shared UI; they are
+not presented as physical Android/Windows screenshots. Native physical-device
+images and final Store image review remain separate.
+
+### Windows failure and correction
+
+Run 40527790674 built Android APK/AAB, Windows NSIS and MakeAppx-validated MSIX.
+Android emulator passed. Windows native interaction failed before its calculation
+assertion: the asynchronous first-run What's New dialog intercepted the click.
+This is recorded as FAIL, not native acceptance. The follow-up test awaits and
+closes the actual dialog before using the calculator. A separate RustSec audit
+job is added to assess the existing native dependency lockfile. Final rerun
+results and their source revision follow below after completion.

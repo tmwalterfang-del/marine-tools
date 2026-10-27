@@ -71,6 +71,21 @@ jobs:
         env:
           NODE_PATH: /tmp/app-dom/node_modules
       - run: node tests/navigation-smoke.mjs
+  rust-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install cargo-audit --locked
+      - run: mkdir -p app-artifacts/security
+      - run: cargo audit --file apps/desktop/src-tauri/Cargo.lock --json > app-artifacts/security/rust-audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-rust-security-audit
+          path: app-artifacts/security/
+          if-no-files-found: warn
   android:
     concurrency:
       group: app-android-${{ github.ref }}
