@@ -682,6 +682,7 @@
     return out;
   }
   function restoreScenario(text) {
+    if(typeof text!=="string"||text.length>50000)throw RangeError("Scenario file is too large.");
     const raw = JSON.parse(text),
       fields =
         raw.inputs && Object.hasOwn(raw.inputs, "process")

@@ -201,6 +201,8 @@ const ok = (v, s) => {
       .getAttribute("aria-pressed")) === "false",
     "Mollier presentation exits with Escape",
   );
+  const oversized=await page.evaluate(()=>{try{MT_MOLLIER_RESTORE('{'.repeat(50001));return false}catch(e){return e.name==='RangeError'&&e.message.includes('too large')}});
+  ok(oversized,'Oversized scenario rejected before JSON parsing');
   ok(errors.length === 0, "No page exceptions");
   const result = {
     engine,
