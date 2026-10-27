@@ -27,7 +27,7 @@ export function configureMobile(platform){
   fs.writeFileSync(infoFile,plist.build(info));fs.copyFileSync(path.join(root,'apps/mobile/config/PrivacyInfo.xcprivacy'),path.join(app,'PrivacyInfo.xcprivacy'));
   const projectFile=path.join(base,'App/App.xcodeproj/project.pbxproj'),project=xcode.project(projectFile);project.parseSync();
   const group=project.findPBXGroupKey({path:'App'}),target=project.getFirstTarget().uuid;
-  if(!project.hasFile('PrivacyInfo.xcprivacy'))project.addResourceFile('PrivacyInfo.xcprivacy',{target},group);
+  if(!project.hasFile('PrivacyInfo.xcprivacy')){if(!project.pbxGroupByName('Resources'))project.addPbxGroup([],'Resources','Resources');project.addResourceFile('PrivacyInfo.xcprivacy',{target},group);}
   let projectText=project.writeSync().replace(/MARKETING_VERSION = [^;]+;/g,'MARKETING_VERSION = '+config.version+';').replace(/CURRENT_PROJECT_VERSION = [^;]+;/g,'CURRENT_PROJECT_VERSION = '+config.buildNumber+';');
   fs.writeFileSync(projectFile,projectText);
   const splash=path.join(app,'Assets.xcassets/Splash.imageset');for(const name of fs.readdirSync(splash).filter(n=>n.endsWith('.png')))fs.copyFileSync(path.join(root,'assets/icon-512.png'),path.join(splash,name));
