@@ -15,7 +15,7 @@ window.addEventListener('mt-page-change',e=>{const id=e.detail.page;if(suppress|
 window.addEventListener('mt-app-status',e=>status(e.detail.message));
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;const b=document.getElementById('mt-app-install');if(b)b.hidden=false});
 window.addEventListener('appinstalled',()=>{installPrompt=null;document.getElementById('mt-app-install').hidden=true;status('Marine Tools installed.')});
-document.addEventListener('click',e=>{const nav=e.target.closest('[data-go],[data-page]'),id=nav?.dataset.go||nav?.dataset.page;if(id&&!allowed.has(id)){e.preventDefault();e.stopImmediatePropagation();status('This online feature is not included in the local app candidate.');return}const a=e.target.closest('a[href]');if(!a||a.download||e.defaultPrevented)return;const u=new URL(a.href,location.href);if(u.pathname.endsWith('/education.html')){e.preventDefault();window.MT_PLATFORM.openUrl(window.MT_APP_CONFIG.educationUrl).catch(err=>status(err.message));return}if(u.protocol==='https:'&&u.origin!==location.origin||u.protocol==='mailto:'){e.preventDefault();window.MT_PLATFORM.openUrl(u.href).catch(err=>status(err.message))}},true);
+document.addEventListener('click',e=>{const nav=e.target.closest('[data-go],[data-page]'),id=nav?.dataset.go||nav?.dataset.page;if(id&&!allowed.has(id)){e.preventDefault();e.stopImmediatePropagation();status('This online feature is not included in the local app candidate.');return}const a=e.target.closest('a[href]');if(!a||a.download||e.defaultPrevented)return;const u=new URL(a.href,location.href);if(a.getAttribute('href')?.startsWith('#')&&a.closest('#privacy')){const target=document.getElementById(u.hash.slice(1));if(target){e.preventDefault();target.scrollIntoView({block:'start'});return}}if(u.pathname.endsWith('/education.html')){e.preventDefault();window.MT_PLATFORM.openUrl(window.MT_APP_CONFIG.educationUrl).catch(err=>status(err.message));return}if(u.protocol==='https:'&&u.origin!==location.origin||u.protocol==='mailto:'){e.preventDefault();window.MT_PLATFORM.openUrl(u.href).catch(err=>status(err.message))}},true);
 document.addEventListener('keydown',e=>{if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();back()}});
 function init(){
  document.documentElement.classList.add('mt-app');
@@ -25,7 +25,7 @@ function init(){
  const menu=document.getElementById('mobileMenu');if(menu)nav.prepend(menu);bar.prepend(nav);
  const title=bar.querySelector('.top-brand');title.className='top-brand mt-app-title';
  title.replaceChildren();const name=document.createElement('strong');name.textContent='Marine Tools';
- const version=document.createElement('small');version.id='mt-app-version';version.textContent='Preview '+window.MT_APP_CONFIG.version+' · '+window.MT_APP_CONFIG.buildNumber;
+ const version=document.createElement('small');version.id='mt-app-version';version.textContent=(window.MT_APP_CONFIG.channelLabel||'Preview')+' '+window.MT_APP_CONFIG.version+' · '+window.MT_APP_CONFIG.buildNumber;
  title.append(name,version);
  const info=document.createElement('section');info.className='mt-app-info';info.setAttribute('aria-label','Application status');
  info.innerHTML='<span id="mt-app-status" role="status" aria-live="polite"></span><button id="mt-app-install" type="button" hidden>Install app</button><button id="mt-app-update" type="button" hidden>Apply update</button>';
@@ -39,6 +39,21 @@ function init(){
  const id=allowed.has(initial)?initial:'home';stack=[id];history.replaceState({mtPage:id,mtPosition:0},'',pageUrl(id));go(id,false);
  const measure=()=>document.documentElement.style.setProperty('--mt-header-height',bar.offsetHeight+'px');
  measure();const size=new ResizeObserver(measure);size.observe(bar);window.addEventListener('resize',measure);window.visualViewport?.addEventListener('resize',measure);
+ // Android's IME can resize a landscape WebView after its initial focus scroll.
+ // Keep the complete focused field between the sticky header and keyboard.
+ let focusFrame=0;
+ const keepFocusedVisible=()=>{
+  focusFrame=0;const field=document.activeElement;
+  if(!field?.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="button"]),textarea,select')||!field.closest('.main-content'))return;
+  const viewport=window.visualViewport,offset=viewport?.offsetTop||0;
+  const safeBottom=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom'))||0;
+  const top=Math.max(bar.getBoundingClientRect().bottom,offset)+8,bottom=offset+(viewport?.height||innerHeight)-safeBottom-12;
+  const rect=field.getBoundingClientRect();if(bottom-top<rect.height)return;
+  const delta=rect.bottom>bottom?rect.bottom-bottom:rect.top<top?rect.top-top:0;
+  if(Math.abs(delta)>.5)window.scrollBy({top:delta,behavior:'instant'});
+ };
+ const queueFocus=()=>{if(!focusFrame)focusFrame=requestAnimationFrame(keepFocusedVisible)};
+ document.addEventListener('focusin',queueFocus);window.addEventListener('resize',queueFocus);window.visualViewport?.addEventListener('resize',queueFocus);
  // Do not advertise network-only pages as available local app features.
  for(const n of document.querySelectorAll('.nav-btn[data-page]'))if(!allowed.has(n.dataset.page))n.hidden=true;
  if(!window.MT_NATIVE_APP&&'serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{

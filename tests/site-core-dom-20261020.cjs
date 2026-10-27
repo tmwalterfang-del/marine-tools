@@ -11,7 +11,7 @@ w.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventList
 w.fetch=async()=>({ok:false,status:503,json:async()=>({error:'Synthetic unavailable service'}),text:async()=>'',headers:new Headers()});
 Object.defineProperty(w.navigator,'onLine',{value:false,configurable:true});
 w.__MARINE_TOOLS_PREVIEW_ISOLATED=true;
-for(const p of ['voyage-estimate-v861.js','voyage-planning-draft-v1.js','app.js'])w.eval(read(p));
+for(const p of ['privacy-policy.js','voyage-estimate-v861.js','voyage-planning-draft-v1.js','app.js'])w.eval(read(p));
 d.dispatchEvent(new w.Event('DOMContentLoaded'));
 const source=read('app.js'),registry=source.match(/const PAGE_RENDERERS=\{([^;]+)\};/)[1],pages=[...registry.matchAll(/'([^']+)':/g)].map(m=>m[1]),report={pages:[],calculators:[],errors};
 for(const id of pages){w.__marineToolsOpenPage(id);const host=d.getElementById(id);assert(host?.classList.contains('active'),id+' activates');assert(host.textContent.trim().length>30,id+' renders');report.pages.push(id);}

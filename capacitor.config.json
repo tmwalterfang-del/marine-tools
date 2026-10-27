@@ -1,6 +1,6 @@
 {
-  "appId": "app.marinetools.preview",
-  "appName": "Marine Tools Preview",
+  "appId": "com.marinetools.app",
+  "appName": "Marine Tools",
   "webDir": "app-dist",
   "android": {
     "path": "apps/mobile/android",

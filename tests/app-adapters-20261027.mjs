@@ -8,6 +8,8 @@ assert.throws(()=>validateExport('big.json','x'.repeat(8*1024*1024+1)));checks++
 for(const url of ['javascript:alert(1)','file:///etc/passwd','http://example.com','https://user:pw@example.com','mailto:other@example.com','https://buymeacoffee.com/marinetools','https://tally.so/r/5BWVZQ']){assert.throws(()=>permittedUrl(url));checks++}
 check(permittedUrl('https://marinetools.app/?page=privacy'),'https://marinetools.app/?page=privacy');
 check(deepLinkPage('marinetools-preview://tool/electrical'),'electrical');
+check(deepLinkPage('marinetools://tool/electrical','marinetools'),'electrical');
+check(deepLinkPage('marinetools-preview://tool/electrical','marinetools'),null);
 for(const u of ['https://example.com/tool/electrical','marinetools-preview://evil/electrical','marinetools-preview://tool/admin','file:///tool/fuel'])check(deepLinkPage(u),null);
 const calls=[],p=createPlatform('test',{copy:async t=>calls.push(['copy',t]),share:async(t,b)=>{calls.push(['share',t,b]);return {message:'shared'}},save:async(n,t)=>{calls.push(['save',n,t]);return {cancelled:true}},open:async u=>calls.push(['open',u])});
 await p.copyText('2.3 m');await p.shareText('Result','2.3 m');check((await p.saveText('draft.json','{}')).cancelled,true);await p.openUrl('https://marinetools.app');

@@ -1,0 +1,115 @@
+name: Privacy policy acceptance
+on:
+  pull_request:
+    paths: ['privacy/**', 'privacy-policy.*', 'scripts/build-privacy.mjs', 'scripts/stage-app.mjs', 'scripts/app/**', 'apps/shared/**', 'apps/app-config.json', 'apps/store/**', 'capacitor.config.json', 'index.html', 'app.js', 'sw.js', 'tests/privacy-*', 'tests/app-*', '.github/workflows/privacy-policy.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: privacy-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  privacy:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node scripts/build-privacy.mjs --check
+      - run: npm run lint && npm run test:app && npm run test:app:unit
+      - run: npm install --prefix .qa-deps/privacy-qa --no-audit --no-fund jsdom@26.1.0 playwright@1.62.1
+      - run: node tests/privacy-policy-20261027.cjs
+        env:
+          NODE_PATH: .qa-deps/privacy-qa/node_modules
+      - run: node tests/site-wide-source-audit-20261020.cjs
+        env:
+          NODE_PATH: .qa-deps/privacy-qa/node_modules
+      - run: node .qa-deps/privacy-qa/node_modules/playwright/cli.js install ${{ matrix.browser }}
+      - run: node tests/privacy-browser-20261027.cjs ${{ matrix.browser }}
+        env:
+          NODE_PATH: .qa-deps/privacy-qa/node_modules
+      - run: node tests/app-browser-20261027.cjs ${{ matrix.browser }}
+        env:
+          NODE_PATH: .qa-deps/privacy-qa/node_modules
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: privacy-policy-${{ matrix.browser }}
+          path: |
+            app-artifacts/privacy/
+            privacy/
+            privacy-policy.js
+            privacy-policy.css
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: 'false'
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run app:android:sync
+      - run: chmod +x apps/mobile/android/gradlew
+      - run: apps/mobile/android/gradlew -p apps/mobile/android assembleDebug bundleRelease
+      - run: python3 scripts/app/check-android-package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MarineTools-Play-build7-android
+          path: |
+            apps/mobile/android/app/build/outputs/apk/debug/
+            apps/mobile/android/app/build/outputs/bundle/release/
+            app-artifacts/android/package-inspection.json
+  android-emulator:
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: MarineTools-Play-build7-android
+          path: emulator-input
+      - run: npm install --prefix /tmp/android-browser --no-audit --no-fund playwright@1.62.1
+      - run: node /tmp/android-browser/node_modules/playwright/cli.js install android
+      - name: Enable KVM
+        run: sudo chmod 666 /dev/kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 9
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          profile: pixel_7
+          disable-animations: true
+          script: |
+            adb install "$(find emulator-input -path '*/apk/debug/app-debug.apk' -print -quit)"
+            NODE_PATH=/tmp/android-browser/node_modules timeout 270s node scripts/app/android-emulator-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-build7-android-emulator-QA
+          path: app-artifacts/android/

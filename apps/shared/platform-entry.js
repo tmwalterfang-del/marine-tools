@@ -26,8 +26,8 @@ if(Capacitor.isNativePlatform()){
  });
  App.addListener('appStateChange',({isActive})=>{if(!isActive)window.MT_APP_DRAFTS?.flush()});
  if(isAndroid)App.addListener('backButton',()=>window.dispatchEvent(new Event('mt-native-back')));
- App.addListener('appUrlOpen',event=>{const id=deepLinkPage(event.url);if(id)window.dispatchEvent(new CustomEvent('mt-app-deep-link',{detail:{page:id}}))});
- App.getLaunchUrl().then(event=>{const id=deepLinkPage(event?.url);if(id){window.__MT_INITIAL_PAGE=id;window.MT_APP_NAV?.go(id)}}).catch(()=>{});
+ App.addListener('appUrlOpen',event=>{const id=deepLinkPage(event.url,window.MT_APP_CONFIG.urlScheme);if(id)window.dispatchEvent(new CustomEvent('mt-app-deep-link',{detail:{page:id}}))});
+ App.getLaunchUrl().then(event=>{const id=deepLinkPage(event?.url,window.MT_APP_CONFIG.urlScheme);if(id){window.__MT_INITIAL_PAGE=id;window.MT_APP_NAV?.go(id)}}).catch(()=>{});
  // Cache exports are private and disposable. Keep recent shares readable by
  // receivers, and remove old files on a later app start rather than immediately.
  Filesystem.readdir({path:'marine-exports',directory:Directory.Cache}).then(async r=>{

@@ -6,8 +6,8 @@
   "fullDescription": "Marine Tools brings practical maritime calculations to your phone, tablet or computer.\n\nUse local tools for vessel allowances, anchoring geometry, air-draft clearance, fuel and energy conversions, electrical power and engineering estimates. Enter your own values and units, review assumptions, and recalculate before using a result.\n\nKeep vessel profiles and recent calculations locally. Reopen supported calculator inputs, copy results, and export or share files using the options available on your device. Core bundled calculators work without an internet connection.\n\nThis candidate does not provide live AIS or weather. The separate Education workspace requires online, protected access and is not included in the offline package. No account is needed for the bundled local calculators.\n\nMarine Tools is a planning and calculation aid. It is not approved navigation equipment, a certified safety system, an official record book or a replacement for vessel-specific documentation and professional judgement. Verify inputs, assumptions and results before operational use.",
   "supportEmail": "contact@marinetools.app",
   "website": "https://marinetools.app",
-  "privacyUrlCandidate": "https://marinetools.app/?page=privacy",
-  "privacyUrlStatus": "OWNER_MUST_APPROVE_AND_HOST_APP_SPECIFIC_POLICY_BEFORE_SUBMISSION",
+  "privacyUrlCandidate": "https://www.marinetools.app/privacy",
+  "privacyUrlStatus": "PUBLIC_HTTPS_200_NO_JS_VERIFIED_20261027_APP_RELEASE_REVIEW_STILL_REQUIRED",
   "googlePlay": {
     "title": "Marine Tools",
     "categoryProposal": "Tools",

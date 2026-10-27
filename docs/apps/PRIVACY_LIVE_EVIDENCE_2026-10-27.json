@@ -1,0 +1,66 @@
+{
+  "liveAssets": [
+    {
+      "file": "usage-analytics.js",
+      "liveSha256": "ff749eb10cc3a99c305e5cb094c83fdfbd361e7e81c88d5d766beb27dd48c061",
+      "sourceSha256": "ff749eb10cc3a99c305e5cb094c83fdfbd361e7e81c88d5d766beb27dd48c061",
+      "identical": true
+    },
+    {
+      "file": "support-widget-v857.js",
+      "liveSha256": "162a5d2cc4a6263d4ed9cca771e4b36b5ef5481fa9757516e2e7832573ead99e",
+      "sourceSha256": "162a5d2cc4a6263d4ed9cca771e4b36b5ef5481fa9757516e2e7832573ead99e",
+      "identical": true
+    },
+    {
+      "file": "app.js",
+      "liveSha256": "d3c54bd532ebbd8e7c09b34c66bc3c1c3dc48c7dcf56c769946bb0d7146c1c8b",
+      "sourceSha256": "097332595364f005232541decfdbdafb623387979be244b4e9ad5f73e1df886a",
+      "identical": false
+    }
+  ],
+  "publicApiHealth": {
+    "status": "ok",
+    "service": "Marine Tools API",
+    "capabilities": [
+      "ais-experimental",
+      "met-norway-point-weather",
+      "route-forecast-experimental",
+      "anonymous-usage-analytics",
+      "private-analytics-dashboard",
+      "global-wave-fallback",
+      "global-open-ais",
+      "anonymous-analytics-v2",
+      "private-analytics-dashboard-v2",
+      "release-metadata",
+      "technical-health-v857",
+      "post-deploy-smoke-tests"
+    ],
+    "analyticsConfigured": true,
+    "analyticsQueryConfigured": true,
+    "globalWaveConfigured": true,
+    "globalWaveProvider": "NOAA/NCEP GFS-Wave",
+    "globalAisConfigured": true,
+    "globalAisProvider": "BarentsWatch in supported region; open-license Pelyr sources elsewhere/fallback",
+    "analyticsDashboardVersion": "2",
+    "release": {
+      "version": "8.7.0",
+      "build": "20261019-v8-7-0",
+      "released": "2026-10-19",
+      "worker": "worker-v860-dashboard"
+    }
+  },
+  "date": "2026-10-27",
+  "method": "Unauthenticated read-only curl GET; no JS execution or analytics event writes",
+  "privacyUrl": "https://www.marinetools.app/privacy",
+  "privacyStatus": 404,
+  "rootUrl": "https://www.marinetools.app/",
+  "rootStatus": 200,
+  "liveAppMatches": "origin/main at inspection; privacy branch intentionally differs",
+  "limitations": [
+    "Single network vantage point",
+    "No provider dashboard/account log/retention inspection",
+    "Health metadata is not proof of actual provider fetches",
+    "No deployment performed"
+  ]
+}
