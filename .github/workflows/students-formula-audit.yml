@@ -59,6 +59,7 @@ jobs:
           node tests/students-if97-boundaries-20261027.mjs
           node tests/students-worked-cases-20261027.mjs
           node tests/students-worked-examples-data-20261027.mjs --check
+          node tests/students-electrical-reference-20261028.mjs
       - name: IF97 reference points
         run: node tests/students-if97-reference-20261020.mjs
       - name: Published IAPWS reference values
