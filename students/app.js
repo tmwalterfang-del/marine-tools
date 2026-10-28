@@ -4,6 +4,7 @@
 const formula=window.MT_FORMULAS||[],calc=window.MT_CALCULATORS||[],practice=window.MT_PRACTICE||[];
 const study=window.MT_STUDY||{groups:[],details:{},calculatorByFormula:{},topicChapters:{},figures:{}};
 const byFormula=new Map(formula.map(f=>[f.id,f]));
+const byExpression=new Map((study.sourceEquationRegister||[]).map(r=>[r.id,r]));
 const symbolIndex=window.MT_SYMBOLS||{entries:[],find:()=>[],coverage:{withCuratedDefinitions:0}};
 const byCalculator=new Map(calc.map(c=>[c.id,c]));
 const el=id=>document.getElementById(id);
@@ -79,15 +80,35 @@ function numericReviewText(r){
  return 'No individual numerical test recorded; analytical review is not a numerical test.';
 }
 function exampleCount(f){return (f.related||[]).filter(r=>study.workedExamples?.[r.id]).length;}
+function workedNumber(n){
+ const magnitude=Math.abs(n);
+ return Number(n).toLocaleString('en-GB',{maximumSignificantDigits:8,notation:magnitude>0&&(magnitude<0.0001||magnitude>=1e7)?'scientific':'standard'});
+}
+function workedValue(r,symbol,n){
+ const unit=r.symbols.find(v=>v.symbol.split(',').some(s=>s.trim()===symbol))?.unit||'';
+ return enc(symbol)+' = '+enc(workedNumber(n))+(unit==='dimensionless'?' (dimensionless)':' '+enc(unit));
+}
+function workedCaseHtml(r,c){
+ const resultSymbol=r.formula.split(/=|≈/)[0].trim();
+ return '<h6>Given</h6><ul>'+Object.entries(c.inputs).map(([symbol,n])=>'<li><code>'+workedValue(r,symbol,n)+'</code></li>').join('')+'</ul>'+
+ '<h6>Method</h6><p>'+enc(c.reference)+'</p><p class="worked-result"><strong>Result:</strong> '+workedValue(r,resultSymbol,c.expected)+'</p>'+
+ '<p class="worked-scope">Synthetic teaching values; displayed numbers rounded to 8 significant digits, with scientific notation for very small or large values. This selected reference case is checked automatically. It does not validate the full model domain. Apply the conditions above.</p>';
+}
 function workedExampleHtml(r){
  const c=study.workedExamples?.[r.id];if(!c)return '';
- const unit=symbol=>r.symbols.find(v=>v.symbol.split(',').some(s=>s.trim()===symbol))?.unit||'';
- const value=(symbol,n)=>enc(symbol)+' = '+enc(fmt(n))+(unit(symbol)==='dimensionless'?' (dimensionless)':' '+enc(unit(symbol)));
- const resultSymbol=r.formula.split(/=|≈/)[0].trim();
- return '<details class="worked-example"><summary>Worked example · '+value(resultSymbol,c.expected)+'</summary>'+
- '<div class="worked-example-body"><h6>Given</h6><ul>'+Object.entries(c.inputs).map(([symbol,n])=>'<li><code>'+value(symbol,n)+'</code></li>').join('')+'</ul>'+
- '<h6>Method</h6><p>'+enc(c.reference)+'</p><p class="worked-result"><strong>Result:</strong> '+value(resultSymbol,c.expected)+'</p>'+
- '<p class="worked-scope">Synthetic teaching values; displayed values rounded to 5 decimal places. This selected reference case is checked automatically. It does not validate the full model domain. Apply the conditions above.</p></div></details>';
+ const cases=[c,...(c.alternateCases||[])],resultSymbol=r.formula.split(/=|≈/)[0].trim();
+ const choice=cases.length>1?'<label class="worked-case-label">Reference case<select class="worked-case-select" data-worked-id="'+enc(r.id)+'" aria-label="Reference case for '+enc(r.name)+'">'+cases.map((v,i)=>'<option value="'+i+'">'+enc(v.label)+'</option>').join('')+'</select></label>':'';
+ return '<details class="worked-example"><summary>Worked example · '+workedValue(r,resultSymbol,c.expected)+'</summary>'+
+ '<div class="worked-example-body">'+choice+'<div class="worked-case-content" aria-live="polite">'+workedCaseHtml(r,c)+'</div></div></details>';
+}
+function changeWorkedCase(ev){
+ const select=ev.target.closest('.worked-case-select');if(!select)return;
+ const r=byExpression.get(select.dataset.workedId),c=study.workedExamples?.[r?.id];if(!r||!c)return;
+ const cases=[c,...(c.alternateCases||[])],index=Number(select.value);
+ if(!Number.isInteger(index)||!cases[index])return;
+ const example=select.closest('.worked-example'),chosen=cases[index];
+ example.querySelector('.worked-case-content').innerHTML=workedCaseHtml(r,chosen);
+ example.querySelector('summary').innerHTML='Worked example · '+workedValue(r,r.formula.split(/=|≈/)[0].trim(),chosen.expected);
 }
 function relatedHtml(f){
  const related=f.related||[];if(!related.length)return "";
@@ -291,12 +312,14 @@ function init(){
  el("worked-only").addEventListener("change",ev=>{state.workedOnly=ev.target.checked;state.display=48;renderFormulas()});
  el("saved-only").addEventListener("change",ev=>{state.savedOnly=ev.target.checked;renderFormulas()});
  el("load-more").addEventListener("click",()=>{state.display+=48;renderFormulas()});
+ el("formula-grid").addEventListener("change",changeWorkedCase);
+ el("sheet-formulas").addEventListener("change",changeWorkedCase);
  el("formula-grid").addEventListener("click",ev=>{
  const b=ev.target.closest("button");if(!b)return;
  if(b.dataset.examples){
   const card=b.closest('.formula-card');
   card.querySelectorAll('.formula-explanation,.related-equations,.worked-example').forEach(d=>{d.open=true});
-  const first=card.querySelector('.worked-example summary');first?.focus();first?.scrollIntoView?.({block:'center',behavior:'smooth'});
+  const first=card.querySelector('.worked-example summary');first?.focus();first?.scrollIntoView?.({block:'center'});
  }else if(b.dataset.fav){
   state.favorites.has(b.dataset.fav)?state.favorites.delete(b.dataset.fav):state.favorites.add(b.dataset.fav);
   persist("mt-student-formulas-fav-v1",[...state.favorites]);el("saved-total").textContent=state.favorites.size;renderFormulas();renderSheet();

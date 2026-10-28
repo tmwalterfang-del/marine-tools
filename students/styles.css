@@ -220,3 +220,9 @@ footer a{font-size:11px;text-decoration:none;color:var(--muted)}
 .worked-example h6{font-size:13px;margin:14px 0 6px}.worked-example ul{padding-left:20px;margin:6px 0}
 .worked-example .worked-scope{font-size:11px;color:var(--muted)}.worked-result{border-top:1px solid var(--border);padding-top:10px}
 @media print{.worked-example{break-inside:avoid}}
+
+.worked-case-label{display:block;padding-top:10px;font-size:12px;color:var(--muted)}
+.worked-case-select{display:block;max-width:100%;width:100%;min-height:44px;margin:5px 0 12px;padding:9px;background:var(--base,#071725);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit}
+.worked-case-select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+@media(max-width:680px){.formula-grid{display:block}.formula-grid>.formula-card{margin-bottom:14px}}

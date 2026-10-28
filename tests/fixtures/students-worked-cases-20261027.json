@@ -3936,6 +3936,302 @@
       "degrees": false,
       "side": 1,
       "context_sha256": "1e9df9453765835d22611d3306d1a9f60e58648c626ef1de9855a35fed637c72"
+    },
+    {
+      "id": "book-c6-p81-r10",
+      "inputs": {
+        "I": 10,
+        "ρ": 1.72e-8,
+        "l": 20,
+        "A": 0.0000025
+      },
+      "expected": 2.752,
+      "label": "10 A load",
+      "reference": "For the stated resistivity, each 20 m conductor has resistance 0.1376 Ω. The outgoing and return conductors form a 0.2752 Ω loop; at 10 A the loop drops 2.752 V. The 2.5 × 10⁻⁶ m² area equals 2.5 mm². Connection and temperature effects are excluded.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d7bce1bb7845b006df73a2f21916786fc8652c1ac7e881a209fc3d4441464328"
+    },
+    {
+      "id": "book-c6-p81-r10",
+      "inputs": {
+        "I": 0,
+        "ρ": 1.72e-8,
+        "l": 20,
+        "A": 0.0000025
+      },
+      "expected": 0,
+      "label": "No-load check",
+      "reference": "The same conductor loop carries zero current, so neither conductor has a resistive voltage drop. This does not include external induced voltage or connection effects.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "d7bce1bb7845b006df73a2f21916786fc8652c1ac7e881a209fc3d4441464328"
+    },
+    {
+      "id": "book-c6-p85-r06",
+      "inputs": {
+        "N": 200,
+        "ΔΦ": 0.003,
+        "Δt": 0.1
+      },
+      "expected": -6,
+      "label": "Increasing positive flux",
+      "reference": "Flux linkage increases by 200 × 0.003 = 0.6 Wb-turn in 0.1 s. Faraday’s law gives an average emf of −6 V in the chosen winding reference; reversing the flux change reverses this signed emf.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "14e0f82e1bca81b93ad6adb66722f5ed023cba46d401c1fb6cbbc4c40cde7378"
+    },
+    {
+      "id": "book-c6-p85-r06",
+      "inputs": {
+        "N": 200,
+        "ΔΦ": -0.003,
+        "Δt": 0.1
+      },
+      "expected": 6,
+      "label": "Decreasing flux",
+      "reference": "The winding loses 0.6 Wb-turn of flux linkage in 0.1 s. The induced average emf is +6 V in the same winding reference.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "14e0f82e1bca81b93ad6adb66722f5ed023cba46d401c1fb6cbbc4c40cde7378"
+    },
+    {
+      "id": "book-c6-p85-r06",
+      "inputs": {
+        "N": 200,
+        "ΔΦ": 0,
+        "Δt": 0.1
+      },
+      "expected": 0,
+      "label": "Unchanged flux",
+      "reference": "No change in flux linkage over the nonzero interval means zero induced average emf. A nonzero static magnetic field alone does not create a Faraday emf in this stationary winding.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "14e0f82e1bca81b93ad6adb66722f5ed023cba46d401c1fb6cbbc4c40cde7378"
+    },
+    {
+      "id": "book-c6-p85-r07",
+      "inputs": {
+        "L": 0.2,
+        "ΔI": 3,
+        "Δt": 0.05
+      },
+      "expected": -12,
+      "label": "Rising current",
+      "reference": "A 0.2 H inductance gains 0.6 Wb-turn of linkage as current rises by 3 A. Over 0.05 s the signed back emf is −12 V. With the passive terminal-voltage convention the corresponding voltage is +12 V; these signs describe different references.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "cc170f32d9eefa7486c8d22a37c4708ef4c6dfdf246ecc2189d7cf7da766aa1b"
+    },
+    {
+      "id": "book-c6-p85-r07",
+      "inputs": {
+        "L": 0.2,
+        "ΔI": -3,
+        "Δt": 0.05
+      },
+      "expected": 12,
+      "label": "Falling current",
+      "reference": "Current falls by 3 A in 0.05 s, so the inductor loses 0.6 Wb-turn of linkage. The signed back emf is +12 V in this expression’s reference, opposing the decrease.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "cc170f32d9eefa7486c8d22a37c4708ef4c6dfdf246ecc2189d7cf7da766aa1b"
+    },
+    {
+      "id": "book-c6-p85-r07",
+      "inputs": {
+        "L": 0.2,
+        "ΔI": 0,
+        "Δt": 0.05
+      },
+      "expected": 0,
+      "label": "Constant current",
+      "reference": "With constant L and no current change, linkage is unchanged and the ideal inductive back emf is zero. Winding resistance is outside this model.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "cc170f32d9eefa7486c8d22a37c4708ef4c6dfdf246ecc2189d7cf7da766aa1b"
+    },
+    {
+      "id": "book-c6-p85-r08",
+      "inputs": {
+        "B": 0.4,
+        "l": 0.5,
+        "v": 3,
+        "N": 10
+      },
+      "expected": 6,
+      "label": "Moving active segments",
+      "reference": "Each perpendicular 0.5 m segment moving at 3 m/s sweeps 1.5 m² of area per second. In a 0.4 T field that is 0.6 Wb/s, or 0.6 V per segment. Ten additive active segments give a 6 V magnitude.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b07392d49d342787addb9de9429f887ccfb56cc60f3bbaba4279f60005d3ad4d"
+    },
+    {
+      "id": "book-c6-p85-r08",
+      "inputs": {
+        "B": 0.4,
+        "l": 0.5,
+        "v": 0,
+        "N": 10
+      },
+      "expected": 0,
+      "label": "Stationary segments",
+      "reference": "Zero segment speed means zero swept area per second, so this motional-emf contribution is zero. Time-varying magnetic fields are a separate induction mechanism.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "b07392d49d342787addb9de9429f887ccfb56cc60f3bbaba4279f60005d3ad4d"
+    },
+    {
+      "id": "book-c6-p86-r03",
+      "inputs": {
+        "L": 0.5,
+        "R": 5
+      },
+      "expected": 0.1,
+      "label": "Passive RL time constant",
+      "reference": "For a 0.5 H inductor with a closed 5 Ω discharge path, Kirchhoff’s balance gives di/dt = −10i per second. Current therefore falls by a factor of e in 0.1 s. This finite positive time constant assumes L>0 and R>0.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a187671f73fe39f0110af942e1d5a7a494ae2682b6c67de8398f3173100fc559"
+    },
+    {
+      "id": "book-c6-p86-r04",
+      "inputs": {
+        "L": 0.4,
+        "I": 3
+      },
+      "expected": 1.8,
+      "label": "Positive current",
+      "reference": "During a slow ideal current ramp from 0 to 3 A, flux linkage rises linearly from 0 to 1.2 Wb-turn. Integrating linkage against current gives the triangular area 1.2 × 3 / 2 = 1.8 J stored in the magnetic field.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "aa44a80b8388a2b8cc7e6d08eb770969617b8b5e9ee9942737b0c174db41c9c7"
+    },
+    {
+      "id": "book-c6-p86-r04",
+      "inputs": {
+        "L": 0.4,
+        "I": -3
+      },
+      "expected": 1.8,
+      "label": "Reversed current",
+      "reference": "Reversing a linear inductor’s current reverses its magnetic field, but stored field energy remains positive. The equal-magnitude ramp to −3 A stores the same 1.8 J as the +3 A case.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "aa44a80b8388a2b8cc7e6d08eb770969617b8b5e9ee9942737b0c174db41c9c7"
+    },
+    {
+      "id": "book-c6-p86-r04",
+      "inputs": {
+        "L": 0.4,
+        "I": 0
+      },
+      "expected": 0,
+      "label": "Zero current",
+      "reference": "Zero current in this linear ideal inductor gives zero magnetic field and zero stored magnetic energy.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "aa44a80b8388a2b8cc7e6d08eb770969617b8b5e9ee9942737b0c174db41c9c7"
+    },
+    {
+      "id": "book-c6-p88-r02",
+      "inputs": {
+        "I_peak": 14.142135623730951
+      },
+      "expected": 10,
+      "label": "Pure sine reference",
+      "reference": "For a zero-offset sine with peak 10√2 A, the mean square over one cycle is 100 A². Its root is 10 A RMS. The separate reference test integrates the squared waveform numerically; this peak/RMS relation does not apply to arbitrary waveforms.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "5e9dfa5db00b039ce4a1b0202ca04e3c0e3c2f30c692e591b3bb49a93a5cb569"
+    },
+    {
+      "id": "book-c6-p90-r07",
+      "inputs": {
+        "U_phase": 230
+      },
+      "expected": 398.37168574084177,
+      "label": "Balanced star phasors",
+      "reference": "Take two 230 V RMS phase phasors separated by 120°. Their rectangular difference is (345, 199.18584) V, whose length is approximately 398.37169 V. This is a phasor difference, not 230 + 230 V.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "31c806c524b8503ff926039c296cfeab240481b396f66b7ea834fc7496bca0b4"
+    },
+    {
+      "id": "book-c6-p90-r10",
+      "inputs": {
+        "I_phase": 12
+      },
+      "expected": 20.784609690826528,
+      "label": "Balanced delta phasors",
+      "reference": "At one delta junction, subtract two equal 12 A branch-current phasors separated by 120°. The rectangular difference has components 18 A and 10.392305 A, giving approximately 20.78461 A line-current magnitude.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e92dee4d84ae3f8a7ac55e4e2858ea11db6a5bdf7678b754182028c1cd21871f"
+    },
+    {
+      "id": "book-c6-p90-r10",
+      "inputs": {
+        "I_phase": 0
+      },
+      "expected": 0,
+      "label": "Zero branch currents",
+      "reference": "With both relevant branch-current phasors zero, their difference and the line current are zero.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "e92dee4d84ae3f8a7ac55e4e2858ea11db6a5bdf7678b754182028c1cd21871f"
+    },
+    {
+      "id": "book-c6-p91-r02",
+      "inputs": {
+        "U_LL": 398.37168574084177,
+        "I_line": 10
+      },
+      "expected": 6900,
+      "label": "Three identical phase loads",
+      "reference": "For a balanced star load, each branch has 230 V RMS and 10 A RMS, giving 2300 VA per phase. Three identical phases total 6900 VA. The matching line voltage is approximately 398.37169 V; line current is 10 A. This is apparent power, not active watts.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "a85139c68fb1dc65fa2979a7ae8734c5c3922a18add4ca87211c89a264fa9bbd"
+    },
+    {
+      "id": "book-c6-p92-r01",
+      "inputs": {
+        "N₁": 500,
+        "N₂": 100
+      },
+      "expected": 5,
+      "label": "Step-down winding ratio",
+      "reference": "Five groups of 100 primary turns correspond to one 100-turn secondary winding, so the primary/secondary turns ratio is 5. Under ideal equal volts-per-turn conditions, 500 V at the primary corresponds to 100 V at the secondary.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "451d8889b462e365bedd6bfb678c9e3ca5c3f50d625eff1ac01a875ec752c5d4"
+    },
+    {
+      "id": "book-c6-p92-r01",
+      "inputs": {
+        "N₁": 100,
+        "N₂": 500
+      },
+      "expected": 0.2,
+      "label": "Step-up winding ratio",
+      "reference": "The primary has one fifth as many turns as the secondary. The primary/secondary ratio is 0.2, and the ideal secondary winding voltage is five times the primary winding voltage.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "451d8889b462e365bedd6bfb678c9e3ca5c3f50d625eff1ac01a875ec752c5d4"
+    },
+    {
+      "id": "book-c6-p92-r03",
+      "inputs": {
+        "I₂": 10,
+        "I₁": 2
+      },
+      "expected": 5,
+      "label": "Ideal current and power balance",
+      "reference": "An ideal transformer with 500 V and 2 A at its primary transfers 1000 VA. At a 100 V secondary, equal apparent power requires 10 A. The secondary/primary current ratio is 10/2 = 5, consistent with a primary/secondary turns ratio of 5. Excitation and losses are excluded.",
+      "degrees": false,
+      "side": 1,
+      "context_sha256": "81cd7615ceca6c5d6f90e3a356649bfe55528a215ba3686225c6cb252bea48b8"
     }
   ]
 }

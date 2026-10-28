@@ -8,9 +8,11 @@ let browser,server;const errors=[];
  browser=await pw[engine].launch(process.env.STUDENTS_BROWSER_EXECUTABLE?{executablePath:process.env.STUDENTS_BROWSER_EXECUTABLE}:{});
  const context=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});await context.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.abort());
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/students/index.html#formulas');
- await page.locator('#worked-only').check();assert.equal(await page.locator('#formula-grid .formula-card').count(),3);
+ await page.locator('#worked-only').check();assert.equal(await page.locator('#formula-grid .formula-card').count(),12);
  for(const width of [1440,390,320]){
   await page.setViewportSize({width,height:900});
+  const buttonsFit=await page.locator('#formula-grid .formula-card').evaluateAll(cards=>cards.every(card=>{const bounds=card.getBoundingClientRect();return [...card.querySelectorAll('.card-actions button')].every(b=>{const r=b.getBoundingClientRect();return r.left>=bounds.left&&r.right<=bounds.right+1&&r.top>=bounds.top&&r.bottom<=bounds.bottom+1})}));
+  assert.ok(buttonsFit,'Card actions remain within their card after reflow '+width);
   const btn=page.locator('[data-examples="sliding-friction-model"]');await btn.click();
   const example=page.locator('#formula-grid #book-mechanics-p32-r03 .worked-example');
   await example.locator('.worked-example-body').waitFor({state:'visible'});
@@ -22,9 +24,23 @@ let browser,server;const errors=[];
   await page.screenshot({path:path.join(out,'example-'+width+'.png')});
   await example.locator('summary').press('Enter');assert.equal(await example.getAttribute('open'),null);
   await example.locator('summary').press('Enter');assert.notEqual(await example.getAttribute('open'),null);
+  // Verify electrical notation and live case changes at every viewport.
+  await page.locator('[data-examples="resistance-from-resistivity"]').click();
+  const electrical=page.locator('#formula-grid #book-c6-p81-r10 .worked-example');
+  assert.match(await electrical.textContent(),/1\.72E-8 Ω·m/);assert.match(await electrical.textContent(),/2\.5E-6 m²/);
+  await electrical.locator('select').selectOption('1');assert.match(await electrical.locator('.worked-result').textContent(),/0 V/);assert.match(await electrical.locator('summary').textContent(),/0 V/);
+  assert.ok(await electrical.evaluate(n=>n.scrollWidth<=n.clientWidth+1),'Electrical case fits '+width);
+  await electrical.locator('select').selectOption('0');await electrical.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'electrical-'+width+'.png')});
+  await page.locator('[data-examples="student-v2-inductor-voltage"]').click();
+  const emf=page.locator('#formula-grid #book-c6-p85-r06 .worked-example');
+  await emf.locator('select').selectOption('1');assert.match(await emf.locator('.worked-case-content').textContent(),/loses 0\.6/);assert.match(await emf.locator('.worked-result').textContent(),/6 V/);
+  await emf.locator('select').selectOption('2');assert.match(await emf.locator('.worked-result').textContent(),/0 V/);
+  await emf.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'emf-'+width+'.png')});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Electrical variants have no horizontal page overflow '+width);
+
  }
  await page.locator('#formula-search').fill('rolling');assert.equal(await page.locator('#formula-grid .formula-card').count(),1);
  await page.locator('#library-home-link').click();await page.waitForFunction(()=>document.querySelector('#formula-count').textContent==='575 / 575');assert.equal(await page.locator('#worked-only').isChecked(),false);
  await page.locator('#worked-only').check();await page.evaluate(()=>location.hash='chapter-2');await page.waitForFunction(()=>!document.querySelector('#worked-only').checked);assert.ok(await page.locator('#formula-grid .formula-card').count()>0);
- assert.deepEqual(errors,[]);console.log(JSON.stringify({status:'PASS',engine,widths:[1440,390,320],examples:10,scope:'Responsive layout, keyboard expansion, focus destination, search and destination resets',errors}));
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({status:'PASS',engine,widths:[1440,390,320],examples:22,scope:'Responsive layout, keyboard expansion, focus destination, search and destination resets',errors}));
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server?.close()});
