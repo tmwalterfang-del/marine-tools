@@ -1,0 +1,43 @@
+name: Android store screenshots
+on:
+  push:
+    branches: ['feature/play-store-assets']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: MarineTools-Play-build7-android
+          run-id: 40572913607
+          github-token: ${{ github.token }}
+          path: emulator-input
+      - run: npm install --prefix /tmp/android-store --no-audit --no-fund playwright@1.62.1
+      - run: node /tmp/android-store/node_modules/playwright/cli.js install android
+      - run: sudo chmod 666 /dev/kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 9
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          profile: pixel_7
+          disable-animations: true
+          script: |
+            adb install "$(find emulator-input -path '*/apk/debug/app-debug.apk' -print -quit)"
+            NODE_PATH=/tmp/android-store/node_modules timeout 270s node scripts/store/capture-android-store.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MarineTools-build9-store-screenshots
+          path: store-captures/
+          if-no-files-found: error
