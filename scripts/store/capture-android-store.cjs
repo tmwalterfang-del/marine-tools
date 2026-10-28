@@ -21,9 +21,15 @@ const watchdog=setTimeout(()=>{console.error('Store capture timed out');process.
      await page.locator('#resAirDraft').scrollIntoViewIfNeeded();
     }
     if(route==='electrical'){await page.locator('#calc3p').click();await page.locator('#res3p').scrollIntoViewIfNeeded();}
-    await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(400);
+    await page.evaluate(()=>document.fonts.ready);
+    await page.locator('#'+route).waitFor({state:'visible'});
+    await page.waitForFunction(id=>document.documentElement.dataset.mtPage===id&&MT_APP_NAV.current===id,route);
+    await page.waitForTimeout(1800);
+    await page.screenshot(); // Flush the WebView render before reading the Android display surface.
+    await page.waitForTimeout(400);
     const file=profile.name+'-'+(i+1)+'-'+route+'.png';await device.screenshot({path:out+'/'+file});
-    captures.push({file,route,profile,buildNumber:9,package:pkg,source:'Actual Android emulator screenshot; original app UI',physicalDevice:false});
+    const actualRoute=await page.evaluate(()=>MT_APP_NAV.current);assert.equal(actualRoute,route);
+    captures.push({file,route,actualRoute,profile,buildNumber:9,package:pkg,source:'Actual Android emulator screenshot; original app UI',physicalDevice:false});
    }
   }
   fs.writeFileSync(out+'/capture-manifest.json',JSON.stringify({buildNumber:9,sourceApkArtifactRun:40572913607,sourceApkArtifactName:'MarineTools-Play-build7-android',artifactNameNote:'Legacy artifact label; embedded APK and app config are build 9',captures},null,2));
