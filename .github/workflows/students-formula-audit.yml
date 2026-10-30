@@ -33,12 +33,15 @@ jobs:
       - name: Formula and catalogue integrity
         run: node tests/students-smoke-20261019.mjs
       - name: Education linked assets and offline shell
-        run: node tests/students-education-assets-20261030.mjs
+        run: |
+          node tests/students-education-assets-20261030.mjs
+          node tests/students-private-preview-cache-20261030.mjs
       - name: Learning state, self-test scoring and exercise resources
         run: node tests/students-learning-engine-20261030.mjs
       - name: Eleven discovery models and shared learning-cycle state
         run: |
           node tests/students-discovery-reference-20261030.mjs
+          node tests/students-advanced-reference-20261030.mjs
           node tests/students-learning-cycle-engine-20261030.mjs
       - name: Independent circuit node balances
         run: node tests/students-source-circuits-20261020.mjs
@@ -108,6 +111,7 @@ jobs:
           node tests/students-worked-examples-ui-20261027.cjs
           node tests/students-calculator-ui-20261030.cjs
           node tests/students-model-lab-ui-20261030.cjs
+          node tests/students-advanced-ui-20261030.cjs
           node tests/students-practice-ui-20261030.cjs
           node tests/students-learning-ui-20261030.cjs
           node tests/students-learning-cycle-ui-20261030.cjs

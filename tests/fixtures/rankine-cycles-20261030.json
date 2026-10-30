@@ -1,0 +1,77 @@
+{
+  "source": "CoolProp 7.2.0 independent IF97 implementation",
+  "cases": [
+    {
+      "inputs": {
+        "boiler": 40,
+        "condenser": 0.1,
+        "temperature": 400,
+        "turbineEfficiency": 0.8,
+        "pumpEfficiency": 0.8,
+        "flow": 1
+      },
+      "expected": {
+        "wt": 855.9437652628175,
+        "wp": 5.038674606344637,
+        "qin": 3017.522539071326,
+        "qout": 2166.617448414853,
+        "net": 850.9050906564728,
+        "efficiency": 0.2819879817429128
+      }
+    },
+    {
+      "inputs": {
+        "boiler": 20,
+        "condenser": 0.2,
+        "temperature": 350,
+        "turbineEfficiency": 1,
+        "pumpEfficiency": 1,
+        "flow": 1
+      },
+      "expected": {
+        "wt": 844.9205323071037,
+        "wp": 2.013945088522793,
+        "qin": 2884.2275313652945,
+        "qout": 2041.3209441467134,
+        "net": 842.906587218581,
+        "efficiency": 0.2922469111927442
+      }
+    },
+    {
+      "inputs": {
+        "boiler": 100,
+        "condenser": 0.05,
+        "temperature": 550,
+        "turbineEfficiency": 0.9,
+        "pumpEfficiency": 0.85,
+        "flow": 1
+      },
+      "expected": {
+        "wt": 1297.5337880174602,
+        "wp": 11.821394612768684,
+        "qin": 3352.3534196816963,
+        "qout": 2066.6410262770046,
+        "net": 1285.7123934046915,
+        "efficiency": 0.3835253126523781
+      }
+    },
+    {
+      "inputs": {
+        "boiler": 10,
+        "condenser": 1,
+        "temperature": 300,
+        "turbineEfficiency": 0.7,
+        "pumpEfficiency": 0.65,
+        "flow": 1
+      },
+      "expected": {
+        "wt": 324.8038293380877,
+        "wp": 1.4443585465225626,
+        "qin": 2632.822341221266,
+        "qout": 2309.4628704297006,
+        "net": 323.3594707915651,
+        "efficiency": 0.12281856839667009
+      }
+    }
+  ]
+}

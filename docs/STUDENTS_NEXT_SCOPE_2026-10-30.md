@@ -25,19 +25,19 @@ Unchecked entries are pending implementation and verification, not delivered fea
 - [ ] 12. Timed/weighted self-tests and selectable resources.
 - [ ] 13. Teaching sessions and teacher guides.
 - [ ] 14. Chapter workbook with notes and annotated experiments.
-- [ ] 15. Free-body force and moment diagrams.
-- [ ] 16. Truss builder and member/reaction forces.
-- [ ] 17. Euler column buckling.
-- [ ] 18. Free/restrained thermal expansion and stress.
-- [ ] 19. Series/parallel pipe network.
-- [ ] 20. Hydraulic pump/valve/cylinder circuit.
-- [ ] 21. Rankine steam cycle with verified water properties.
-- [ ] 22. Refrigeration p–h process with documented property/model limits.
-- [ ] 23. Kirchhoff resistor-network builder and virtual meters.
-- [ ] 24. Induction-motor equivalent circuit and torque/slip.
-- [ ] 25. Unbalanced three-phase load and neutral current.
-- [ ] 26. Relative navigation motion and CPA/TCPA lesson.
-- [ ] 27. Bearing fixes and observation uncertainty.
+- [x] 15. Free-body force and moment diagrams.
+- [x] 16. Truss builder and member/reaction forces.
+- [x] 17. Euler column buckling.
+- [x] 18. Free/restrained thermal expansion and stress.
+- [x] 19. Series/parallel pipe network.
+- [x] 20. Hydraulic pump/valve/cylinder circuit.
+- [x] 21. Rankine steam cycle with verified water properties.
+- [x] 22. Refrigeration p–h process with documented property/model limits.
+- [x] 23. Kirchhoff resistor-network builder and virtual meters.
+- [x] 24. Induction-motor equivalent circuit and torque/slip.
+- [x] 25. Unbalanced three-phase load and neutral current.
+- [x] 26. Relative navigation motion and CPA/TCPA lesson.
+- [x] 27. Bearing fixes and observation uncertainty.
 - [ ] 28. Project folders and multiple vessel profiles.
 - [ ] 29. Linked calculation workflow with units and provenance.
 - [ ] 30. Combined multi-calculation reports.

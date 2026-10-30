@@ -62,7 +62,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   check((await page.locator('#formula-grid .topic-pill').allTextContents()).every(t=>t==='Ship Stability'),'subject results match the visible filter',{scope});
   await page.goto(base+'/students/interactive.html');await page.waitForSelector('#module-list a',{state:'attached'});
   const modules=await page.locator('#module-list a').evaluateAll(xs=>xs.map(x=>({id:x.hash.slice(1),name:x.textContent})));
-  check(modules.length===32,'thirty-two modules selectable',{scope});
+  check(modules.length===45,'forty-five modules selectable',{scope});
   check(await page.locator('#module-quick').isVisible(),'compact selector available at every viewport',{scope});
   for(const {id,name}of modules){
    console.log('MODULE '+scope+'/'+id);
