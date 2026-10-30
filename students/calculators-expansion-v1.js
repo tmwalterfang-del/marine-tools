@@ -48,11 +48,11 @@
     {invalid:hg>hf?null:"Vapour enthalpy must exceed liquid enthalpy."})},
   {id:"steam-boiler-heat",name:"Steam boiler heat duty",category:"Steam Engineering",
    description:"Steady-flow heat duty ignoring losses and kinetic energy.",
-   fields:[F("flow","Mass flow","kg/h",2000),F("hout","Outlet enthalpy","kJ/kg",2800),F("hin","Inlet enthalpy","kJ/kg",400,"nonnegative")],
+   fields:[F("flow","Mass flow","kg/h",2000),F("hout","Outlet enthalpy","kJ/kg",2800,"any"),F("hin","Inlet enthalpy","kJ/kg",400,"any")],
    compute:({flow,hout,hin})=>R(flow*(hout-hin)/3600,"kW",["Qdot = mass flow × (hout − hin)","kg/h × kJ/kg ÷ 3600 = kW"])},
   {id:"cooling-cop",name:"Cooling COP from enthalpies",category:"Refrigeration & Heat Pumps",
    description:"Illustrative vapour-compression cycle with defined state points.",
-   fields:[F("h1","Compressor inlet h1","kJ/kg",400),F("h2","Compressor outlet h2","kJ/kg",450),F("h4","Evaporator inlet h4","kJ/kg",250,"nonnegative")],
+   fields:[F("h1","Compressor inlet h1","kJ/kg",400,"any"),F("h2","Compressor outlet h2","kJ/kg",450,"any"),F("h4","Evaporator inlet h4","kJ/kg",250,"any")],
    compute:({h1,h2,h4})=>R((h1-h4)/(h2-h1),"dimensionless",["COP = (h1 − h4)/(h2 − h1)"],
     {invalid:h2>h1&&h1>h4?null:"Require h2 > h1 > h4."})},
   {id:"shaft-torsion",name:"Solid shaft polar moment",category:"Machine Elements",
@@ -63,7 +63,7 @@
    description:"Fixed-rate end-of-period loan payment, excluding fees.",
    fields:[F("pv","Present amount","NOK",100000),F("rate","Interest per period","%",5,"nonnegative"),F("periods","Periods","count",10)],
    compute:({pv,rate,periods})=>{
-    const r=rate/100,a=r===0?pv/periods:pv*r/(1-(1+r)**(-periods));
+    const r=rate/100,a=r===0?pv/periods:pv*r/(-Math.expm1(-periods*Math.log1p(r)));
     return R(a,"NOK / period",["A = PV × r / (1 − (1+r)^−n)","If interest is zero: A = PV/n"],
      {invalid:Number.isInteger(periods)&&periods<=1000?null:"Periods must be a whole number ≤ 1000."});
    }},

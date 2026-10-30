@@ -3,6 +3,7 @@
  * Viewports emulate layout/touch; they do not certify physical operating systems/devices.
  */
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {pathToFileURL}=require('node:url');
 const pw=require('playwright'),root=path.resolve(__dirname,'..'),engine=process.argv[2]||'chromium';
 const output=path.resolve(process.env.QA_OUTPUT||('qa-education-'+engine));fs.mkdirSync(output,{recursive:true});
 const sizes=[['desktop',1440,900],['laptop',1280,720],['tablet-portrait',768,1024],['tablet-landscape',1080,810],['phone',390,844],['small-phone',320,568],['wide-short',2048,774],['phone-landscape',844,390]];
@@ -20,7 +21,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   const scope=engine+'/'+device,context=await browser.newContext({viewport:{width,height},hasTouch:width<900,isMobile:engine!=='firefox'&&width<=430,acceptDownloads:true,reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',route=>{
    const request=route.request(),url=request.url();
-   if(url.startsWith(base)||url.startsWith('blob:')||url.startsWith('file://'+output+path.sep))return route.continue();
+   if(url.startsWith(base)||url.startsWith('blob:')||url.startsWith(pathToFileURL(output+path.sep).href))return route.continue();
    // Exercise a deliberately unavailable provider without WebKit's synthetic
    // CORS page errors from aborting cross-origin API requests during navigation.
    // No live provider is contacted or treated as a successful integration test.
@@ -28,6 +29,17 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    return route.abort();
   });
   await context.addInitScript(()=>localStorage.setItem('mt.lastSeenReleaseBuild','20261019-v8-7-0'));
+  // This is a layout test, not a live account/provider integration test.
+  // Resolve the unavailable-provider fixture in the page so WebKit cannot
+  // turn a cancelled cross-origin mock response into a synthetic page error.
+  await context.addInitScript(()=>{
+   const originalFetch=window.fetch.bind(window);
+   window.fetch=(input,options)=>{
+    const url=new URL(input instanceof Request?input.url:String(input),location.href);
+    if(url.hostname==='api.marinetools.app')return Promise.resolve(new Response(JSON.stringify({status:'unavailable',error:'QA provider deliberately unavailable'}),{status:503,headers:{'content-type':'application/json'}}));
+    return originalFetch(input,options);
+   };
+  });
   const page=await context.newPage();page.on('pageerror',e=>errors.push({scope,message:e.message}));
   await page.goto(base+'/');await page.waitForFunction(()=>typeof window.__marineToolsOpenPage==='function');
   if(await page.locator('#mtReleaseDone').isVisible().catch(()=>false))await page.locator('#mtReleaseDone').click();
@@ -50,7 +62,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   check((await page.locator('#formula-grid .topic-pill').allTextContents()).every(t=>t==='Ship Stability'),'subject results match the visible filter',{scope});
   await page.goto(base+'/students/interactive.html');await page.waitForSelector('#module-list a',{state:'attached'});
   const modules=await page.locator('#module-list a').evaluateAll(xs=>xs.map(x=>({id:x.hash.slice(1),name:x.textContent})));
-  check(modules.length===15,'fifteen modules selectable',{scope});
+  check(modules.length===32,'thirty-two modules selectable',{scope});
   check(await page.locator('#module-quick').isVisible(),'compact selector available at every viewport',{scope});
   for(const {id,name}of modules){
    console.log('MODULE '+scope+'/'+id);
@@ -97,7 +109,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    await page.locator('#export-report').evaluate(el=>{for(let p=el.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true});
    const pending=page.waitForEvent('download');await page.locator('#export-report').click();const download=await pending,reportPath=path.join(output,'mollier-report.html');await download.saveAs(reportPath);
    const report=fs.readFileSync(reportPath,'utf8');check(report.includes('study-snapshot')&&report.includes('<svg'),'actual HTML download',{scope});
-   const reportPage=await context.newPage();await reportPage.goto('file://'+reportPath);await reportPage.waitForSelector('svg');await reportPage.emulateMedia({media:'print'});await reportPage.screenshot({path:path.join(output,'report-print.png'),fullPage:true});
+   const reportPage=await context.newPage();await reportPage.goto(pathToFileURL(reportPath).href);await reportPage.waitForSelector('svg');await reportPage.emulateMedia({media:'print'});await reportPage.screenshot({path:path.join(output,'report-print.png'),fullPage:true});
    if(engine==='chromium'){await reportPage.pdf({path:path.join(output,'mollier-report.pdf'),format:'A4',printBackground:true});check(fs.statSync(path.join(output,'mollier-report.pdf')).size>10000,'actual Chromium PDF',{scope});}
    await reportPage.close();
   }

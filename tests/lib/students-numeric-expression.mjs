@@ -3,22 +3,25 @@
 export function evaluate(text, values, degrees = false) {
   const functions = {
     sum: x => x, // Explicit one-term summation specialization in the worked-case fixture.
-    sqrt: Math.sqrt, abs: Math.abs, exp: Math.exp, ln: Math.log,
+    sqrt: Math.sqrt, abs: Math.abs, exp: Math.exp, ln: Math.log, log: Math.log, max: Math.max,
     log10: Math.log10, sin: x => Math.sin(degrees ? x * Math.PI / 180 : x),
     cos: x => Math.cos(degrees ? x * Math.PI / 180 : x),
     tan: x => Math.tan(degrees ? x * Math.PI / 180 : x),
     atan2: (y, x) => Math.atan2(y, x) * (degrees ? 180 / Math.PI : 1),
     wrap360: x => ((x % 360) + 360) % 360,
     wrap180: x => ((x + 180) % 360 + 360) % 360 - 180,
+    'wrap2π': x => ((x % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI),
   };
   const names = Object.keys(values).sort((a,b) => b.length-a.length);
-  const supers = { '⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-' };
+  const functionNames = Object.keys(functions).sort((a,b) => b.length-a.length);
+  const supers = { '⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-','⁺':'+','ⁿ':'n','ᵐ':'m','ᵖ':'p','ᵏ':'k','ˣ':'x' };
   const tokens = [];
-  text = text.replaceAll('log₁₀', 'log10').replaceAll('Σ', 'sum');
+  text = text.replaceAll('log₁₀', 'log10').replaceAll('Σ', 'sum')
+    .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺ⁿᵐᵖᵏˣ]+/g,sequence=>'^('+[...sequence].map(c=>supers[c]).join('')+')');
   for (let i=0; i<text.length;) {
     const rest=text.slice(i), c=text[i];
     if (/\s/.test(c)) {i++;continue;}
-    const fn=Object.keys(functions).find(n=>rest.startsWith(n) && (!Object.hasOwn(values,n) || rest[n.length]==='('));
+    const fn=functionNames.find(n=>rest.startsWith(n) && (!Object.hasOwn(values,n) || rest[n.length]==='('));
     if(fn){tokens.push({fn});i+=fn.length;continue;}
     const name=names.find(n=>rest.startsWith(n));
     if(name){if(!Number.isFinite(values[name]))throw Error('Non-finite input '+name);tokens.push({n:values[name]});i+=name.length;continue;}
@@ -43,7 +46,7 @@ export function evaluate(text, values, degrees = false) {
       let args=[];
       if(tokens[i]==='('){i++;args.push(expression());while(tokens[i]===','){i++;args.push(expression());}if(tokens[i++]!==')')throw Error('Unclosed function');}
       else args=[power()];
-      if(args.length!==(t.fn==='atan2'?2:1))throw Error('Invalid function arity');
+      if(args.length!==(['atan2','max'].includes(t.fn)?2:1))throw Error('Invalid function arity');
       const a=functions[t.fn](...args);return exponent===null?a:a**exponent;
     }
     throw Error('Expected numeric value');

@@ -7,6 +7,9 @@ let browser,server,checks=0;const errors=[];function ok(v,m){assert.ok(v,m);chec
  browser=await pw[engine].launch();const context=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});await context.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.abort());const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
  for(const[group,ids]of Object.entries(groups))for(const id of ids){
   console.log('SESSION '+engine+'/'+id);await page.goto(base+'/students/'+group+'.html#'+id);await page.waitForFunction(()=>!!window.MT_STUDY_DRAFT);
+  // A change of hash on the same page finishes before its hashchange handlers.
+  if(group==='labs')await page.waitForFunction(id=>!document.getElementById(id).hidden,id);
+  if(group==='examples'||group==='explorers')await page.waitForFunction(id=>document.getElementById('module').value===id,id);
   await page.evaluate(()=>{for(const d of document.querySelectorAll('details.teaching-inputs'))d.open=true});
   const svg=page.locator('main svg[viewBox]:visible').first(),original=await svg.getAttribute('viewBox');
   await svg.locator('xpath=preceding-sibling::div[contains(@class,"diagram-tools")]').getByRole('button',{name:'Zoom +',exact:true}).click();

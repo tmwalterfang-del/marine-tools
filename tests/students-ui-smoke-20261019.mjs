@@ -26,7 +26,7 @@ function element(id){
    querySelectorAll(selector){
     assert.equal(selector,'input');
     return [...this.innerHTML.matchAll(/<input[^>]*name="([^"]+)"[^>]*value="([^"]+)"/g)]
-     .map(match=>({name:match[1],value:match[2]}));
+     .map(match=>({name:match[1],value:match[2],setAttribute(){}}));
    }
   };
  }
@@ -36,11 +36,12 @@ const tabs=['formulas','symbols','calculators','practice','sheet'].map(tab=>({
  dataset:{tab},listeners:{},classList:{toggle(){}},setAttribute(){},
  addEventListener(type,fn){this.listeners[type]=fn}
 }));
-const panes=tabs.map(x=>({dataset:{pane:x.dataset.tab},hidden:false}));
+const panes=tabs.map(x=>({dataset:{pane:x.dataset.tab},hidden:false,setAttribute(){}}));
 const document={
  readyState:'complete',documentElement:{lang:'en',dataset:{}},
  body:{classList:{add(x){storage.printing=x},remove(x){delete storage.printing}}},
  getElementById:element,
+ querySelector(selector){if(selector==='[role="tablist"]')return {addEventListener(){}};const match=selector.match(/^\[data-pane="([^"]+)"\]$/);if(match)return panes.find(p=>p.dataset.pane===match[1]);throw Error('Unexpected DOM query '+selector);},
  querySelectorAll(selector){
   if(selector==='[data-tab]')return tabs;
   if(selector==='[data-pane]')return panes;
@@ -50,7 +51,7 @@ const document={
  createElement(){return {value:'',textContent:''}}
 };
 const localStorage={getItem(key){return storage[key]??null},setItem(key,val){storage[key]=val}};
-const location={hash:''};
+let currentHash='';const location={get hash(){return currentHash},set hash(value){currentHash=value?(value.startsWith('#')?value:'#'+value):''}};
 win.addEventListener=(type,fn)=>{win[type]=fn};
 win.print=()=>printCalls++;
 win.confirm=()=>true;
@@ -113,13 +114,13 @@ switchTab('formulas');
 element('study-group').listeners.change({target:{value:'All'}});
 element('formula-search').listeners.input({target:{value:'Maximum projectile height'}});
 verify(element('formula-grid').innerHTML.includes('Projectile position above launch datum')&&element('formula-grid').innerHTML.includes('Maximum projectile height'),'source variant search opens the correct projectile family');
-verify(element('formula-grid').innerHTML.includes('selected numerical reference case covered'),'reference-case status does not claim full domain validation');
+verify(element('formula-grid').innerHTML.includes('Conditions:')&&!element('formula-grid').innerHTML.includes('full domain validation'),'product shows applicability conditions without editorial validation status');
 element('formula-search').listeners.input({target:{value:'Roller bearing basic rating life'}});
 verify(element('formula-grid').innerHTML.includes('1000000')&&element('formula-grid').innerHTML.includes('10/3'),'roller variant and explicit revolution scaling render');
 switchTab('symbols');element('symbol-search').value='MINIMUM FILM thickness';element('symbol-search').listeners.input();
 verify(element('symbol-results').innerHTML.includes('radial clearance'),'local film-fraction quantity is searchable');
 switchTab('formulas');element('formula-search').listeners.input({target:{value:'Ketone pattern'}});
-verify(element('formula-grid').innerHTML.includes('Source pattern read; structural and stoichiometric verification remains separate.')&&!element('formula-grid').innerHTML.includes('Symbolic rule checked'),'chemical patterns render without claiming symbolic proof');
+verify(element('formula-grid').innerHTML.includes('Conditions:')&&!element('formula-grid').innerHTML.includes('Symbolic rule checked'),'chemical patterns retain conditions without a symbolic-proof claim');
 element('formula-search').listeners.input({target:{value:'Ideal dilute concentration pH'}});
 verify(element('formula-grid').innerHTML.includes('c_H/c°'),'pH variant shows standard-state concentration ratio');
 console.log(JSON.stringify({status:'PASS',checks:messages.length,details:messages}));

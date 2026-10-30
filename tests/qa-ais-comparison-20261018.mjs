@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-const source=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
+const source=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const start=source.indexOf('function snapshot(){'),end=source.indexOf('\n\n',start);
 let saved=null;const box={innerHTML:''};
 const state={aisStatus:'error',forecast:[]};

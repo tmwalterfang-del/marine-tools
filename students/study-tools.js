@@ -3,16 +3,16 @@
 const main=document.querySelector('main');if(!main)return;
 const page=location.pathname.split('/').pop(),prefix='mt.study.draft.v1:',preference='mt.study.autosave.enabled.v1';
 const status=document.createElement('p');status.className='study-connectivity';status.setAttribute('role','status');
-function connection(){const offline=navigator.onLine===false;status.dataset.offline=String(offline);status.textContent=offline?(/\.pages\.dev$/i.test(location.hostname)?'Offline · open calculations still work. Reopening this protected preview requires a connection.':'Offline · local calculations available. Live AIS and weather require a connection.'):'Connection available · these study calculations run locally, without live AIS or weather data.';}
+function connection(){const offline=navigator.onLine===false;status.dataset.offline=String(offline);status.textContent=offline?(/\.pages\.dev$/i.test(location.hostname)?'Offline · open calculations still work. Reopening this workspace requires an internet connection.':'Offline · local calculations available. Live AIS and weather require a connection.'):'Connection available · these study calculations run locally, without live AIS or weather data.';}
 (document.querySelector('.workspace-toolbar')||main).append(status);window.addEventListener('online',connection);window.addEventListener('offline',connection);connection();
 // Supplementary content remains in the DOM for reports and accessibility.
 const extras=new Set([...document.querySelectorAll('.export-panel,.study-export,main>.explanation,#model-limits,.lower>.support')]);
 const notes=document.getElementById('notes');if(notes)extras.add(notes.closest('section'));
 for(const section of extras){if(!section||section.closest('details'))continue;const h=section.querySelector('h2,h3');if(!h)continue;const d=document.createElement('details'),s=document.createElement('summary');d.className='study-extra';s.textContent=h.textContent;section.before(d);d.append(s,section);}
 let printState=[];window.addEventListener('beforeprint',()=>{printState=[...document.querySelectorAll('details.study-extra')].map(d=>[d,d.open]);for(const[d]of printState)d.open=true});window.addEventListener('afterprint',()=>{for(const[d,open]of printState)d.open=open});
-if(!['examples.html','explorers.html','cargo.html','labs.html','mollier.html'].includes(page))return;
+if(!['examples.html','explorers.html','cargo.html','labs.html','mollier.html','model-lab.html'].includes(page))return;
 if(page==='mollier.html'&&typeof window.MT_MOLLIER_INPUTS!=='function')return;
-function moduleId(){const h=location.hash.slice(1);return page==='examples.html'?('example:'+(['lifting','trim','tank','pump','crank','faults'].includes(h)?h:'lifting')):page==='explorers.html'?('explorer:'+(['rlc','heat','current','finance'].includes(h)?h:'rlc')):page==='labs.html'?('labs:'+(['stability','controls','engine'].includes(h)?h:'stability')):page==='cargo.html'?'cargo':'mollier';}
+function moduleId(){const h=location.hash.slice(1);return page==='model-lab.html'?('engineering:'+(Object.hasOwn(window.MT_EDUCATION_MODEL_SCHEMAS||{},h)?h:'beam')):page==='examples.html'?('example:'+(['lifting','trim','tank','pump','crank','faults'].includes(h)?h:'lifting')):page==='explorers.html'?('explorer:'+(['rlc','heat','current','finance'].includes(h)?h:'rlc')):page==='labs.html'?('labs:'+(['stability','controls','engine'].includes(h)?h:'stability')):page==='cargo.html'?'cargo':'mollier';}
 function scope(){if(page==='labs.html')return document.getElementById(moduleId().split(':')[1]);return document.getElementById('experiment');}
 const fields=()=>[...(scope()?.querySelectorAll('input,select,textarea')||[])].filter(x=>x.type!=='file'&&(x.name||x.id));
 const keyOf=x=>(x.form?.id||'')+':'+(x.id||x.name)+':'+(x.type||x.tagName);
@@ -34,6 +34,7 @@ function restore(data){
   if(data.error||pending){const e=document.getElementById('input-error');e.textContent=data.error||'Restored unfinished numeric edits. Review and apply the marked state controls before exporting.';e.hidden=false;}
   return;
  }
+ if(page==='model-lab.html'&&window.MT_MODEL_UI?.active==='units'){window.MT_MODEL_UI.restoreUnitDraft(data);return;}
  const current=fields();if(!Array.isArray(data)||data.length!==current.length)throw Error('Saved fields changed.');
  for(let i=0;i<current.length;i++){const x=current[i],v=data[i];if(!v||v.key!==keyOf(x)||(x.type==='checkbox'?typeof v.value!=='boolean':typeof v.value!=='string'||v.value.length>2000)||x.tagName==='SELECT'&&![...x.options].some(o=>o.value===v.value))throw Error('Invalid saved fields.');}
  for(let i=0;i<current.length;i++){const x=current[i];if(x.type==='checkbox')x.checked=data[i].value;else x.value=data[i].value;}
@@ -51,7 +52,7 @@ function load(){currentId=moduleId();restoring=true;try{if(enabled.checked){cons
 enabled.addEventListener('change',()=>{try{localStorage.setItem(preference,String(enabled.checked));if(enabled.checked){fingerprint='';queue();}else{pending=null;clearTimeout(timer);message.textContent='Automatic local saving is off.';}}catch{message.textContent='Local saving unavailable.';}});
 clear.addEventListener('click',()=>{pending=null;clearTimeout(timer);try{for(const key of Object.keys(localStorage))if(key.startsWith(prefix)||key==='mt-student-labs-v1')localStorage.removeItem(key);fingerprint=JSON.stringify(capture());message.textContent='Saved study drafts cleared. Current inputs remain on screen.';}catch{message.textContent='Could not clear local drafts.';}});
 window.addEventListener('storage',e=>{if(e.key===preference){enabled.checked=e.newValue!=='false';if(!enabled.checked){pending=null;clearTimeout(timer);message.textContent='Automatic local saving is off.';}}if(e.key?.startsWith(prefix)&&e.newValue===null){pending=null;clearTimeout(timer);fingerprint=JSON.stringify(capture());}});
-for(const event of ['input','change','click'])document.addEventListener(event,e=>{if(e.target.id==='module'||e.target.closest('.study-session,.diagram-tools,.lab-nav'))return;queueMicrotask(queue);});
+for(const event of ['input','change','click'])document.addEventListener(event,e=>{if(e.target.id==='module'||e.target.closest('.study-session,.diagram-tools,.diagram-pan-tools,.learning-cycle,.lab-nav'))return;queueMicrotask(queue);});
 document.addEventListener('mt-study-changed',queue);window.addEventListener('pagehide',()=>{queue();flush()});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){queue();flush()}});
 window.addEventListener('hashchange',()=>{flush();load()});
 window.MT_STUDY_DRAFT={capture,flush:()=>{queue();flush()},get key(){return prefix+currentId}};
