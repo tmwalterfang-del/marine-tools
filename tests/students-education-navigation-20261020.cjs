@@ -16,10 +16,10 @@ const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p
  assert.ok(!links.some(a=>/For Students|For professionals/.test(a.textContent)));
  assert.equal(links.find(a=>a.textContent.trim().endsWith('Education')).getAttribute('href'),'/students/');
  const workspace=new JSDOM(read('students/interactive.html'),{url:'https://example.test/students/interactive.html#tank',runScripts:'outside-only'}),q=workspace.window;
- q.eval(read('students/interactive.js'));const select=q.document.getElementById('module-quick');
+ q.eval(read('students/interactive-catalogue-20261030.js'));q.eval(read('students/interactive.js'));const select=q.document.getElementById('module-quick');
  assert.ok(q.document.getElementById('module-picker').hidden);
  const listToggle=q.document.getElementById('toggle-module-list');listToggle.click();assert.equal(listToggle.getAttribute('aria-expanded'),'true');assert.ok(!q.document.getElementById('module-picker').hidden);listToggle.click();assert.ok(q.document.getElementById('module-picker').hidden);
- assert.equal(select.options.length,21);assert.equal(select.querySelectorAll('optgroup').length,5);assert.equal(select.value,'tank');
+ assert.equal(select.options.length,32);assert.equal(select.querySelectorAll('optgroup').length,7);assert.equal(select.value,'tank');
  select.value='pump';select.dispatchEvent(new q.Event('change'));q.dispatchEvent(new q.Event('hashchange'));
  assert.equal(q.location.hash,'#pump');assert.equal(q.document.getElementById('selected-title').textContent,'Pump & system curves');
  assert.equal(q.document.querySelectorAll('iframe').length,2,'Compact selector preserves the existing tank inputs');

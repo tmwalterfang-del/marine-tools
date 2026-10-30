@@ -20,7 +20,7 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
  for(const id of modules){
   console.log('ACCEPTANCE '+engine+'/'+id);await page.selectOption('#module-quick',id);
   await page.waitForFunction(id=>document.getElementById('selected-title').textContent===document.querySelector('#module-list a[href="#'+id+'"]').textContent,id);
-  const h=await page.locator('#frames iframe:not([hidden])').elementHandle(),f=await h.contentFrame();await f.waitForSelector('svg path,svg polyline,svg polygon',{state:'attached'});await openInputs(f);
+  const h=await page.locator('#frames iframe:not([hidden])').elementHandle(),f=await h.contentFrame();await f.waitForSelector('svg path,svg polyline,svg polygon,svg rect',{state:'attached'});await openInputs(f);
   const engineering=await f.evaluate(()=>!!window.MT_EDUCATION_SNAPSHOT),lab=['stability','controls','engine'].includes(id),mollier=id==='mollier';
   const inputSel=mollier?'#pressure-number':lab?(id==='controls'?'#signal-form input[type=number]':'#'+id+'-form input[type=number]'):id==='cargo'?'#cargo-form input[name=displacement]':id==='faults'?'#experiment input[name=flow]':'#experiment input[type=number]';
   const input=f.locator(inputSel).first(),initial=Number(await input.inputValue()),changed=mollier?12:initial===0?1:initial*1.01;
@@ -35,7 +35,7 @@ async function openInputs(frame){const d=frame.locator('details.teaching-inputs:
   await f.waitForFunction(({id,expected})=>{try{const s=window.MT_EXAMPLE_UI?.snapshot()||window.MT_EXPLORER_UI?.snapshot()||window.MT_CARGO_UI?.snapshot()||window.MT_MOLLIER_SNAPSHOT?.()||window.MT_EDUCATION_SNAPSHOT?.()||window.MT_LAB_SNAPSHOT(id);return JSON.stringify({inputs:s.inputs,results:s.results})===JSON.stringify(expected)}catch{return false}},{id,expected});
   check(JSON.stringify(await snapshot(f,id))===JSON.stringify(expected),'file-picker scenario restore recomputes same result/'+id);
   for(const invalid of ['', '1e308']){await input.fill(invalid);await input.dispatchEvent('change');let blocked=false;try{await snapshot(f,id)}catch{blocked=true}check(blocked,'invalid input blocks export snapshot/'+id+'/'+(invalid||'empty'));}
-  for(const edge of ['0','-1']){await input.fill(edge);await input.dispatchEvent('change');let blocked=false;try{await snapshot(f,id)}catch{blocked=true}const allowed=edge==='0'?['crank','faults','finance','current','controls'].includes(id):['crank','controls'].includes(id);check(blocked!==allowed,'zero/negative respects module domain/'+id+'/'+edge);}
+  for(const edge of ['0','-1']){await input.fill(edge);await input.dispatchEvent('change');let blocked=false;try{await snapshot(f,id)}catch{blocked=true}const allowed=edge==='0'?['crank','faults','finance','current','controls','section','mohr','units'].includes(id):['crank','controls','section','mohr','units'].includes(id);check(blocked!==allowed,'zero/negative respects module domain/'+id+'/'+edge);}
   await f.locator(fileSel).setInputFiles(jsonPath);await f.waitForFunction(()=>[...document.querySelectorAll('[role=alert],.error')].every(e=>e.hidden||!e.getBoundingClientRect().height));
   const malformed=Buffer.from(JSON.stringify({...saved,model:'wrong-module'}));await f.locator(fileSel).setInputFiles({name:'wrong.json',mimeType:'application/json',buffer:malformed});
   await f.waitForFunction(()=>[...document.querySelectorAll('#feedback,#export-feedback,#report-feedback,#model-feedback')].some(x=>/Choose a version 1 scenario/.test(x.textContent)));

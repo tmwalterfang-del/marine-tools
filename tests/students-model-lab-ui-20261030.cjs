@@ -9,7 +9,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require
  async function select(id){const selector=d.getElementById('module');selector.value=id;selector.dispatchEvent(new w.Event('change'));await tick();assert.equal(d.getElementById('model-title').textContent,w.MT_EDUCATION_MODEL_SCHEMAS[id].title);}
  function input(key,value){const field=d.querySelector('#experiment [name="'+key+'"]');assert.ok(field,key);field.value=String(value);field.dispatchEvent(new w.Event('input',{bubbles:true}));}
  function valid(){assert.ok(d.getElementById('model-error').hidden,d.getElementById('model-error').textContent);assert.ok(!d.getElementById('model-chart').hasAttribute('hidden'));assert.ok(d.querySelectorAll('#model-results .metric').length>=3);assert.ok(d.querySelectorAll('#model-data th[scope="col"]').length>0);assert.ok(!/NaN|Infinity|undefined/.test(d.getElementById('model-results').textContent));}
- assert.equal(d.getElementById('module').options.length,6);
+ assert.equal(d.getElementById('module').options.length,17);
  for(const id of Object.keys(w.MT_EDUCATION_MODEL_SCHEMAS)){
   await select(id);valid();assert.ok(d.getElementById('model-chapter').querySelector('a').href.includes('#chapter-'));
   const plot=d.getElementById('plot-selector');for(const option of [...plot.options]){plot.value=option.value;plot.dispatchEvent(new w.Event('change'));assert.ok(d.querySelector('#model-chart title').textContent.length>5);assert.ok(d.querySelector('#model-chart desc').textContent.length>20);}
@@ -27,5 +27,5 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require
  assert.equal(d.querySelector('[name="kg"]').value,raw);assert.equal(d.getElementById('model-results').textContent,before);assert.ok(!d.querySelector('img[src="x"]'));
  d.querySelector('[data-model-save="json"]').click();const current=downloads.at(-1).text;
  input('weight',120);Object.defineProperty(scenario,'files',{configurable:true,value:[{text:async()=>current}]});scenario.dispatchEvent(new w.Event('change'));await tick();assert.equal(d.querySelector('[name="weight"]').value,'100');valid();
- assert.deepEqual(errors,[]);dom.window.close();console.log(JSON.stringify({status:'PASS',models:6,exports:downloads.length,scope:'Actual model DOM, all plot views and exports, per-model input retention, conditional fields, invalid-state clearing, signed enthalpies and transactional scenario import.'}));
+ assert.deepEqual(errors,[]);dom.window.close();console.log(JSON.stringify({status:'PASS',models:17,exports:downloads.length,scope:'Actual model DOM, all plot views and exports, per-model input retention, conditional fields, invalid-state clearing, signed enthalpies and transactional scenario import.'}));
 })().catch(e=>{console.error(e);process.exitCode=1});
