@@ -2,3 +2,4 @@
 .education-return{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;margin:12px 0;border:1px solid var(--accent,#63daed);border-radius:8px;color:var(--text,#ecf5fa)}
 .diagram-pan-tools{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;align-items:center}.diagram-pan-tools button{min-height:44px;padding:8px 12px;margin:0;font-size:13px}.diagram-pan-tools span{color:var(--muted);font-size:12px;line-height:1.6;width:100%}@media print{.diagram-pan-tools{display:none!important}}
 body.presentation-view .diagram-tools+svg{margin-top:16px}
+.skip-link:not(:focus){clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:nowrap}
