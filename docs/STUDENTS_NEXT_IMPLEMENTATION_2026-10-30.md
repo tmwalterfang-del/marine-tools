@@ -30,7 +30,7 @@ The Site remains owner-private. A class code does not grant access to the Site i
 
 ## Offline boundary
 
-Authenticated `.pages.dev` and `.chatgpt.site` previews keep their network-only service-worker policy and purge previous source caches. New workspace dependencies are deliberately outside the root shell cache. Offline use is an explicit chapter ZIP containing selected formulas/questions and allowlisted local experiment dependencies. It contains no account data, cookies, saved answers, credentials or database. Extracting and opening `index.html` is a separate local study workflow; account and live services require the online workspace.
+Authenticated `.pages.dev` and `.chatgpt.site` previews keep their network-only service-worker policy and purge previous source caches. New workspace dependencies are deliberately outside the root shell cache. Offline use is an explicit chapter ZIP containing selected formulas/questions and allowlisted local experiment dependencies. It contains no account data, cookies, saved answers, credentials or database. Extracting and opening `index.html` is a separate local study workflow; account and live services require the online workspace. Package navigation returns to included chapter content, and project/account actions that are absent from the package are removed. The extracted landing page, answer check, local experiment and A/B curves are tested through file URLs with the browser network disabled in Chromium/Firefox. WebKit's automated offline/file navigation returned an engine error, so its package test fulfills requests exclusively from extracted local bundle files and blocks all other requests; direct Safari file opening remains manual acceptance.
 
 ## Verification and remaining manual checks
 
