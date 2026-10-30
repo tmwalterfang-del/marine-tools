@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const API=/\.pages\.dev$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
+const API=/\.chatgpt\.site$/i.test(location.hostname)?'/live-api':/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
 const APP_VERSION='8.7.0';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
@@ -19,7 +19,7 @@ const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}cat
 const DEFAULT_SETTINGS={usageAnalytics:true};
 function appSettings(){return{...DEFAULT_SETTINGS,...(store.get(K.settings,{})||{})}}
 function saveAppSettings(next){store.set(K.settings,{...appSettings(),...next})}
-function analyticsEnabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/\.pages\.dev$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function analyticsEnabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
 function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
 let analyticsCurrentPage='home',analyticsVisibleSince=null,analyticsTimer=null;
 function sendAnalyticsEvent(event,{page=analyticsCurrentPage,tool='',duration=0,beacon=false}={}){
@@ -251,7 +251,8 @@ function toolSearchIndex(){
  return found.filter((x,i,a)=>a.findIndex(y=>y.title===x.title&&y.page===x.page)===i);
 }
 function pageLabel(id){return({'fuel':'Fuel & Bunkering','engineering':'Engineering','electrical':'Electrical','vessel-calcs':'Vessel Calculations','voyage-estimate':'Voyage Estimate','quick':'Quick Tools','weather':'Weather','navigation':'Navigation','live-experimental':'Live & Experimental','route-intelligence':'Experimental','profile':'Vessel Profile','settings':'Settings'}[id]||id.replaceAll('-',' '))}
-function toolSearchText(x){const meta=TOOL_META[x.title]||{};return `${x.title} ${pageLabel(x.page)} ${meta.how||''} ${meta.units||''}`.toLowerCase()}
+const TASK_INTENTS={"Fuel ROB & endurance":"how long can sail fuel last hvor lenge drivstoff rekkevidde endurance","Fuel / Urea converter":"convert litres tons liter tonn tetthet density fuel","Flow / fill time":"fill a tank fylle tank fylletid flow volume","Hydraulic power":"hydraulikk trykk volumstrøm pressure flow power","Current-corrected ETA":"arrival arrive ankomst tid eta current","Draft / tide UKC":"clearance under keel klaring under kjøl depth draft tide","Battery runtime":"how long battery last batteri varighet timer","Power factor correction":"reactive compensation kondensator effektfaktor kompensere","Port Distance & Sea Time":"how long passage plan voyage reise distanse tid fart"};
+function toolSearchText(x){const meta=TOOL_META[x.title]||{};return `${x.title} ${pageLabel(x.page)} ${meta.how||''} ${meta.units||''} ${TASK_INTENTS[x.title]||''}`.toLowerCase()}
 
 function toolSearchScore(x,q){
  const title=x.title.toLowerCase(),text=toolSearchText(x);let score=0;

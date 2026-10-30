@@ -1,7 +1,7 @@
 /* Local input drafts only. No source-page cache, accounts or telemetry. */
 (function(){'use strict';
 const main=document.querySelector('main');if(!main)return;
-const page=location.pathname.split('/').pop(),prefix='mt.study.draft.v1:',preference='mt.study.autosave.enabled.v1';
+const page=(location.pathname.split('/').pop()||'index').replace(/(?:\.html)?$/,'')+'.html',prefix='mt.study.draft.v1:',preference='mt.study.autosave.enabled.v1';
 const status=document.createElement('p');status.className='study-connectivity';status.setAttribute('role','status');
 function connection(){const offline=navigator.onLine===false;status.dataset.offline=String(offline);status.textContent=offline?(/\.pages\.dev$/i.test(location.hostname)?'Offline · open calculations still work. Reopening this workspace requires an internet connection.':'Offline · local calculations available. Live AIS and weather require a connection.'):'Connection available · these study calculations run locally, without live AIS or weather data.';}
 (document.querySelector('.workspace-toolbar')||main).append(status);window.addEventListener('online',connection);window.addEventListener('offline',connection);connection();

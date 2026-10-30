@@ -306,7 +306,7 @@ function renderPractice(){
 }
 function checkAnswer(){
  if(!exerciseIndexes().includes(state.examIndex))return;
- if(learning){const e=practice[state.examIndex],result=learning.attempt(e.id,el('exercise-answer').value);el('exercise-feedback').textContent=result.message;el('exercise-feedback').className=result.correct?'correct':'error';state.attempted=state.attempted||result.valid;el('show-solution').disabled=!state.attempted;learningUI.checked(result);syncProgress();return;}
+ if(learning){const e=practice[state.examIndex],result=learning.attempt(e.id,el('exercise-answer').value);el('exercise-feedback').textContent=result.message;el('exercise-feedback').className=result.correct?'correct':'error';state.attempted=state.attempted||result.valid;el('show-solution').disabled=!state.attempted;learningUI.checked(result);syncProgress();if(result.valid&&window.MT_NEXT_LEARNING)try{window.MT_NEXT_LEARNING.create(localStorage).record(e,result,el('exercise-answer').value,2);}catch{}return;}
  const e=practice[state.examIndex],input=el("exercise-answer").value.trim().replace(/−/g,"-").replace(",","."),
  result=Number(input),feedback=el("exercise-feedback");
  if(!input||!Number.isFinite(result)){feedback.textContent=tt("invalid");feedback.className="error";return}
@@ -460,5 +460,6 @@ function init(){
  window.addEventListener("hashchange",route);
  route();
 }
+window.MT_STUDENT_API={apply(id,inputs){const c=byCalculator.get(id);if(!c||Object.keys(inputs).length!==c.fields.length||c.fields.some(f=>!Number.isFinite(inputs[f.key])||f.check==="positive"&&inputs[f.key]<=0||f.check==="nonnegative"&&inputs[f.key]<0||f.check==="unitinterval"&&(inputs[f.key]<0||inputs[f.key]>1)))throw Error("The exercise values do not match this calculator.");const z=c.compute(inputs);if(z.invalid||!Number.isFinite(z.value))throw Error(z.invalid||"Invalid calculation.");state.calcid=id;renderCalculator();for(const f of c.fields)el("calc-fields").querySelector("[name=\""+f.key+"\"]").value=String(inputs[f.key]);calculate();},result(){const c=activeCalculator(),inputs=Object.fromEntries([...el("calc-fields").querySelectorAll("input")].map(f=>[f.name,Number(f.value)]));if([...el("calc-fields").querySelectorAll("input")].some(f=>!f.value.trim()))throw Error("Complete the calculator inputs.");const z=c.compute(inputs);if(z.invalid||!Number.isFinite(z.value))throw Error(z.invalid||"Invalid result.");return {id:c.id,...z};}};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();

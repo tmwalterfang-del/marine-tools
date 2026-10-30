@@ -9,22 +9,22 @@ Private preview origin: `https://marine-tools-education-next.fondbook66.chatgpt.
 
 ## Acceptance inventory
 
-Unchecked entries are pending implementation and verification, not delivered features.
+Checked entries have implementation and automated/local evidence described in STUDENTS_NEXT_IMPLEMENTATION_2026-10-30.md. Item 36 retains a manual assistive-technology/physical-device acceptance requirement.
 
-- [ ] 1. Exercise inputs transferred to models and returned to the answer.
-- [ ] 2. Structured learning paths with prerequisites and goals.
-- [ ] 3. Spaced retrieval/review scheduling.
-- [ ] 4. Deterministic independently checked question variants.
-- [ ] 5. Intermediate calculation and unit answers.
-- [ ] 6. Personal mistake journal and targeted practice.
-- [ ] 7. Formula selection from known and unknown quantities.
-- [ ] 8. Linked symbol, input, formula and diagram highlighting.
-- [ ] 9. A/B scenario curves and input differences.
-- [ ] 10. Sensitivity ranking and two-variable heatmaps.
-- [ ] 11. Explanatory questions, examples and self-assessment.
-- [ ] 12. Timed/weighted self-tests and selectable resources.
-- [ ] 13. Teaching sessions and teacher guides.
-- [ ] 14. Chapter workbook with notes and annotated experiments.
+- [x] 1. Exercise inputs transferred to models and returned to the answer.
+- [x] 2. Structured learning paths with prerequisites and goals.
+- [x] 3. Spaced retrieval/review scheduling.
+- [x] 4. Deterministic independently checked question variants.
+- [x] 5. Intermediate calculation and unit answers.
+- [x] 6. Personal mistake journal and targeted practice.
+- [x] 7. Formula selection from known and unknown quantities.
+- [x] 8. Linked symbol, input, formula and diagram highlighting.
+- [x] 9. A/B scenario curves and input differences.
+- [x] 10. Sensitivity ranking and two-variable heatmaps.
+- [x] 11. Explanatory questions, examples and self-assessment.
+- [x] 12. Timed/weighted self-tests and selectable resources.
+- [x] 13. Teaching sessions and teacher guides.
+- [x] 14. Chapter workbook with notes and annotated experiments.
 - [x] 15. Free-body force and moment diagrams.
 - [x] 16. Truss builder and member/reaction forces.
 - [x] 17. Euler column buckling.
@@ -38,21 +38,21 @@ Unchecked entries are pending implementation and verification, not delivered fea
 - [x] 25. Unbalanced three-phase load and neutral current.
 - [x] 26. Relative navigation motion and CPA/TCPA lesson.
 - [x] 27. Bearing fixes and observation uncertainty.
-- [ ] 28. Project folders and multiple vessel profiles.
-- [ ] 29. Linked calculation workflow with units and provenance.
-- [ ] 30. Combined multi-calculation reports.
-- [ ] 31. CSV/pasted-table import, mapping and preview.
-- [ ] 32. Selected full backup and transactional restore.
-- [ ] 33. Norwegian/English interface and shared terminology.
-- [ ] 34. Contextual issue reports with selected diagnostic fields.
-- [ ] 35. Task-based tool search.
-- [ ] 36. Accessibility: real browser/keyboard checks and assistive-technology verification.
-- [ ] 37. Measured first-load and weak-network improvements.
-- [ ] 38. App/download page with accurate availability and offline capabilities.
-- [ ] 39. Optional task-based walkthroughs with actual UI examples.
-- [ ] 40. Optional authenticated cross-device synchronization with conflict handling.
-- [ ] 41. Teacher/class assignments, membership and learning-platform export/integration.
-- [ ] 42. Explicit downloadable Education chapter packages.
+- [x] 28. Project folders and multiple vessel profiles.
+- [x] 29. Linked calculation workflow with units and provenance.
+- [x] 30. Combined multi-calculation reports.
+- [x] 31. CSV/pasted-table import, mapping and preview.
+- [x] 32. Selected full backup and transactional restore.
+- [x] 33. Norwegian/English core interface and shared terminology (scientific source prose remains English).
+- [x] 34. Contextual issue reports with selected diagnostic fields.
+- [x] 35. Task-based tool search.
+- [ ] 36. Accessibility: browser/keyboard implementation verified; physical-device and assistive-technology acceptance remains open.
+- [x] 37. Measured first-load and weak-network improvements.
+- [x] 38. App/download page with accurate availability and offline capabilities.
+- [x] 39. Optional task-based walkthroughs with actual UI examples.
+- [x] 40. Optional authenticated cross-device synchronization with conflict handling.
+- [x] 41. Teacher/class assignments, membership and learning-platform export/integration.
+- [x] 42. Explicit downloadable Education chapter packages.
 
 ## Architecture and release boundary
 

@@ -16,6 +16,11 @@ on:
       - 'tests/analytics-*'
       - 'worker/**'
       - 'docs/STUDENTS_*'
+      - 'workspace*'
+      - 'i18n-20261030.js'
+      - 'downloads.html'
+      - 'preview-server/**'
+      - 'scripts/*20261030*'
       - '.github/workflows/students-formula-audit.yml'
   workflow_dispatch:
 
@@ -38,6 +43,13 @@ jobs:
           node tests/students-private-preview-cache-20261030.mjs
       - name: Learning state, self-test scoring and exercise resources
         run: node tests/students-learning-engine-20261030.mjs
+      - name: Workspace, retrieval, analysis and private account boundaries
+        run: |
+          node tests/students-workspace-core-20261030.mjs
+          node tests/students-next-learning-core-20261030.mjs
+          node tests/students-analysis-core-20261030.mjs
+          node tests/students-workspace-server-20261030.mjs
+          node scripts/generate-learning-catalogue-20261030.mjs --check
       - name: Eleven discovery models and shared learning-cycle state
         run: |
           node tests/students-discovery-reference-20261030.mjs
@@ -103,6 +115,7 @@ jobs:
           NODE_PATH: /tmp/students-dom/node_modules
         run: |
           node tests/students-labs-dom-20261020.cjs
+          node tests/students-lms-export-20261030.cjs
           node tests/students-chapter-navigation-20261020.cjs
           node tests/students-study-export-20261020.cjs
           node tests/students-cargo-workspace-20261020.cjs
@@ -178,7 +191,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install pinned browser test runner
-        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.62.1
+        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.62.1 axe-core@4.11.1
       - name: Install rendering engine and Linux dependencies
         run: node /tmp/education-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
       - name: Responsive Education and whole-site browser checks
@@ -189,6 +202,9 @@ jobs:
           node tests/students-model-practice-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-learning-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-discovery-cycle-browser-20261030.cjs ${{ matrix.browser }}
+          node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
+          node tests/students-next-workspace-browser-20261030.cjs ${{ matrix.browser }}
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/students-workspace-accessibility-20261030.cjs; fi
           node tests/students-session-browser-20261027.cjs ${{ matrix.browser }}
           node tests/app-browser-20261027.cjs ${{ matrix.browser }}
           node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}
