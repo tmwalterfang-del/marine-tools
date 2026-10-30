@@ -9,6 +9,7 @@
  <meta name="description" content="Searchable maritime and technical formulas, interactive calculators, and student practice exercises.">
  <link rel="icon" href="../assets/icon-192.png" type="image/png">
  <link rel="stylesheet" href="styles.css?v=students-electrical-13">
+ <link rel="stylesheet" href="learning-workspace-20261030.css?v=1">
  <script defer src="formulas.js?v=students-draft-1"></script>
  <script defer src="formulas-extension.js?v=students-draft-2"></script>
  <script defer src="formulas-expansion-v1.js?v=students-draft-3"></script>
@@ -53,8 +54,11 @@
  <script defer src="practice-machinery-20261030.js?v=1"></script>
  <script defer src="practice-marine-20261030.js?v=1"></script>
  <script defer src="practice-index-20261030.js?v=1"></script>
- <script defer src="app.js?v=education-product-copy-20261030"></script>
-<link rel="stylesheet" href="navigation.css?v=1"><script defer src="../usage-analytics.js?v=20261021-usage1"></script></head>
+ <script defer src="learning-engine-20261030.js?v=1"></script>
+ <script defer src="learning-links-20261030.js?v=1"></script>
+ <script defer src="learning-workspace-20261030.js?v=1"></script>
+ <script defer src="app.js?v=education-learning-20261030"></script>
+<link rel="stylesheet" href="navigation.css?v=1"><script defer src="../usage-analytics.js?v=20261021-usage1"></script><link rel="stylesheet" href="education-accessibility.css?v=1"><script defer src="education-accessibility.js?v=1"></script></head>
 <body>
 <a class="skip-link" href="#study-tools">Skip to content</a>
 <header class="topbar">
@@ -93,8 +97,11 @@
    <button role="tab" aria-selected="false" data-tab="symbols" data-label="symbols">Symbols</button>
    <button role="tab" aria-selected="false" data-tab="calculators" data-label="calculators">Calculators</button>
    <button role="tab" aria-selected="false" data-tab="practice" data-label="practice">Exercises</button>
+   <button role="tab" aria-selected="false" data-tab="progress" data-label="progress">Progress</button>
+   <button role="tab" aria-selected="false" data-tab="selftest" data-label="selftest">Self-test</button>
    <button role="tab" aria-selected="false" data-tab="sheet" data-label="sheet">My Formula Sheet</button>
   </div>
+  <div id="learning-return" class="learning-return" hidden></div>
   <div id="formula-controls" class="controls">
    <label class="search-field"><span aria-hidden="true">⌕</span><input id="formula-search" type="search" placeholder="Search: GM, TPC, electrical, trim ..." autocomplete="off" aria-label="Search formulas"></label>
    <label class="filter-select">Discipline<select id="study-group" aria-label="Study discipline"><option value="All">All disciplines</option></select></label>
@@ -146,6 +153,9 @@
     </div>
     <div id="exercise-hint" class="study-hint" hidden></div>
     <div id="exercise-solution" class="steps solution" hidden></div>
+    <button id="next-solution-step" class="outline-btn" type="button" disabled>Reveal next solution step</button>
+    <div id="exercise-steps" class="steps" aria-live="polite" hidden><ol id="exercise-step-list"></ol></div>
+    <div id="exercise-resources"></div>
     <div class="exercise-footer"><div><strong id="exercise-progress"></strong> <span>completed locally</span></div><div class="exercise-nav">
      <button id="exercise-prev" type="button" class="quiet-button" data-label="previous">Previous</button>
      <button id="exercise-next" type="button" class="quiet-button" data-label="next">Next</button>
@@ -153,6 +163,8 @@
    </div>
    <button id="reset-progress" type="button" class="quiet-button subtle" data-label="reset">Reset progress</button>
   </section>
+  <section data-pane="progress" aria-label="Learning progress" hidden><div id="learning-progress"></div></section>
+  <section data-pane="selftest" aria-label="Self-tests" hidden><p class="learning-storage helper"></p><div id="learning-selftest"></div></section>
   <section data-pane="sheet" aria-label="Personal formula sheet" hidden>
    <div class="section-intro"><h3>My Formula Sheet</h3><p>Star formulas in the library to build your personal reference. Your selection is stored on this device only.</p></div>
    <div class="sheet-toolbar"><span id="sheet-count">0 saved formulas</span><button id="print-sheet" type="button" class="main-btn">Print / Save as PDF</button><button id="clear-sheet" type="button" class="outline-btn">Clear saved formulas</button></div>

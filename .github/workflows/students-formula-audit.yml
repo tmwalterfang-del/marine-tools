@@ -34,6 +34,8 @@ jobs:
         run: node tests/students-smoke-20261019.mjs
       - name: Education linked assets and offline shell
         run: node tests/students-education-assets-20261030.mjs
+      - name: Learning state, self-test scoring and exercise resources
+        run: node tests/students-learning-engine-20261030.mjs
       - name: Independent circuit node balances
         run: node tests/students-source-circuits-20261020.mjs
       - name: Qualified heat-transfer model references
@@ -103,6 +105,7 @@ jobs:
           node tests/students-calculator-ui-20261030.cjs
           node tests/students-model-lab-ui-20261030.cjs
           node tests/students-practice-ui-20261030.cjs
+          node tests/students-learning-ui-20261030.cjs
           node tests/students-education-navigation-20261020.cjs
           node tests/students-teaching-view-20261020.cjs
           node tests/site-wide-source-audit-20261020.cjs
@@ -175,6 +178,7 @@ jobs:
         run: |
           node tests/students-worked-examples-browser-20261027.cjs ${{ matrix.browser }}
           node tests/students-model-practice-browser-20261030.cjs ${{ matrix.browser }}
+          node tests/students-learning-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-session-browser-20261027.cjs ${{ matrix.browser }}
           node tests/app-browser-20261027.cjs ${{ matrix.browser }}
           node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}

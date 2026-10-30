@@ -26,7 +26,7 @@ function element(id){
    querySelectorAll(selector){
     assert.equal(selector,'input');
     return [...this.innerHTML.matchAll(/<input[^>]*name="([^"]+)"[^>]*value="([^"]+)"/g)]
-     .map(match=>({name:match[1],value:match[2]}));
+     .map(match=>({name:match[1],value:match[2],setAttribute(){}}));
    }
   };
  }
@@ -36,11 +36,12 @@ const tabs=['formulas','symbols','calculators','practice','sheet'].map(tab=>({
  dataset:{tab},listeners:{},classList:{toggle(){}},setAttribute(){},
  addEventListener(type,fn){this.listeners[type]=fn}
 }));
-const panes=tabs.map(x=>({dataset:{pane:x.dataset.tab},hidden:false}));
+const panes=tabs.map(x=>({dataset:{pane:x.dataset.tab},hidden:false,setAttribute(){}}));
 const document={
  readyState:'complete',documentElement:{lang:'en',dataset:{}},
  body:{classList:{add(x){storage.printing=x},remove(x){delete storage.printing}}},
  getElementById:element,
+ querySelector(selector){if(selector==='[role="tablist"]')return {addEventListener(){}};const match=selector.match(/^\[data-pane="([^"]+)"\]$/);if(match)return panes.find(p=>p.dataset.pane===match[1]);throw Error('Unexpected DOM query '+selector);},
  querySelectorAll(selector){
   if(selector==='[data-tab]')return tabs;
   if(selector==='[data-pane]')return panes;

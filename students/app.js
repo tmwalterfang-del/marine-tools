@@ -10,15 +10,20 @@ const byCalculator=new Map(calc.map(c=>[c.id,c]));
 const el=id=>document.getElementById(id);
 const enc=v=>String(v==null?"":v).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const retrieve=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))||fallback}catch{return fallback}};
+const retrieveList=key=>{const value=retrieve(key,[]);return Array.isArray(value)?value:[]};
 const persist=(key,val)=>{try{localStorage.setItem(key,JSON.stringify(val))}catch{}};
 const state={
- tab:"formulas",chapter:"All",query:"",topic:"All",group:"All",practiceChapter:"All",practiceGroup:"All",practiceLevel:"All",attempted:false,favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
- completed:new Set(retrieve("mt-student-practice-v1",[])),savedOnly:false,workedOnly:false,
+ tab:"formulas",chapter:"All",query:"",topic:"All",group:"All",practiceChapter:"All",practiceGroup:"All",practiceLevel:"All",attempted:false,favorites:new Set(retrieveList("mt-student-formulas-fav-v1")),
+ completed:new Set(retrieveList("mt-student-practice-v1")),savedOnly:false,workedOnly:false,
  display:48,calcid:calc[0]&&calc[0].id,examIndex:0,showSteps:true,
  theme:retrieve("mt-student-theme-v1","maritime")
 };
+const learning=window.MT_LEARNING_ENGINE?.create({bank:practice,chapters:study.chapters,legacyCompleted:[...state.completed],read:key=>JSON.parse(localStorage.getItem(key)),write:(key,value)=>{localStorage.setItem(key,JSON.stringify(value));return true}});
+let learningUI,focusFormula=null,returnExercise=null,testRoute=null;
+if(learning)state.completed=new Set(learning.completed);
+function syncProgress(){if(learning)state.completed=new Set(learning.completed);persist('mt-student-practice-v1',[...state.completed]);el('exercise-progress').textContent=state.completed.size+' / '+practice.length;}
 const tr={
- en:{formulas:"Formulas",symbols:"Symbols",calculators:"Calculators",practice:"Exercises",sheet:"My Formula Sheet",
+ en:{formulas:"Formulas",symbols:"Symbols",calculators:"Calculators",practice:"Exercises",sheet:"My Formula Sheet",progress:"Progress",selftest:"Self-test",
  search:"Search: TPC, GM, trim, Ohm's law, electrical ...",all:"All subjects",savedOnly:"Saved only",
  loadMore:"Show more",noMatches:"No matches. Try a different term or subject.",copy:"Copy",save:"Save",saved:"Saved",
  openCalc:"Open calculator",working:"Show working",hideWorking:"Hide working",
@@ -51,6 +56,7 @@ function updateHeader(){
 function filtered(){
  const terms=norm(state.query).trim().split(/\s+/).filter(Boolean);
  return formula.filter(f=>{
+  if(focusFormula&&f.id!==focusFormula)return false;
   if(state.chapter!=="All"&&!study.chapters?.find(c=>String(c.number)===state.chapter)?.formulaIds.includes(f.id))return false;
   if(state.group!=="All"&&!study.groups.find(g=>g.id===state.group)?.categories.includes(f.category))return false;
   if(state.topic!=="All"&&f.category!==state.topic)return false;
@@ -242,6 +248,7 @@ function calculate(){
   else if(field.check==="positive"&&v<=0)error=field.label+": must be > 0";
   else if(field.check==="nonnegative"&&v<0)error=field.label+": must be ≥ 0";
   else if(field.check==="unitinterval"&&(v<0||v>1))error=field.label+": must be in [0, 1]";
+  input.setAttribute('aria-invalid',String(!input.value.trim()||!Number.isFinite(v)||field.check==='positive'&&v<=0||field.check==='nonnegative'&&v<0||field.check==='unitinterval'&&(v<0||v>1)));
  });
  let result;
  if(!error){try{result=c.compute(values);if(result.invalid)error=result.invalid;else if(!Number.isFinite(result.value))error=tt("invalid")}catch{error=tt("invalid")}}
@@ -266,7 +273,7 @@ function exerciseIndexes(){
 function moveExercise(direction){
  const ids=exerciseIndexes();if(!ids.length)return;
  const pos=ids.indexOf(state.examIndex);
- state.examIndex=ids[Math.max(0,Math.min(ids.length-1,Math.max(0,pos)+direction))];renderPractice();
+ state.examIndex=ids[Math.max(0,Math.min(ids.length-1,Math.max(0,pos)+direction))];renderPractice();history.replaceState(null,'','#exercise/'+practice[state.examIndex].id);el('exercise-question').focus?.();
 }
 function renderPractice(){
  const ids=exerciseIndexes(),e=practice[state.examIndex];
@@ -275,7 +282,7 @@ function renderPractice(){
  el("exercise-answer").value="";el("exercise-feedback").textContent="";el("exercise-feedback").className="";
  el("exercise-progress").textContent=state.completed.size+" / "+practice.length;
  for(const id of ["exercise-answer","check-answer","show-hint","show-solution","exercise-prev","exercise-next"])el(id).disabled=!ids.length;
- if(!ids.length){el("exercise-question").textContent="No exercises match these filters.";el("exercise-index").textContent="0 / 0";for(const id of ["exercise-category","exercise-level","exercise-unit","exercise-chapter"])el(id).textContent="";el("exercise-chapter").removeAttribute("href");return}
+ if(!ids.length){learningUI?.emptyPractice();el("exercise-question").textContent="No exercises match these filters.";el("exercise-index").textContent="0 / 0";for(const id of ["exercise-category","exercise-level","exercise-unit","exercise-chapter"])el(id).textContent="";el("exercise-chapter").removeAttribute("href");return}
  if(!ids.includes(state.examIndex)){state.examIndex=ids[0];return renderPractice()}
  el("check-answer").disabled=false;el("show-hint").disabled=false;el("show-solution").disabled=true;
  state.attempted=false;
@@ -295,9 +302,11 @@ function renderPractice(){
  el("exercise-solution").innerHTML='<ol>'+e.steps.map(step=>'<li>'+enc(step)+'</li>').join("")+'</ol>';
  el("show-solution").textContent=tt("solution");
  el("exercise-progress").textContent=state.completed.size+" / "+practice.length;
+ if(learningUI)state.attempted=learningUI.practice(e);
 }
 function checkAnswer(){
  if(!exerciseIndexes().includes(state.examIndex))return;
+ if(learning){const e=practice[state.examIndex],result=learning.attempt(e.id,el('exercise-answer').value);el('exercise-feedback').textContent=result.message;el('exercise-feedback').className=result.correct?'correct':'error';state.attempted=state.attempted||result.valid;el('show-solution').disabled=!state.attempted;learningUI.checked(result);syncProgress();return;}
  const e=practice[state.examIndex],input=el("exercise-answer").value.trim().replace(/−/g,"-").replace(",","."),
  result=Number(input),feedback=el("exercise-feedback");
  if(!input||!Number.isFinite(result)){feedback.textContent=tt("invalid");feedback.className="error";return}
@@ -324,11 +333,11 @@ function renderSymbols(){
 }
 
 function setTab(name){
- if(!["formulas","symbols","calculators","practice","sheet"].includes(name))name="formulas";
+ if(!["formulas","symbols","calculators","practice","sheet","progress","selftest"].includes(name))name="formulas";
  state.tab=name;
  renderChapterContext();
  document.querySelectorAll("[data-tab]").forEach(b=>{
-  const active=b.dataset.tab===name;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active));
+  const active=b.dataset.tab===name;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active));b.setAttribute('tabindex',active?'0':'-1');
  });
  document.querySelectorAll("[data-pane]").forEach(p=>{p.hidden=p.dataset.pane!==name});
  el("formula-controls").hidden=name!=="formulas";
@@ -338,6 +347,8 @@ function setTab(name){
  if(name==="calculators")renderCalculator();
  if(name==="practice")renderPractice();
  if(name==="sheet")renderSheet();
+ learningUI?.tabChanged(name,testRoute);
+ const banner=el('learning-return');if(banner){banner.hidden=!returnExercise||name==='practice';banner.innerHTML=returnExercise?'<a href="#exercise/'+encodeURIComponent(returnExercise)+'">← Back to exercise</a>':'';}
 }
 function renderChapterContext(){
  const c=study.chapters?.find(c=>String(c.number)===state.chapter);
@@ -345,19 +356,28 @@ function renderChapterContext(){
  el("chapter-context-label").textContent=c?"Chapter "+c.number+" · "+c.title:"";
 }
 function route(){
- const practiceMatch=location.hash.match(/^#practice-chapter-(\d+)$/);
+ const [path,query='']=location.hash.slice(1).split('?'),params=new URLSearchParams(query),from=params.get('from');returnExercise=practice.some(q=>q.id===from)?from:null;focusFormula=null;testRoute=null;
+ const exerciseMatch=path.match(/^exercise\/(.+)$/),formulaMatch=path.match(/^formula\/(.+)$/),calculatorMatch=path.match(/^calculator\/(.+)$/),testMatch=path.match(/^selftest(?:\/(.+))?$/);
+ if(exerciseMatch){const index=practice.findIndex(q=>q.id===exerciseMatch[1]);if(index>=0){state.practiceChapter=String(practice[index].chapter);state.practiceGroup='All';state.practiceLevel='All';el('practice-chapter').value=state.practiceChapter;el('practice-subject').value='All';el('practice-difficulty').value='All';state.examIndex=index;setTab('practice');el('exercise-question').focus?.();return;}}
+ if(testMatch){testRoute=testMatch[1]||null;setTab('selftest');el('study-tools').scrollIntoView?.({block:'start'});return;}
+ if(formulaMatch&&byFormula.has(formulaMatch[1])){focusFormula=formulaMatch[1];state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.workedOnly=false;state.display=48;el('formula-search').value='';el('study-group').value='All';el('saved-only').checked=false;el('worked-only').checked=false;refreshTopics();setTab('formulas');const variant=params.get('variant');if(variant&&byExpression.get(variant)?.formulaId===focusFormula)openSymbolVariant(variant);else el('study-tools').scrollIntoView?.({block:'start'});return;}
+ if(calculatorMatch&&byCalculator.has(calculatorMatch[1])){state.calcid=calculatorMatch[1];setTab('calculators');el('study-tools').scrollIntoView?.({block:'start'});return;}
+ const practiceMatch=path.match(/^practice-chapter-(\d+)$/);
  if(practiceMatch&&study.chapters?.some(c=>c.number===Number(practiceMatch[1]))){state.practiceChapter=practiceMatch[1];state.practiceGroup="All";state.practiceLevel="All";el("practice-chapter").value=state.practiceChapter;el("practice-subject").value="All";el("practice-difficulty").value="All";state.examIndex=exerciseIndexes()[0]??0;setTab("practice");el("study-tools").scrollIntoView?.({block:'start'});return}
- const match=location.hash.match(/^#chapter-(\d+)$/);
+ const match=path.match(/^chapter-(\d+)$/);
  state.chapter=match&&study.chapters?.some(c=>c.number===Number(match[1]))?match[1]:"All";
  renderChapterContext();
  if(match){state.group="All";state.topic="All";state.query="";state.savedOnly=false;state.workedOnly=false;el("worked-only").checked=false;state.display=48;el("study-group").value="All";el("formula-search").value="";el("saved-only").checked=false;refreshTopics()}
- setTab(match?"formulas":location.hash.slice(1)||"formulas");
+ setTab(match?"formulas":path||"formulas");
  if(pendingSymbolVariant){openSymbolVariant(pendingSymbolVariant);pendingSymbolVariant=null}else if(location.hash)el("study-tools").scrollIntoView?.({block:'start'});
 }
 function init(){
+ if(learning&&window.MT_LEARNING_WORKSPACE&&window.MT_LEARNING_LINKS)learningUI=window.MT_LEARNING_WORKSPACE.create({engine:learning,links:window.MT_LEARNING_LINKS.create({formulas:formula,calculators:calc,study}),bank:practice,chapters:study.chapters,onProgress:syncProgress,onReset:renderPractice});
+ document.querySelectorAll('[data-tab]').forEach(b=>{b.id='tab-'+b.dataset.tab;b.setAttribute('aria-controls','pane-'+b.dataset.tab);const pane=document.querySelector('[data-pane="'+b.dataset.tab+'"]');if(pane){pane.id='pane-'+b.dataset.tab;pane.setAttribute('role','tabpanel');pane.setAttribute('aria-labelledby',b.id);}});
+ document.querySelector('[role="tablist"]')?.addEventListener('keydown',ev=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(ev.key))return;const tabs=[...document.querySelectorAll('[data-tab]')],index=tabs.indexOf(document.activeElement);if(index<0)return;ev.preventDefault();const next=ev.key==='Home'?0:ev.key==='End'?tabs.length-1:(index+(ev.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs.forEach((b,i)=>b.setAttribute('tabindex',i===next?'0':'-1'));tabs[next].focus();});
  el("clear-chapter").addEventListener("click",()=>{state.chapter="All";renderChapterContext();location.hash="formulas";renderFormulas()});
  for(const id of ['library-home-link','library-browse'])el(id).addEventListener('click',()=>{
-  pendingSymbolVariant=null;state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.workedOnly=false;el("worked-only").checked=false;state.display=48;
+  pendingSymbolVariant=null;focusFormula=null;returnExercise=null;state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.workedOnly=false;el("worked-only").checked=false;state.display=48;
   renderChapterContext();el('study-group').value='All';el('formula-search').value='';el('saved-only').checked=false;refreshTopics();location.hash='formulas';setTab('formulas');el('study-tools').scrollIntoView?.({block:'start'});
  });
  const selector=el("topic-filter"),groupSelector=el("study-group");
@@ -383,11 +403,11 @@ function init(){
   location.hash="formulas";setTab("formulas");
   if(pendingSymbolVariant)openSymbolVariant(pendingSymbolVariant);else el("study-tools").scrollIntoView?.({block:'start'});
  });
- el("formula-search").addEventListener("input",ev=>{state.query=ev.target.value;state.display=48;renderFormulas()});
- selector.addEventListener("change",ev=>{state.chapter="All";renderChapterContext();state.topic=ev.target.value;state.display=48;renderFormulas()});
- groupSelector.addEventListener("change",ev=>{state.chapter="All";renderChapterContext();state.group=ev.target.value;state.display=48;refreshTopics();renderFormulas()});
- el("worked-only").addEventListener("change",ev=>{state.workedOnly=ev.target.checked;state.display=48;renderFormulas()});
- el("saved-only").addEventListener("change",ev=>{state.savedOnly=ev.target.checked;renderFormulas()});
+ el("formula-search").addEventListener("input",ev=>{focusFormula=null;state.query=ev.target.value;state.display=48;renderFormulas()});
+ selector.addEventListener("change",ev=>{state.chapter="All";renderChapterContext();focusFormula=null;state.topic=ev.target.value;state.display=48;renderFormulas()});
+ groupSelector.addEventListener("change",ev=>{state.chapter="All";renderChapterContext();focusFormula=null;state.group=ev.target.value;state.display=48;refreshTopics();renderFormulas()});
+ el("worked-only").addEventListener("change",ev=>{focusFormula=null;state.workedOnly=ev.target.checked;state.display=48;renderFormulas()});
+ el("saved-only").addEventListener("change",ev=>{focusFormula=null;state.savedOnly=ev.target.checked;renderFormulas()});
  el("load-more").addEventListener("click",()=>{state.display+=48;renderFormulas()});
  el("formula-grid").addEventListener("change",changeWorkedCase);
  el("sheet-formulas").addEventListener("change",changeWorkedCase);
@@ -402,10 +422,10 @@ function init(){
   persist("mt-student-formulas-fav-v1",[...state.favorites]);el("saved-total").textContent=state.favorites.size;renderFormulas();renderSheet();
  }else if(b.dataset.copy){
   const f=formula.find(f=>f.id===b.dataset.copy);
-  if(f&&navigator.clipboard?.writeText)navigator.clipboard.writeText(f.name+"\n"+f.formula+"\n"+f.note).then(()=>{b.textContent="✓"}).catch(()=>{});
- }else if(b.dataset.open){state.calcid=b.dataset.open;location.hash="calculators";setTab("calculators")}
+  if(f&&navigator.clipboard?.writeText)navigator.clipboard.writeText(f.name+"\n"+f.formula+"\n"+publicConditions(f)).then(()=>{b.textContent="✓"}).catch(()=>{});
+ }else if(b.dataset.open){state.calcid=b.dataset.open;location.hash='calculator/'+encodeURIComponent(state.calcid)+(returnExercise?'?from='+encodeURIComponent(returnExercise):'');setTab('calculators')}
  });
- document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{location.hash=b.dataset.tab;setTab(b.dataset.tab)}));
+ document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{focusFormula=null;returnExercise=null;testRoute=null;location.hash=b.dataset.tab;setTab(b.dataset.tab)}));
  el("calc-selector").addEventListener("change",ev=>{state.calcid=ev.target.value;renderCalculator()});
  el("calc-fields").addEventListener("input",calculate);
  el("working-toggle").addEventListener("click",()=>{state.showSteps=!state.showSteps;calculate()});
@@ -422,7 +442,7 @@ function init(){
  el("show-solution").addEventListener("click",()=>{if(!state.attempted)return;
  const node=el("exercise-solution");node.hidden=!node.hidden;el("show-solution").textContent=tt(node.hidden?"solution":"hideSolution");
  });
- el("reset-progress").addEventListener("click",()=>{if(!window.confirm("Reset local study progress?"))return;state.completed.clear();persist("mt-student-practice-v1",[]);renderPractice()});
+ el("reset-progress").addEventListener("click",()=>{if(learningUI){learningUI.reset();return;}if(!window.confirm("Reset local study progress?"))return;state.completed.clear();persist("mt-student-practice-v1",[]);renderPractice()});
  el("print-formulas").addEventListener("click",()=>window.print());
  el("print-sheet").addEventListener("click",()=>{
   if(!state.favorites.size)return;

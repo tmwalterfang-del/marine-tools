@@ -1,0 +1,7 @@
+/* Shared keyboard access for scrollable data and standalone Education pages. */
+(function(){'use strict';
+const main=document.querySelector('main');if(main&&!document.querySelector('.skip-link,.skip')){if(!main.id)main.id='education-content';const a=document.createElement('a');a.className='skip-link';a.href='#'+main.id;a.textContent='Skip to content';document.body.prepend(a);main.tabIndex=-1;}
+const exercise=new URLSearchParams(location.search).get('exercise');if(main&&exercise&&/^[a-zA-Z0-9-]{1,119}$/.test(exercise)&&!document.querySelector('.interactive-workspace')){const a=document.createElement('a');a.href='./#exercise/'+encodeURIComponent(exercise);a.textContent='← Back to exercise';a.className='education-return';main.prepend(a);}
+function tables(){if(!document?.body)return;for(const wrapper of document.querySelectorAll('.table-wrap')){if(!wrapper.querySelector('table'))continue;wrapper.tabIndex=0;wrapper.setAttribute('role','region');const caption=wrapper.querySelector('caption')?.textContent.trim(),heading=wrapper.closest('section,article,details')?.querySelector('h2,h3,h4,summary')?.textContent.trim();wrapper.setAttribute('aria-label',caption||heading||'Numerical data table');}}
+let scheduled=false;new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;tables();});}).observe(document.body,{childList:true,subtree:true});tables();
+})();
