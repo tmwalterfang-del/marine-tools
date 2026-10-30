@@ -61,6 +61,6 @@ ok(row(68,'Ideal dilute concentration pH').formula.includes('c_H/c°'),'dimensio
 ok(row(65,'Four-species mass-action relation').conditions.includes('activities'),'thermodynamic K uses activities');
 ok(row(64,'Entity count from amount').sourceIssue.includes('2019'),'current mole definition distinguished from legacy text');
 ok(w.MT_STUDY.sourceEquationRegister.length===1498,'all current expression registers retained');
-ok(read('students/app.js').includes("structural and stoichiometric verification remains separate."),'pattern status does not falsely claim a symbolic proof');
+ok(rows.filter(r=>r.kind==='CHEMICAL_PATTERN'||r.kind==='REACTION').every(r=>r.symbolicStatus==='NOT_APPLICABLE'),'chemical patterns and reactions are not labelled as symbolic proofs');
 ok(read('sw.js').includes("'./students/chemistry-equation-audit-20261020.js'"),'chemistry pack cached');
 console.log(JSON.stringify({status:'PASS',checks,numericReferenceCases:numeric,chemistryRelationships:rows.length,arithmeticRelationships:48,structuralPatternsAndReactions:22,scope:'Selected arithmetic and semantic guards only; chemical structures, historical tables, full domains and source exhaustiveness not certified'}));

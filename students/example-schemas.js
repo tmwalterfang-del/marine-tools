@@ -61,7 +61,7 @@
       ]
     ],
     "notes": [
-      "Invented teaching inputs. Change values to explore cause and effect. No connection to a vessel, plant or control system.",
+      "Default values are examples. Enter the values for your calculation.",
       "The load is already included in displacement. Suspension raises its effective VCG to the suspension point: KG₂ = KG₁ + m(h_hook − h_deck)/Δ. Ballast moves horizontally at unchanged VCG and unchanged total FSM.",
       "TCG = [m·outreach + m_ballast(toTCG−fromTCG)]/Δ. GM = KM−KG₂−FSM/Δ. Net arm = GM sinθ−TCG cosθ; equilibrium uses tanθ = TCG/GM only for positive GM.",
       "The graph covers ±10° only. An equilibrium outside that range is explicitly not resolved by this small-angle exercise. No real KN curves, crane dynamics, wind, sea state, lifting limits or structural checks. The initial curve assumes centred cargo and ballast before transfer."
@@ -138,7 +138,7 @@
       ]
     ],
     "notes": [
-      "Invented teaching inputs. Change values to explore cause and effect. No connection to a vessel, plant or control system.",
+      "Default values are examples. Enter the values for your calculation.",
       "TPC, MCT 1 cm and LCF remain constant. Positive trim means aft draft exceeds forward draft. Longitudinal coordinates increase from AP towards FP.",
       "For loading/discharge: δT = signed mass / TPC / 100 metres; trimming moment = signed mass·(LCF−cargo LCG). For shifting: moment = mass·(source LCG−destination LCG), with zero sinkage. Δtrim in metres = moment / MCT 1 cm / 100.",
       "Draft(x) = draft_at_LCF + trim·(LCF−x)/LBP. The initial draft input is at LCF, not automatically mean draft. Source LCG is used for shifts only. No density correction, hog/sag, draft-mark offsets, changing hydrostatics, load-line or strength checks."
@@ -201,7 +201,7 @@
       ]
     ],
     "notes": [
-      "Invented teaching inputs. Change values to explore cause and effect. No connection to a vessel, plant or control system.",
+      "Default values are examples. Enter the values for your calculation.",
       "m = ρLBHf; liquid VCG = tank bottom + Hf/2. New KG follows the vertical moment balance including the added liquid. KM is deliberately held constant while displacement changes.",
       "For 0 < fill < 100%, FSM = ρLB³/(12n²) for n equal, isolated longitudinal compartments. FSC = FSM/new displacement; GM = KM−KG−FSC. All compartments fill equally.",
       "An ideal empty or pressed-full tank has zero FSM; the abrupt endpoints of this rectangular upright approximation are intentional. For a slack rectangular tank, FSM is independent of depth in this approximation. No cross-connections, sloshing, tank shape corrections or finite-angle free-surface calculation."
@@ -249,10 +249,10 @@
       ]
     ],
     "notes": [
-      "Invented teaching inputs. Change values to explore cause and effect. No connection to a vessel, plant or control system.",
+      "Default values are examples. Enter the values for your calculation.",
       "Reference pump H = H₀−aQ². At speed ratio r, affinity scaling gives H_pump(Q) = H₀r²−aQ². System H = H_static+kQ²; Q is in m³/h.",
       "When H₀r² > H_static, Q = √[(H₀r²−H_static)/(a+k)]. Otherwise there is no positive steady-flow intersection. Power = ρg(Q/3600)H/η; density in t/m³ gives power in kW. Zero delivered flow gives zero hydraulic estimate, not zero actual motor input.",
-      "Constant efficiency, incompressible liquid and ideal quadratic curves. No NPSH/cavitation, motor efficiency, minimum flow, unstable operation, parallel pumps or impeller trimming. Source for the general curve/affinity method: DOE Fundamentals Handbook, Thermodynamics, Heat Transfer and Fluid Flow, Volume 3."
+      "Constant efficiency, incompressible liquid and ideal quadratic curves. No NPSH/cavitation, motor efficiency, minimum flow, unstable operation, parallel pumps or impeller trimming."
     ]
   },
   "crank": {
@@ -292,8 +292,8 @@
       ]
     ],
     "notes": [
-      "Invented teaching inputs. Change values to explore cause and effect. No connection to a vessel, plant or control system.",
-      "Based on the measurement topic in the uploaded Arbeidskrav 2 VDL.docx and EKSAMEN(2).docx. The numeric readings and comparison level are invented. Bottom estimate B = (B1+B2)/2; vertical difference = T−B; horizontal difference = P−S.",
+      "Default values are examples. Enter the values for your calculation.",
+      "Bottom estimate B=(B1+B2)/2; vertical difference=T−B; horizontal difference=P−S. Set the comparison level for the measurement procedure.",
       "Opening is positive; closing is negative. Graph positions are illustrative: B1 at 15°, S at 90°, T at 180°, P at 270°, B2 at 345°. The joining lines are not a measured continuous trace.",
       "The residual (T+B)−(P+S) is shown as a harmonic consistency observation, not a manufacturer acceptance criterion. Actual instrument position, crank geometry, temperature, load condition and maker sign convention govern real measurements. The example reference is not an engine service limit."
     ]
@@ -355,8 +355,8 @@
       ]
     ],
     "notes": [
-      "Invented teaching inputs. Change values to explore cause and effect. No connection to a vessel, plant or control system.",
-      "Adapted from the cooling and fault-tree topics in the uploaded maintenance assignments; the branches and thresholds below are invented for training.",
+      "Default values are examples. Enter the values for your calculation.",
+      "Illustrative fault-tree thresholds. Set appropriate limits for the equipment and operating conditions.",
       "Decision order: pump status → valve lineup → suction pressure below 0.3 bar gauge → filter differential above 0.5 bar → flow below 30 m³/h → outlet temperature above 85°C. The first flagged branch is highlighted, while every flagged observation remains in the table/results.",
       "The graph is a binary attention flag (0 or 1) for each numbered observation; it does not plot pressures, temperatures or probabilities on one scale. Multiple flags can coexist.",
       "This is a transparent example reasoning aid, not an automatic diagnosis or an instruction to operate machinery. Measurement quality, sensor faults and causes outside these six observations require separate reasoning."

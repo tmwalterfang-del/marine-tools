@@ -18,7 +18,7 @@ const read=p=>fs.readFileSync('students/'+p,'utf8');
   assert.ok(example);assert.equal(example.open,false);
   for(const key of Object.keys(c.inputs))assert.ok(example.querySelector('ul').textContent.includes(key+' = '));
   assert.ok(example.textContent.includes(c.reference));
-  assert.ok(example.textContent.includes('full model domain'));
+  assert.ok(example.textContent.includes('Use the stated conditions.'));
   assert.ok(source.textContent.includes('Conditions:'));
  }
  assert.ok(d.querySelector('#book-mechanics-p32-r03 .worked-result').textContent.includes('20 N'));

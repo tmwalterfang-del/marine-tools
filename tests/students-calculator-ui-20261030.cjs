@@ -17,8 +17,9 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require
  const tiny=calculate('displacement',{volume:1e-8,density:1});assert.ok(tiny.querySelector('strong').textContent.includes('1E-8'),'A small nonzero answer stays visible');
  assert.ok(d.getElementById('calc-steps').textContent.includes('1E-8'),'Worked final step does not round the same result to zero');
  function sourceCard(id){const row=w.MT_STUDY.sourceEquationRegister.find(r=>r.id===id),formula=w.MT_FORMULAS.find(f=>f.id===row.formulaId),search=d.getElementById('formula-search');search.value=formula.name;search.dispatchEvent(new w.Event('input'));const card=d.getElementById(id);assert.ok(card,id+' rendered after library search');return card;}
- const rhumb=sourceCard('book-c13-p190-r03');assert.ok(rhumb.textContent.includes('Reference-case checks recorded'),'Fresh evidence visible in source record');
+ const rhumb=sourceCard('book-c13-p190-r03');assert.ok(!/Reference-case checks|Analytical review|Printed p\./.test(rhumb.textContent),'Editorial audit history stays outside the product UI');
  assert.ok(rhumb.textContent.includes('RADIANS'),'Corrected rhumb angular basis visible');
- assert.ok(sourceCard('book-mechanics-p48-r02').textContent.includes('excluded from supported calculations'),'Unsupported historical head is not shown as a passed calculation');
- dom.window.close();console.log(JSON.stringify({status:'PASS',scope:'Actual calculator DOM: closed endpoints, negative enthalpy datum, near-zero rates, rejected singular inputs, scientific tiny results and visible review evidence.'}));
+ for(const id of ['book-mechanics-p48-r02','book-machine-p50-r07','book-machine-p50-r11','book-machine-p51-r09','book-machine-p52-r02','book-c14-p212-r04'])assert.ok(sourceCard(id).textContent.includes('Calculation unavailable.'),id+' retains its calculation restriction');
+ assert.equal(d.querySelectorAll('.source-status,.photo-review,.source-state,.source-correction').length,0,'No source/audit panels in formula cards');
+ dom.window.close();console.log(JSON.stringify({status:'PASS',scope:'Actual calculator DOM: numeric endpoints and units, datum/rate/singularity handling, tiny results, product-facing copy and retained calculation restrictions.'}));
 })().catch(e=>{console.error(e);process.exitCode=1});

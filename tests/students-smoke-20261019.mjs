@@ -121,7 +121,7 @@ ok(css.includes('[data-theme="bridge"]'),'Bridge Dark theme exists');
 ok(main.includes('href="/students/"')&&education.includes('href="../students/"'),'student entrypoints linked in main/education');
 ok(sw.includes("'./students/'")&&sw.includes("'./students/formulas-extension.js'")&&sw.includes("'./students/calculators-extension.js'")&&sw.includes("'./students/formulas-expansion-v1.js'")&&sw.includes("'./students/calculators-expansion-v1.js'")&&sw.includes("'./students/app.js'"),'student assets precached for PWA offline');
 ok(!html.includes('data-tab="resources"')&&!html.includes('data-pane="resources"'),'irrelevant Resources page and tab removed');
-ok(read('students/learning-data.js').includes('www.nb.no/items/7dd9087d6a49416798fe7b2f6fdd86c2')&&srcApp.includes('study.glossarySource'),'formula provenance retained independently of removed Resources page');
+ok(read('students/learning-data.js').includes('www.nb.no/items/7dd9087d6a49416798fe7b2f6fdd86c2')&&!srcApp.includes('study.glossarySource'),'audit provenance retained in data without appearing in the product UI');
 ok(html.includes('<html lang="en"'),'student page language is English');
 ok(!html.includes('id="student-lang"')&&!srcApp.includes('student-lang'),'language selector and switching removed');
 ok(!srcApp.includes('state.lang')&&!srcApp.includes('tr.no'),'English-only script without stale language state');

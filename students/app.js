@@ -56,40 +56,95 @@ function filtered(){
   if(state.topic!=="All"&&f.category!==state.topic)return false;
   if(state.savedOnly&&!state.favorites.has(f.id))return false;
   if(state.workedOnly&&!exampleCount(f))return false;
-  const txt=norm([f.name,f.formula,f.category,f.note,f.tags,...(f.related||[]).flatMap(r=>[r.name,r.formula,r.conditions])].join(" "));
+  const txt=norm([f.name,f.formula,f.category,publicConditions(f),f.tags,...(f.related||[]).flatMap(r=>[r.name,r.formula,publicConditions(r)])].join(" "));
   return terms.every(x=>txt.includes(x)||txt.includes(searchAliases[x]||"###"));
  });
 }
+// Presentation copy keeps editorial history in the audit data, outside the UI.
+const conditionCopy={
+ 'ext-hog-sag-first-correction-three-drafts':'Add the correction to the corrected midship draught: Teff=(Tf+4Tmid+Ta)/6. This Simpson weighting differs from the quarter-mean (Tf+6Tmid+Ta)/8. Use the method matching the vessel hydrostatics.',
+ 'photo-20261020-multistream-boiler-efficiency':'Steady-state enthalpy balance for five numbered streams. Use consistent energy units and the specified fuel heating value.',
+ 'source-expansion-20261020-displacement-mass-at-fixed-submerged-volume':'For the same submerged volume or draught in water of different densities. A ship with fixed mass changes draught rather than displacement mass.',
+ 'chapter-11-reviewed-20261020-convection-correlation':'Empirical turbulent smooth-tube correlation: Re>10000, 0.7<Pr<160 and L/D>60; n=0.4 for heating and 0.3 for cooling the fluid. Limited property variation and no phase change.',
+ 'book-mechanics-p34-r08':'Serial tension transmission with 0<α≤1, where α is the fraction transmitted at each sheave. It is not a universal hoist efficiency. n counts the supported tension terms.',
+ 'book-mechanics-p34-r09':'Reverse tension transmission with 0<α≤1. No additional brake or self-locking model.',
+ 'book-mechanics-p35-r08':'Kinematic lead model: s is worm axial lead, 2πRw is wheel pitch circumference, and the drum is attached to the wheel.',
+ 'book-mechanics-p43-r14':'Ellipse semiaxes a horizontal and c vertical; both are half-dimensions.',
+ 'book-mechanics-p43-r15':'Ellipse semiaxes a horizontal and c vertical; both are half-dimensions.',
+ 'book-mechanics-p43-r16':'Ellipse semiaxes a horizontal and c vertical; both are half-dimensions.',
+ 'book-mechanics-p43-r17':'Ellipse semiaxes a horizontal and c vertical; both are half-dimensions.',
+ 'book-mechanics-p47-r10':'Ideal fixed/pinned column. Effective-length factors 0.7 or 0.71 are rounded approximations. Ideal restraints and no sidesway unless specified.',
+ 'book-mechanics-p48-r02':'Outside diameter D, head rise H=0.2D, knuckle radius r=0.1D, crown radius R≥D and straight flange length>4s. Not a general head-thickness formula; an applicable pressure-vessel design method is required.',
+ 'book-machine-p49-r09':'Approximate annular contact model. Width across flats is an approximate outer diameter, not an exact hexagonal contact integral.',
+ 'book-machine-p50-r07':'Allowable-stress approach. The reduction factor v must be established for the material, weld geometry, workmanship and assessment method.',
+ 'book-machine-p50-r11':'End deduction for one weld segment with l>2a. Use the effective length required by the applicable joint assessment.',
+ 'book-machine-p51-r09':'K₁ depends on bearing geometry l/d and minimum-film fraction εf=hmin/(R−r). Use calibrated coefficients within their valid range. Dynamic viscosity must match lubricant temperature; p=F/(d·l), ω=2πn.',
+ 'book-machine-p52-r01':'ψ=(R−r)/r and εf=hmin/(R−r). The minimum-film fraction is not the eccentricity ratio.',
+ 'book-machine-p52-r02':'K₂ depends on bearing geometry l/d and minimum-film fraction εf=hmin/(R−r). Use calibrated coefficients within their valid range. Dynamic viscosity must match lubricant temperature; p=F/(d·l), ω=2πn.',
+ 'book-chemistry-p76-r01':'Composition pattern for many carbohydrates, not a definition covering every carbohydrate or derivative.',
+ 'book-c6-p94-r03':'The peak multiplier depends on circuit X/R, fault timing and the applicable method. There is no universal κ value.',
+ 'book-c6-p97-r01':'Two-digit capacitor marking, giving capacitance in pF. Match the marking, tolerance and voltage code to the manufacturer.',
+ 'book-c7-p109-r05':'Voltage-follower gyrator with R₂>R₁>0. Q=Im(Zin)/Re(Zin). The approximation ωR₂C also requires R₂≫R₁ and ω²R₁R₂C²≪1.',
+ 'book-c7-p110-r01':'Ideal follower: R₁ connects input port to output; R₂ connects input port to the noninverting node; C connects that node to ground; the inverting node follows the output. Zin=R₁R₂/(R₁+R₂)+1/[jωC(1+R₂/R₁)]. The expression R₂C/R₁ is a large-R₂/R₁ approximation.',
+ 'book-c8-p128-r09':'One pulse per 2π. Use the full period when calculating the average.',
+ 'book-c8-p128-r11':'Two equal rectified pulses. Use the stated RMS waveform convention.',
+ 'book-c8-p129-r03':'0≤α≤π; one pulse per 2π.',
+ 'book-c8-p131-r04':'0≤α≤π/3, up to the extinction boundary.',
+ 'book-c8-p131-r05':'π/3≤α≤2π/3; zero beyond 2π/3.',
+ 'book-c9-p142-r06':'The physical inertia reaction opposes acceleration. Keep the chosen force-direction convention consistent.',
+ 'book-c10-p153-r08':'Blade angles are in radians.',
+ 'book-c10-p153-r04':'Use signed absolute tangential velocity components.',
+ 'book-c11-p156-r02':'The numerical coefficients give kJ/kg dry air. Approximation for moderate HVAC conditions.',
+ 'book-c11-p158-r02':'Dimensionless absolute-pressure ratio.',
+ 'book-c11-p158-r03':'Dimensionless absolute-temperature ratio; use kelvin.',
+ 'book-c11-p159-r12':'Use the convective film coefficient h in h/(ρ·v·cp).',
+ 'book-c11-p161-r03':'Developing laminar tube flow; Re<2500 and Graetz number Re·Pr·Dh/L>10. Establish laminar flow separately; transition is not covered.',
+ 'book-c11-p161-r04':'Sieder–Tate correlation for smooth circular tubes with fully developed turbulent forced flow: Re>10000 and 0.7<Pr<700. Evaluate Re, Pr and μ at bulk temperature and μw at wall temperature; viscosities must be positive. Entrance effects are excluded. Establish developed flow separately rather than from a fixed L/D.',
+ 'book-c11-p162-r01':'n=0.4 for fluid heating and 0.3 for cooling. Smooth tube, Re>10000, 0.7<Pr<160 and L/D>60; empirical correlation.',
+ 'book-c11-p163-r01':'Geometry- and orientation-specific coefficient C and characteristic length. Cylinder: C=0.47 for 10³<Ra<10⁸; vertical case: C=0.56 for Ra<2×10⁹. Do not mix characteristic-length conventions.',
+ 'book-c11-p163-r02':'Laminar natural convection at a vertical plate, using average Nusselt number based on plate height; Gr<10⁹. Use positive buoyancy magnitude and representative properties. Requires an applicable empirical coefficient; not suitable for arbitrary cylinders or orientations.',
+ 'book-c11-p163-r03':'Natural-convection approximation for a horizontal cylinder, with diameter as characteristic length and 10⁻²<Ra<10³. Not a vertical-plate correlation.',
+ 'book-c11-p164-r01':'Rayleigh number using kinematic viscosity ν and thermal diffusivity α.',
+ 'book-c11-p164-r02':'Arithmetic mean of absolute wall and fluid temperatures.',
+ 'book-c11-p165-r01':'Empirical ranges: laminar C=0.59, n=1/4 for 10⁴<Ra<10⁹; turbulent C=0.10, n=1/3 for 10⁹<Ra<10¹³.',
+ 'book-c11-p166-r03':'Convert degree-days to degree-hours using the factor 24 when calculating energy in Wh.',
+ 'book-c11-p166-r04':'cvol in Wh/(m³·K), air-change rate per hour. Fixed volume and rate, without heat recovery. Convert days to hours using the factor 24.',
+ 'book-c11-p169-r05':'Large-reservoir velocity is negligible; suction lift is positive upward. Compare available NPSH with manufacturer-specified required NPSH.',
+ 'book-c11-p171-r03':'Diameter ratio βd=D₂/D₁<1; horizontal incompressible flow.',
+ 'book-c11-p171-r04':'Use the specified discharge and expansion factors, upstream density and diameter ratio. Match the coefficient convention to the approach-velocity correction.',
+ 'book-c11-p176-r03':'Conservation of mass: include the sum of all branch mass flows.',
+ 'book-c12-p178-r04':'Apply separate, nonoverlapping mechanical, belt and motor efficiencies. Do not count a loss twice.',
+ 'book-c14-p208-r04':'Linear trim model about LCF. An inverse calculation based on LCB may require hydrostatic iteration.',
+ 'book-c13-p192-r05':'Δλm is measured from the vertex, not from departure.',
+ 'book-c14-p197-r06':'Reference-density hydrostatic table with constant local waterplane area.',
+ 'book-c14-p211-r01':'The VCF must match the liquid class, temperature and reference density.',
+ 'book-c14-p212-r03':'Divide percentages by 100 to obtain a fill fraction.',
+ 'book-c14-p212-r04':'Not suitable for grain-stability assessment without approved vessel-specific grain-heeling data.',
+ 'book-c14-p213-r06':'Assumes LCF near midships and first keel contact near an end. Contact location and vessel hydrostatics affect the result.',
+ 'book-c14-p214-r05':'Hogging-positive convention. Use force units, or label mass moments as t·m rather than N·m.',
+ 'book-c14-p214-r07':'Use the aft weight arm xa for the aft weight moment.',
+ 'book-c15-p219-r04':'Dimensionless net NPV-to-investment ratio. The gross profitability index is 1 plus this ratio.',
+ 'book-c15-p219-r06':'r>0 and 0≤I₀r/A<1; no finite payback otherwise.'
+};
+function publicConditions(item){return (conditionCopy[item.id]??item.conditions??item.note??'').replace('Independent mass-moment formulation of this source lifting case. ','');}
+function publicMeaning(value){return String(value).replace(' (printed page legend uses h_g)','');}
 function symbolsHtml(f){
  const d=study.details[f.id];
- if(!d?.symbols?.length)return '<p class="annotation-pending">Symbol definitions are under editorial review for this formula. Read the stated conditions and check the unit convention before applying it.</p>';
+ if(!d?.symbols?.length)return '<p>Check the symbol definitions and unit convention before applying this formula.</p>';
  return '<div class="symbol-grid">'+d.symbols.map(row=>
- '<div><code>'+enc(row.symbol)+'</code><span>'+enc(row.meaning)+'</span><small>'+enc(row.unit)+'</small></div>').join('')+'</div>';
+ '<div><code>'+enc(row.symbol)+'</code><span>'+enc(publicMeaning(row.meaning))+'</span><small>'+enc(row.unit)+'</small></div>').join('')+'</div>';
 }
 function analyticalReviewHtml(r){
- const v=r.analyticalReview;if(!v)return '';
- const open=v.decision==='OPEN_MODEL_OR_SOURCE_LIMIT';
- return '<p class="'+(open?'source-open-model':'photo-review')+'"><strong>'+(open?'Reference only — unresolved model/source limit: ':'Analytical review: ')+'</strong>'+enc(open?'Do not apply this model until its stated evidence gap is resolved. '+v.finding:'Reviewed under the stated assumptions; this is separate from numerical validation.')+'</p>';
-}
-function numericReviewText(r){
- const evidence=r.fullReviewEvidence;
- if(evidence){
-  const kind=evidence.kind;
-  if(kind==='EXCLUDED_FROM_SUPPORTED_CALCULATION')return 'Reference only. This historical model is excluded from supported calculations because its stated evidence gap remains unresolved.';
-  if(kind==='SUPPLIED_COEFFICIENT_CONTRACT')return 'Arithmetic checked with supplied coefficients; their empirical calibration and applicability remain external. '+evidence.reference;
-  if(kind==='SYNTHETIC_HYDROSTATIC_LOOKUP_CONTRACT')return 'Mass and moment relations checked with a synthetic teaching hull; real-vessel hydrostatics must be supplied separately.';
-  if(kind.startsWith('EXHAUSTIVE_BOOLEAN'))return 'Every Boolean input assignment checked for this gate or identity.';
-  if(kind==='SYMBOLIC_IDENTITY')return 'Authored symbolic or geometric model checked under the stated assumptions. '+evidence.reference;
-  if(kind==='SYMBOLIC_FINITE_CASES')return 'Finite symbolic reference cases checked; this does not prove every possible index or value. '+evidence.reference;
-  if(['DISPLAYED_EXPRESSION_REFERENCE_CASE','EXACT_REFERENCE_CASE','INDEPENDENT_REFERENCE_CASE'].includes(kind))return 'Reference-case checks recorded; the stated physical model and full-domain limits still apply. '+evidence.reference;
-  return 'Typed relation, definition or model convention checked separately from scalar arithmetic. '+evidence.reference;
- }
- if(r.numericStatus==='INDEPENDENT_COMPLEX_KCL_REFERENCE_CASES')return 'Displayed expression checked against independent ideal-circuit node balances; real-component limits remain separate.';
- if(r.symbolicStatus==='NOT_APPLICABLE')return ['CHEMICAL_PATTERN','REACTION'].includes(r.kind)?'Source pattern read; structural and stoichiometric verification remains separate.':'Source relationship read; its stated model and validation scope must be checked separately.';
- if(r.numericStatus==='REFERENCE_CASE_COVERED')return 'Source expression read; selected numerical reference case covered by automated tests. Full domain validation pending.';
- if(r.numericChecks?.length)return 'Symbolic evidence and '+r.numericChecks.length+' numerical samples recorded under test assumptions.';
- if(r.symbolicStatus?.startsWith('PASS'))return 'Symbolic rule checked under stated assumptions; numerical evidence is recorded separately.';
- return 'No individual numerical test recorded; analytical review is not a numerical test.';
+ if(r.analyticalReview?.decision!=='OPEN_MODEL_OR_SOURCE_LIMIT')return '';
+ const limits={
+  'book-mechanics-p48-r02':'Use an applicable pressure-vessel design standard and verified shape factors for this head geometry.',
+  'book-machine-p50-r07':'The weld reduction factor must be established for the material, joint geometry, workmanship and assessment method.',
+  'book-machine-p50-r11':'Use a verified effective weld length for the actual joint detail and assessment method.',
+  'book-machine-p51-r09':'A bearing-specific clearance coefficient and its operating limits are required.',
+  'book-machine-p52-r02':'Bearing-specific friction data and their operating limits are required.',
+  'book-c14-p212-r04':'Use approved grain-heeling data for the vessel and loading condition.'
+ };
+ return '<p class="source-open-model"><strong>Calculation unavailable. </strong>'+enc(limits[r.id]||'Additional design data and an applicable calculation method are required.')+'</p>';
 }
 function exampleCount(f){return (f.related||[]).filter(r=>study.workedExamples?.[r.id]).length;}
 function workedNumber(n){
@@ -104,12 +159,12 @@ function workedCaseHtml(r,c){
  const resultSymbol=r.formula.split(/=|≈/)[0].trim();
  return '<h6>Given</h6><ul>'+Object.entries(c.inputs).map(([symbol,n])=>'<li><code>'+workedValue(r,symbol,n)+'</code></li>').join('')+'</ul>'+
  '<h6>Method</h6><p>'+enc(c.reference)+'</p><p class="worked-result"><strong>Result:</strong> '+workedValue(r,resultSymbol,c.expected)+'</p>'+
- '<p class="worked-scope">Synthetic teaching values; displayed numbers rounded to 8 significant digits, with scientific notation for very small or large values. This selected reference case is checked automatically. It does not validate the full model domain. Apply the conditions above.</p>';
+ '<p class="worked-scope">Example values. Results are rounded to eight significant figures. Use the stated conditions.</p>';
 }
 function workedExampleHtml(r){
  const c=study.workedExamples?.[r.id];if(!c)return '';
  const cases=[c,...(c.alternateCases||[])],resultSymbol=r.formula.split(/=|≈/)[0].trim();
- const choice=cases.length>1?'<label class="worked-case-label">Reference case<select class="worked-case-select" data-worked-id="'+enc(r.id)+'" aria-label="Reference case for '+enc(r.name)+'">'+cases.map((v,i)=>'<option value="'+i+'">'+enc(v.label)+'</option>').join('')+'</select></label>':'';
+ const choice=cases.length>1?'<label class="worked-case-label">Example<select class="worked-case-select" data-worked-id="'+enc(r.id)+'" aria-label="Example for '+enc(r.name)+'">'+cases.map((v,i)=>'<option value="'+i+'">'+enc(v.label)+'</option>').join('')+'</select></label>':'';
  return '<details class="worked-example"><summary>Worked example · '+workedValue(r,resultSymbol,c.expected)+'</summary>'+
  '<div class="worked-example-body">'+choice+'<div class="worked-case-content" aria-live="polite">'+workedCaseHtml(r,c)+'</div></div></details>';
 }
@@ -125,9 +180,8 @@ function changeWorkedCase(ev){
 function relatedHtml(f){
  const related=f.related||[];if(!related.length)return "";
  return '<details class="related-equations"><summary>Related expressions and variants ('+related.length+')</summary>'+related.map(r=>
- '<article class="related-expression" id="'+enc(r.id)+'"><h5>'+enc(r.name)+'</h5><div class="equation" role="math" aria-label="'+enc(r.formula)+'">'+enc(r.formula)+'</div><p><strong>Conditions:</strong> '+enc(r.conditions)+'</p><div class="symbol-grid">'+r.symbols.map(v=>'<div><code>'+enc(v.symbol)+'</code><span>'+enc(v.meaning)+'</span><small>'+enc(v.unit)+'</small></div>').join('')+'</div>'+
- (r.sourceIssue?'<p class="source-correction"><strong>Source interpretation:</strong> '+enc(r.sourceIssue)+'</p>':"")+
- workedExampleHtml(r)+analyticalReviewHtml(r)+'<p class="photo-review">Printed p. '+r.page+' · '+enc(numericReviewText(r))+'</p></article>').join('')+'</details>';
+ '<article class="related-expression" id="'+enc(r.id)+'"><h5>'+enc(r.name)+'</h5><div class="equation" role="math" aria-label="'+enc(r.formula)+'">'+enc(r.formula)+'</div><p><strong>Conditions:</strong> '+enc(publicConditions(r))+'</p><div class="symbol-grid">'+r.symbols.map(v=>'<div><code>'+enc(v.symbol)+'</code><span>'+enc(publicMeaning(v.meaning))+'</span><small>'+enc(v.unit)+'</small></div>').join('')+'</div>'+
+ workedExampleHtml(r)+analyticalReviewHtml(r)+'</article>').join('')+'</details>';
 }
 function formulaMarkup(f,forSheet=false){
  const saved=state.favorites.has(f.id),d=study.details[f.id]||{},
@@ -142,15 +196,11 @@ function formulaMarkup(f,forSheet=false){
  return '<article data-formula-id="'+enc(f.id)+'" class="formula-card'+(forSheet?' sheet-card':'')+'"><div class="card-line"><span class="topic-pill">'+enc(f.category)+'</span>'+
  (forSheet?"":'<button type="button" data-fav="'+enc(f.id)+'" aria-pressed="'+saved+'" aria-label="'+(saved?"Unsave":"Save")+' '+enc(f.name)+'">'+(saved?'★':'☆')+'</button>')+'</div>'+
  '<h3>'+enc(f.name)+'</h3><div class="equation" role="math" aria-label="'+enc(f.formula)+'">'+enc(f.formula)+'</div>'+
- '<p><strong>Conditions:</strong> '+enc(f.note)+'</p>'+
- ((f.related||[]).some(r=>r.analyticalReview?.decision==='OPEN_MODEL_OR_SOURCE_LIMIT')?'<p class="source-open-model">Some related source models remain unresolved. Read their individual review notes before using them.</p>':'')+
- '<details class="formula-explanation"'+(forSheet?" open":"")+'><summary>Variables, units, diagram & source status</summary>'+
+ '<p><strong>Conditions:</strong> '+enc(publicConditions(f))+'</p>'+
+ ((f.related||[]).some(r=>r.analyticalReview?.decision==='OPEN_MODEL_OR_SOURCE_LIMIT')?'<p class="source-open-model">Some variants require additional design data. Read their conditions before use.</p>':'')+
+ '<details class="formula-explanation"'+(forSheet?" open":"")+'><summary>Variables, units and diagrams</summary>'+
  '<div class="explanation-body"><h4>Symbols and units</h4>'+symbolsHtml(f)+figure+relatedHtml(f)+
- (d.metadataStatus?'<p class="annotation-pending">'+enc(d.metadataStatus)+'</p>':"")+
- '<div class="source-status"><strong>Topic reference: </strong>'+enc(chapter)+'. <a href="'+enc(study.glossarySource)+'" target="_blank" rel="noopener noreferrer">Book catalogue ↗</a>'+
- '<p>'+enc(study.chapterLabel)+' '+enc(study.reviewLabel)+'</p>'+
- (study.photoReview?.[f.id]?'<p class="photo-review">Printed source p. '+enc(study.photoReview[f.id].page)+': '+enc(study.photoReview[f.id].status)+'</p>':"")+
- '</div></div></details>'+actions+'</article>';
+ '</div></details>'+actions+'</article>';
 }
 function renderFormulas(){
  const list=filtered();
@@ -177,7 +227,7 @@ function activeCalculator(){return calc.find(c=>c.id===state.calcid)||calc[0]}
 function renderCalculator(){
  const c=activeCalculator();if(!c)return;
  el("calc-selector").value=c.id;
- el("calc-title").textContent=c.name;el("calc-description").textContent=c.description;
+ el("calc-title").textContent=c.name;el("calc-description").textContent=c.id==='molar-concentration'?'Amount of solute per unit solution volume.':c.description;
  el("calc-fields").innerHTML=c.fields.map(field=>'<label class="field"><span>'+enc(field.label)+' <small>('+enc(field.unit)+')</small></span>'+
  '<input type="number" inputmode="decimal" step="any" name="'+enc(field.key)+'" value="'+enc(field.initial)+'" required></label>').join("");
  state.showSteps=true;calculate();
@@ -263,12 +313,12 @@ function openSymbolVariant(id){const variant=document.getElementById(id);if(!var
 
 function renderSymbols(){
  const matches=symbolIndex.findConcepts(el("symbol-search").value.trim(),el("symbol-discipline").value),shown=matches.slice(0,symbolLimit);
- el("symbol-count").textContent=shown.length+" of "+matches.length+" distinct meanings shown · "+matches.reduce((n,c)=>n+c.contexts.length,0)+" formula contexts. Equivalent definitions are grouped; different meanings and units stay separate.";
+ el("symbol-count").textContent=shown.length+" of "+matches.length+" symbol meanings shown.";
  el("symbol-results").innerHTML=shown.map(entry=>
- '<article class="symbol-context"><span class="symbol-glyph">'+enc(entry.symbol)+'</span><div class="symbol-context-body"><h4>'+enc(entry.meaning)+'</h4>'+
+ '<article class="symbol-context"><span class="symbol-glyph">'+enc(entry.symbol)+'</span><div class="symbol-context-body"><h4>'+enc(publicMeaning(entry.meaning))+'</h4>'+
  '<p>'+enc(entry.unit)+' · '+enc(entry.subjects.join(' · '))+'</p>'+
  '<details class="symbol-references"><summary>Used in '+entry.references.length+' '+(entry.references.length===1?'formula':'formulas')+' · '+entry.contexts.length+' '+(entry.contexts.length===1?'definition':'definitions')+'</summary><ul>'+entry.references.map(ref=>
- '<li><button type="button" data-symbol-formula="'+enc(ref.formulaId)+'" class="symbol-formula-link">'+enc(ref.name)+' →</button><details class="symbol-evidence"><summary>Definitions and review status ('+ref.contexts.length+')</summary><ul>'+ref.contexts.map(c=>'<li>'+(c.variantId?'<button type="button" class="symbol-variant-link" data-symbol-formula="'+enc(c.formulaId)+'" data-symbol-variant="'+enc(c.variantId)+'">'+enc(c.variantName===c.familyName?'Source expression'+(c.page?' · p. '+c.page:''):c.variantName)+' →</button>':'<span>Primary formula</span>')+'<small>'+enc(c.meaning)+' · '+enc(c.unit)+'</small><small class="source-state">'+enc(c.status)+'</small></li>').join('')+'</ul></details></li>').join('')+'</ul></details>'+
+ '<li><button type="button" data-symbol-formula="'+enc(ref.formulaId)+'" class="symbol-formula-link">'+enc(ref.name)+' →</button><details class="symbol-evidence"><summary>Definitions ('+ref.contexts.length+')</summary><ul>'+ref.contexts.map(c=>'<li>'+(c.variantId?'<button type="button" class="symbol-variant-link" data-symbol-formula="'+enc(c.formulaId)+'" data-symbol-variant="'+enc(c.variantId)+'">'+enc(c.variantName===c.familyName?'Expression':c.variantName)+' →</button>':'<span>Primary formula</span>')+'<small>'+enc(publicMeaning(c.meaning))+' · '+enc(c.unit)+'</small></li>').join('')+'</ul></details></li>').join('')+'</ul></details>'+
  '</div></article>').join("")||'<p class="placeholder">No matching symbols. Try another word or discipline.</p>';
  el("symbol-more").hidden=shown.length>=matches.length;
 }
@@ -292,7 +342,7 @@ function setTab(name){
 function renderChapterContext(){
  const c=study.chapters?.find(c=>String(c.number)===state.chapter);
  el("chapter-context").hidden=!c||state.tab!=="formulas";
- el("chapter-context-label").textContent=c?"Opened from chapter "+c.number+" · "+c.title:"";
+ el("chapter-context-label").textContent=c?"Chapter "+c.number+" · "+c.title:"";
 }
 function route(){
  const practiceMatch=location.hash.match(/^#practice-chapter-(\d+)$/);
