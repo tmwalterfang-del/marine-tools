@@ -13,6 +13,9 @@ function mount(svg){
  button('Reset view',reset);
  const explore=button('Pan / pinch',()=>setEnabled(!enabled));explore.setAttribute('aria-pressed','false');
  const label=document.createElement('span');label.id='diagram-view-'+(svg.id||Math.random().toString(36).slice(2));bar.append(label);svg.setAttribute('aria-describedby',[svg.getAttribute('aria-describedby'),label.id].filter(Boolean).join(' '));svg.before(bar);
+ // SVG hidden state must also hide its sibling controls.
+ const visibility=()=>{bar.hidden=svg.hasAttribute('hidden');};visibility();
+ new MutationObserver(visibility).observe(svg,{attributes:true,attributeFilter:['hidden']});
  function render(){
   box[2]=Math.max(original[2]/8,Math.min(original[2],box[2]));box[3]=box[2]*original[3]/original[2];
   box[0]=Math.max(original[0],Math.min(original[0]+original[2]-box[2],box[0]));box[1]=Math.max(original[1],Math.min(original[1]+original[3]-box[3],box[1]));

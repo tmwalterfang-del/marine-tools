@@ -43,10 +43,17 @@
  <script defer src="source-review-20261020.js"></script>
  <script defer src="review-followup-20261027.js?v=1"></script>
  <script defer src="worked-examples-20261027.js?v=2"></script>
+ <script defer src="full-review-20261030.js?v=1"></script>
  <script defer src="chapter-index.js?v=chapters-1"></script>
  <script defer src="symbol-review-20261020.js?v=symbols-review-1"></script>
  <script defer src="symbol-index.js?v=students-draft-6"></script>
- <script defer src="app.js?v=students-electrical-13"></script>
+ <script defer src="practice-bank-20261030.js?v=1"></script>
+ <script defer src="practice-foundations-20261030.js?v=1"></script>
+ <script defer src="practice-science-20261030.js?v=1"></script>
+ <script defer src="practice-machinery-20261030.js?v=1"></script>
+ <script defer src="practice-marine-20261030.js?v=1"></script>
+ <script defer src="practice-index-20261030.js?v=1"></script>
+ <script defer src="app.js?v=education-review-20261030"></script>
 <link rel="stylesheet" href="navigation.css?v=1"><script defer src="../usage-analytics.js?v=20261021-usage1"></script></head>
 <body>
 <a class="skip-link" href="#study-tools">Skip to content</a>
@@ -126,11 +133,11 @@
   </section>
   <section data-pane="practice" aria-label="Exercises" hidden>
    <div class="section-intro"><h3>Learn first, then try it yourself.</h3><p>Choose a subject and level, reveal an optional hint, and check your answer before viewing the worked solution.</p></div>
-   <p class="section-intro">These 36 numeric exercises are original practice examples. They are filtered by discipline and difficulty. Uploaded assignment templates are identified separately in the <a href="interactive.html#cargo">loading &amp; discharge workshop</a>.</p><div class="practice-controls"><label>Discipline<select id="practice-subject"><option value="All">All disciplines</option></select></label><label>Difficulty<select id="practice-difficulty"><option value="All">All levels</option><option value="Foundation">Foundation</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></label></div>
+   <p class="section-intro">292 original numeric exercises, including 16 new questions in each of the 16 chapters. Work through Foundation, Applied, Intermediate and Advanced in order, or narrow the chapter, discipline and level. Uploaded assignment templates are identified separately in the <a href="interactive.html#cargo">loading &amp; discharge workshop</a>.</p><div class="practice-controls"><label>Chapter<select id="practice-chapter"><option value="All">All chapters</option></select></label><label>Discipline<select id="practice-subject"><option value="All">All disciplines</option></select></label><label>Difficulty<select id="practice-difficulty"><option value="All">All levels</option><option value="Foundation">Foundation</option><option value="Applied">Applied</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></label></div>
    <div class="exercise-card">
-    <div class="exercise-meta"><span id="exercise-category" class="topic-pill"></span><span id="exercise-level" class="topic-pill"></span><span id="exercise-index"></span></div>
+    <div class="exercise-meta"><a id="exercise-chapter" class="topic-pill"></a><span id="exercise-category" class="topic-pill"></span><span id="exercise-level" class="topic-pill"></span><span id="exercise-index"></span></div>
     <h3 id="exercise-question"></h3>
-    <div class="exercise-entry"><label for="exercise-answer">Your answer</label><div class="answer-field"><input type="text" id="exercise-answer" inputmode="decimal" autocomplete="off"><span id="exercise-unit"></span></div></div>
+    <div class="exercise-entry"><label for="exercise-answer">Your answer</label><div class="answer-field"><input type="text" id="exercise-answer" inputmode="decimal" autocomplete="off" aria-describedby="answer-format"><span id="exercise-unit"></span></div><p id="answer-format" class="helper">Use a decimal point or comma, without thousands separators. Scientific notation such as 1e-6 is accepted. Match the displayed unit; answers normally allow 0.1% rounding.</p></div>
     <p id="exercise-feedback" aria-live="polite"></p>
     <div class="exercise-actions">
      <button id="show-hint" type="button" class="outline-btn">Show hint</button>

@@ -600,8 +600,8 @@ const extra = [
   "id": "student-v2-factor-of-safety",
   "category": "Machine Elements",
   "name": "Factor of safety",
-  "formula": "FoS = allowable strength / design stress",
-  "note": "Consistent type of stress and criteria",
+  "formula": "FoS = limiting strength / design stress",
+  "note": "Unreduced limiting strength and positive design stress for the SAME failure mode, units and load basis. A capacity already reduced to an allowable stress gives a remaining margin, not an additional safety factor.",
   "tags": "strength"
  },
  {

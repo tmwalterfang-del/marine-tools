@@ -10,9 +10,9 @@ const extras=new Set([...document.querySelectorAll('.export-panel,.study-export,
 const notes=document.getElementById('notes');if(notes)extras.add(notes.closest('section'));
 for(const section of extras){if(!section||section.closest('details'))continue;const h=section.querySelector('h2,h3');if(!h)continue;const d=document.createElement('details'),s=document.createElement('summary');d.className='study-extra';s.textContent=h.textContent;section.before(d);d.append(s,section);}
 let printState=[];window.addEventListener('beforeprint',()=>{printState=[...document.querySelectorAll('details.study-extra')].map(d=>[d,d.open]);for(const[d]of printState)d.open=true});window.addEventListener('afterprint',()=>{for(const[d,open]of printState)d.open=open});
-if(!['examples.html','explorers.html','cargo.html','labs.html','mollier.html'].includes(page))return;
+if(!['examples.html','explorers.html','cargo.html','labs.html','mollier.html','model-lab.html'].includes(page))return;
 if(page==='mollier.html'&&typeof window.MT_MOLLIER_INPUTS!=='function')return;
-function moduleId(){const h=location.hash.slice(1);return page==='examples.html'?('example:'+(['lifting','trim','tank','pump','crank','faults'].includes(h)?h:'lifting')):page==='explorers.html'?('explorer:'+(['rlc','heat','current','finance'].includes(h)?h:'rlc')):page==='labs.html'?('labs:'+(['stability','controls','engine'].includes(h)?h:'stability')):page==='cargo.html'?'cargo':'mollier';}
+function moduleId(){const h=location.hash.slice(1);return page==='model-lab.html'?('engineering:'+(['beam','transient','cycle','pump-suction','refrigeration','lift-origins'].includes(h)?h:'beam')):page==='examples.html'?('example:'+(['lifting','trim','tank','pump','crank','faults'].includes(h)?h:'lifting')):page==='explorers.html'?('explorer:'+(['rlc','heat','current','finance'].includes(h)?h:'rlc')):page==='labs.html'?('labs:'+(['stability','controls','engine'].includes(h)?h:'stability')):page==='cargo.html'?'cargo':'mollier';}
 function scope(){if(page==='labs.html')return document.getElementById(moduleId().split(':')[1]);return document.getElementById('experiment');}
 const fields=()=>[...(scope()?.querySelectorAll('input,select,textarea')||[])].filter(x=>x.type!=='file'&&(x.name||x.id));
 const keyOf=x=>(x.form?.id||'')+':'+(x.id||x.name)+':'+(x.type||x.tagName);

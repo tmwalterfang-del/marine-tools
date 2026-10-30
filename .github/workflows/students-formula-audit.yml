@@ -7,6 +7,7 @@ on:
     paths:
       - 'students/**'
       - 'tests/students-*.mjs'
+      - 'tests/students-*.py'
       - 'tests/lib/**'
       - 'tests/fixtures/**'
       - 'scripts/generate-if97-reference-20261027.py'
@@ -31,6 +32,8 @@ jobs:
           node-version: '22'
       - name: Formula and catalogue integrity
         run: node tests/students-smoke-20261019.mjs
+      - name: Education linked assets and offline shell
+        run: node tests/students-education-assets-20261030.mjs
       - name: Independent circuit node balances
         run: node tests/students-source-circuits-20261020.mjs
       - name: Qualified heat-transfer model references
@@ -97,6 +100,9 @@ jobs:
           node tests/students-example-workshops-20261020.cjs
           node tests/students-symbol-navigation-20261020.cjs
           node tests/students-worked-examples-ui-20261027.cjs
+          node tests/students-calculator-ui-20261030.cjs
+          node tests/students-model-lab-ui-20261030.cjs
+          node tests/students-practice-ui-20261030.cjs
           node tests/students-education-navigation-20261020.cjs
           node tests/students-teaching-view-20261020.cjs
           node tests/site-wide-source-audit-20261020.cjs
@@ -130,6 +136,13 @@ jobs:
         run: python3 -m pip install sympy==1.14.0
       - name: Independently check selected mathematical identities
         run: python3 tests/students-math-equations-20261020.py
+      - name: Complete expression reference evidence and calculator regressions
+        run: |
+          node tests/students-full-reference-20261030.mjs --generate
+          node tests/students-calculator-reference-20261029.mjs
+          node tests/students-education-models-20261030.mjs
+          node tests/students-practice-bank-reference-20261030.mjs
+          git diff --exit-code students/full-review-20261030.js docs/STUDENTS_FULL_EXPRESSION_EVIDENCE_2026-10-30.csv docs/STUDENTS_PRIMARY_FORMULA_REVIEW_2026-10-30.csv
       - name: Generate complete editorial status report
         run: node tests/students-formula-completeness-20261020.mjs students-formula-completeness.csv
       - name: Upload editorial report
@@ -161,6 +174,7 @@ jobs:
           NODE_PATH: /tmp/education-browser/node_modules
         run: |
           node tests/students-worked-examples-browser-20261027.cjs ${{ matrix.browser }}
+          node tests/students-model-practice-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-session-browser-20261027.cjs ${{ matrix.browser }}
           node tests/app-browser-20261027.cjs ${{ matrix.browser }}
           node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}

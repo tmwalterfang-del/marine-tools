@@ -12,7 +12,7 @@ const enc=v=>String(v==null?"":v).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;
 const retrieve=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))||fallback}catch{return fallback}};
 const persist=(key,val)=>{try{localStorage.setItem(key,JSON.stringify(val))}catch{}};
 const state={
- tab:"formulas",chapter:"All",query:"",topic:"All",group:"All",practiceGroup:"All",practiceLevel:"All",attempted:false,favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
+ tab:"formulas",chapter:"All",query:"",topic:"All",group:"All",practiceChapter:"All",practiceGroup:"All",practiceLevel:"All",attempted:false,favorites:new Set(retrieve("mt-student-formulas-fav-v1",[])),
  completed:new Set(retrieve("mt-student-practice-v1",[])),savedOnly:false,workedOnly:false,
  display:48,calcid:calc[0]&&calc[0].id,examIndex:0,showSteps:true,
  theme:retrieve("mt-student-theme-v1","maritime")
@@ -34,7 +34,7 @@ const searchAliases={"stabilitet":"stability","laste":"cargo","last":"cargo","dy
  "bunkers":"fuel","densitet":"density","navigasjon":"navigation","varme":"heat","temperatur":"temperature",
  "tyngdepunkt":"gravity","krenge":"heel","trefase":"three-phase","motstand":"resistance"};
 const norm=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-const fmt=n=>Number(n).toLocaleString("en-GB",{maximumFractionDigits:5});
+const fmt=window.MT_STUDENT_FORMAT||((n)=>Number(n).toLocaleString("en-GB",{maximumSignificantDigits:8,notation:Math.abs(n)>0&&(Math.abs(n)<.0001||Math.abs(n)>=1e7)?'scientific':'standard'}));
 function updateHeader(){
  document.documentElement.lang="en";
  document.documentElement.dataset.theme=state.theme;
@@ -72,6 +72,18 @@ function analyticalReviewHtml(r){
  return '<p class="'+(open?'source-open-model':'photo-review')+'"><strong>'+(open?'Reference only — unresolved model/source limit: ':'Analytical review: ')+'</strong>'+enc(open?'Do not apply this model until its stated evidence gap is resolved. '+v.finding:'Reviewed under the stated assumptions; this is separate from numerical validation.')+'</p>';
 }
 function numericReviewText(r){
+ const evidence=r.fullReviewEvidence;
+ if(evidence){
+  const kind=evidence.kind;
+  if(kind==='EXCLUDED_FROM_SUPPORTED_CALCULATION')return 'Reference only. This historical model is excluded from supported calculations because its stated evidence gap remains unresolved.';
+  if(kind==='SUPPLIED_COEFFICIENT_CONTRACT')return 'Arithmetic checked with supplied coefficients; their empirical calibration and applicability remain external. '+evidence.reference;
+  if(kind==='SYNTHETIC_HYDROSTATIC_LOOKUP_CONTRACT')return 'Mass and moment relations checked with a synthetic teaching hull; real-vessel hydrostatics must be supplied separately.';
+  if(kind.startsWith('EXHAUSTIVE_BOOLEAN'))return 'Every Boolean input assignment checked for this gate or identity.';
+  if(kind==='SYMBOLIC_IDENTITY')return 'Authored symbolic or geometric model checked under the stated assumptions. '+evidence.reference;
+  if(kind==='SYMBOLIC_FINITE_CASES')return 'Finite symbolic reference cases checked; this does not prove every possible index or value. '+evidence.reference;
+  if(['DISPLAYED_EXPRESSION_REFERENCE_CASE','EXACT_REFERENCE_CASE','INDEPENDENT_REFERENCE_CASE'].includes(kind))return 'Reference-case checks recorded; the stated physical model and full-domain limits still apply. '+evidence.reference;
+  return 'Typed relation, definition or model convention checked separately from scalar arithmetic. '+evidence.reference;
+ }
  if(r.numericStatus==='INDEPENDENT_COMPLEX_KCL_REFERENCE_CASES')return 'Displayed expression checked against independent ideal-circuit node balances; real-component limits remain separate.';
  if(r.symbolicStatus==='NOT_APPLICABLE')return ['CHEMICAL_PATTERN','REACTION'].includes(r.kind)?'Source pattern read; structural and stoichiometric verification remains separate.':'Source relationship read; its stated model and validation scope must be checked separately.';
  if(r.numericStatus==='REFERENCE_CASE_COVERED')return 'Source expression read; selected numerical reference case covered by automated tests. Full domain validation pending.';
@@ -179,7 +191,7 @@ function calculate(){
   if(!input.value.trim()||!Number.isFinite(v))error=tt("invalid");
   else if(field.check==="positive"&&v<=0)error=field.label+": must be > 0";
   else if(field.check==="nonnegative"&&v<0)error=field.label+": must be ≥ 0";
-  else if(field.check==="unitinterval"&&(v<=0||v>1))error=field.label+": must be in (0, 1]";
+  else if(field.check==="unitinterval"&&(v<0||v>1))error=field.label+": must be in [0, 1]";
  });
  let result;
  if(!error){try{result=c.compute(values);if(result.invalid)error=result.invalid;else if(!Number.isFinite(result.value))error=tt("invalid")}catch{error=tt("invalid")}}
@@ -190,34 +202,44 @@ function calculate(){
  el("working-toggle").textContent=tt(state.showSteps?"hideWorking":"working");
 }
 function levelFor(e){
+ if(e.level)return e.level;
  if(["engine-otto","refrigeration","shaft","trim-1","energy-1"].includes(e.id))return "Advanced";
  if(["gm-1","tpc-1","res-2","fuel-2","eng-1","therm-1","chem-ph","elect-dB","steam-enthalpy","econ-real","econ-pv"].includes(e.id))return "Intermediate";
  return "Foundation";
 }
 function exerciseIndexes(){
  return practice.map((e,i)=>({e,i})).filter(({e})=>
+ (state.practiceChapter==="All"||String(e.chapter)===state.practiceChapter)&&
  (state.practiceGroup==="All"||study.groups.find(g=>g.id===state.practiceGroup)?.categories.includes(e.category))&&
- (state.practiceLevel==="All"||levelFor(e)===state.practiceLevel)).map(x=>x.i);
+ (state.practiceLevel==="All"||levelFor(e)===state.practiceLevel)).sort((a,b)=>(a.e.chapter??99)-(b.e.chapter??99)||(a.e.difficulty??0)-(b.e.difficulty??0)||a.i-b.i).map(x=>x.i);
 }
 function moveExercise(direction){
  const ids=exerciseIndexes();if(!ids.length)return;
  const pos=ids.indexOf(state.examIndex);
- state.examIndex=ids[(Math.max(0,pos)+direction+ids.length)%ids.length];renderPractice();
+ state.examIndex=ids[Math.max(0,Math.min(ids.length-1,Math.max(0,pos)+direction))];renderPractice();
 }
 function renderPractice(){
  const ids=exerciseIndexes(),e=practice[state.examIndex];
- if(!ids.length){el("exercise-question").textContent="No exercises match these filters.";el("exercise-index").textContent="0 / 0";el("check-answer").disabled=true;el("show-hint").disabled=true;el("show-solution").disabled=true;return}
+ state.attempted=false;
+ el("exercise-hint").hidden=true;el("exercise-hint").textContent="";el("exercise-solution").hidden=true;el("exercise-solution").textContent="";
+ el("exercise-answer").value="";el("exercise-feedback").textContent="";el("exercise-feedback").className="";
+ el("exercise-progress").textContent=state.completed.size+" / "+practice.length;
+ for(const id of ["exercise-answer","check-answer","show-hint","show-solution","exercise-prev","exercise-next"])el(id).disabled=!ids.length;
+ if(!ids.length){el("exercise-question").textContent="No exercises match these filters.";el("exercise-index").textContent="0 / 0";for(const id of ["exercise-category","exercise-level","exercise-unit","exercise-chapter"])el(id).textContent="";el("exercise-chapter").removeAttribute("href");return}
  if(!ids.includes(state.examIndex)){state.examIndex=ids[0];return renderPractice()}
  el("check-answer").disabled=false;el("show-hint").disabled=false;el("show-solution").disabled=true;
  state.attempted=false;
  el("exercise-index").textContent=(ids.indexOf(state.examIndex)+1)+" / "+ids.length;
  el("exercise-level").textContent=levelFor(e);
+ el("exercise-chapter").textContent="Chapter "+e.chapter;el("exercise-chapter").href="#chapter-"+e.chapter;
+ el("exercise-question").dataset.exerciseId=e.id;
+ el("exercise-prev").disabled=ids.indexOf(state.examIndex)===0;el("exercise-next").disabled=ids.indexOf(state.examIndex)===ids.length-1;
  el("exercise-category").textContent=e.category;
  el("exercise-question").textContent=e.prompt;
  el("exercise-unit").textContent=e.unit;
  el("exercise-answer").value="";
  el("exercise-feedback").textContent="";el("exercise-feedback").className="";
- el("exercise-hint").hidden=true;el("exercise-hint").textContent=e.steps[0]||"Start by identifying the known values and units.";
+ el("exercise-hint").hidden=true;el("exercise-hint").textContent=e.hint||e.steps[0]||"Start by identifying the known values and units.";
  el("show-hint").textContent="Show hint";
  el("exercise-solution").hidden=true;
  el("exercise-solution").innerHTML='<ol>'+e.steps.map(step=>'<li>'+enc(step)+'</li>').join("")+'</ol>';
@@ -225,11 +247,12 @@ function renderPractice(){
  el("exercise-progress").textContent=state.completed.size+" / "+practice.length;
 }
 function checkAnswer(){
- const e=practice[state.examIndex],input=el("exercise-answer").value.trim().replace(",","."),
+ if(!exerciseIndexes().includes(state.examIndex))return;
+ const e=practice[state.examIndex],input=el("exercise-answer").value.trim().replace(/−/g,"-").replace(",","."),
  result=Number(input),feedback=el("exercise-feedback");
  if(!input||!Number.isFinite(result)){feedback.textContent=tt("invalid");feedback.className="error";return}
  state.attempted=true;el("show-solution").disabled=false;
- const correct=Math.abs(result-e.expected)<=Math.max(e.tolerance,Math.abs(e.expected)*0.001);
+ const correct=Math.abs(result-e.expected)<=Math.max(e.tolerance??0,Math.abs(e.expected)*(e.relativeTolerance??0.001));
  feedback.textContent=tt(correct?"good":"bad");
  feedback.className=correct?"correct":"error";
  if(correct){state.completed.add(e.id);persist("mt-student-practice-v1",[...state.completed])}
@@ -272,6 +295,8 @@ function renderChapterContext(){
  el("chapter-context-label").textContent=c?"Opened from chapter "+c.number+" · "+c.title:"";
 }
 function route(){
+ const practiceMatch=location.hash.match(/^#practice-chapter-(\d+)$/);
+ if(practiceMatch&&study.chapters?.some(c=>c.number===Number(practiceMatch[1]))){state.practiceChapter=practiceMatch[1];state.practiceGroup="All";state.practiceLevel="All";el("practice-chapter").value=state.practiceChapter;el("practice-subject").value="All";el("practice-difficulty").value="All";state.examIndex=exerciseIndexes()[0]??0;setTab("practice");el("study-tools").scrollIntoView?.({block:'start'});return}
  const match=location.hash.match(/^#chapter-(\d+)$/);
  state.chapter=match&&study.chapters?.some(c=>c.number===Number(match[1]))?match[1]:"All";
  renderChapterContext();
@@ -290,6 +315,8 @@ function init(){
  refreshTopics();
  const practiceSelect=el("practice-subject");
  study.groups.forEach(group=>{const opt=document.createElement("option");opt.value=group.id;opt.textContent=group.label;practiceSelect.append(opt)});
+ study.chapters.forEach(chapter=>{const option=document.createElement("option");option.value=String(chapter.number);option.textContent=chapter.number+" · "+chapter.title;el("practice-chapter").append(option)});
+ state.examIndex=exerciseIndexes()[0]??0;
  el("calc-selector").innerHTML=calc.map(c=>'<option value="'+enc(c.id)+'">'+enc(c.category)+' · '+enc(c.name)+'</option>').join("");
  updateHeader();
  const symbolSubject=el("symbol-discipline");
@@ -338,6 +365,7 @@ function init(){
  el("exercise-prev").addEventListener("click",()=>moveExercise(-1));
  el("practice-subject").addEventListener("change",ev=>{state.practiceGroup=ev.target.value;state.examIndex=exerciseIndexes()[0]??0;renderPractice()});
  el("practice-difficulty").addEventListener("change",ev=>{state.practiceLevel=ev.target.value;state.examIndex=exerciseIndexes()[0]??0;renderPractice()});
+ el("practice-chapter").addEventListener("change",ev=>{state.practiceChapter=ev.target.value;state.examIndex=exerciseIndexes()[0]??0;history.replaceState(null,"",state.practiceChapter==="All"?"#practice":"#practice-chapter-"+state.practiceChapter);renderPractice()});
  el("show-hint").addEventListener("click",()=>{
  const hint=el("exercise-hint");hint.hidden=!hint.hidden;el("show-hint").textContent=hint.hidden?"Show hint":"Hide hint";
  });

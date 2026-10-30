@@ -5,7 +5,7 @@ These checks are not certification of all source expressions or full real domain
 import json,re
 from pathlib import Path
 import sympy as s
-text=(Path(__file__).resolve().parents[1]/'students/math-equation-audit-20261020.js').read_text()
+text=(Path(__file__).resolve().parents[1]/'students/math-equation-audit-20261020.js').read_text(encoding='utf-8')
 rows=json.loads(re.search(r'const entries=(\[.*?\]);\nconst byId',text,re.S).group(1))
 a,b=s.symbols('a b',positive=True);m,n,q=s.symbols('m n q',positive=True,integer=True)
 x=s.symbols('x',real=True,nonzero=True);k=s.symbols('k',real=True);u=s.Function('u')(x);v=s.Function('v')(x);f=s.Function('f')

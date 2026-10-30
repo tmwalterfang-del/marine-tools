@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {catalogue} from './lib/students-catalogue.mjs';
+import {evaluate} from './lib/students-numeric-expression.mjs';
+const rows=catalogue().MT_STUDY.sourceEquationRegister.filter(r=>r.chapter===9),by=new Map(rows.map(r=>[r.id,r])),evidence={},pi=Math.PI;let assertions=0;
+function check(p,r,inputs,expected,{side=1,tolerance=2e-9,reference='Authored engine/process reference on the stated cycle, efficiency and unit basis.'}={}){
+ const id=`book-c9-p${p}-r${String(r).padStart(2,'0')}`,row=by.get(id);assert.ok(row,id);
+ const actual=evaluate(row.formula.split(/=|≈/)[side].split(';')[0].trim(),inputs);
+ assert.ok(Math.abs(actual-expected)<=tolerance*Math.max(Math.abs(expected),1e-16),id+': '+actual+' vs '+expected);assertions++;
+ (evidence[id]??={kind:'DISPLAYED_EXPRESSION_REFERENCE_CASE',reference,cases:[]}).cases.push({inputs,expected,side});
+}
+function typed(p,r,formula,condition,reference){const id=`book-c9-p${p}-r${String(r).padStart(2,'0')}`;assert.equal(by.get(id)?.formula,formula,id);assert.ok(condition,id);evidence[id]={kind:'TYPED_PROCESS_OR_STOICHIOMETRY_CHECK',reference};assertions++;}
+check(134,1,{'p₂':200,'V₂':3},600);
+typed(134,2,'p·V^κ = constant',Math.abs(100*2**1.4-(100*2**1.4)*1**1.4)<1e-10,'Two states constructed from reversible ideal-gas adiabatic compression; constant κ; adiabatic alone is insufficient.');
+typed(134,3,'p·V^n_p = constant',100*4**1.5===800*1**1.5,'Specified polytropic exponent 1.5; fitted process relation, not universal irreversible law.');
+check(134,4,{r:4,'κ':2},.75,'Ideal Otto heat balance with cv constant and κ=2.');
+check(134,5,{'V₁':4,'V₂':1},4);
+check(134,6,{D:2,S:3,h_port:1,V_c:pi},3);
+for(const [r,v,e] of [[1,{r_c:2,'κ':2,r:10},.85],[2,{c_p:1000,c_v:800},1.25],[3,{'V₃':2,'V₂':1},2],[4,{'p₁':100,r:4,n_p:1.5},800],[5,{'T₁':300,r:4,n_p:1.5},600],[6,{W:40,Q_in:100},.4],[7,{P_i:40,'ṁ_f':1,LHV:100},.4],[8,{b_i:.025,LHV:100},.4]])check(135,r,v,e);
+for(const [r,v,e] of [[1,{'η':.5,'η_rel':.8},.4],[2,{P_b:32,'ṁ_f':1,LHV:100},.32],[3,{b_b:1/32,LHV:100},.32],[4,{'η_i':.4,'η_m':.8},.32],[5,{W_i:40,W_ideal:50},.8],[6,{P_b:32,P_i:40},.8],[7,{P_prop:28.8,P_b:32},.9],[8,{'ṁ_f':1,P_i:40},.025],[9,{'ṁ_f':1,P_b:32},1/32],[10,{D:2,S:3},3*pi],[11,{z:2,V_s:.1,p_mi:1.2e6,n:5},1.2e6]])check(136,r,v,e);
+for(const [r,v,e] of [[1,{z:2,V_s:.1,p_mi:1.2e6,n:5},.6e6],[2,{W_i:120000,V_s:.1},1.2e6],[3,{z:2,V_s:.1,p_mb:.96e6,n:5},.96e6],[4,{z:2,V_s:.1,p_mb:.96e6,n:5},.48e6],[5,{'η_m':.8,P_i:1.2e6},.96e6],[6,{'ρ_ref':1.2,LHV:40e6,'η_m':.8,'η_i':.4,'η_charge':.9,AFR_st:12,'λ_ret':1.2},.96e6]])check(137,r,v,e);
+for(const [r,v,e] of [[1,{'η_m':.8,p_mi:1.2e6},.96e6],[2,{P_b:20*pi,n:1},10],[3,{S:.2,n:5},2],[4,{w_C:1,w_H:0,w_S:0,w_O:0},8/3],[5,{m_O2:8/3,M_air:28.8,y_O2:.2,M_O2:32},12],[6,{V_m:24,w_C:1,w_H:0,w_S:0,w_O:0,y_O2:.2},10],[7,{'λ':1.5,AFR_st:12},18],[8,{'ρ_charge':1.2,V_start:.1,V_s:.1,LHV:40e6,'η_m':.8,'η_i':.4,'η_scav':.9,AFR_st:12,'λ_ret':1.2},.96e6]])check(138,r,v,e);
+for(const [r,v,e] of [[1,{'λ_ret':1.2,AFR_st:12},14.4],[2,{'ṁ_f':2,'λ':1.5,AFR_st:12},36],[3,{P_b:32,b_b:1/32,'λ':1.5,AFR_st:12},18],[4,{'λ_delivery':1.25,'ρ_ref':1.2,V_s:.1,z:2,n_cycle:5},1.5]])check(139,r,v,e);
+typed(140,1,'C_nH_m+(n+m/4)·(O₂+3.76·N₂) → n·CO₂+(m/2)·H₂O+3.76·(n+m/4)·N₂',[['C',1,1],['H',4,2*2],['O',2*2,2+2],['N',2*3.76*2,2*3.76*2]].every(([,left,right])=>left===right),'Methane complete-combustion C/H/O/N atom balance with explicitly assumed 3.76 nitrogen/oxygen molar ratio.');
+const dry=18.04;
+for(const [r,v,e] of [[2,{n_C:1,n_H:4},2],[3,{n_C:1,'λ':2,'ν_O2':2},dry],[4,{n_C:1,N_dry:dry},1/dry],[5,{'λ':2,'ν_O2':2,N_dry:dry},2/dry],[6,{'λ':2,'ν_O2':2,N_dry:dry},15.04/dry]])check(140,r,v,e);
+for(const [r,v,e] of [[1,{'ρ_ref':1.2,V_s:.1},.12],[2,{m_del:.15,m_ref:.12},1.25],[3,{m_ret:.12,m_ref:.12},1],[4,{m_short:.03,m_del:.15},.2],[5,{m_ret:.12,m_short:.03},.15],[6,{'λ_delivery':1.25,f_short:.2},1],[7,{m_ret:.12,m_res:.03},.8],[8,{'λ':1.5,f_short:.2},1.2],[9,{'h₂s':150,'h₁':100,'h₂':200},.5],[10,{'h₃':200,'h₄':150,'h₄s':100},.5]])check(141,r,v,e);
+// Slider-crank geometry and its second-order rod-ratio truncation are separate.
+const crankR=.2,rod=1,omega=3,theta=.8,ratio=crankR/rod;
+const approximate=t=>crankR*(1-Math.cos(t))+crankR**2/(2*rod)*Math.sin(t)**2;
+const exact=t=>crankR*(1-Math.cos(t))+rod-Math.sqrt(rod*rod-crankR*crankR*Math.sin(t)**2);
+const dt=1e-5,derivative=(approximate(theta+dt)-approximate(theta-dt))/(2*dt),dd=2e-4,second=(approximate(theta+dd)-2*approximate(theta)+approximate(theta-dd))/(dd*dd);
+check(142,1,{R:crankR,L:rod},ratio);
+check(142,2,{R:crankR,'λ_r':ratio,'θ':theta},approximate(theta));
+assert.ok(Math.abs(approximate(theta)-exact(theta))<.0001,'Truncation error explicitly bounded for this selected geometry, not claimed zero');
+check(142,3,{R:crankR,'ω':omega,'λ_r':ratio,'θ':theta},omega*derivative,{tolerance:2e-8,reference:'Central derivative of the independently constructed second-order slider-crank displacement.'});
+check(142,4,{R:crankR,'ω':omega,'λ_r':ratio,'θ':theta},omega*omega*second,{tolerance:2e-7});
+typed(142,5,'a_TDC = R·ω²·(1+λ_r); a_BDC = −R·ω²·(1−λ_r)',Math.abs(omega**2*(approximate(dd)-2*approximate(0)+approximate(-dd))/(dd*dd)-crankR*omega**2*(1+ratio))<1e-7&&Math.abs(omega**2*(approximate(pi+dd)-2*approximate(pi)+approximate(pi-dd))/(dd*dd)+crankR*omega**2*(1-ratio))<1e-7,'Both dead-centre acceleration branches from second differences of geometric displacement.');
+check(142,6,{m_o:2,a:3},-6);check(142,7,{D:2,'Δp':100},100*pi);check(142,8,{F_g:100,F_o:-20},80);
+const beta=Math.asin(ratio*Math.sin(theta)),force=80;
+check(142,9,{'λ_r':ratio,'θ':theta},Math.sin(beta));check(142,10,{F_p:force,'β':beta},force*Math.sin(beta)/Math.cos(beta));check(142,11,{F_p:force,'β':beta},force/Math.cos(beta));
+const exactDerivative=(exact(theta+dt)-exact(theta-dt))/(2*dt);
+check(142,12,{F_p:force,'θ':theta,'β':beta},force*exactDerivative/crankR,{tolerance:2e-8,reference:'Virtual work: crank torque R·Ft equals piston force times geometric ds/dθ.'});
+for(const [r,v,e] of [[1,{R:.2,F_t_mean:50},20*pi],[2,{R:.2,F_t_mean:50},10],[3,{F_rod:100,'θ':pi/6,'β':pi/6},50],[4,{m_r:2,R:.2,'ω':3},3.6],[5,{m_p:2,m_rod_o:.5},2.5]])check(143,r,v,e);
+for(const [r,v,e] of [[1,{m_o:2,R:.2,'ω':3,'θ':0},3.6],[2,{'λ_r':.2,m_o:2,R:.2,'ω':3,'θ':0},.72],[3,{m_r:2,R:.2,m_o:2},.6],[4,{K:100,'J₁':2,'J₂':2},10],[5,{G:100,J_p:2,L:4},50],[6,{'ω_n':2*pi},60],[7,{f_min:60,i_order:2},30]])check(144,r,v,e);
+for(const [r,v,e] of [[1,{D:2,p_max:100,d_j:2,L_eff:pi},50],[2,{R_T:100,v:4},400],[3,{R_T:100,F_add:20},120],[4,{T:120,V_A:3},360],[5,{v:4,V_A:3},.25],[6,{P_T:360,P_D:450},.8],[7,{P_E:400,P_T:500},.8],[8,{P_E:400,P_D:500},.8],[9,{P_D:450,P_B:500},.9]])check(145,r,v,e);
+for(const [r,v,e] of [[1,{p:2,n:5},10],[2,{v_theory:10,v:8},.2],[3,{P_ref:100,n:2,n_ref:1},800],[4,{P_ref:100,v:2,v_ref:1},800],[5,{'Δ':64,v:2,C_A:4},32],[6,{h_g:100,A:2,'ΔT':3},600],[7,{h_g:100,'ΔT':3},300],[8,{k:10,'ΔT':3,'δ':.1},300]])check(146,r,v,e);
+check(147,1,{h_c:100,'ΔT':3},300);
+check(147,2,{h_g:1000,'δ':.01,k:10,h_c:2000,R_f:.0005},.003);
+check(147,3,{f_cool:.2,P_b:1e6,'η_b':.4,'ρ':1000,c_p:4000,'ΔT':10},.0125);
+for(const [r,v,e] of [[1,{f_cool:.2,P_b:1e6,'η_b':.4},500000],[2,{U:100,A:2,LMTD:3},600],[3,{'ΔT₁':4,'ΔT₂':2},2/Math.log(2)],[4,{'Δp':200000,'V̇':.01,'η_p':.8},2500]])check(148,r,v,e);
+assert.equal(rows.length,107);assert.deepEqual(Object.keys(evidence).sort(),[...by.keys()].sort());
+if(process.argv.includes('--output'))fs.writeFileSync(process.argv[process.argv.indexOf('--output')+1],JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify({status:'PASS',expressions:107,assertions,scope:'Displayed mathematics, combustion/scavenging balances, geometric crank derivatives/virtual work, stated cycle and empirical planning limits; real engine calibration not inferred.'}));

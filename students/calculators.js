@@ -1,11 +1,15 @@
 /* Marine Tools For Students. Independent teaching examples and synthetic exercises.
    Each calculator has explicit arithmetic; no arbitrary expression evaluation. */
+window.MT_STUDENT_FORMAT=n=>Number(n).toLocaleString('en-GB',{
+ maximumSignificantDigits:8,
+ notation:Math.abs(n)>0&&(Math.abs(n)<.0001||Math.abs(n)>=1e7)?'scientific':'standard'
+});
 const F=(key,label,unit,initial,check="positive")=>({key,label,unit,initial,check});
 window.MT_CALCULATORS=[
 {
  id:"displacement",name:"Mass displacement",category:"Ship Stability",description:"Find displacement mass from submerged volume and water density.",
  fields:[F("volume","Submerged volume","m³",20000),F("density","Water density","t/m³",1.025)],
- compute:({volume,density})=>({value:volume*density,unit:"t",steps:[`Δ = ∇ × ρ = ${volume} × ${density}`,`Δ = ${(volume*density).toFixed(3)} t`]})
+ compute:({volume,density})=>({value:volume*density,unit:"t",steps:[`Δ = ∇ × ρ = ${volume} × ${density}`,`Δ = ${window.MT_STUDENT_FORMAT(volume*density)} t`]})
 },
 {
  id:"deadweight",name:"Deadweight",category:"Cargo & Survey",description:"Mass that may be carried as difference between displacement and lightship.",
@@ -15,7 +19,7 @@ window.MT_CALCULATORS=[
 {
  id:"add-kg",name:"New KG after loading",category:"Ship Stability",description:"Vertical center of gravity after adding a cargo mass; no free-surface correction.",
  fields:[F("dis","Initial displacement","t",10000),F("kg","Initial KG","m",6,"nonnegative"),F("load","Loaded mass","t",500,"nonnegative"),F("loadkg","Cargo KG above keel","m",12,"nonnegative")],
- compute:({dis,kg,load,loadkg})=>({value:(dis*kg+load*loadkg)/(dis+load),unit:"m",steps:[`Old moment = ${dis} × ${kg} = ${(dis*kg).toFixed(2)} tm`,`Added moment = ${load} × ${loadkg} = ${(load*loadkg).toFixed(2)} tm`,`New KG = (${(dis*kg).toFixed(2)} + ${(load*loadkg).toFixed(2)}) / ${(dis+load).toFixed(2)}`]})
+ compute:({dis,kg,load,loadkg})=>({value:(dis*kg+load*loadkg)/(dis+load),unit:"m",steps:[`Old moment = ${dis} × ${kg} = ${window.MT_STUDENT_FORMAT(dis*kg)} tm`,`Added moment = ${load} × ${loadkg} = ${window.MT_STUDENT_FORMAT(load*loadkg)} tm`,`New KG = (${window.MT_STUDENT_FORMAT(dis*kg)} + ${window.MT_STUDENT_FORMAT(load*loadkg)}) / ${window.MT_STUDENT_FORMAT(dis+load)}`]})
 },
 {
  id:"discharge-kg",name:"New KG after discharging",category:"Ship Stability",description:"Vertical center of gravity after removing a known weight.",
@@ -40,7 +44,7 @@ window.MT_CALCULATORS=[
 {
  id:"trim-change",name:"Simple trim change",category:"Cargo & Survey",description:"Calculated trim from known longitudinal trimming moment and MCT 1 cm.",
  fields:[F("weight","Weight shifted","t",100,"nonnegative"),F("distance","Longitudinal shift","m",20,"nonnegative"),F("mct","MCT 1 cm","tm/cm",200)],
- compute:({weight,distance,mct})=>({value:weight*distance/mct,unit:"cm",steps:[`Trimming moment = w × d = ${weight} × ${distance} tm`,`Trim change = moment / MCT 1 cm = ${(weight*distance).toFixed(3)} / ${mct}`],warning:"Magnitude only; the sign (trim by bow/stern) requires stated conventions."})
+ compute:({weight,distance,mct})=>({value:weight*distance/mct,unit:"cm",steps:[`Trimming moment = w × d = ${weight} × ${distance} tm`,`Trim change = moment / MCT 1 cm = ${window.MT_STUDENT_FORMAT(weight*distance)} / ${mct}`],warning:"Magnitude only; the sign (trim by bow/stern) requires stated conventions."})
 },
 {
  id:"block-coefficient",name:"Block coefficient",category:"Ship Stability",description:"Ratio between immersed hull volume and enclosing box.",
@@ -95,12 +99,12 @@ window.MT_CALCULATORS=[
 {
  id:"voyage-fuel",name:"Passage fuel estimate",category:"Machinery & Energy",description:"Simplified constant-speed daily fuel estimate, no reserve included.",
  fields:[F("dist","Distance","NM",1200,"nonnegative"),F("speed","Speed over ground","kn",12),F("daily","Fuel consumption","m³/day",24,"nonnegative")],
- compute:({dist,speed,daily})=>({value:dist/speed/24*daily,unit:"m³",steps:[`Sea time = ${dist} / ${speed} = ${(dist/speed).toFixed(2)} h`,`Fuel = sea time / 24 × ${daily}`]})
+ compute:({dist,speed,daily})=>({value:dist/speed/24*daily,unit:"m³",steps:[`Sea time = ${dist} / ${speed} = ${window.MT_STUDENT_FORMAT(dist/speed)} h`,`Fuel = sea time / 24 × ${daily}`]})
 },
 {
  id:"battery-runtime",name:"Battery autonomy",category:"Machinery & Energy",description:"Illustrative available energy and run time for steady load.",
  fields:[F("cap","Nominal battery energy","kWh",800),F("dod","Permitted DoD","fraction",0.8,"unitinterval"),F("eta","Efficiency","fraction",0.92,"unitinterval"),F("load","Electrical demand","kW",100)],
- compute:({cap,dod,eta,load})=>({value:cap*dod*eta/load,unit:"h",steps:[`Usable energy = ${cap} × ${dod} × ${eta} = ${(cap*dod*eta).toFixed(2)} kWh`,`Duration = usable energy / ${load}`]})
+ compute:({cap,dod,eta,load})=>({value:cap*dod*eta/load,unit:"h",steps:[`Usable energy = ${cap} × ${dod} × ${eta} = ${window.MT_STUDENT_FORMAT(cap*dod*eta)} kWh`,`Duration = usable energy / ${load}`]})
 },
 {
  id:"heat-energy",name:"Sensible heating energy",category:"Thermodynamics",description:"Approximate heat required at constant specific heat, ignoring losses.",

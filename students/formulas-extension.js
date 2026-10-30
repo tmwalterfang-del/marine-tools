@@ -446,7 +446,7 @@ const extra=[
  {
   "id": "ext-safety-factor",
   "category": "Machine Elements & Strength",
-  "name": "Safety factor",
+  "name": "Capacity-to-demand margin",
   "formula": "n = allowable limit / applied demand",
   "note": "Matching measure, positive applied demand.",
   "tags": "design",
