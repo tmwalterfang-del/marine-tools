@@ -19,7 +19,7 @@ const state={
  theme:retrieve("mt-student-theme-v1","maritime")
 };
 const learning=window.MT_LEARNING_ENGINE?.create({bank:practice,chapters:study.chapters,legacyCompleted:[...state.completed],read:key=>JSON.parse(localStorage.getItem(key)),write:(key,value)=>{localStorage.setItem(key,JSON.stringify(value));return true}});
-let learningUI,focusFormula=null,returnExercise=null,testRoute=null;
+let learningUI,focusFormula=null,returnExercise=null,testRoute=null,renderedHash=null;
 if(learning)state.completed=new Set(learning.completed);
 function syncProgress(){if(learning)state.completed=new Set(learning.completed);persist('mt-student-practice-v1',[...state.completed]);el('exercise-progress').textContent=state.completed.size+' / '+practice.length;}
 const tr={
@@ -333,6 +333,7 @@ function renderSymbols(){
 }
 
 function setTab(name){
+ renderedHash=location.hash;
  if(!["formulas","symbols","calculators","practice","sheet","progress","selftest"].includes(name))name="formulas";
  state.tab=name;
  renderChapterContext();
@@ -356,6 +357,7 @@ function renderChapterContext(){
  el("chapter-context-label").textContent=c?"Chapter "+c.number+" · "+c.title:"";
 }
 function route(){
+ if(renderedHash===location.hash)return;
  const [path,query='']=location.hash.slice(1).split('?'),params=new URLSearchParams(query),from=params.get('from');returnExercise=practice.some(q=>q.id===from)?from:null;focusFormula=null;testRoute=null;
  const exerciseMatch=path.match(/^exercise\/(.+)$/),formulaMatch=path.match(/^formula\/(.+)$/),calculatorMatch=path.match(/^calculator\/(.+)$/),testMatch=path.match(/^selftest(?:\/(.+))?$/);
  if(exerciseMatch){const index=practice.findIndex(q=>q.id===exerciseMatch[1]);if(index>=0){state.practiceChapter=String(practice[index].chapter);state.practiceGroup='All';state.practiceLevel='All';el('practice-chapter').value=state.practiceChapter;el('practice-subject').value='All';el('practice-difficulty').value='All';state.examIndex=index;setTab('practice');el('exercise-question').focus?.();return;}}
@@ -372,7 +374,7 @@ function route(){
  if(pendingSymbolVariant){openSymbolVariant(pendingSymbolVariant);pendingSymbolVariant=null}else if(location.hash)el("study-tools").scrollIntoView?.({block:'start'});
 }
 function init(){
- if(learning&&window.MT_LEARNING_WORKSPACE&&window.MT_LEARNING_LINKS)learningUI=window.MT_LEARNING_WORKSPACE.create({engine:learning,links:window.MT_LEARNING_LINKS.create({formulas:formula,calculators:calc,study}),bank:practice,chapters:study.chapters,onProgress:syncProgress,onReset:renderPractice});
+ if(learning&&window.MT_LEARNING_WORKSPACE&&window.MT_LEARNING_LINKS)learningUI=window.MT_LEARNING_WORKSPACE.create({engine:learning,links:window.MT_LEARNING_LINKS.create({formulas:formula,calculators:calc,study}),bank:practice,chapters:study.chapters,onProgress:syncProgress,onReset:()=>{if(state.tab==='practice')renderPractice();}});
  document.querySelectorAll('[data-tab]').forEach(b=>{b.id='tab-'+b.dataset.tab;b.setAttribute('aria-controls','pane-'+b.dataset.tab);const pane=document.querySelector('[data-pane="'+b.dataset.tab+'"]');if(pane){pane.id='pane-'+b.dataset.tab;pane.setAttribute('role','tabpanel');pane.setAttribute('aria-labelledby',b.id);}});
  document.querySelector('[role="tablist"]')?.addEventListener('keydown',ev=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(ev.key))return;const tabs=[...document.querySelectorAll('[data-tab]')],index=tabs.indexOf(document.activeElement);if(index<0)return;ev.preventDefault();const next=ev.key==='Home'?0:ev.key==='End'?tabs.length-1:(index+(ev.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs.forEach((b,i)=>b.setAttribute('tabindex',i===next?'0':'-1'));tabs[next].focus();});
  el("clear-chapter").addEventListener("click",()=>{state.chapter="All";renderChapterContext();location.hash="formulas";renderFormulas()});
@@ -425,7 +427,7 @@ function init(){
   if(f&&navigator.clipboard?.writeText)navigator.clipboard.writeText(f.name+"\n"+f.formula+"\n"+publicConditions(f)).then(()=>{b.textContent="✓"}).catch(()=>{});
  }else if(b.dataset.open){state.calcid=b.dataset.open;location.hash='calculator/'+encodeURIComponent(state.calcid)+(returnExercise?'?from='+encodeURIComponent(returnExercise):'');setTab('calculators')}
  });
- document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{focusFormula=null;returnExercise=null;testRoute=null;location.hash=b.dataset.tab;setTab(b.dataset.tab)}));
+ document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{focusFormula=null;returnExercise=null;testRoute=null;location.hash=b.dataset.tab;if(renderedHash===location.hash)setTab(b.dataset.tab);else route()}));
  el("calc-selector").addEventListener("change",ev=>{state.calcid=ev.target.value;renderCalculator()});
  el("calc-fields").addEventListener("input",calculate);
  el("working-toggle").addEventListener("click",()=>{state.showSteps=!state.showSteps;calculate()});

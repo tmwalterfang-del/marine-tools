@@ -7,20 +7,22 @@ function mount(svg){
  svg.dataset.studyOriginalViewBox=original.join(' ');svg.setAttribute('tabindex','0');
  let box=[...original],enabled=false,dragged=false,gesture=null;
  const pointers=new Map(),bar=document.createElement('div');bar.className='diagram-tools';bar.setAttribute('role','group');bar.setAttribute('aria-label','Diagram view controls');
- const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);bar.append(b);return b};
+ const panbar=document.createElement('div');panbar.className='diagram-pan-tools';panbar.setAttribute('role','group');panbar.setAttribute('aria-label','Pan diagram');
+ const button=(label,fn,target=bar)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);target.append(b);return b};
  const scale=()=>original[2]/box[2];
  const zoomIn=button('Zoom +',()=>zoom(1.5)),zoomOut=button('Zoom −',()=>zoom(1/1.5));
  button('Reset view',reset);
  const explore=button('Pan / pinch',()=>setEnabled(!enabled));explore.setAttribute('aria-pressed','false');
- const pans=[['Pan left',-1,0],['Pan right',1,0],['Pan up',0,-1],['Pan down',0,1]].map(([name,x,y])=>button(name,()=>{box[0]+=x*box[2]*.1;box[1]+=y*box[3]*.1;render()}));
+ const pans=[['Pan left',-1,0],['Pan right',1,0],['Pan up',0,-1],['Pan down',0,1]].map(([name,x,y])=>button(name,()=>{box[0]+=x*box[2]*.1;box[1]+=y*box[3]*.1;render()},panbar));
  const label=document.createElement('span');label.id='diagram-view-'+(svg.id||Math.random().toString(36).slice(2));bar.append(label);svg.setAttribute('aria-describedby',[svg.getAttribute('aria-describedby'),label.id].filter(Boolean).join(' '));svg.before(bar);
+ const help=document.createElement('span');help.id=label.id+'-help';help.textContent='Focus the diagram: +/− zoom, 0 resets, arrow keys pan when zoomed. Enable Pan / pinch to drag or pinch; Escape exits pan mode.';panbar.append(help);svg.setAttribute('aria-describedby',svg.getAttribute('aria-describedby')+' '+help.id);const legend=svg.nextElementSibling?.classList.contains('legend')?svg.nextElementSibling:svg;legend.after(panbar);
  // SVG hidden state must also hide its sibling controls.
- const visibility=()=>{bar.hidden=svg.hasAttribute('hidden');};visibility();
+ const visibility=()=>{bar.hidden=panbar.hidden=svg.hasAttribute('hidden');};visibility();
  new MutationObserver(visibility).observe(svg,{attributes:true,attributeFilter:['hidden']});
  function render(){
   box[2]=Math.max(original[2]/8,Math.min(original[2],box[2]));box[3]=box[2]*original[3]/original[2];
   box[0]=Math.max(original[0],Math.min(original[0]+original[2]-box[2],box[0]));box[1]=Math.max(original[1],Math.min(original[1]+original[3]-box[3],box[1]));
-  svg.setAttribute('viewBox',box.join(' '));label.textContent=Math.round(scale()*100)+'% · Focus the diagram: +/− zoom, 0 resets, arrow keys pan when zoomed.'+(enabled?' Drag or pinch to explore; Escape exits pan mode.':' Page scrolling enabled outside the focused diagram.');zoomIn.disabled=scale()>=8-1e-8;zoomOut.disabled=scale()<=1+1e-8;pans.forEach(b=>b.disabled=scale()<=1+1e-8);
+  svg.setAttribute('viewBox',box.join(' '));label.textContent=Math.round(scale()*100)+'%'+(enabled?' · Pan mode':'');zoomIn.disabled=scale()>=8-1e-8;zoomOut.disabled=scale()<=1+1e-8;pans.forEach(b=>b.disabled=scale()<=1+1e-8);
  }
  function point(x,y){const matrix=svg.getScreenCTM();if(!matrix)return [box[0]+box[2]/2,box[1]+box[3]/2];const p=svg.createSVGPoint();p.x=x;p.y=y;const z=p.matrixTransform(matrix.inverse());return [z.x,z.y]}
  function zoom(factor,anchor=[box[0]+box[2]/2,box[1]+box[3]/2]){if(!Number.isFinite(factor)||factor<=0||!Array.isArray(anchor)||anchor.length!==2||anchor.some(x=>!Number.isFinite(x)))throw RangeError('Finite positive zoom and a finite diagram anchor are required.');const next=Math.max(1,Math.min(8,scale()*factor)),w=original[2]/next,h=original[3]/next,rx=(anchor[0]-box[0])/box[2],ry=(anchor[1]-box[1])/box[3];box=[anchor[0]-rx*w,anchor[1]-ry*h,w,h];render()}

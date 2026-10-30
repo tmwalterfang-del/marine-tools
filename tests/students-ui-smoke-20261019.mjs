@@ -51,7 +51,7 @@ const document={
  createElement(){return {value:'',textContent:''}}
 };
 const localStorage={getItem(key){return storage[key]??null},setItem(key,val){storage[key]=val}};
-const location={hash:''};
+let currentHash='';const location={get hash(){return currentHash},set hash(value){currentHash=value?(value.startsWith('#')?value:'#'+value):''}};
 win.addEventListener=(type,fn)=>{win[type]=fn};
 win.print=()=>printCalls++;
 win.confirm=()=>true;
