@@ -87,6 +87,7 @@ $('model-scenario').addEventListener('change',async event=>{const file=event.tar
  // Validate the complete scenario BEFORE replacing any current input or result.
  saved[active]=Object.fromEntries(Object.entries(inputs).map(([key,value])=>[key,String(value)]));last=null;select(active);$('model-feedback').textContent='Scenario restored and recalculated.';
  }catch(error){$('model-feedback').textContent=error.message;}finally{event.target.value='';}});
+window.MT_EDUCATION_SNAPSHOT=snapshot;
 window.addEventListener('resize',()=>{if(last)chart();});
 select(location.hash.slice(1));
 })();

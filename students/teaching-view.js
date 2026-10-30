@@ -8,7 +8,7 @@ function wrapControls(node,grid,result){
  if(grid){grid.classList.add('teaching-grid');result.classList.add('teaching-results')}
  return details;
 }
-for(const grid of document.querySelectorAll('.two-col')){const form=[...grid.children].find(x=>x.tagName==='FORM'),result=[...grid.children].find(x=>x!==form);if(form&&result)wrapControls(form,grid,result)}
+for(const grid of document.querySelectorAll('.two-col')){const form=[...grid.children].find(x=>x.tagName==='FORM')||(grid.classList.contains('model-layout')?[...grid.children].find(x=>x.querySelector('form#experiment')):null),result=[...grid.children].find(x=>x!==form);if(form&&result)wrapControls(form,grid,result)}
 const controls=document.querySelector('.layout>.controls'),plot=document.querySelector('.layout>.plot-card');if(controls&&plot)wrapControls(controls,controls.parentElement,plot);
 const cargo=document.getElementById('cargo-form');if(cargo){const d=wrapControls(cargo),results=document.getElementById('results')?.closest('section');if(results){results.classList.add('teaching-results');d.before(results)}const presets=document.getElementById('preset')?.closest('section');if(presets)d.insertBefore(presets,cargo)}
 if(narrow.addEventListener)narrow.addEventListener('change',e=>{for(const d of wrappers)d.open=!e.matches});

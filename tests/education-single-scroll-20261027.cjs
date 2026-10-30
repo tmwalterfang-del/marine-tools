@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),pw=require('playwright');
 const engine=process.argv[2]||'chromium',root=process.cwd(),out=path.resolve('qa-education-'+engine,'single-scroll');
-const ids=['lifting','trim','tank','pump','crank','faults','cargo','stability','controls','engine','mollier','rlc','heat','current','finance'];
+const ids=['lifting','trim','tank','pump','crank','faults','cargo','stability','controls','engine','mollier','rlc','heat','current','finance','beam','transient','ideal-cycle','pump-suction','refrigeration-energy','lift-cross-curves'];
 let server,browser,checks=0;const errors=[];
 const ok=(value,label)=>{assert.ok(value,label);checks++;};
 (async()=>{
