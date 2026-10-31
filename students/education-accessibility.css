@@ -3,3 +3,7 @@
 .diagram-pan-tools{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;align-items:center}.diagram-pan-tools button{min-height:44px;padding:8px 12px;margin:0;font-size:13px}.diagram-pan-tools span{color:var(--muted);font-size:12px;line-height:1.6;width:100%}@media print{.diagram-pan-tools{display:none!important}}
 body.presentation-view .diagram-tools+svg{margin-top:16px}
 .skip-link:not(:focus){clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:nowrap}
+
+/* Long Norwegian compounds and unbroken formulas must wrap at 320 px (WCAG 1.4.10). */
+h1,h2,h3,h4,legend,label,.panel p,.panel li{overflow-wrap:break-word}
+html[lang=nb] h1,html[lang=nb] h2,html[lang=nb] h3{hyphens:auto}

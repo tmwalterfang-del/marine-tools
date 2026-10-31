@@ -1,7 +1,8 @@
 /* Context return and visual-viewport handling. No calculation data is sent. */
 (function(root){'use strict';
 const KEY='mt.return-context.v1',ttl=86400000;let viewportFrame=null;
-root.MT_PARSE_NUMBER=value=>Number(typeof value==='string'?value.replace(/−/g,'-').replace(',','.'):value);
+const DECIMAL=/^\s*[+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:e[+-]?\d+)?\s*$/i;
+root.MT_PARSE_NUMBER=value=>{if(typeof value!=='string')return Number(value);const text=value.replace(/−/g,'-');return text.trim()&&!DECIMAL.test(text)?NaN:Number(text.replace(',','.'));};
 root.MT_PARSE_FLOAT=value=>parseFloat(typeof value==='string'?value.replace(/−/g,'-').replace(',','.'):value);
 root.MT_INPUT_KIND=input=>input.dataset?.mtNumeric==='true'?'number':input.type;
 function numericFields(scope=document){for(const input of scope.querySelectorAll('input[type=number]')){input.dataset.mtNumeric='true';input.type='text';input.inputMode='decimal';input.setAttribute('role','spinbutton');for(const name of ['min','max'])if(input.hasAttribute(name))input.setAttribute('aria-value'+name,input.getAttribute(name));checkNumber(input);}}

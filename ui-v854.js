@@ -8,7 +8,7 @@ const rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function ddmParts(v,lat){const n=(globalThis.MT_PARSE_NUMBER||Number)(v)||0,a=Math.abs(n),d=Math.floor(a),m=(a-d)*60;return{deg:d,min:m,hem:lat?(n<0?'S':'N'):(n<0?'W':'E')}}
-function ddmValue(prefix,lat){const d=(globalThis.MT_PARSE_NUMBER||Number)($(`#${prefix}Deg`)?.value),m=(globalThis.MT_PARSE_NUMBER||Number)($(`#${prefix}Min`)?.value),h=$(`#${prefix}Hem`)?.value;if(!Number.isFinite(d)||!Number.isFinite(m)||d<0||m<0||m>=60||d>(lat?90:180)||(d===(lat?90:180)&&m>0))return null;let v=d+m/60;if(h==='S'||h==='W')v=-v;return v}
+function ddmValue(prefix,lat){if(!String($(`#${prefix}Deg`)?.value??'').trim()||!String($(`#${prefix}Min`)?.value??'').trim())return null;const d=(globalThis.MT_PARSE_NUMBER||Number)($(`#${prefix}Deg`)?.value),m=(globalThis.MT_PARSE_NUMBER||Number)($(`#${prefix}Min`)?.value),h=$(`#${prefix}Hem`)?.value;if(!Number.isFinite(d)||!Number.isFinite(m)||d<0||m<0||m>=60||d>(lat?90:180)||(d===(lat?90:180)&&m>0))return null;let v=d+m/60;if(h==='S'||h==='W')v=-v;return v}
 function fmtDeg(d,lat){return String(d).padStart(lat?2:3,'0')}
 function toDDM(v,lat,p=5){if(!Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(v)))return '—';const n=(globalThis.MT_PARSE_NUMBER||Number)(v),h=lat?(n>=0?'N':'S'):(n>=0?'E':'W'),a=Math.abs(n),d=Math.floor(a),m=(a-d)*60;return `${fmtDeg(d,lat)}° ${m.toFixed(p)}′ ${h}`}
 function toDMS(v,lat){if(!Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(v)))return '—';const n=(globalThis.MT_PARSE_NUMBER||Number)(v),h=lat?(n>=0?'N':'S'):(n>=0?'E':'W'),a=Math.abs(n),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;return `${fmtDeg(d,lat)}° ${String(m).padStart(2,'0')}′ ${s.toFixed(2)}″ ${h}`}
@@ -62,6 +62,7 @@ const style=document.createElement('style');style.textContent=`
 .coord-ddm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:8px 0 12px}.coord-ddm-grid.single{grid-template-columns:minmax(0,1fr)}.coord-group{border:1px solid var(--line,#274257);border-radius:10px;padding:10px 12px;margin:0}.coord-group legend{padding:0 6px;font-weight:700}.coord-row{display:grid;grid-template-columns:36px minmax(72px,.7fr) minmax(120px,1.4fr) minmax(76px,.7fr);gap:8px;align-items:end;margin-top:8px}.coord-row>span{font-weight:700;padding-bottom:10px}.coord-row label{font-size:.78rem}.coord-row input,.coord-row select{width:100%}
 #weather .weather-forecast-table.no-current-col th:nth-child(4),#weather .weather-forecast-table.no-current-col td:nth-child(4){display:none!important}.route-ddm-list{display:grid;gap:4px;margin-top:8px;padding:10px 12px;border:1px solid rgba(120,160,190,.22);border-radius:10px}.route-ddm-list span{font-size:.82rem}.route-ddm-list b{display:inline-block;min-width:42px}
 @media(max-width:760px){.coord-ddm-grid{grid-template-columns:1fr}.coord-row{grid-template-columns:34px 70px minmax(108px,1fr) 70px;gap:6px}}
+.coord-group{min-width:0}@media(max-width:420px){.coord-row{grid-template-columns:28px minmax(0,.8fr) minmax(0,1.3fr) minmax(0,.8fr);gap:6px}.coord-group{padding:8px}}
 `;
 document.head.appendChild(style);
 

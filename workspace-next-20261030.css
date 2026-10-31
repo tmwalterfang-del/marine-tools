@@ -14,3 +14,6 @@
 @media(min-width:761px) and (max-width:1000px){.next-workspace .next-nav{top:calc(var(--workspace-header-height,80px) + 20px)}.next-workspace .next-rail{max-height:calc(100dvh - var(--workspace-header-height,80px) - 40px)}}
 @media(max-width:760px){.next-workspace .next-nav{top:var(--workspace-header-height,80px)}.next-workspace .next-rail{max-height:none}html[data-keyboard-open] .next-workspace>header{display:none}html[data-keyboard-open] .next-workspace .next-nav{top:0}}
 @media print{.next-workspace>header{display:none}}
+
+/* Long Norwegian compounds must wrap at 320 px (WCAG 1.4.10). */
+h1,h2,h3,h4,legend{overflow-wrap:break-word}html[lang=nb] h1,html[lang=nb] h2,html[lang=nb] h3{hyphens:auto}fieldset{min-width:0}

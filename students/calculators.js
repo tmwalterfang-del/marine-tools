@@ -84,7 +84,7 @@ window.MT_CALCULATORS=[
 {
  id:"synchronous-speed",name:"Synchronous generator/motor speed",category:"Electrical Engineering",description:"Theoretical synchronous speed for an AC rotating magnetic field.",
  fields:[F("freq","Frequency","Hz",50),F("poles","Number of poles","count",4)],
- compute:({freq,poles})=>({value:120*freq/poles,unit:"rpm",steps:[`ns = 120 × f / p = 120 × ${freq} / ${poles}`],warning:poles%2?"Typical AC machine pole count is an even integer.":null})
+ compute:({freq,poles})=>({value:120*freq/poles,unit:"rpm",steps:[`ns = 120 × f / p = 120 × ${freq} / ${poles}`],invalid:Number.isInteger(poles)?null:"Number of poles must be a whole number.",warning:poles%2?"Typical AC machine pole count is an even integer.":null})
 },
 {
  id:"hydraulic-power",name:"Ideal pump hydraulic power",category:"Fluids & Hydraulics",description:"Hydraulic power; does not account for shaft losses.",
