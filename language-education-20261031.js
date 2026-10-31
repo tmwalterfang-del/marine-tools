@@ -1,6 +1,14 @@
 /* Reviewed Norwegian education catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.education={
  "strings": {
+  "Compare": "Sammenlign",
+  "Conversion": "Omregning",
+  "Fuel": "Drivstoff",
+  "State comparison": "Tilstandssammenligning",
+  "Volume": "Volum",
+  "Energy": "Energi",
+  "None": "Ingen",
+  "Power factor": "Effektfaktor",
   "Theme": "Tema",
   "ratio": "forhold",
   "Cb = immersed volume / (L × B × T)": "Cb = neddykket volum / (L × B × T)",
