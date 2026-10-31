@@ -21,6 +21,10 @@ on:
       - 'language-*20261031.js'
       - 'product-*20261031.*'
       - 'sidebar-v858.js'
+      - 'app.js'
+      - 'ui-v854.js'
+      - 'tests/main-*.cjs'
+      - 'students/labs.css'
       - 'downloads.html'
       - 'preview-server/**'
       - 'scripts/*20261030*'
@@ -207,6 +211,7 @@ jobs:
           node tests/students-discovery-cycle-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
+          node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
           node tests/students-next-workspace-browser-20261030.cjs ${{ matrix.browser }}
           if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/students-workspace-accessibility-20261030.cjs; fi
           node tests/students-session-browser-20261027.cjs ${{ matrix.browser }}
