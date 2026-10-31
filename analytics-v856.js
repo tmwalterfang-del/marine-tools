@@ -20,7 +20,7 @@ function currentPage(){return document.querySelector('.page.active')?.id||'home'
 function clean(v,max){return String(v??'').replace(/[\u0000-\u001f]/g,' ').trim().slice(0,max)}
 function send(event,{page=currentPage(),tool='',duration=0}={}){
   if(!enabled()||!navigator.onLine)return;
-  const payload={event:clean(event,40),page:clean(page,80),tool:clean(tool,120),device:deviceClass(),version:VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0))};
+  const payload={event:clean(event,40),page:clean(page,80),tool:clean(tool,120),device:deviceClass(),version:VERSION,duration:Math.max(0,Math.min(3600,(globalThis.MT_PARSE_NUMBER||Number)(duration)||0))};
   try{nativeFetch(EVENT_URL,{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload),keepalive:true,cache:'no-store'}).catch(()=>{})}catch{}
 }
 function oncePerSession(key,event,opts={}){

@@ -16,10 +16,10 @@ const IMO_FACTORS={
 
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const num=(v)=>Number(v);
-const inputNum=(el)=>{const v=el?.value;return v==null||String(v).trim()===''?NaN:Number(v)};
-const ok=(v)=>Number.isFinite(Number(v));
-const fmt=(v,d=1)=>ok(v)?Number(v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const num=(v)=>(globalThis.MT_PARSE_NUMBER||Number)(v);
+const inputNum=(el)=>{const v=el?.value;return v==null||String(v).trim()===''?NaN:(globalThis.MT_PARSE_NUMBER||Number)(v)};
+const ok=(v)=>Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(v));
+const fmt=(v,d=1)=>ok(v)?(globalThis.MT_PARSE_NUMBER||Number)(v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hoursText=h=>!ok(h)?'—':h>=24?(h/24).toFixed(1)+' d':h.toFixed(1)+' h';
 

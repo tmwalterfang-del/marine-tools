@@ -71,10 +71,10 @@ const ok=(value,label)=>{assert.ok(value,label);checks++;};
   // On desktop the result column can already be taller than the input column.
   // Opening inputs then needs no extra page height; stacked mobile inputs do.
   ok(width===390?expanded>collapsed+50:expanded>=collapsed-2,'Content height accommodates expanded inputs '+width);
-  const input=frame.locator('#experiment input[type=number]').first();await input.fill('1200');await input.dispatchEvent('input');
+  const input=frame.locator('#experiment input:is([type=number],[data-mt-numeric])').first();await input.fill('1200');await input.dispatchEvent('input');
   await choose('heat');await fitted(width+'/heat');
   await choose('trim');({frame}=await fitted(width+'/trim/return'));
-  ok(await frame.locator('#experiment input[type=number]').first().inputValue()==='1200','Switching preserves input '+width);
+  ok(await frame.locator('#experiment input:is([type=number],[data-mt-numeric])').first().inputValue()==='1200','Switching preserves input '+width);
   // Inject an ordinary in-flow paragraph to exercise asynchronous growth and
   // removal independently of any particular calculator's field count.
   const initial=await page.locator('#frames iframe:not([hidden])').evaluate(f=>f.clientHeight);

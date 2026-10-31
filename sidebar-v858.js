@@ -1,6 +1,7 @@
 (() => {
 'use strict';
 const RECENT_KEY='mt.recent';
+let menuObserver=null,menuQueued=false;
 const icons={
   home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9 21v-7h6v7"/>',
   fuel:'<path d="M6 3h9v18H6z"/><path d="M9 7h3"/><path d="M15 7h2.5l2 2.5V17a2 2 0 0 0 2 2"/><path d="M18 10h2"/>',
@@ -32,7 +33,7 @@ function upgrade(button,key){
   old.innerHTML=svg(icons[key]);
 }
 function readRecent(){try{const v=JSON.parse(localStorage.getItem(RECENT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
-function clickExistingPage(page){
+function clickExistingPage(page){if(typeof window.__marineToolsOpenPage==='function'){window.__marineToolsOpenPage(page);return true;}const topButton=document.querySelector('.top-actions [data-go="'+page+'"]');if(topButton){topButton.click();return true;}
   const nav=[...document.querySelectorAll('.sidebar .nav-btn[data-page]')].find(b=>b.dataset.page===page);
   if(nav){nav.click();return true}
   const top=document.querySelector(`.top-actions [data-go="${page}"]`);
@@ -52,12 +53,12 @@ function openRecentTool(item){
   },100)
 }
 function makeQuickButton(label,page,key){
-  const b=document.createElement('button');b.type='button';b.className='nav-btn';b.append(iconSpan(key));b.append(document.createTextNode(label));b.addEventListener('click',()=>{const p=document.querySelector('.nav-project');if(p)p.open=false;clickExistingPage(page)});return b
+  const b=document.createElement('button');b.type='button';b.className='nav-btn';b.dataset.page=page;b.append(iconSpan(key));b.append(document.createTextNode(label));b.addEventListener('click',()=>{const p=document.querySelector('.nav-project');if(p)p.open=false;clickExistingPage(page)});return b
 }
 function renderRecent(){
   const host=document.getElementById('mtSidebarRecentList');if(!host)return;host.innerHTML='';
   const recent=readRecent().filter(x=>x&&x.title&&x.page).slice(0,3);
-  if(!recent.length){const empty=document.createElement('div');empty.className='mt-sidebar-empty';empty.textContent='Your last used calculators will appear here.';host.appendChild(empty);return}
+  host.closest('.mt-sidebar-recent').hidden=!recent.length;if(!recent.length)return;
   recent.forEach(item=>{
     const b=document.createElement('button');b.type='button';b.className='nav-btn';b.append(iconSpan('recent'));
     const copy=document.createElement('span');copy.className='mt-recent-copy';const title=document.createElement('b');title.textContent=item.title;const sub=document.createElement('small');sub.textContent=(item.page||'tool').replaceAll('-',' ');copy.append(title,sub);b.append(copy);b.addEventListener('click',()=>openRecentTool(item));host.appendChild(b)
@@ -70,6 +71,24 @@ function injectExtras(project){
   const recent=document.createElement('section');recent.className='mt-sidebar-section mt-sidebar-recent';const rt=document.createElement('div');rt.className='mt-sidebar-title';rt.textContent='Recent tools';const list=document.createElement('div');list.id='mtSidebarRecentList';recent.append(rt,list);
   extra.append(quick,recent);project.insertAdjacentElement('afterend',extra);renderRecent()
 }
+function arrangeMenu(){
+ const nav=document.querySelector('.sidebar .nav-list');if(!nav)return;menuObserver?.disconnect();
+ const group=(id,title)=>{let section=document.getElementById(id);if(!section){section=document.createElement('section');section.id=id;section.className='mt-menu-group';const label=document.createElement('h2');label.className='nav-label';label.textContent=title;label.id=id+'-title';section.setAttribute('aria-labelledby',label.id);section.append(label);nav.append(section);}return section;};
+ const tools=group('mt-tool-group','Tools'),learn=group('mt-learning-group','Learning & work'),info=group('mt-information-group','Settings & information');
+ for(const id of ['fuel','energy-log','engineering','electrical','vessel-calcs','voyage-estimate','quick','weather','navigation','live-experimental']){const b=nav.querySelector('.nav-btn[data-page="'+id+'"]');if(b&&b.parentElement!==tools)tools.append(b);}
+ for(const link of [...nav.querySelectorAll('a[href]')]){if(/downloads\.html|play\.google\.com/.test(link.getAttribute('href'))){link.remove();continue;}if(/students|workspace\.html/.test(link.getAttribute('href'))&&link.parentElement!==learn)learn.append(link);}
+ const extra=document.getElementById('mtSidebarExtra');if(extra&&extra.parentElement!==info)info.append(extra);
+ const news=document.getElementById('mtWhatsNew');if(news&&news.parentElement!==info)info.append(news);
+ const project=nav.querySelector('.nav-project');if(project&&project.parentElement!==info)info.append(project);
+ for(const label of [...nav.children].filter(n=>n.classList.contains('nav-label')))label.remove();
+ const quick=nav.querySelector('.mt-sidebar-quick .mt-sidebar-title');if(quick)quick.hidden=true;
+ const recent=nav.querySelector('.mt-sidebar-recent');if(recent&&recent.parentElement!==nav)nav.append(recent);
+ const experimental=nav.querySelector('.experimental-nav .nav-exp-copy');if(experimental){const text=experimental.firstChild;if(text?.nodeType===3&&text.nodeValue!=='Live data')text.nodeValue='Live data';}
+ const workspace=learn.querySelector('a[href="workspace.html"]');if(workspace&&workspace.lastChild?.nodeType===3&&workspace.lastChild.nodeValue!=='Workspace')workspace.lastChild.nodeValue='Workspace';
+ const eyebrow=project?.querySelector('summary>span');if(eyebrow)eyebrow.hidden=true;
+ menuObserver?.observe(nav,{childList:true,subtree:true});window.MT_I18N?.translate(nav);
+}
+function queueMenu(){if(menuQueued)return;menuQueued=true;setTimeout(()=>{menuQueued=false;arrangeMenu();},0);}
 function init(){
   document.querySelectorAll('.sidebar .nav-btn[data-page]').forEach(btn=>upgrade(btn,btn.dataset.page));
   document.querySelectorAll('.sidebar .nav-mail').forEach(btn=>upgrade(btn,'custom'));
@@ -82,7 +101,7 @@ function init(){
     injectExtras(project)
   }
   document.addEventListener('click',e=>{if(e.target.closest?.('.tool-card button'))setTimeout(renderRecent,160)});
-  window.addEventListener('storage',e=>{if(e.key===RECENT_KEY)renderRecent()});
+  window.addEventListener('storage',e=>{if(e.key===RECENT_KEY)renderRecent()});menuObserver=new MutationObserver(queueMenu);arrangeMenu();setTimeout(arrangeMenu,0);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

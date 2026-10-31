@@ -5,3 +5,12 @@
 .tour-target{outline:3px solid #f8ce81!important;outline-offset:5px}.next-tour{position:fixed;bottom:18px;right:18px;z-index:10000;width:min(430px,calc(100vw - 36px));background:#102c40;color:#fff;border:2px solid #f8ce81;border-radius:14px;padding:20px;box-shadow:0 8px 36px #0009}.next-tour p{margin:5px 0 14px}
 
 .next-workspace #issue-preview{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}.next-workspace select,.next-workspace input,.next-workspace textarea{min-width:0;max-width:100%}.next-workspace .panel+.panel{margin-top:18px}
+
+/* A single sticky rail owns both navigation and storage status. */
+.next-workspace .next-nav{position:sticky;top:16px;align-self:start}.next-rail{display:flex;flex-direction:column;max-height:calc(100dvh - 32px);gap:10px}.next-nav nav{position:static;min-height:0;overflow:auto;flex:1 1 auto}.next-nav #workspace-storage{flex:0 0 auto;margin:0;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:12px;line-height:1.5}.next-workspace input:focus-visible,.next-workspace textarea:focus-visible{scroll-margin-block:150px 90px}.next-workspace .next-nav nav a{min-height:44px}
+@media(max-width:760px){.next-workspace .next-nav{top:0;z-index:15;background:var(--bg);padding-block:6px}.next-rail{max-height:none;gap:4px}.next-nav nav{margin:0;padding:0 0 5px;flex-shrink:0}.next-nav #workspace-storage{padding:7px 10px}.next-nav>p{margin:0}html[data-keyboard-open] .next-nav nav{display:none}html[data-keyboard-open] .next-nav{padding-block:3px}}
+/* The header and complete rail retain their initial viewport positions. */
+.next-workspace>header{position:sticky;top:0;z-index:20;background:var(--bg)}.next-workspace .next-nav{top:calc(var(--workspace-header-height,80px) + 28px)}.next-workspace .next-rail{max-height:calc(100dvh - var(--workspace-header-height,80px) - 56px)}
+@media(min-width:761px) and (max-width:1000px){.next-workspace .next-nav{top:calc(var(--workspace-header-height,80px) + 20px)}.next-workspace .next-rail{max-height:calc(100dvh - var(--workspace-header-height,80px) - 40px)}}
+@media(max-width:760px){.next-workspace .next-nav{top:var(--workspace-header-height,80px)}.next-workspace .next-rail{max-height:none}html[data-keyboard-open] .next-workspace>header{display:none}html[data-keyboard-open] .next-workspace .next-nav{top:0}}
+@media print{.next-workspace>header{display:none}}
