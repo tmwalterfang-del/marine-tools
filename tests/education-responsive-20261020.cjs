@@ -111,7 +111,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    const report=fs.readFileSync(reportPath,'utf8');check(report.includes('study-snapshot')&&report.includes('<svg'),'actual HTML download',{scope});
    const reportPage=await context.newPage();await reportPage.goto(pathToFileURL(reportPath).href);await reportPage.waitForSelector('svg');await reportPage.emulateMedia({media:'print'});await reportPage.screenshot({path:path.join(output,'report-print.png'),fullPage:true});
    if(engine==='chromium'){await reportPage.pdf({path:path.join(output,'mollier-report.pdf'),format:'A4',printBackground:true});check(fs.statSync(path.join(output,'mollier-report.pdf')).size>10000,'actual Chromium PDF',{scope});}
-   await reportPage.close();
+   await reportPage.close();await page.bringToFront();
   }
   // Reproduce the user's full-window examples as well as the embedded workspace.
   for(const id of ['trim','crank']){
