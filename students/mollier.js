@@ -48,7 +48,7 @@
   const fromSlider = (v) => lo * Math.pow(hi / lo, clamp(v, 0, 1000) / 1000);
   const toSlider = (p) => (1000 * Math.log(p / lo)) / Math.log(hi / lo);
   const f = (v, n = 2) =>
-    Number(v).toLocaleString("en-GB", {
+    (globalThis.MT_PARSE_NUMBER||Number)(v).toLocaleString("en-GB", {
       minimumFractionDigits: n,
       maximumFractionDigits: n,
     });
@@ -328,7 +328,7 @@
     $("quality-field").hidden = z.phase === "superheated";
     $("superheat-field").hidden = z.phase !== "superheated";
     $("superheat-temp").value =
-      z.phase === "superheated" ? Number(z.T.toFixed(2)) : 250;
+      z.phase === "superheated" ? (globalThis.MT_PARSE_NUMBER||Number)(z.T.toFixed(2)) : 250;
     $("phase-mode").disabled = !if97;
     $("model-status").textContent =
       "IAPWS-IF97 Regions 1/2/4: wet steam 0.01–160 bar(a); superheated 0.01–160 bar(a), up to 600 °C. Region 3 and the critical point are not plotted.";
@@ -336,12 +336,12 @@
     $("pressure").max = toSlider(hi);
     $("pressure-limits").textContent = "0.01–" + hi + " bar(a)";
     $("pressure").value = toSlider(z.p);
-    $("pressure-number").value = Number(z.p.toPrecision(6));
+    $("pressure-number").value = (globalThis.MT_PARSE_NUMBER||Number)(z.p.toPrecision(6));
     $("quality").value =
       z.phase === "superheated" ? 100 : Math.round(z.x * 100);
     $("pressure-display").textContent = f(z.p, 3) + " bar(a)";
     $("quality-number").value =
-      z.phase === "superheated" ? "" : Number(z.x.toPrecision(10));
+      z.phase === "superheated" ? "" : (globalThis.MT_PARSE_NUMBER||Number)(z.x.toPrecision(10));
     $("quality-display").textContent =
       z.phase === "superheated" ? "n/a" : f(z.x * 100, 0) + "%";
     $("t-sat").textContent = f(z.T, 1) + " °C";
@@ -437,7 +437,7 @@
     }
   });
   $("superheat-temp").addEventListener("change", (e) => {
-    const T = Number(e.target.value);
+    const T = (globalThis.MT_PARSE_NUMBER||Number)(e.target.value);
     if (e.target.value.trim() === "" || !finite(T)) {
       fail("Enter a valid temperature.");
       return;
@@ -451,19 +451,19 @@
     update();
   });
   $("pressure").addEventListener("input", (e) =>
-    set(fromSlider(Number(e.target.value)), states[active].x),
+    set(fromSlider((globalThis.MT_PARSE_NUMBER||Number)(e.target.value)), states[active].x),
   );
   $("pressure-number").addEventListener("change", (e) => {
-    const p = Number(e.target.value);
+    const p = (globalThis.MT_PARSE_NUMBER||Number)(e.target.value);
     if (e.target.value.trim() === "" || !finite(p) || p < lo || p > hi)
       fail("Enter 0.01–160 bar absolute (superheated: up to 160 bar).");
     else set(p, states[active].x);
   });
   $("quality").addEventListener("input", (e) =>
-    set(states[active].p, Number(e.target.value) / 100),
+    set(states[active].p, (globalThis.MT_PARSE_NUMBER||Number)(e.target.value) / 100),
   );
   $("quality-number").addEventListener("change", (e) => {
-    const x = Number(e.target.value);
+    const x = (globalThis.MT_PARSE_NUMBER||Number)(e.target.value);
     if (e.target.value.trim() === "" || !finite(x) || x < 0 || x > 1) {
       fail("Enter a vapour mass fraction from 0 to 1.");
       return;
@@ -492,7 +492,7 @@
   });
   function solveProcess(mode) {
     try {
-      const efficiency = Number($("process-efficiency").value);
+      const efficiency = (globalThis.MT_PARSE_NUMBER||Number)($("process-efficiency").value);
       if (mode === "turbine" && $("process-efficiency").value.trim() === "")
         throw RangeError("Enter an isentropic efficiency.");
       const result = if97.expansion(states.a, states.b.p, mode, efficiency);

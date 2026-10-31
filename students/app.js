@@ -39,7 +39,7 @@ const searchAliases={"stabilitet":"stability","laste":"cargo","last":"cargo","dy
  "bunkers":"fuel","densitet":"density","navigasjon":"navigation","varme":"heat","temperatur":"temperature",
  "tyngdepunkt":"gravity","krenge":"heel","trefase":"three-phase","motstand":"resistance"};
 const norm=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-const fmt=window.MT_STUDENT_FORMAT||((n)=>Number(n).toLocaleString("en-GB",{maximumSignificantDigits:8,notation:Math.abs(n)>0&&(Math.abs(n)<.0001||Math.abs(n)>=1e7)?'scientific':'standard'}));
+const fmt=window.MT_STUDENT_FORMAT||((n)=>(globalThis.MT_PARSE_NUMBER||Number)(n).toLocaleString("en-GB",{maximumSignificantDigits:8,notation:Math.abs(n)>0&&(Math.abs(n)<.0001||Math.abs(n)>=1e7)?'scientific':'standard'}));
 function updateHeader(){
  document.documentElement.lang="en";
  document.documentElement.dataset.theme=state.theme;
@@ -155,7 +155,7 @@ function analyticalReviewHtml(r){
 function exampleCount(f){return (f.related||[]).filter(r=>study.workedExamples?.[r.id]).length;}
 function workedNumber(n){
  const magnitude=Math.abs(n);
- return Number(n).toLocaleString('en-GB',{maximumSignificantDigits:8,notation:magnitude>0&&(magnitude<0.0001||magnitude>=1e7)?'scientific':'standard'});
+ return (globalThis.MT_PARSE_NUMBER||Number)(n).toLocaleString('en-GB',{maximumSignificantDigits:8,notation:magnitude>0&&(magnitude<0.0001||magnitude>=1e7)?'scientific':'standard'});
 }
 function workedValue(r,symbol,n){
  const unit=r.symbols.find(v=>v.symbol.split(',').some(s=>s.trim()===symbol))?.unit||'';
@@ -177,7 +177,7 @@ function workedExampleHtml(r){
 function changeWorkedCase(ev){
  const select=ev.target.closest('.worked-case-select');if(!select)return;
  const r=byExpression.get(select.dataset.workedId),c=study.workedExamples?.[r?.id];if(!r||!c)return;
- const cases=[c,...(c.alternateCases||[])],index=Number(select.value);
+ const cases=[c,...(c.alternateCases||[])],index=(globalThis.MT_PARSE_NUMBER||Number)(select.value);
  if(!Number.isInteger(index)||!cases[index])return;
  const example=select.closest('.worked-example'),chosen=cases[index];
  example.querySelector('.worked-case-content').innerHTML=workedCaseHtml(r,chosen);
@@ -242,7 +242,7 @@ function calculate(){
  const c=activeCalculator();if(!c)return;
  const values={};let error="";
  el("calc-fields").querySelectorAll("input").forEach(input=>{
-  const field=c.fields.find(f=>f.key===input.name),v=Number(input.value);
+  const field=c.fields.find(f=>f.key===input.name),v=(globalThis.MT_PARSE_NUMBER||Number)(input.value);
   values[input.name]=v;
   if(!input.value.trim()||!Number.isFinite(v))error=tt("invalid");
   else if(field.check==="positive"&&v<=0)error=field.label+": must be > 0";
@@ -306,9 +306,9 @@ function renderPractice(){
 }
 function checkAnswer(){
  if(!exerciseIndexes().includes(state.examIndex))return;
- if(learning){const e=practice[state.examIndex],result=learning.attempt(e.id,el('exercise-answer').value);el('exercise-feedback').textContent=result.message;el('exercise-feedback').className=result.correct?'correct':'error';state.attempted=state.attempted||result.valid;el('show-solution').disabled=!state.attempted;learningUI.checked(result);syncProgress();return;}
+ if(learning){const e=practice[state.examIndex],result=learning.attempt(e.id,el('exercise-answer').value);el('exercise-feedback').textContent=result.message;el('exercise-feedback').className=result.correct?'correct':'error';state.attempted=state.attempted||result.valid;el('show-solution').disabled=!state.attempted;learningUI.checked(result);syncProgress();if(result.valid&&window.MT_NEXT_LEARNING)try{window.MT_NEXT_LEARNING.create(localStorage).record(e,result,el('exercise-answer').value,2);}catch{}return;}
  const e=practice[state.examIndex],input=el("exercise-answer").value.trim().replace(/−/g,"-").replace(",","."),
- result=Number(input),feedback=el("exercise-feedback");
+ result=(globalThis.MT_PARSE_NUMBER||Number)(input),feedback=el("exercise-feedback");
  if(!input||!Number.isFinite(result)){feedback.textContent=tt("invalid");feedback.className="error";return}
  state.attempted=true;el("show-solution").disabled=false;
  const correct=Math.abs(result-e.expected)<=Math.max(e.tolerance??0,Math.abs(e.expected)*(e.relativeTolerance??0.001));
@@ -365,9 +365,9 @@ function route(){
  if(formulaMatch&&byFormula.has(formulaMatch[1])){focusFormula=formulaMatch[1];state.chapter='All';state.group='All';state.topic='All';state.query='';state.savedOnly=false;state.workedOnly=false;state.display=48;el('formula-search').value='';el('study-group').value='All';el('saved-only').checked=false;el('worked-only').checked=false;refreshTopics();setTab('formulas');const variant=params.get('variant');if(variant&&byExpression.get(variant)?.formulaId===focusFormula)openSymbolVariant(variant);else el('study-tools').scrollIntoView?.({block:'start'});return;}
  if(calculatorMatch&&byCalculator.has(calculatorMatch[1])){state.calcid=calculatorMatch[1];setTab('calculators');el('study-tools').scrollIntoView?.({block:'start'});return;}
  const practiceMatch=path.match(/^practice-chapter-(\d+)$/);
- if(practiceMatch&&study.chapters?.some(c=>c.number===Number(practiceMatch[1]))){state.practiceChapter=practiceMatch[1];state.practiceGroup="All";state.practiceLevel="All";el("practice-chapter").value=state.practiceChapter;el("practice-subject").value="All";el("practice-difficulty").value="All";state.examIndex=exerciseIndexes()[0]??0;setTab("practice");el("study-tools").scrollIntoView?.({block:'start'});return}
+ if(practiceMatch&&study.chapters?.some(c=>c.number===(globalThis.MT_PARSE_NUMBER||Number)(practiceMatch[1]))){state.practiceChapter=practiceMatch[1];state.practiceGroup="All";state.practiceLevel="All";el("practice-chapter").value=state.practiceChapter;el("practice-subject").value="All";el("practice-difficulty").value="All";state.examIndex=exerciseIndexes()[0]??0;setTab("practice");el("study-tools").scrollIntoView?.({block:'start'});return}
  const match=path.match(/^chapter-(\d+)$/);
- state.chapter=match&&study.chapters?.some(c=>c.number===Number(match[1]))?match[1]:"All";
+ state.chapter=match&&study.chapters?.some(c=>c.number===(globalThis.MT_PARSE_NUMBER||Number)(match[1]))?match[1]:"All";
  renderChapterContext();
  if(match){state.group="All";state.topic="All";state.query="";state.savedOnly=false;state.workedOnly=false;el("worked-only").checked=false;state.display=48;el("study-group").value="All";el("formula-search").value="";el("saved-only").checked=false;refreshTopics()}
  setTab(match?"formulas":path||"formulas");
@@ -460,5 +460,6 @@ function init(){
  window.addEventListener("hashchange",route);
  route();
 }
+window.MT_STUDENT_API={apply(id,inputs){const c=byCalculator.get(id);if(!c||Object.keys(inputs).length!==c.fields.length||c.fields.some(f=>!Number.isFinite(inputs[f.key])||f.check==="positive"&&inputs[f.key]<=0||f.check==="nonnegative"&&inputs[f.key]<0||f.check==="unitinterval"&&(inputs[f.key]<0||inputs[f.key]>1)))throw Error("The exercise values do not match this calculator.");const z=c.compute(inputs);if(z.invalid||!Number.isFinite(z.value))throw Error(z.invalid||"Invalid calculation.");state.calcid=id;renderCalculator();for(const f of c.fields)el("calc-fields").querySelector("[name=\""+f.key+"\"]").value=String(inputs[f.key]);calculate();},result(){const c=activeCalculator(),inputs=Object.fromEntries([...el("calc-fields").querySelectorAll("input")].map(f=>[f.name,(globalThis.MT_PARSE_NUMBER||Number)(f.value)]));if([...el("calc-fields").querySelectorAll("input")].some(f=>!f.value.trim()))throw Error("Complete the calculator inputs.");const z=c.compute(inputs);if(z.invalid||!Number.isFinite(z.value))throw Error(z.invalid||"Invalid result.");return {id:c.id,...z};}};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();

@@ -45,7 +45,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   if(await page.locator('#mtReleaseDone').isVisible().catch(()=>false))await page.locator('#mtReleaseDone').click();
   const drawer=page.getByRole('button',{name:'Open menu',exact:true}),touchDrawer=await drawer.isVisible();if(touchDrawer)await drawer.click();
   const menu=page.locator('.nav-project');await menu.locator('summary').click();
-  check(await menu.getByRole('link',{name:/Education/}).count()===1,'one Education entry',{scope});
+  check(await page.locator('.sidebar').getByRole('link',{name:/Education/}).count()===1,'one Education entry',{scope});
   check(await menu.getByText('For Students',{exact:true}).count()===0&&await menu.getByText('For professionals',{exact:true}).count()===0,'audience split removed',{scope});
   if(touchDrawer){await page.keyboard.press('Escape');check(await page.locator('#sidebar').evaluate(x=>!x.classList.contains('open')),'drawer closes with Escape',{scope});}
   for(const id of pages){await page.evaluate(id=>window.__marineToolsOpenPage(id),id);await metrics(page,'root/'+id,scope);}
@@ -62,7 +62,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   check((await page.locator('#formula-grid .topic-pill').allTextContents()).every(t=>t==='Ship Stability'),'subject results match the visible filter',{scope});
   await page.goto(base+'/students/interactive.html');await page.waitForSelector('#module-list a',{state:'attached'});
   const modules=await page.locator('#module-list a').evaluateAll(xs=>xs.map(x=>({id:x.hash.slice(1),name:x.textContent})));
-  check(modules.length===32,'thirty-two modules selectable',{scope});
+  check(modules.length===45,'forty-five modules selectable',{scope});
   check(await page.locator('#module-quick').isVisible(),'compact selector available at every viewport',{scope});
   for(const {id,name}of modules){
    console.log('MODULE '+scope+'/'+id);
@@ -111,7 +111,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    const report=fs.readFileSync(reportPath,'utf8');check(report.includes('study-snapshot')&&report.includes('<svg'),'actual HTML download',{scope});
    const reportPage=await context.newPage();await reportPage.goto(pathToFileURL(reportPath).href);await reportPage.waitForSelector('svg');await reportPage.emulateMedia({media:'print'});await reportPage.screenshot({path:path.join(output,'report-print.png'),fullPage:true});
    if(engine==='chromium'){await reportPage.pdf({path:path.join(output,'mollier-report.pdf'),format:'A4',printBackground:true});check(fs.statSync(path.join(output,'mollier-report.pdf')).size>10000,'actual Chromium PDF',{scope});}
-   await reportPage.close();
+   await reportPage.close();await page.bringToFront();
   }
   // Reproduce the user's full-window examples as well as the embedded workspace.
   for(const id of ['trim','crank']){

@@ -32,7 +32,7 @@ const state={
 };
 
 const $=s=>document.querySelector(s);
-const fmt=(n,d=0)=>Number.isFinite(Number(n))?Number(n).toLocaleString(undefined,{maximumFractionDigits:d}):'—';
+const fmt=(n,d=0)=>Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(n))?(globalThis.MT_PARSE_NUMBER||Number)(n).toLocaleString(undefined,{maximumFractionDigits:d}):'—';
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const titleCase=s=>String(s||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 
@@ -95,13 +95,13 @@ function normalizePorts(data){
   return raw.map(p=>{
     const code=String(p.code||p.locode||p.unlocode||p.id||'').toUpperCase();
     const coords=p.coordinates||p.coord||p.location||[p.lon!=null?p.lon:p.longitude,p.lat!=null?p.lat:p.latitude];
-    const lon=Number(coords&&coords[0]),lat=Number(coords&&coords[1]);
+    const lon=(globalThis.MT_PARSE_NUMBER||Number)(coords&&coords[0]),lat=(globalThis.MT_PARSE_NUMBER||Number)(coords&&coords[1]);
     return{type:'port',code,name:p.name||p.port||code,country:p.country||p.countryName||'',coordinates:[lon,lat],source:'UN/LOCODE-derived port directory'};
   }).filter(p=>p.code&&Number.isFinite(p.coordinates[0])&&Number.isFinite(p.coordinates[1]));
 }
 function collectPairs(node,out){
   if(!Array.isArray(node))return;
-  if(node.length>=2&&Number.isFinite(Number(node[0]))&&Number.isFinite(Number(node[1]))){out.push([Number(node[0]),Number(node[1])]);return}
+  if(node.length>=2&&Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(node[0]))&&Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(node[1]))){out.push([(globalThis.MT_PARSE_NUMBER||Number)(node[0]),(globalThis.MT_PARSE_NUMBER||Number)(node[1])]);return}
   node.forEach(x=>collectPairs(x,out));
 }
 function geometryCenter(geometry){
@@ -120,10 +120,10 @@ function normalizeFields(geo){
 function normalizeFacilities(geo){
   return(geo&&geo.features||[]).map(f=>{
     const p=f.properties||{},coords=f.geometry&&f.geometry.coordinates;
-    if(!Array.isArray(coords)||!Number.isFinite(Number(coords[0]))||!Number.isFinite(Number(coords[1])))return null;
+    if(!Array.isArray(coords)||!Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(coords[0]))||!Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(coords[1])))return null;
     const fixed=String(p.fclFixedOrMoveable||'').toUpperCase();if(fixed&&fixed!=='FIXED')return null;
     const name=String(p.fclName||'').trim();if(!name)return null;
-    return{type:'facility',code:'FAC:'+String(p.fclNpdidFacility||name),name,country:'Norwegian Continental Shelf',coordinates:[Number(coords[0]),Number(coords[1])],source:'Norwegian Offshore Directorate',meta:{kind:p.fclKind||'',phase:p.fclPhase||'',functions:p.fclFunctions||'',fixedOrMoveable:p.fclFixedOrMoveable||''}};
+    return{type:'facility',code:'FAC:'+String(p.fclNpdidFacility||name),name,country:'Norwegian Continental Shelf',coordinates:[(globalThis.MT_PARSE_NUMBER||Number)(coords[0]),(globalThis.MT_PARSE_NUMBER||Number)(coords[1])],source:'Norwegian Offshore Directorate',meta:{kind:p.fclKind||'',phase:p.fclPhase||'',functions:p.fclFunctions||'',fixedOrMoveable:p.fclFixedOrMoveable||''}};
   }).filter(Boolean);
 }
 function locationLabel(x){
@@ -144,7 +144,7 @@ function rebuildIndex(){
 function parseCustomPosition(s){
   const m=String(s||'').trim().match(/^(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)$/);
   if(!m)return null;
-  const lat=Number(m[1]),lon=Number(m[2]);
+  const lat=(globalThis.MT_PARSE_NUMBER||Number)(m[1]),lon=(globalThis.MT_PARSE_NUMBER||Number)(m[2]);
   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return null;
   return{type:'custom',code:'CUSTOM:'+lat+','+lon,name:'Custom position',country:'',coordinates:[lon,lat],source:'User-entered coordinates',meta:{}};
 }
@@ -173,9 +173,9 @@ function loadProfile(){
   try{
     const legacy=JSON.parse(localStorage.getItem('mt.profile')||'null');
     const v2=JSON.parse(localStorage.getItem('mt.profile.v2')||'null');
-    const speed=Number(legacy&&legacy.serviceSpeed!=null?legacy.serviceSpeed:v2&&v2.vessel&&v2.vessel.serviceSpeed);
-    const draft=Number(legacy&&legacy.draft!=null?legacy.draft:v2&&v2.vessel&&v2.vessel.draft);
-    const fuel=Number(legacy&&legacy.fuelDay!=null?legacy.fuelDay:v2&&v2.operational&&v2.operational.fuelDay);
+    const speed=(globalThis.MT_PARSE_NUMBER||Number)(legacy&&legacy.serviceSpeed!=null?legacy.serviceSpeed:v2&&v2.vessel&&v2.vessel.serviceSpeed);
+    const draft=(globalThis.MT_PARSE_NUMBER||Number)(legacy&&legacy.draft!=null?legacy.draft:v2&&v2.vessel&&v2.vessel.draft);
+    const fuel=(globalThis.MT_PARSE_NUMBER||Number)(legacy&&legacy.fuelDay!=null?legacy.fuelDay:v2&&v2.operational&&v2.operational.fuelDay);
     return{speed:Number.isFinite(speed)?speed:null,draft:Number.isFinite(draft)?draft:null,fuelDay:Number.isFinite(fuel)?fuel:null};
   }catch{return{speed:null,draft:null,fuelDay:null}}
 }
@@ -196,15 +196,15 @@ function draftLimits(){
 function currentDraft(){
   const raw=$('#veDraftM')?.value?.trim();
   if(raw==null||raw==='')return null;
-  const value=Number(raw);
+  const value=(globalThis.MT_PARSE_NUMBER||Number)(raw);
   return Number.isFinite(value)&&value>=0?value:null;
 }
 function draftBlockedPassages(draft=currentDraft()){
   if(!(draft>0))return[];
   const limits=draftLimits();
   return Object.entries(limits)
-    .filter(([,limit])=>Number.isFinite(Number(limit))&&draft>Number(limit))
-    .map(([passage,limit])=>({passage,limit:Number(limit)}));
+    .filter(([,limit])=>Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(limit))&&draft>(globalThis.MT_PARSE_NUMBER||Number)(limit))
+    .map(([passage,limit])=>({passage,limit:(globalThis.MT_PARSE_NUMBER||Number)(limit)}));
 }
 function passageLabel(p){return({suez:'Suez',panama:'Panama',kiel:'Kiel',corinth:'Corinth',babelmandeb:'Bab-el-Mandeb'})[p]||titleCase(p)}
 function option(id){return document.getElementById(id)}
@@ -227,7 +227,7 @@ function updateRouteOptionAvailability(){
   const blockedNames=new Set(blocked.map(x=>x.passage));
 
   const applyPair=(via,avoid,passage,avoidName)=>{
-    const limit=Number(limits[passage]);
+    const limit=(globalThis.MT_PARSE_NUMBER||Number)(limits[passage]);
     if(blockedNames.has(passage)){
       via.checked=false;
       setOptionVisual(via,true,'Unavailable: draft exceeds '+fmt(limit,1)+' m model limit.');
@@ -263,7 +263,7 @@ function routePreferences(){
   return{via,restrictions:[...new Set(restrictions)],labels};
 }
 function routeOptions(preferences,networkInfo){
-  const speed=Number($('#veSpeedKnots').value),draft=currentDraft();
+  const speed=(globalThis.MT_PARSE_NUMBER||Number)($('#veSpeedKnots').value),draft=currentDraft();
   const o={units:'nauticalmiles',speedKnots:speed,returnPassages:true};
   if(networkInfo&&networkInfo.network){o.network=networkInfo.network;o.maxSnapDistanceKm=networkInfo.resolutionKm<=20?35:65}
   if(Number.isFinite(draft)&&draft>0)o.vesselDraftMeters=draft;
@@ -277,8 +277,8 @@ function routeBasis(preferences,route){
 }
 function routeMetrics(route,speed){
   const p=route.properties||{};
-  const networkNm=Number(p.length)||0;
-  const originSnapKm=Math.max(0,Number(p.originSnapKm)||0),destinationSnapKm=Math.max(0,Number(p.destinationSnapKm)||0);
+  const networkNm=(globalThis.MT_PARSE_NUMBER||Number)(p.length)||0;
+  const originSnapKm=Math.max(0,(globalThis.MT_PARSE_NUMBER||Number)(p.originSnapKm)||0),destinationSnapKm=Math.max(0,(globalThis.MT_PARSE_NUMBER||Number)(p.destinationSnapKm)||0);
   const endpointNm=(originSnapKm+destinationSnapKm)/1.852;
   const distanceNm=networkNm+endpointNm;
   const hours=speed>0?distanceNm/speed:NaN;
@@ -309,7 +309,7 @@ function detailsRows(from,to,route,preferences,speed){
   return rows;
 }
 function renderEstimate(from,to,route,preferences){
-  const speed=Number($('#veSpeedKnots').value),m=routeMetrics(route,speed),fuel=fuelEstimate(m.hours),[basis,pass]=routeBasis(preferences,route);
+  const speed=(globalThis.MT_PARSE_NUMBER||Number)($('#veSpeedKnots').value),m=routeMetrics(route,speed),fuel=fuelEstimate(m.hours),[basis,pass]=routeBasis(preferences,route);
   $('#veDistanceValue').textContent=fmt(m.distanceNm,0)+' NM';
   $('#veEtaValue').textContent=etaText(m.hours);
   $('#veEtaSpeed').textContent='at '+fmt(speed,1)+' kn';
@@ -331,7 +331,7 @@ async function calculate(){
   showAlert(null,null);
   if(!state.ready){invalid('warn','<b>Estimator is still loading.</b> Try again when the status shows Ready.');return}
   const from=resolveLocation($('#veFromPort').value),to=resolveLocation($('#veToPort').value);
-  const speed=Number($('#veSpeedKnots').value),draftRaw=$('#veDraftM').value.trim(),draft=draftRaw===''?null:Number(draftRaw);
+  const speed=(globalThis.MT_PARSE_NUMBER||Number)($('#veSpeedKnots').value),draftRaw=$('#veDraftM').value.trim(),draft=draftRaw===''?null:(globalThis.MT_PARSE_NUMBER||Number)(draftRaw);
   if(!from||!to){invalid('error','<b>Invalid location.</b> Select a port, Norwegian offshore field/facility, or enter latitude,longitude.');return}
   if(from.code===to.code){invalid('error','<b>Choose two different locations.</b>');return}
   if(!(speed>=1&&speed<=40)){invalid('error','<b>Check speed.</b> Enter a value from 1 to 40 kn.');return}
@@ -345,7 +345,7 @@ async function calculate(){
     updateRouteOptionAvailability();
     const preferences=routePreferences(),opts=routeOptions(preferences,networkInfo);
     const route=state.engine.seaRoute(from.coordinates,to.coordinates,opts);
-    if(!route||!route.properties||!Number.isFinite(Number(route.properties.length)))throw new Error('No distance estimate returned');
+    if(!route||!route.properties||!Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(route.properties.length)))throw new Error('No distance estimate returned');
     renderEstimate(from,to,route,preferences);
   }catch(e){
     console.error(e);$('#veResultArea').hidden=true;

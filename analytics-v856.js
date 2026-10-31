@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 
-const API=/\.pages\.dev$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
+const API=/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
 const VERSION=window.__MARINE_TOOLS_RELEASE?.version||'8.5.7';
 const EVENT_URL=`${API}/api/analytics/event`;
 const SEARCH_IDS=new Map([
@@ -14,13 +14,13 @@ const nativeFetch=window.fetch.bind(window);
 function settings(){
   try{return JSON.parse(localStorage.getItem('mt.settings')||'{}')||{}}catch{return{}}
 }
-function enabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/\.pages\.dev$/i.test(location.hostname)&&settings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function enabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)&&settings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
 function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
 function currentPage(){return document.querySelector('.page.active')?.id||'home'}
 function clean(v,max){return String(v??'').replace(/[\u0000-\u001f]/g,' ').trim().slice(0,max)}
 function send(event,{page=currentPage(),tool='',duration=0}={}){
   if(!enabled()||!navigator.onLine)return;
-  const payload={event:clean(event,40),page:clean(page,80),tool:clean(tool,120),device:deviceClass(),version:VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0))};
+  const payload={event:clean(event,40),page:clean(page,80),tool:clean(tool,120),device:deviceClass(),version:VERSION,duration:Math.max(0,Math.min(3600,(globalThis.MT_PARSE_NUMBER||Number)(duration)||0))};
   try{nativeFetch(EVENT_URL,{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload),keepalive:true,cache:'no-store'}).catch(()=>{})}catch{}
 }
 function oncePerSession(key,event,opts={}){

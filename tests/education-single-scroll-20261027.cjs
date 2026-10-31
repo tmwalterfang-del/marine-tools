@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),pw=require('playwright');
 const engine=process.argv[2]||'chromium',root=process.cwd(),out=path.resolve('qa-education-'+engine,'single-scroll');
-const ids=['lifting','trim','tank','pump','crank','faults','cargo','stability','controls','engine','mollier','rlc','heat','current','finance','beam','transient','ideal-cycle','pump-suction','refrigeration-energy','lift-cross-curves','section','three-phase','gears','psychrometrics','waves','units','mohr','harmonics','hydrostatics','uncertainty','titration'];
+const catalogue={};new Function('window',fs.readFileSync('students/interactive-catalogue-20261030.js','utf8'))(catalogue);const ids=catalogue.MT_INTERACTIVE_MODULES.map(m=>m.id);
 let server,browser,checks=0;const errors=[];
 const ok=(value,label)=>{assert.ok(value,label);checks++;};
 (async()=>{
@@ -71,10 +71,10 @@ const ok=(value,label)=>{assert.ok(value,label);checks++;};
   // On desktop the result column can already be taller than the input column.
   // Opening inputs then needs no extra page height; stacked mobile inputs do.
   ok(width===390?expanded>collapsed+50:expanded>=collapsed-2,'Content height accommodates expanded inputs '+width);
-  const input=frame.locator('#experiment input[type=number]').first();await input.fill('1200');await input.dispatchEvent('input');
+  const input=frame.locator('#experiment input:is([type=number],[data-mt-numeric])').first();await input.fill('1200');await input.dispatchEvent('input');
   await choose('heat');await fitted(width+'/heat');
   await choose('trim');({frame}=await fitted(width+'/trim/return'));
-  ok(await frame.locator('#experiment input[type=number]').first().inputValue()==='1200','Switching preserves input '+width);
+  ok(await frame.locator('#experiment input:is([type=number],[data-mt-numeric])').first().inputValue()==='1200','Switching preserves input '+width);
   // Inject an ordinary in-flow paragraph to exercise asynchronous growth and
   // removal independently of any particular calculator's field count.
   const initial=await page.locator('#frames iframe:not([hidden])').evaluate(f=>f.clientHeight);

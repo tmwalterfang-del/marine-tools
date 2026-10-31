@@ -1,7 +1,7 @@
 /* Local input drafts only. No source-page cache, accounts or telemetry. */
 (function(){'use strict';
 const main=document.querySelector('main');if(!main)return;
-const page=location.pathname.split('/').pop(),prefix='mt.study.draft.v1:',preference='mt.study.autosave.enabled.v1';
+const page=(location.pathname.split('/').pop()||'index').replace(/(?:\.html)?$/,'')+'.html',prefix='mt.study.draft.v1:',preference='mt.study.autosave.enabled.v1';
 const status=document.createElement('p');status.className='study-connectivity';status.setAttribute('role','status');
 function connection(){const offline=navigator.onLine===false;status.dataset.offline=String(offline);status.textContent=offline?(/\.pages\.dev$/i.test(location.hostname)?'Offline · open calculations still work. Reopening this workspace requires an internet connection.':'Offline · local calculations available. Live AIS and weather require a connection.'):'Connection available · these study calculations run locally, without live AIS or weather data.';}
 (document.querySelector('.workspace-toolbar')||main).append(status);window.addEventListener('online',connection);window.addEventListener('offline',connection);connection();
@@ -10,12 +10,12 @@ const extras=new Set([...document.querySelectorAll('.export-panel,.study-export,
 const notes=document.getElementById('notes');if(notes)extras.add(notes.closest('section'));
 for(const section of extras){if(!section||section.closest('details'))continue;const h=section.querySelector('h2,h3');if(!h)continue;const d=document.createElement('details'),s=document.createElement('summary');d.className='study-extra';s.textContent=h.textContent;section.before(d);d.append(s,section);}
 let printState=[];window.addEventListener('beforeprint',()=>{printState=[...document.querySelectorAll('details.study-extra')].map(d=>[d,d.open]);for(const[d]of printState)d.open=true});window.addEventListener('afterprint',()=>{for(const[d,open]of printState)d.open=open});
-if(!['examples.html','explorers.html','cargo.html','labs.html','mollier.html','model-lab.html'].includes(page))return;
+if(!['examples.html','explorers.html','cargo.html','labs.html','mollier.html','model-lab.html','advanced-lab.html'].includes(page))return;
 if(page==='mollier.html'&&typeof window.MT_MOLLIER_INPUTS!=='function')return;
-function moduleId(){const h=location.hash.slice(1);return page==='model-lab.html'?('engineering:'+(Object.hasOwn(window.MT_EDUCATION_MODEL_SCHEMAS||{},h)?h:'beam')):page==='examples.html'?('example:'+(['lifting','trim','tank','pump','crank','faults'].includes(h)?h:'lifting')):page==='explorers.html'?('explorer:'+(['rlc','heat','current','finance'].includes(h)?h:'rlc')):page==='labs.html'?('labs:'+(['stability','controls','engine'].includes(h)?h:'stability')):page==='cargo.html'?'cargo':'mollier';}
+function moduleId(){const h=location.hash.slice(1);return ['model-lab.html','advanced-lab.html'].includes(page)?((page==='advanced-lab.html'?'advanced:':'engineering:')+(Object.hasOwn(window.MT_EDUCATION_MODEL_SCHEMAS||{},h)?h:Object.keys(window.MT_EDUCATION_MODEL_SCHEMAS||{})[0]||'beam')):page==='examples.html'?('example:'+(['lifting','trim','tank','pump','crank','faults'].includes(h)?h:'lifting')):page==='explorers.html'?('explorer:'+(['rlc','heat','current','finance'].includes(h)?h:'rlc')):page==='labs.html'?('labs:'+(['stability','controls','engine'].includes(h)?h:'stability')):page==='cargo.html'?'cargo':'mollier';}
 function scope(){if(page==='labs.html')return document.getElementById(moduleId().split(':')[1]);return document.getElementById('experiment');}
 const fields=()=>[...(scope()?.querySelectorAll('input,select,textarea')||[])].filter(x=>x.type!=='file'&&(x.name||x.id));
-const keyOf=x=>(x.form?.id||'')+':'+(x.id||x.name)+':'+(x.type||x.tagName);
+const keyOf=x=>(x.form?.id||'')+':'+(x.id||x.name)+':'+(window.MT_INPUT_KIND?.(x)||x.type||x.tagName);
 function raw(){return fields().map(x=>({key:keyOf(x),value:x.type==='checkbox'?x.checked:x.value}));}
 function capture(){if(page==='cargo.html')return window.MT_CARGO_UI.draft();if(page==='mollier.html'){const error=document.getElementById('input-error');return {scenario:window.MT_MOLLIER_INPUTS(),active:document.getElementById('active-state').value,processMode:document.getElementById('process-mode').value,error:error.hidden?'':error.textContent,raw:['pressure-number','quality-number','superheat-temp','process-efficiency'].map(id=>({id,value:document.getElementById(id).value}))};}return raw();}
 function restore(data){
@@ -30,7 +30,7 @@ function restore(data){
   if(data.processMode){const mode=document.getElementById('process-mode');mode.value=data.processMode;mode.dispatchEvent(new Event('change',{bubbles:true}));}
   for(const x of data.raw)document.getElementById(x.id).value=x.value;
   const state=data.scenario[data.active],value=id=>document.getElementById(id).value;
-  const pending=value('pressure-number').trim()===''||Number(value('pressure-number'))!==state.p||(state.phase==='wet'?(value('quality-number').trim()===''||Number(value('quality-number'))!==state.x):(value('superheat-temp').trim()===''||Number(value('superheat-temp'))!==state.T));
+  const pending=value('pressure-number').trim()===''||(globalThis.MT_PARSE_NUMBER||Number)(value('pressure-number'))!==state.p||(state.phase==='wet'?(value('quality-number').trim()===''||(globalThis.MT_PARSE_NUMBER||Number)(value('quality-number'))!==state.x):(value('superheat-temp').trim()===''||(globalThis.MT_PARSE_NUMBER||Number)(value('superheat-temp'))!==state.T));
   if(data.error||pending){const e=document.getElementById('input-error');e.textContent=data.error||'Restored unfinished numeric edits. Review and apply the marked state controls before exporting.';e.hidden=false;}
   return;
  }

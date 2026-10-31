@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const API=/\.pages\.dev$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
+const API=/\.chatgpt\.site$/i.test(location.hostname)?'/live-api':/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
 const APP_VERSION='8.7.0';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
@@ -10,8 +10,8 @@ const LINKEDIN_URL='https://www.linkedin.com/company/marinetools';
 const CUSTOM_TOOL_URL='mailto:contact@marinetools.app?subject=Custom%20Marine%20Tools%20request&body=Hi%2C%0A%0AI%20would%20like%20to%20discuss%20a%20custom%20Marine%20Tools%20tool.%0A%0ACompany%20/%20vessel%3A%0AYour%20role%3A%0AArea%3A%0AWhat%20do%20you%20need%20the%20tool%20to%20do%3A%0AHow%20do%20you%20handle%20this%20today%3A%0APreferred%20output%20/%20result%3A%0AShould%20this%20be%20private%20for%20one%20vessel/company%2C%20or%20could%20it%20become%20part%20of%20public%20Marine%20Tools%3F%3A%0AWould%20you%20like%20a%20price%20estimate%3F%3A%0A%0AYou%20can%20attach%20screenshots%2C%20spreadsheets%20or%20example%20calculations%20to%20this%20email.%0A%0ARegards%2C%0A';
 const K={profile:'mt.profile',route:'mt.route',theme:'mt.theme',lastAnalysis:'mt.lastAnalysis',settings:'mt.settings',favorites:'mt.favorites',history:'mt.history',recent:'mt.recent',consumption:'mt.consumption',bunkHistory:'mt.bunkHistory',weatherCache:'mt.weatherCache'};
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const inputNumber=selector=>{const el=typeof selector==='string'?$(selector):selector;return el&&String(el.value).trim()!==''?Number(el.value):NaN};
-const nf=(n,d=1)=>Number.isFinite(Number(n))?Number(n).toFixed(d):'—';
+const inputNumber=selector=>{const el=typeof selector==='string'?$(selector):selector;return el&&String(el.value).trim()!==''?(globalThis.MT_PARSE_NUMBER||Number)(el.value):NaN};
+const nf=(n,d=1)=>Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(n))?(globalThis.MT_PARSE_NUMBER||Number)(n).toFixed(d):'—';
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
 const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
@@ -19,12 +19,12 @@ const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}cat
 const DEFAULT_SETTINGS={usageAnalytics:true};
 function appSettings(){return{...DEFAULT_SETTINGS,...(store.get(K.settings,{})||{})}}
 function saveAppSettings(next){store.set(K.settings,{...appSettings(),...next})}
-function analyticsEnabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/\.pages\.dev$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
+function analyticsEnabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
 function deviceClass(){return innerWidth<=760?'mobile':innerWidth<=1100?'tablet':'desktop'}
 let analyticsCurrentPage='home',analyticsVisibleSince=null,analyticsTimer=null;
 function sendAnalyticsEvent(event,{page=analyticsCurrentPage,tool='',duration=0,beacon=false}={}){
  if(!analyticsEnabled()||!navigator.onLine)return;
- const payload={event:String(event||'').slice(0,40),page:String(page||'').slice(0,80),tool:String(tool||'').slice(0,120),device:deviceClass(),version:APP_VERSION,duration:Math.max(0,Math.min(3600,Number(duration)||0))};
+ const payload={event:String(event||'').slice(0,40),page:String(page||'').slice(0,80),tool:String(tool||'').slice(0,120),device:deviceClass(),version:APP_VERSION,duration:Math.max(0,Math.min(3600,(globalThis.MT_PARSE_NUMBER||Number)(duration)||0))};
  const body=JSON.stringify(payload),url=`${API}/api/analytics/event`;
  try{
   fetch(url,{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},body,keepalive:true,cache:'no-store'}).catch(()=>{})
@@ -91,7 +91,7 @@ function csvObjects(text){
  const headers=rows[0].map(h=>h.trim());
  return rows.slice(1).map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]??'').trim()])))
 }
-function csvNum(v){if(v==null||v==='')return null;const s=String(v).trim().replace(/\s/g,'').replace(',','.');const n=Number(s);return Number.isFinite(n)?n:null}
+function csvNum(v){if(v==null||v==='')return null;const s=String(v).trim().replace(/\s/g,'').replace(',','.');const n=(globalThis.MT_PARSE_NUMBER||Number)(s);return Number.isFinite(n)?n:null}
 async function readTextFile(file){return file?await file.text():''}
 
 function daysBetween(a,b){return Math.abs(b-a)/86400000}
@@ -251,7 +251,8 @@ function toolSearchIndex(){
  return found.filter((x,i,a)=>a.findIndex(y=>y.title===x.title&&y.page===x.page)===i);
 }
 function pageLabel(id){return({'fuel':'Fuel & Bunkering','engineering':'Engineering','electrical':'Electrical','vessel-calcs':'Vessel Calculations','voyage-estimate':'Voyage Estimate','quick':'Quick Tools','weather':'Weather','navigation':'Navigation','live-experimental':'Live & Experimental','route-intelligence':'Experimental','profile':'Vessel Profile','settings':'Settings'}[id]||id.replaceAll('-',' '))}
-function toolSearchText(x){const meta=TOOL_META[x.title]||{};return `${x.title} ${pageLabel(x.page)} ${meta.how||''} ${meta.units||''}`.toLowerCase()}
+const TASK_INTENTS={"Fuel ROB & endurance":"how long can sail fuel last hvor lenge drivstoff rekkevidde endurance","Fuel / Urea converter":"convert litres tons liter tonn tetthet density fuel","Flow / fill time":"fill a tank fylle tank fylletid flow volume","Hydraulic power":"hydraulikk trykk volumstrøm pressure flow power","Current-corrected ETA":"arrival arrive ankomst tid eta current","Draft / tide UKC":"clearance under keel klaring under kjøl depth draft tide","Battery runtime":"how long battery last batteri varighet timer","Power factor correction":"reactive compensation kondensator effektfaktor kompensere","Port Distance & Sea Time":"how long passage plan voyage reise distanse tid fart"};
+function toolSearchText(x){const meta=TOOL_META[x.title]||{};return `${x.title} ${pageLabel(x.page)} ${meta.how||''} ${meta.units||''} ${TASK_INTENTS[x.title]||''}`.toLowerCase()}
 
 function toolSearchScore(x,q){
  const title=x.title.toLowerCase(),text=toolSearchText(x);let score=0;
@@ -327,9 +328,9 @@ function copyHistoryIndex(i){
 }
 function clearHistory(){store.set(K.history,[]);store.set(K.recent,[]);renderHistoryHome();renderRecentHome();toast('Local calculation history cleared.')}
 function sanityCheckInput(input){
- if(input.type!=='number')return;
+ if((window.MT_INPUT_KIND?window.MT_INPUT_KIND(input):input.type)!=='number')return;
  const raw=input.value;if(raw===''){input.classList.remove('sanity-bad');return}
- const v=Number(raw),label=(input.closest('label')?.textContent||'').toLowerCase();
+ const v=(globalThis.MT_PARSE_NUMBER||Number)(raw),label=(input.closest('label')?.textContent||'').toLowerCase();
  let bad=!Number.isFinite(v),why='';
  if(!bad && /(speed|distance|volume|density|capacity|flow|pressure|head|draft|depth|length|load|current a|voltage|power|rpm|kwh|tpc|displacement|chain|diameter|rate)/.test(label) && v<0){bad=true;why='Negative value is unusual for this input.'}
  if(!bad && /%/.test(label) && (v<0||v>100)){bad=true;why='Percentage is normally between 0 and 100.'}
@@ -404,7 +405,7 @@ function bindGlobal(){
  $('#themeToggle').onclick=()=>setTheme(state.theme==='bridge'?'dark':'bridge');
  $('#globalSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$('#searchResults');if(!q){box.hidden=true;return}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,12);box.innerHTML=hits.map(x=>`<button data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}</small></span></button>`).join('')||'<button>No matching tool</button>';box.hidden=false});
  document.addEventListener('click',e=>{if(!e.target.closest('.searchbox'))$('#searchResults').hidden=true});
- document.addEventListener('input',e=>{if(e.target.matches('input[type="number"]'))sanityCheckInput(e.target)});
+ document.addEventListener('input',e=>{if(e.target.matches('input[type="number"],input[data-mt-numeric]'))sanityCheckInput(e.target)});
  window.addEventListener('online',()=>{updateConnectivity();checkApi()});window.addEventListener('offline',updateConnectivity);
  setInterval(()=>{updateClock();updateLiveAgeIndicators()},1000);updateClock();updateConnectivity();setTheme(state.theme);syncFavoriteButtons();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});scheduleIdle(checkApi,1600);scheduleIdle(loadSupportWidget,5500);
 }
@@ -557,8 +558,8 @@ function drawRoute(){if(!state.routeLayer)return;state.routeLayer.clearLayers();
 function fitRoute(){if(state.map&&state.route.length)state.map.fitBounds(L.latLngBounds(state.route.map(p=>[p.lat,p.lon])).pad(.18));}
 function renderEnvelope(){const box=$('#envelopeBox');if(!box)return;const p=state.profile;box.innerHTML=`<div class="source-box"><div class="source-item"><span>Max Hs</span><b>${p.maxHs} m</b></div><div class="source-item"><span>Max wind</span><b>${p.maxWind} kn</b></div><div class="source-item"><span>Max current</span><b>${p.maxCurrent} kn</b></div><div class="source-item"><span>Min UKC</span><b>${p.minUKC} m</b></div><div class="source-item"><span>CPA alert</span><b>${p.cpaAlert} NM</b></div><div class="source-item"><span>AIS corridor</span><b>${p.corridor} NM</b></div></div><div class="actions">${button('Edit vessel profile','profile','btn')}</div>`}
 const MAX_AIS_AGE_MS=15*60*1000; // Experimental CPA threshold; NOT a navigation-safety guarantee.
-function aisNumeric(value,max){if(value==null||value===''||typeof value==='boolean')return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=max?n:null}
-function aisPosition(v){const rawLat=v.latitude??v.lat,rawLon=v.longitude??v.lon;if(rawLat==null||rawLon==null||rawLat===''||rawLon==='')return null;const lat=Number(rawLat),lon=Number(rawLon);return Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180?{lat,lon}:null}
+function aisNumeric(value,max){if(value==null||value===''||typeof value==='boolean')return null;const n=(globalThis.MT_PARSE_NUMBER||Number)(value);return Number.isFinite(n)&&n>=0&&n<=max?n:null}
+function aisPosition(v){const rawLat=v.latitude??v.lat,rawLon=v.longitude??v.lon;if(rawLat==null||rawLon==null||rawLat===''||rawLon==='')return null;const lat=(globalThis.MT_PARSE_NUMBER||Number)(rawLat),lon=(globalThis.MT_PARSE_NUMBER||Number)(rawLon);return Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180?{lat,lon}:null}
 function aisAgeReason(v){
  const raw=v.timestamp??v.dataAgeSource??v.timeStamp??v.dateTime??v.lastUpdated??v.time;
  if(raw==null||raw==='')return 'AIS time unknown';
@@ -568,12 +569,12 @@ function aisAgeReason(v){
  return null;
 }
 function aisMotion(v){const sog=aisNumeric(v.speedOverGround??v.sog,102.2),cog=aisNumeric(v.courseOverGround??v.cog,359.9);return sog==null||(sog>0&&cog==null)?null:{sog,cog:cog??0}}
-function safeWaveHs(value){if(value==null||value==='')return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=40?n:null}
+function safeWaveHs(value){if(value==null||value==='')return null;const n=(globalThis.MT_PARSE_NUMBER||Number)(value);return Number.isFinite(n)&&n>=0&&n<=40?n:null}
 function cleanForecast(rows){return Array.isArray(rows)?rows.map(r=>({...r,hs:safeWaveHs(r?.hs)})):[]}
 function isCpaAlert(x){return Number.isFinite(x.cpa)&&x.cpa<state.profile.cpaAlert}
 function updateRiSummary(){
  const d=routeDistance(),corr=corridorTargets(),cpa=cpaTargets().filter(isCpaAlert);
- const maxHs=Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxW=Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0);
+ const maxHs=Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxW=Math.max(...state.forecast.map(x=>(globalThis.MT_PARSE_NUMBER||Number)(x.windKn)||0),0);
  $('#riDistance')&&($('#riDistance').textContent=d?`${nf(d,1)} NM`:'—');
  $('#riAis')&&($('#riAis').textContent=state.aisStatus==='ok'?corr.length:'—');
  $('#riCpa')&&($('#riCpa').textContent=state.aisStatus==='ok'?(corr.length&&!cpaTargets().some(x=>Number.isFinite(x.cpa))?'—':cpa.length):'—');
@@ -641,7 +642,7 @@ async function runAnalysis(showToast=true){
  if(showToast)toast(aisOk&&wxOk?'Experimental route context updated.':'Partial live data loaded.');
 }
 
-function snapshot(){const cpa=cpaTargets().filter(isCpaAlert).length,aisOk=state.aisStatus==='ok';return{time:new Date().toISOString(),aisStatus:state.aisStatus,ais:aisOk?corridorTargets().length:null,cpa:aisOk?cpa:null,maxHs:Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxWind:Math.max(...state.forecast.map(x=>Number(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>Number(x.currentKn)||0),0)}}
+function snapshot(){const cpa=cpaTargets().filter(isCpaAlert).length,aisOk=state.aisStatus==='ok';return{time:new Date().toISOString(),aisStatus:state.aisStatus,ais:aisOk?corridorTargets().length:null,cpa:aisOk?cpa:null,maxHs:Math.max(...state.forecast.map(x=>safeWaveHs(x.hs)??0),0),maxWind:Math.max(...state.forecast.map(x=>(globalThis.MT_PARSE_NUMBER||Number)(x.windKn)||0),0),maxCurrent:Math.max(...state.forecast.map(x=>(globalThis.MT_PARSE_NUMBER||Number)(x.currentKn)||0),0)}}
 function compareAnalysis(){
  const cur=snapshot(),old=store.get(K.lastAnalysis,null),box=$('#changeBox');
  if(box){
@@ -739,8 +740,8 @@ function renderWeather(){
  $('#findWindow').onclick=findWeatherWindow;$('#calcEncounter').onclick=calcWaveEncounter;
  const cw=store.get(K.weatherCache,null);
  if(cw&&Array.isArray(cw.forecast)&&cw.forecast.length){
-   if(Number.isFinite(Number(cw.lat)))$('#wxLat').value=cw.lat;
-   if(Number.isFinite(Number(cw.lon)))$('#wxLon').value=cw.lon;
+   if(Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(cw.lat)))$('#wxLat').value=cw.lat;
+   if(Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(cw.lon)))$('#wxLon').value=cw.lon;
    $('#wxDiagnostics').textContent=`Cached forecast · saved ${cw.fetchedAt?forecastTimeLabel(cw.fetchedAt):'previously'} · load again when online for fresh data.`;
  }
  renderPointWeather();syncFavoriteButtons();
@@ -751,7 +752,7 @@ function weatherLabel(code){
  return String(code).replace(/_(day|night|polartwilight)$/,'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
 }
 function renderPointWeather(){
- const tb=$('#wxPointTable');if(!tb)return;const rows=Array.isArray(state.weather)?state.weather:[];const first=rows.find(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v))))||null;const sum=$('#wxSummary');if(sum){const wind=first?.windKn==null?'—':`${nf(first.windKn,0)} kn`,waves=first?.hs==null?'—':`${nf(first.hs,1)} m`,cur=first?.currentKn==null?'—':`${nf(first.currentKn,1)} kn`,wd=first?.windDirection==null?'Forecast wind':`${nf(first.windDirection,0)}° from`,cd=first?.currentDirection==null?'Surface current':`${nf(first.currentDirection,0)}° to`;sum.innerHTML=`<div class="weather-metric"><span>Wind</span><strong>${wind}</strong><small>${wd}</small></div><div class="weather-metric"><span>Waves</span><strong>${waves}</strong><small>Significant Hs</small></div><div class="weather-metric"><span>Current</span><strong>${cur}</strong><small>${cd}</small></div>`}tb.innerHTML=rows.length?rows.map(f=>{const hasData=[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v))),r=hasData?riskFor(f):{score:1,label:'No data'},air=f.airTemp==null?'—':`${nf(f.airTemp,1)}°C`,wx=weatherLabel(f.symbolCode),precip=f.precipitation==null?'':` · ${nf(f.precipitation,1)} mm`;return `<tr><td data-label="Time">${forecastTimeLabel(f.forecastTime||f.time)}</td><td data-label="Hs">${f.hs==null?'—':nf(f.hs,1)+' m'}</td><td data-label="Wind">${f.windKn==null?'—':nf(f.windKn,0)+' kn'}</td><td data-label="Current">${f.currentKn==null?'—':nf(f.currentKn,1)+' kn'}</td><td data-label="Air / weather">${air}${wx==='—'?'':` · ${esc(wx)}`}${precip}</td><td data-label="Status"><span class="chip ${r.score===2?'bad':r.score===1?'warn':'ok'}">${r.label}</span></td></tr>`}).join(''):'<tr><td colspan="6" class="helper">Enter a position and load the forecast.</td></tr>';updateLiveAgeIndicators();}
+ const tb=$('#wxPointTable');if(!tb)return;const rows=Array.isArray(state.weather)?state.weather:[];const first=rows.find(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(v))))||null;const sum=$('#wxSummary');if(sum){const wind=first?.windKn==null?'—':`${nf(first.windKn,0)} kn`,waves=first?.hs==null?'—':`${nf(first.hs,1)} m`,cur=first?.currentKn==null?'—':`${nf(first.currentKn,1)} kn`,wd=first?.windDirection==null?'Forecast wind':`${nf(first.windDirection,0)}° from`,cd=first?.currentDirection==null?'Surface current':`${nf(first.currentDirection,0)}° to`;sum.innerHTML=`<div class="weather-metric"><span>Wind</span><strong>${wind}</strong><small>${wd}</small></div><div class="weather-metric"><span>Waves</span><strong>${waves}</strong><small>Significant Hs</small></div><div class="weather-metric"><span>Current</span><strong>${cur}</strong><small>${cd}</small></div>`}tb.innerHTML=rows.length?rows.map(f=>{const hasData=[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(v))),r=hasData?riskFor(f):{score:1,label:'No data'},air=f.airTemp==null?'—':`${nf(f.airTemp,1)}°C`,wx=weatherLabel(f.symbolCode),precip=f.precipitation==null?'':` · ${nf(f.precipitation,1)} mm`;return `<tr><td data-label="Time">${forecastTimeLabel(f.forecastTime||f.time)}</td><td data-label="Hs">${f.hs==null?'—':nf(f.hs,1)+' m'}</td><td data-label="Wind">${f.windKn==null?'—':nf(f.windKn,0)+' kn'}</td><td data-label="Current">${f.currentKn==null?'—':nf(f.currentKn,1)+' kn'}</td><td data-label="Air / weather">${air}${wx==='—'?'':` · ${esc(wx)}`}${precip}</td><td data-label="Status"><span class="chip ${r.score===2?'bad':r.score===1?'warn':'ok'}">${r.label}</span></td></tr>`}).join(''):'<tr><td colspan="6" class="helper">Enter a position and load the forecast.</td></tr>';updateLiveAgeIndicators();}
 async function loadPointWeather(){
  const lat=+$('#wxLat').value,lon=+$('#wxLon').value,tb=$('#wxPointTable'),diag=$('#wxDiagnostics');
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){sourceStatus('#wxStatus','bad','CHECK POSITION');return}
@@ -766,9 +767,9 @@ async function loadPointWeather(){
      `weather: ${d.location?.ok?'ok':d.location?.status||'unavailable'}`,
      `ocean: ${d.ocean?.ok?'ok':d.ocean?.status||'unavailable'}`
    ];
-   const waveAvailable=state.weather.some(x=>x.hs!=null&&Number.isFinite(Number(x.hs)));const currentAvailable=state.weather.some(x=>x.currentKn!=null&&Number.isFinite(Number(x.currentKn)));const marineOk=Boolean(waveAvailable||currentAvailable);
+   const waveAvailable=state.weather.some(x=>x.hs!=null&&Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(x.hs)));const currentAvailable=state.weather.some(x=>x.currentKn!=null&&Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(x.currentKn)));const marineOk=Boolean(waveAvailable||currentAvailable);
    diag.textContent=`MET Norway atmosphere · waves: ${waveAvailable?(d.globalWave?.ok?'NOAA/GFS-Wave':d.ocean?.ok?'MET Oceanforecast':'available, source unverified'):'unavailable'} · currents: ${currentAvailable?'available':'unavailable'} · updated ${new Date().toISOString().slice(11,16)} UTC`;
-   const usable=state.weather.some(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite(Number(v))));
+   const usable=state.weather.some(f=>[f.hs,f.windKn,f.currentKn,f.airTemp].some(v=>v!=null&&Number.isFinite((globalThis.MT_PARSE_NUMBER||Number)(v))));
    if(state.weather.length&&usable){sourceStatus('#wxStatus',marineOk?'ok':'warn',marineOk?'FORECAST LOADED':'WEATHER ONLY');renderPointWeather();sendAnalyticsEvent('tool_use',{page:'weather',tool:'Point weather forecast'})}
    else if(state.weather.length){sourceStatus('#wxStatus','warn','NO VALUES');renderPointWeather()}
    else{sourceStatus('#wxStatus','warn','NO USABLE DATA');tb.innerHTML='<tr><td colspan="6" class="helper">MET Norway returned no usable forecast rows for this position.</td></tr>'}
@@ -1202,7 +1203,7 @@ function beaufort(k){const rows=[[1,'Light air','1–3'],[4,'Light breeze','4–
 function renderProfile(){const p=state.profile;$('#profile').innerHTML=pageTitle('Vessel Profile','Shared vessel values are used by route, fuel and operational-envelope calculations.')+`<article class="panel"><div class="panel-body"><div class="fields three"><label>Vessel name<input id="pName" value="${esc(p.name)}"></label><label>LOA m<input id="pLoa" type="number" step=".1" value="${p.loa}"></label><label>Draft m<input id="pDraft" type="number" step=".1" value="${p.draft}"></label><label>Service speed kn<input id="pSpeed" type="number" step=".1" value="${p.serviceSpeed}"></label><label>Fuel consumption m³/day<input id="pFuel" type="number" step=".1" value="${p.fuelDay}"></label><label>Max Hs m<input id="pHs" type="number" step=".1" value="${p.maxHs}"></label><label>Max wind kn<input id="pWind" type="number" value="${p.maxWind}"></label><label>Max current kn<input id="pCur" type="number" step=".1" value="${p.maxCurrent}"></label><label>Minimum UKC m<input id="pUkc" type="number" step=".1" value="${p.minUKC}"></label><label>CPA alert NM<input id="pCpa" type="number" step=".1" value="${p.cpaAlert}"></label><label>AIS route corridor NM<input id="pCorr" type="number" step=".1" value="${p.corridor}"></label></div><div class="actions"><button class="btn primary" id="saveProfile">Save profile</button></div><p class="helper">Operational limits are user-defined planning values. Marine Tools does not determine safe limits for your vessel.</p></div></article>`;$('#saveProfile').onclick=saveProfile}
 function saveProfile(){
  const previous=state.profile;
- const field=(id,key)=>{const el=$(id);if(!el||el.value.trim()==='')return previous[key];const value=Number(el.value);return Number.isFinite(value)?value:previous[key]};
+ const field=(id,key)=>{const el=$(id);if(!el||el.value.trim()==='')return previous[key];const value=(globalThis.MT_PARSE_NUMBER||Number)(el.value);return Number.isFinite(value)?value:previous[key]};
  state.profile={
   name:$('#pName')?.value.trim()??previous.name,loa:field('#pLoa','loa'),draft:field('#pDraft','draft'),
   serviceSpeed:field('#pSpeed','serviceSpeed'),fuelDay:field('#pFuel','fuelDay'),
