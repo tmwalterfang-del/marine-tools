@@ -8,7 +8,7 @@ Denne rapporten er **ikke** en godkjenning for offentlig utgivelse. Flere manuel
 | | |
 |---|---|
 | Testet head | `8a9dd40` (`feature/education-next`, PR #52, draft). Lokal PC-kopi var identisk og ren. |
-| Rettelser | Branch `claude/audit-fixes-20261031`, 7 commits oppå `8a9dd40` (se avsnitt 4). **Ikke pushet**: GitHub-appen har ikke skrivetilgang til repoet. Rettelsene ligger som patch-filer i `docs/claude-audit-20261031/`. |
+| Rettelser | Branch `claude/audit-fixes-20261031`, 7 commits oppå `8a9dd40` (se avsnitt 4). Pushet som draft-PR #53 mot `feature/education-next` (ikke flettet). |
 | CI på head | Grønn: validate, integration, browsers ×3, education-browsers ×3, Cloudflare. |
 | Lokal kjøring | Hele `students-formula-audit.yml` kjørt lokalt med Chromium på både head og rettet kode (resultat i avsnitt 5). Sympy-testene ble kjørt i Linux-VM-en på PC-en. Firefox og WebKit var ikke tilgjengelige lokalt; der gjelder CI. |
 | Privat preview | **Ikke testet.** Previewen (`*.chatgpt.site`) er privat og nås ikke fra mitt miljø. Alle nettlesertester er kjørt mot en lokal server med samme commit. `source-provenance.json` på previewen er derfor ikke kontrollert. |
@@ -82,7 +82,7 @@ Slik tas rettelsene inn: `git am docs/claude-audit-20261031/*.patch` på `featur
 | Lokal arbeidsflyt, Chromium | rettet kode | 93/93: 91 i hovedkjøringen + 2 sympy-tester kjørt separat med sympy 1.14.0. De genererte evidensfilene er uendret (`git diff` tom) |
 | Sympy-tester (PC-VM) | `8a9dd40` | PASS |
 | Ny regresjon `main-numeric-input` | head / rettet | FAIL (27 avvik) / PASS (44 kort) |
-| Firefox, WebKit | rettet kode | NOT RUN lokalt. Kjøres av CI når branchen pushes |
+| CI (GitHub), draft-PR #53 | `fef45f7` (rettet kode) | Alle jobber grønne: validate, integration, browsers og education-browsers i Chromium, Firefox og WebKit, inkludert den nye regresjonen |
 
 ## 6. Åpne porter – ikke bestått
 
@@ -97,4 +97,4 @@ Slik tas rettelsene inn: `git am docs/claude-audit-20261031/*.patch` på `featur
 - **Fysiske grensetilfeller per hovedkort, menyer/søk/favoritter/tilbake-frem, eksport/import-rundtur i arbeidsområdet og full læringssyklus per modell:** dekket av eksisterende CI-tester, ikke uavhengig gjentatt.
 - **F-04** (norske resultatsetninger og tallformat på hovedsiden) er åpen.
 
-Samlet preview-akseptanse er derfor **ikke** oppnådd. Det gjenstår minst F-04, previewkontroll, grønn CI på rettet kode i alle tre motorer og de manuelle portene over.
+Samlet preview-akseptanse er derfor **ikke** oppnådd. Det gjenstår minst F-04, previewkontroll, og de manuelle portene over. CI på rettet kode er grønn i alle tre motorer.
