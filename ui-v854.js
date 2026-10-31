@@ -62,6 +62,7 @@ const style=document.createElement('style');style.textContent=`
 .coord-ddm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:8px 0 12px}.coord-ddm-grid.single{grid-template-columns:minmax(0,1fr)}.coord-group{border:1px solid var(--line,#274257);border-radius:10px;padding:10px 12px;margin:0}.coord-group legend{padding:0 6px;font-weight:700}.coord-row{display:grid;grid-template-columns:36px minmax(72px,.7fr) minmax(120px,1.4fr) minmax(76px,.7fr);gap:8px;align-items:end;margin-top:8px}.coord-row>span{font-weight:700;padding-bottom:10px}.coord-row label{font-size:.78rem}.coord-row input,.coord-row select{width:100%}
 #weather .weather-forecast-table.no-current-col th:nth-child(4),#weather .weather-forecast-table.no-current-col td:nth-child(4){display:none!important}.route-ddm-list{display:grid;gap:4px;margin-top:8px;padding:10px 12px;border:1px solid rgba(120,160,190,.22);border-radius:10px}.route-ddm-list span{font-size:.82rem}.route-ddm-list b{display:inline-block;min-width:42px}
 @media(max-width:760px){.coord-ddm-grid{grid-template-columns:1fr}.coord-row{grid-template-columns:34px 70px minmax(108px,1fr) 70px;gap:6px}}
+.coord-group{min-width:0}@media(max-width:420px){.coord-row{grid-template-columns:28px minmax(0,.8fr) minmax(0,1.3fr) minmax(0,.8fr);gap:6px}.coord-group{padding:8px}}
 `;
 document.head.appendChild(style);
 
