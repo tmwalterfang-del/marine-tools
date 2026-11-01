@@ -15,7 +15,7 @@ function check(ok,label,details={}){results.push({ok,label,...details});if(!ok)c
 async function metrics(page,label,scope){const m=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,heading:document.querySelector('h1,h2')?.textContent}));check(m.scroll<=m.client+2,label,{scope,...m});if(m.scroll>m.client+2)await page.screenshot({path:path.join(output,'overflow-'+results.length+'.png'),fullPage:true});}
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
- browser=await pw[engine].launch({headless:true});
+ browser=await pw[engine].launch({headless:true,...(engine==='chromium'&&process.env.STUDENTS_BROWSER_EXECUTABLE?{executablePath:process.env.STUDENTS_BROWSER_EXECUTABLE}:{})});
  for(const [device,width,height]of sizes){
   console.log('VIEWPORT '+engine+'/'+device);
   const scope=engine+'/'+device,context=await browser.newContext({viewport:{width,height},hasTouch:width<900,isMobile:engine!=='firefox'&&width<=430,acceptDownloads:true,reducedMotion:'reduce',serviceWorkers:'block'});
@@ -69,6 +69,9 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    await page.selectOption('#module-quick',id);
    await page.waitForFunction(name=>document.getElementById('selected-title').textContent===name,name);
    const handle=await page.locator('#frames iframe:not([hidden])').elementHandle(),frame=await handle.contentFrame();
+     // Several modules reuse one iframe. A title/SVG can still belong to the
+     // previous hash route; sample inputs only after the requested model owns it.
+     await frame.waitForFunction(id=>{try{return window.MT_ANALYSIS_ADAPTER?.capture().id===id;}catch{return false;}},id);
    await frame.waitForSelector('svg path,svg polyline,svg rect',{state:'attached',timeout:15000});
    await frame.locator('svg:visible').first().waitFor({timeout:15000});
    const z=await frame.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.body.querySelectorAll('*')].filter(x=>x.getBoundingClientRect().right>document.documentElement.clientWidth+2).slice(0,12).map(x=>({tag:x.tagName,id:x.id,cls:x.className?.baseVal??x.className,right:x.getBoundingClientRect().right})),bad:[...document.querySelectorAll('svg path,svg polyline,svg rect')].some(x=>/NaN|Infinity/.test(x.getAttribute('d')||x.getAttribute('points')||''))}));
@@ -97,7 +100,8 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
     if(device==='desktop'&&id===modules[0].id){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,'presentation-desktop.png'),fullPage:true});}
     await frame.locator('details.teaching-inputs:visible > summary').first().press('Escape');
     check(await page.locator('#presentation-toggle').getAttribute('aria-pressed')==='false','Escape exits presentation',{scope});
-    check(JSON.stringify(before)===JSON.stringify(await frame.locator('input:not([type=file])').evaluateAll(xs=>xs.map(x=>x.value))),'presentation preserves inputs',{scope});
+     const after=await frame.locator('input:not([type=file])').evaluateAll(xs=>xs.map(x=>x.value));
+     check(JSON.stringify(before)===JSON.stringify(after),'presentation preserves inputs',{scope,id,...(JSON.stringify(before)===JSON.stringify(after)?{}:{before,after})});
    }
   }
   // Save representative screenshots, including the compact picker and embedded chart.

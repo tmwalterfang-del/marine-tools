@@ -61,7 +61,7 @@ function renderRecent(){
   host.closest('.mt-sidebar-recent').hidden=!recent.length;if(!recent.length)return;
   recent.forEach(item=>{
     const b=document.createElement('button');b.type='button';b.className='nav-btn';b.append(iconSpan('recent'));
-    const copy=document.createElement('span');copy.className='mt-recent-copy';const title=document.createElement('b');title.textContent=item.title;const sub=document.createElement('small');sub.textContent=(item.page||'tool').replaceAll('-',' ');copy.append(title,sub);b.append(copy);b.addEventListener('click',()=>openRecentTool(item));host.appendChild(b)
+    const copy=document.createElement('span');copy.className='mt-recent-copy';const title=document.createElement('b');title.textContent=item.title;const sub=document.createElement('small');sub.textContent=({fuel:'Fuel & Bunkering',engineering:'Engineering',electrical:'Electrical','vessel-calcs':'Vessel Calculations','energy-log':'Fuel & Energy Log','voyage-estimate':'Voyage Estimate',quick:'Quick Tools',weather:'Weather',navigation:'Navigation'})[item.page]||'Tools';copy.append(title,sub);b.append(copy);b.addEventListener('click',()=>openRecentTool(item));host.appendChild(b)
   })
 }
 function injectExtras(project){

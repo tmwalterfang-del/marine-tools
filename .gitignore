@@ -6,3 +6,9 @@ apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/icons/
 qa-education-*/
 *-audit.json
+
+# Internal handovers, audits and working notes stay on this machine.
+.local-internal/
+docs/
+/RELEASE_CHECKLIST.md
+/marketing/*.md
