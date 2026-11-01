@@ -1,6 +1,6 @@
 # Oppfølging av Claude-gjennomgangen – 1. november 2026
 
-Arbeidet bygger på `dde8ecef29f1c502927896346dd00018fb92deaf`, inkludert Claudes ni commits etter `8a9dd40`. PR #52 og #53 ble observert lukket uten fletting under oppfølgingen. De gjenåpnes ikke. Rettelsene samles på `codex/claude-audit-followup-20261101`, mot `feature/education-next`, og skal bare vises i eksisterende private preview. Ingen fletting til main, offentlig lansering eller Google Play-publisering er godkjent her.
+Arbeidet bygger på `dde8ecef29f1c502927896346dd00018fb92deaf`, inkludert Claudes ni commits etter `8a9dd40`. PR #52 og #53 ble observert lukket uten fletting under oppfølgingen. De gjenåpnes ikke. Den tidligere education-next-branchen er også slettet på origin; den gjenværende Claude-branchen brukes derfor som PR-base, slik at oppfølgingen viser bare nye rettelser. Rettelsene samles på `codex/claude-audit-followup-20261101`, mot `claude/audit-fixes-20261031`, og skal bare vises i eksisterende private preview. Ingen fletting til main, offentlig lansering eller Google Play-publisering er godkjent her.
 
 ## Rettelser og akseptanse
 
