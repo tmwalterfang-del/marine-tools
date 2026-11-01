@@ -12,3 +12,10 @@ qa-education-*/
 docs/
 /RELEASE_CHECKLIST.md
 /marketing/*.md
+/qa-privacy-main/
+/.qa-deps/
+
+# Generated local review output.
+/students-dimensional-review.json
+/students-dimensions-followup.json
+/students-formula-completeness.csv

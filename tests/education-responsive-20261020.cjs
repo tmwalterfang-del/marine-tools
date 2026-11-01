@@ -28,7 +28,7 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
    if(new URL(url).hostname==='api.marinetools.app')return route.fulfill({status:request.method()==='OPTIONS'?204:503,headers:{'access-control-allow-origin':base,'access-control-allow-credentials':'true','access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':request.headers()['access-control-request-headers']||'content-type','content-type':'application/json'},body:request.method()==='OPTIONS'?'':JSON.stringify({status:'unavailable',error:'QA provider deliberately unavailable'})});
    return route.abort();
   });
-  await context.addInitScript(()=>localStorage.setItem('mt.lastSeenReleaseBuild','20261019-v8-7-0'));
+  await context.addInitScript(()=>localStorage.setItem('mt.lastSeenReleaseBuild','20261101-v8-8-0'));
   // This is a layout test, not a live account/provider integration test.
   // Resolve the unavailable-provider fixture in the page so WebKit cannot
   // turn a cancelled cross-origin mock response into a synthetic page error.

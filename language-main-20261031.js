@@ -1221,7 +1221,15 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Latest interval is more than 25% above the overall rate.": "Siste intervall ligger mer enn 25 % over samlet forbruk.",
   "Latest interval is more than 25% below the overall rate.": "Siste intervall ligger mer enn 25 % under samlet forbruk.",
   "Latest interval is broadly in line with the overall rate.": "Siste intervall er omtrent på nivå med samlet forbruk.",
-  "UKC, squat, draft and anchoring": "UKC, squat, dypgang og ankring"
+  "UKC, squat, draft and anchoring": "UKC, squat, dypgang og ankring",
+  "Education & your workspace": "Utdanning og arbeidsområdet ditt",
+  "A connected Education workspace with 45 interactive modules, 60 calculators and 292 practice questions across 16 subjects.": "Et samlet utdanningsområde med 45 interaktive moduler, 60 kalkulatorer og 292 øvingsoppgaver fordelt på 16 emner.",
+  "Predict an outcome, change the model, compare results and solve a related task.": "Forutsi et resultat, endre modellen, sammenlign resultatene og løs en tilknyttet oppgave.",
+  "Track learning progress, use self-tests and return to saved work in your browser.": "Følg læringsfremdriften, bruk egentester og fortsett med lagret arbeid i nettleseren.",
+  "Organise projects, vessel profiles, calculations and workbook notes, with backup and export tools.": "Organiser prosjekter, fartøyprofiler, beregninger og arbeidsnotater, med verktøy for sikkerhetskopiering og eksport.",
+  "Expanded English and Norwegian support, including result text, number formatting and worked steps.": "Utvidet støtte for engelsk og norsk, inkludert resultattekst, tallformat og mellomregninger.",
+  "Cleaner navigation and improved layouts for desktop, tablet and mobile.": "Ryddigere navigasjon og forbedret visning på datamaskin, nettbrett og mobil.",
+  "Download selected study packages for offline learning.": "Last ned utvalgte studiepakker for læring uten nett."
  },
  "templates": [
   {

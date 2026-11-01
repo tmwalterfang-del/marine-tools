@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const API=/\.chatgpt\.site$/i.test(location.hostname)?'/live-api':/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
-const APP_VERSION='8.7.0';
+const APP_VERSION='8.8.0';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
 const SUPPORT_URL='https://buymeacoffee.com/marinetools';
@@ -1354,41 +1354,10 @@ function renderAbout(){
  </details>`;
 }
 function renderPrivacy(){
- $('#privacy').innerHTML=`<div class="about-hero"><div class="eyebrow">PRIVACY & DATA</div><h1>Local-first by design</h1><p>Marine Tools keeps user-entered operational data local where possible and sends only what an online feature needs.</p></div>
- <div class="about-columns">
-   <article class="panel bullet-box"><h3>Stored on your device</h3><ul>
-     <li>Vessel Profile and local settings</li>
-     <li>Calculation, consumption and bunkering history</li>
-     <li>Optional experimental route data</li>
-     <li>Cached weather data for offline reference</li>
-   </ul><p class="helper">These values are stored in this browser and are not automatically synced to a Marine Tools account.</p></article>
-   <article class="panel bullet-box"><h3>Usage analytics</h3><ul>
-     <li>Page and tool names</li>
-     <li>Device class and app version</li>
-     <li>Visible-time seconds</li><li>Random browser identifier, renewed after 180 days; visit identifier renewed after 30 minutes of inactivity</li><li>Coarse traffic source and tool outcome; no cross-device matching</li>
-     <li>No calculation inputs, vessel values, route coordinates or weather positions</li>
-   </ul><p class="helper">Usage analytics can be disabled under Settings.</p></article>
- </div>
- <details class="panel info-fold">
-   <summary><span><b>Online requests</b><small>Weather, AIS, maps and Voyage Estimate</small></span><strong>Show</strong></summary>
-   <div class="panel-body">
-     <p>Weather, AIS and experimental route-context requests send only the context needed to return the requested result. Voyage Estimate downloads public routing and location datasets and performs the selected route calculation in your browser.</p>
-     <div class="notice"><b>External infrastructure:</b> Internet requests pass through hosting, maritime-data, map and network providers, which may process technical request logs according to their own systems and policies.</div>
-   </div>
- </details>
- <details class="panel info-fold">
-   <summary><span><b>Forms & external services</b><small>Maps, surveys and suggestions</small></span><strong>Show</strong></summary>
-   <div class="panel-body">
-     <p>Map tiles and live maritime data are requested from external services when those features are used. Survey and suggestion submissions use an external form service and are separate from locally stored operational data.</p>
-   </div>
- </details>
- <details class="panel info-fold">
-   <summary><span><b>Your control</b><small>Backup, restore or clear local data</small></span><strong>Show</strong></summary>
-   <div class="panel-body">
-     <p>Under <b>Settings → Data stored on this device</b> you can download a backup, restore it on another device, clear calculation history or erase local Marine Tools data. Clearing browser site data will also remove locally stored Marine Tools data.</p>
-   </div>
- </details>`;
+ const policy=window.MT_PRIVACY_POLICY;
+ $('#privacy').innerHTML=policy?.html||'<h1>Privacy &amp; Data</h1><p>The policy could not be loaded. <a href="https://www.marinetools.app/privacy">Open the public privacy policy</a>.</p>';
 }
+
 function pageTitle(h,p){return `<div class="page-title"><div><div class="eyebrow">MARINE TOOLS</div><h1>${h}</h1><p>${p}</p></div></div>`}
 function setInvalidRes(...args){return setRes(...[args[0],args[1],args[2]||'',args[3]||'',false])}
 function setRes(id,main,sub='',cls='',valid=true){const e=$('#'+id);if(!e)return;e.dispatchEvent(new CustomEvent('mt-calculation-result',{bubbles:true,detail:{valid}}));e.className=`result ${cls}`;setRichRes(id,mainHTML`<strong>${main}</strong>${sub?mainHTML`<small>${sub}</small>`:''}`)}

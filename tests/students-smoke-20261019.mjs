@@ -114,7 +114,7 @@ ok(new Set(ids).size===ids.length,'HTML IDs unique');
 const appIds=[...srcApp.matchAll(/el\("([^"]+)"\)/g)].map(m=>m[1]);
 ok(appIds.every(id=>ids.includes(id)),'all application DOM IDs exist');
 ok(html.includes('formulas.js')&&html.includes('formulas-extension.js')&&html.includes('calculators.js')&&html.includes('calculators-extension.js')&&html.includes('formulas-expansion-v1.js')&&html.includes('calculators-expansion-v1.js')&&html.includes('app.js')&&html.includes('styles.css'),'all student assets loaded');
-ok(html.includes('noindex,nofollow'),'development student page not indexable yet');
+ok(html.includes('index,follow')&&html.includes('https://www.marinetools.app/students/'),'public Education landing is indexable with its canonical URL');
 ok(!srcApp.includes('fetch(')&&!srcApp.includes('sendBeacon'),'learning workspace makes no API or analytics calls');
 ok(css.includes('@media(max-width:680px)')&&css.includes('@media print'),'responsive and printable styles exist');
 ok(css.includes('[data-theme="bridge"]'),'Bridge Dark theme exists');
