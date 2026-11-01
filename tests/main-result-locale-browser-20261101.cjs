@@ -74,7 +74,7 @@ let browser;
  for(const[id,phrase]of [['add-kg','Opprinnelig moment'],['trim-change','Trimmoment'],['voyage-fuel','Seilingstid'],['battery-runtime','Varighet'],['engine-displacement','Omregn mm til m']]){
   await p.goto(base+'/students/#calculator/'+id);await p.waitForFunction(id=>document.getElementById('calc-selector')?.value===id,id);await p.evaluate(()=>MT_I18N.ready);await p.evaluate(()=>MT_I18N.set('en'));
   const enSteps=await p.locator('#calc-steps').textContent(),values=await p.locator('#calc-fields input').evaluateAll(xs=>xs.map(x=>x.value));
-  await p.evaluate(()=>MT_I18N.set('nb'));assert((await p.locator('#calc-steps').textContent()).includes(phrase),id+' Norwegian working');assert.deepEqual(await p.locator('#calc-fields input').evaluateAll(xs=>xs.map(x=>x.value)),values);
+  await p.evaluate(()=>MT_I18N.set('nb'));const nbSteps=await p.locator('#calc-steps').textContent();assert(nbSteps.includes(phrase),id+' Norwegian working');if(id==='add-kg'){assert.match(nbSteps,/60\s000 tm/);assert.match(nbSteps,/10\s500/);assert(!nbSteps.includes('60,000'),'Norwegian working must not use an ambiguous English thousands separator');}assert.deepEqual(await p.locator('#calc-fields input').evaluateAll(xs=>xs.map(x=>x.value)),values);
   await p.evaluate(()=>MT_I18N.set('en'));assert.equal(await p.locator('#calc-steps').textContent(),enSteps,id+' exact English working restored');
  }
  assert.deepEqual(errors,[]);console.log(JSON.stringify({engine,status:'PASS',calculationClicks:clicks,educationExplanations:5,checks:'EN/NB roundtrip, pending edits, focus, history, raw draft, CSV and JSON bytes'}));
