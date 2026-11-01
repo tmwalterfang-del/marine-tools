@@ -1,5 +1,7 @@
 # Gjennomgangsrapport – Marine Tools hovedside og Education
 
+Oppfølging 1. november: Dette er en historisk rapport. Nye rettelser, aktuell CI-feil på dde8ece og gjenstående akseptanse er dokumentert i [Codex-oppfølgingen](CODEX_AUDIT_FOLLOWUP_2026-11-01.md). Formuleringene om grønn CI nedenfor gjelder ikke automatisk senere commits.
+
 Dato: 31. oktober 2026. Utført av Claude etter `CLAUDE_HANDOVER_2026-10-31.md`.
 Denne rapporten er **ikke** en godkjenning for offentlig utgivelse. Flere manuelle porter står åpne (se avsnitt 6).
 

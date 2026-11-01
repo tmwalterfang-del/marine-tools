@@ -8695,7 +8695,18 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "pump, stress, motor, navigation…": "pumpe, spenning, motor, navigasjon …",
   "334 candidate relations. Check that your known values and assumptions match before using one.": "334 mulige sammenhenger. Kontroller at kjente verdier og forutsetninger passer før du velger.",
   "The correction is ADDED to the corrected MIDSHIP draught, not to the fore/aft arithmetic mean. This gives Teff=(Tf+4Tmid+Ta)/6. A procedure-specific Simpson weighting, not the distinct quarter-mean (Tf+6Tmid+Ta)/8 method. Use the method matching vessel hydrostatics.": "Korreksjonen LEGGES TIL korrigert MIDTSKIPSDYPGANG, ikke det aritmetiske gjennomsnittet av endedypgangene. Dette gir Teff=(Tf+4Tmid+Ta)/6. En prosedyreavhengig Simpson-vekting, forskjellig fra kvartmiddelmetoden (Tf+6Tmid+Ta)/8. Bruk metoden som samsvarer med fartøyets hydrostatiske data.",
-  "For a zero-offset sine with peak 10√2 A, the mean square over one cycle is 100 A². Its root is 10 A RMS. RMS is the square root of the cycle mean of the squared waveform; the sine peak/RMS relation does not apply to arbitrary waveforms.": "For sinus uten offset med topp 10√2 A er middelverdien av kvadrert strøm over én periode 100 A². Roten er 10 A RMS. RMS finnes ved integrasjon av kvadrert bølgeform. Dette topp-/effektivverdiforholdet gjelder ikke vilkårlige bølger."
+  "For a zero-offset sine with peak 10√2 A, the mean square over one cycle is 100 A². Its root is 10 A RMS. RMS is the square root of the cycle mean of the squared waveform; the sine peak/RMS relation does not apply to arbitrary waveforms.": "For sinus uten offset med topp 10√2 A er middelverdien av kvadrert strøm over én periode 100 A². Roten er 10 A RMS. RMS finnes ved integrasjon av kvadrert bølgeform. Dette topp-/effektivverdiforholdet gjelder ikke vilkårlige bølger.",
+  "01 / SHIP THEORY": "01 / SKIPSTEORI",
+  "02 / AUTOMATION": "02 / AUTOMASJON",
+  "03 / MARINE MACHINERY": "03 / MARINT MASKINERI",
+  "Selected state / Half-equivalence /": "Valgt tilstand / halvekvivalens /",
+  "buffer": "buffer",
+  "New KG = (Δ × KG − w × kg) / (Δ − w)": "Ny KG = (Δ × KG − w × kg) / (Δ − w)",
+  "Convert kJ to kWh: ÷3600": "Omregn kJ til kWh: ÷3600",
+  "Convert mm to m; convert m³ to litres by ×1000.": "Omregn mm til m; omregn m³ til liter ved å multiplisere med 1000.",
+  "(m³/day)": "(m³/døgn)",
+  "real = (1 + nominal)/(1 + inflation) − 1": "real = (1 + nominell)/(1 + inflasjon) − 1",
+  "NPV = Σ(CFt/(1+r)^t) − investment": "NPV = Σ(CFt/(1+r)^t) − investering"
  },
  "templates": [
   {
@@ -14325,6 +14336,56 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   {
    "en": "For a zero-offset sine with peak {0}√{1} A, the mean square over one cycle is {2} A². Its root is {3} A RMS. RMS is the square root of the cycle mean of the squared waveform; the sine peak/RMS relation does not apply to arbitrary waveforms.",
    "nb": "For sinus uten offset med topp {0}√{1} A er middelverdien av kvadrert strøm over én periode {2} A². Roten er {3} A RMS. RMS finnes ved integrasjon av kvadrert bølgeform. Dette topp-/effektivverdiforholdet gjelder ikke vilkårlige bølger.",
+   "generated": true
+  },
+  {
+   "en": "Old moment = {0} × {1} = {2} tm",
+   "nb": "Opprinnelig moment = {0} × {1} = {2} tm",
+   "generated": true
+  },
+  {
+   "en": "Added moment = {0} × {1} = {2} tm",
+   "nb": "Tilført moment = {0} × {1} = {2} tm",
+   "generated": true
+  },
+  {
+   "en": "New KG = ({0} + {1}) / {2}",
+   "nb": "Ny KG = ({0} + {1}) / {2}",
+   "generated": true
+  },
+  {
+   "en": "Draft change = loaded mass / TPC = {0} / {1}",
+   "nb": "Dypgangsendring = lastet masse / TPC = {0} / {1}",
+   "generated": true
+  },
+  {
+   "en": "Trimming moment = w × d = {0} × {1} tm",
+   "nb": "Trimmoment = w × d = {0} × {1} tm",
+   "generated": true
+  },
+  {
+   "en": "Trim change = moment / MCT 1 cm = {0} / {1}",
+   "nb": "Trimendring = moment / MCT 1 cm = {0} / {1}",
+   "generated": true
+  },
+  {
+   "en": "Sea time = {0} / {1} = {2} h",
+   "nb": "Seilingstid = {0} / {1} = {2} h",
+   "generated": true
+  },
+  {
+   "en": "Fuel = sea time / 24 × {0}",
+   "nb": "Drivstoff = seilingstid / 24 × {0}",
+   "generated": true
+  },
+  {
+   "en": "Duration = usable energy / {0}",
+   "nb": "Varighet = tilgjengelig energi / {0}",
+   "generated": true
+  },
+  {
+   "en": "Mass = volume × density = {0} × {1}",
+   "nb": "Masse = volum × tetthet = {0} × {1}",
    "generated": true
   }
  ]
