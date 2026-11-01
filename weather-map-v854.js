@@ -4,7 +4,7 @@
 const VERSION='8.5.5-weather-map-prod-3';
 let map=null,marker=null,leafletPromise=null,bound=false;
 const $=(s,r=document)=>r.querySelector(s);
-const finite=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
+const finite=v=>{const n=(globalThis.MT_PARSE_NUMBER||Number)(v);return Number.isFinite(n)?n:null};
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 
 function injectStyles(){

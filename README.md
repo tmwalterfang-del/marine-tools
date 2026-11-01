@@ -52,6 +52,14 @@ Marine Tools follows a local-first approach. Vessel Profile values, route waypoi
 Live-data tools send only the route or position context needed to return the requested result. Internet requests may pass through hosting, maritime-data, map and network providers that have their own technical logging and data-processing practices.
 
 
+## App prototypes
+
+The feature branch includes development app packages for Android/Samsung,
+iOS Simulator, Windows and macOS, plus a staged public PWA. Setup and build
+commands are in [apps/README.md](apps/README.md). Education remains a protected
+online preview and is excluded from the public offline package. These are
+development builds; no app-store release or production signing is configured.
+
 ## License
 
 Marine Tools source code is proprietary. See [LICENSE](LICENSE) for use restrictions and [BRAND.md](BRAND.md) for name/logo/brand terms.

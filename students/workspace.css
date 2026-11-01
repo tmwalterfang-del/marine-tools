@@ -1,0 +1,36 @@
+/* Use the screen for the active module; the optional list is not a permanent rail. */
+body.interactive-workspace main{max-width:none;padding:18px clamp(12px,1.5vw,28px) 40px}
+.workspace-intro{max-width:none;display:flex;align-items:baseline;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+.workspace-intro h1{font-size:clamp(25px,2.3vw,34px);margin:0;line-height:1.2}
+.workspace-intro p{flex:1 1 350px;margin:0;font-size:14px}
+.workspace-toolbar{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.workspace-toolbar .module-quick-picker{display:block;flex:1 1 270px;max-width:480px;margin:0}
+.workspace-toolbar select{min-height:44px}
+.workspace-toolbar button{min-height:44px;margin:0}
+.workspace-toolbar>a{align-self:center;font-size:13px}
+.workspace-toolbar .teaching-toolbar{margin:0;padding:0;align-self:end}
+.workspace-toolbar .teaching-toolbar span{display:none}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.workspace.module-list-open{grid-template-columns:220px minmax(0,1fr)}
+.workspace nav{display:flex;flex-direction:column;gap:8px}
+.workspace nav a{padding:10px;border:1px solid var(--line);border-radius:8px;text-decoration:none}
+.workspace nav a[aria-current=page]{background:#173146;color:var(--gold)}
+.workspace .module-search-label{display:block}
+.workspace #module-list{display:flex}
+#workbench,#frames{min-width:0}
+#frames iframe{width:100%;height:640px;min-height:0;display:block;border:0;background:transparent}
+.workspace-panel-title{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+body.interactive-workspace.presentation-view .workspace-toolbar{align-items:center}
+body.interactive-workspace.presentation-view .module-quick-picker,
+body.interactive-workspace.presentation-view #toggle-module-list,
+body.interactive-workspace.presentation-view #standalone{display:none}
+body.interactive-workspace.presentation-view .workspace{grid-template-columns:minmax(0,1fr)}
+@media(max-width:800px){
+ .workspace-intro{gap:8px}
+ .workspace-intro p{flex-basis:100%}
+ .workspace.module-list-open{grid-template-columns:minmax(0,1fr)}
+ .workspace #module-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .workspace-toolbar{gap:10px}
+ .workspace-toolbar .module-quick-picker{max-width:none;flex-basis:100%;order:-1}
+}
+@media print{.workspace-toolbar,.workspace .module-picker,.workspace-intro{display:none!important}.workspace.module-list-open{display:block}}

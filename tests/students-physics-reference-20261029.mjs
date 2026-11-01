@@ -1,0 +1,111 @@
+// All 82 physics source records. Arithmetic runs the DISPLAYED expression;
+// units and prose statements use separately identified typed checks.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { catalogue } from './lib/students-catalogue.mjs';
+import { evaluate } from './lib/students-numeric-expression.mjs';
+const w=catalogue(), rows=w.MT_STUDY.sourceEquationRegister.filter(r=>r.id.startsWith('book-physics-'));
+const by=new Map(rows.map(r=>[r.id,r])),evidence={},pi=Math.PI;
+let assertions=0;
+function check(page,row,inputs,expected,{side=1,degrees=false,suffix='',reference='Authored independent unit/physical reference state.'}={}) {
+ const id=`book-physics-p${page}-r${String(row).padStart(2,'0')}`,record=by.get(id);assert.ok(record,id);
+ let text=record.formula.split(/=|≈/)[side].trim();
+ if(suffix){assert.ok(text.endsWith(suffix),id+' explicit unit suffix');text=text.slice(0,-suffix.length).trim();}
+ const actual=evaluate(text,inputs,degrees);
+ assert.ok(Number.isFinite(actual)&&Math.abs(actual-expected)<=3e-10*Math.max(Math.abs(expected),1e-25),id+': '+actual+' vs '+expected);
+ (evidence[id]??={kind:'DISPLAYED_EXPRESSION_REFERENCE_CASE',reference,cases:[]}).cases.push({inputs,expected,side,degrees});assertions++;
+}
+function typed(page,row,condition,reference) {
+ const id=`book-physics-p${page}-r${String(row).padStart(2,'0')}`;assert.ok(by.has(id)&&condition,id);assertions++;
+ evidence[id]={kind:'TYPED_UNIT_OR_SCALE_RELATION',reference};
+}
+check(23,1,{F:600,A:3},200);
+typed(23,2,by.get('book-physics-p23-r02').formula==='1 Pa = 1 N/m² = 1 kg/(m·s²)','SI: force kg·m/s² divided by area m² gives kg/(m·s²); exact unit identity.');
+typed(23,3,by.get('book-physics-p23-r03').formula==='1 bar = 100000 Pa','Exact conventional definition of bar, distinct from standard atmosphere.');
+check(23,4,{'p₀':100000,'ρ':1000,g:10,h:2},120000);
+check(23,5,{'ρ':1000,g:10,V:.03},300);
+check(23,6,{m:12,V:3},4);
+check(23,7,{V:3,m:12},.25);
+check(23,8,{'ρ':4},.25);
+check(23,9,{V:.06,n:2},.03);
+check(23,10,{M:.12,'ρ':4},.03);
+check(23,11,{W:120,V:3},40);
+check(23,12,{'ρ':4,g:10},40);
+check(24,1,{'p₂':200,'V₂':3},600); // conserved pV, not solution for V₂
+check(24,2,{'p₂':200,'T₂':400},.5);
+check(24,3,{'V₂':3,'T₂':600},.005);
+check(24,4,{'p₂':200,'V₂':3,'T₂':600},1);
+check(24,5,{n:2,R:8,T:300},4800);
+check(24,6,{'V₀':3,T:600,'T₀':300},6);
+check(24,7,{'p₀':100,T:600,'T₀':300},200);
+typed(24,8,by.get('book-physics-p24-r08').formula==='0 K corresponds to −273.15 °C','Exact kelvin/Celsius offset, same temperature interval size.');
+check(24,9,{t_C:-273.15},0);
+check(24,9,{t_C:-40},233.15);
+check(24,10,{T_K:300},540);
+check(24,11,{t_F:-459.67},0);
+check(24,12,{t_F:-40},-40);
+check(24,13,{t_C:-40},-40);
+check(25,1,{'T₂':273.15,'T₁':300.15},-27);
+check(25,2,{'t₂':0,'t₁':27},-27);
+typed(25,3,by.get('book-physics-p25-r03').formula==='ΔT in K has the same numerical value as Δt in °C','Subtracting two affine Celsius/Kelvin conversions cancels the constant offset.');
+check(25,4,{N:6,m:2,v_rms:3,V:9},4);
+check(25,5,{N:6,E_mean:9,V:9},4);
+check(25,6,{m:2,v_rms:3},9);
+check(25,7,{E_mean:9,k_B:2},3);
+check(25,8,{N:6,k_B:2,T:3},54);
+check(25,9,{n:2,N_A:3,k_B:2,T:3},54);
+check(25,10,{n:2,R:6,T:3},54);
+// First-order expansions: compare the linear coefficient at ΔT=0, not an exact finite-strain identity.
+check(26,1,{'L₁':10,'α':.001,'ΔT':-20},9.8);
+check(26,2,{'L₁':10,'α':.001,'ΔT':-20},-.2);
+check(26,3,{'A₁':10,'α':.001,'ΔT':-20},9.6);
+check(26,4,{'A₁':10,'α':.001,'ΔT':-20},-.4);
+check(26,5,{'α':.001},.002);
+check(26,6,{'V₁':10,'α':.001,'ΔT':-20},9.4);
+check(26,7,{'V₁':10,'α':.001,'ΔT':-20},-.6);
+check(26,8,{'α':.001},.003);
+check(26,9,{'V₁':10,'β_volume':.003,'ΔT':-20},9.4);
+check(26,10,{'V₁':10,'β_volume':.003,'ΔT':-20},-.6);
+check(26,11,{'ρ₁':940,'β_volume':.003,'ΔT':-20},1000);
+check(26,12,{'V₁':3,'ΔT':300,'T₁':300},6);
+check(26,13,{Q:-600,'ΔT':-20},30);
+check(26,14,{C_avg:30,m:10},3);
+check(26,15,{Q:-600,m:10,'ΔT':-20},3);
+check(26,16,{m:10,c_avg:3,'ΔT':-20},-600);
+check(27,1,{m:2,L_f:300},600);
+check(27,2,{m:2,L_v:2000},4000);
+check(27,3,{T:.25},4);
+check(27,4,{f:4,'λ':3},12);
+check(27,5,{'n₂':1.5,'θ₂':Math.asin(1/3)},.5);
+check(27,6,{'θ₀':pi/6,'θ':Math.asin(1/3)},1.5);
+check(27,7,{'λ₀':600,'λ':400},1.5);
+check(27,8,{'c₀':300,c:200},1.5);
+check(27,9,{f:4},.25); // displayed LHS 1/u+1/v equals RHS 1/f
+check(27,10,{y_image:-2,y_object:1},-2);
+check(27,10,{v:6,u:3},-2,{side:2});
+check(27,11,{f_observed:110,f_source:100},10);
+// Observer and source motions separately verified from period/wavefront spacing.
+check(28,1,{f_source:100,c:300,v_observer:30,v_source:60},137.5);
+check(28,1,{f_source:100,c:300,v_observer:-30,v_source:-60},75);
+check(28,2,{f_source:100,c:300,v_observer:30},110);
+check(28,3,{f_source:100,c:300,v_source:60},125);
+check(28,4,{E:100,'ρ':4},5);
+check(28,5,{K_s:100,'ρ':4},5);
+check(28,6,{'κ':2,R:8,T:300,M:3},40);
+check(28,7,{P:100,'P₀':1},20);
+check(28,8,{I:.01,'I₀':.000001},40);
+check(28,9,{p_rms:.002,'p₀':.00002},40);
+check(28,10,{p_rms:.002,'p₀':.00002},40);
+check(29,1,{'p_equivalent,1kHz':.002,'p₀':.00002},40,{suffix:'phon',reference:'Definition uses equivalent 1 kHz tone, not arbitrary-frequency sound pressure.'});
+check(29,2,{I_v:10,'Ω':2*pi},20*pi);
+check(29,3,{'Φ':120,A:6},20);
+check(29,4,{I_v:80,r:2},20);
+check(29,5,{I_v:10,A_projected:2},5);
+check(29,6,{'Φ':600,P:10},60);
+check(29,7,{'Φ_total':1000,U:.6,A:30},20);
+check(29,8,{L:6,B:4,H_m:2},1.2);
+check(29,9,{I_v:100,'θ':pi/3,r:2},12.5);
+check(29,10,{I_v:100,'θ':pi/3,h:1},12.5);
+assert.equal(rows.length,82);assert.deepEqual(Object.keys(evidence).sort(),[...by.keys()].sort());
+if(process.argv.includes('--output')) fs.writeFileSync(process.argv[process.argv.indexOf('--output')+1],JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify({status:'PASS',coveredExpressions:82,assertions,scope:'Actual displayed arithmetic, separate SI and scale statements, negative temperature changes, classical wavefront conventions; empirical real-world accuracy remains conditional.'}));

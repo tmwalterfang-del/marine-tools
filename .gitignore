@@ -1,2 +1,21 @@
+node_modules/
+app-dist/
+apps/mobile/android/
+apps/mobile/ios/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/icons/
+qa-education-*/
+*-audit.json
+
+# Internal handovers, audits and working notes stay on this machine.
+.local-internal/
+docs/
+/RELEASE_CHECKLIST.md
+/marketing/*.md
 /qa-privacy-main/
 /.qa-deps/
+
+# Generated local review output.
+/students-dimensional-review.json
+/students-dimensions-followup.json
+/students-formula-completeness.csv

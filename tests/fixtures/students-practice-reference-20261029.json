@@ -1,0 +1,218 @@
+[
+  {
+    "id": "disp-1",
+    "prompt": "A vessel displaces 12,000 m³ in seawater of density 1.025 t/m³. Find mass displacement.",
+    "expected": 12300,
+    "unit": "t"
+  },
+  {
+    "id": "dwt-1",
+    "prompt": "A vessel has displacement 24,500 t and lightship mass 8,250 t. Find DWT.",
+    "expected": 16250,
+    "unit": "t"
+  },
+  {
+    "id": "gm-1",
+    "prompt": "KM is 9.1 m, KG is 7.5 m and free-surface correction is 0.3 m. Find corrected GM.",
+    "expected": 1.3,
+    "unit": "m"
+  },
+  {
+    "id": "tpc-1",
+    "prompt": "Waterplane area is 2,000 m² and water density 1.025 t/m³. Find TPC.",
+    "expected": 20.5,
+    "unit": "t/cm"
+  },
+  {
+    "id": "draft-1",
+    "prompt": "If TPC is 20 t/cm, how many centimetres of parallel sinkage result from loading 100 t?",
+    "expected": 5,
+    "unit": "cm"
+  },
+  {
+    "id": "trim-1",
+    "prompt": "A 100 t weight moves 30 m longitudinally. MCT 1 cm is 250 tm/cm. Find magnitude of trim change.",
+    "expected": 12,
+    "unit": "cm"
+  },
+  {
+    "id": "elec-1",
+    "prompt": "A 46 Ω heater is supplied at 230 V DC. Find current.",
+    "expected": 5,
+    "unit": "A"
+  },
+  {
+    "id": "elec-2",
+    "prompt": "A DC circuit has 24 V and 20 A. Find electric power.",
+    "expected": 480,
+    "unit": "W"
+  },
+  {
+    "id": "res-1",
+    "prompt": "Two resistors, 100 Ω and 200 Ω, are in series. Find total resistance.",
+    "expected": 300,
+    "unit": "Ω"
+  },
+  {
+    "id": "res-2",
+    "prompt": "Two equal 100 Ω resistors are connected in parallel. Find equivalent resistance.",
+    "expected": 50,
+    "unit": "Ω"
+  },
+  {
+    "id": "motor-1",
+    "prompt": "A 4-pole synchronous motor runs on 50 Hz. Find synchronous speed.",
+    "expected": 1500,
+    "unit": "rpm"
+  },
+  {
+    "id": "pump-1",
+    "prompt": "A pump moves 120 m³ at 40 m³/h. How many hours?",
+    "expected": 3,
+    "unit": "h"
+  },
+  {
+    "id": "passage-1",
+    "prompt": "A passage is 360 NM at 12 kn SOG. Find sea time.",
+    "expected": 30,
+    "unit": "h"
+  },
+  {
+    "id": "fuel-1",
+    "prompt": "A vessel consumes 24 m³/day. Estimate consumption during a 100-hour voyage.",
+    "expected": 100,
+    "unit": "m³"
+  },
+  {
+    "id": "fuel-2",
+    "prompt": "A tank contains 20 m³ at density 0.85 t/m³ (same measurement temperature). Find fuel mass.",
+    "expected": 17,
+    "unit": "t"
+  },
+  {
+    "id": "energy-1",
+    "prompt": "An 800 kWh ESS uses 80% DoD and 90% efficiency at a constant 96 kW load. Find hours.",
+    "expected": 6,
+    "unit": "h"
+  },
+  {
+    "id": "eng-1",
+    "prompt": "A generator produces 200 kW while consuming 40 kg of fuel per hour. Find SFOC.",
+    "expected": 200,
+    "unit": "g/kWh"
+  },
+  {
+    "id": "mech-1",
+    "prompt": "A 300 kg object accelerates at 2 m/s². Find net force.",
+    "expected": 600,
+    "unit": "N"
+  },
+  {
+    "id": "geo-1",
+    "prompt": "A right triangle has legs 3 m and 4 m. Find hypotenuse.",
+    "expected": 5,
+    "unit": "m"
+  },
+  {
+    "id": "therm-1",
+    "prompt": "100 kg of liquid at cp=4.2 kJ/(kg K) warms by 10 K. Find heat in kJ.",
+    "expected": 4200,
+    "unit": "kJ"
+  },
+  {
+    "id": "chem-molar",
+    "prompt": "Dissolve 2 mol solute in solution of final volume 0.5 L. Find molar concentration.",
+    "expected": 4,
+    "unit": "mol/L"
+  },
+  {
+    "id": "chem-ph",
+    "prompt": "Hydrogen ion activity is 10⁻³. Find pH.",
+    "expected": 3,
+    "unit": "pH"
+  },
+  {
+    "id": "elect-dB",
+    "prompt": "Voltage amplitude is amplified by a factor of 10. What is its voltage gain in dB?",
+    "expected": 20,
+    "unit": "dB"
+  },
+  {
+    "id": "elec-buck",
+    "prompt": "An ideal buck converter has 48 V input and duty factor 0.25. Find average output voltage.",
+    "expected": 12,
+    "unit": "V"
+  },
+  {
+    "id": "engine-otto",
+    "prompt": "Ideal Otto process with compression ratio 8 and κ = 1.4. Find efficiency in percent (nearest 0.01).",
+    "expected": 56.47,
+    "unit": "%"
+  },
+  {
+    "id": "steam-enthalpy",
+    "prompt": "Steam at one pressure has hf=500 kJ/kg, hfg=2200 kJ/kg and quality x=0.8. Find h.",
+    "expected": 2260,
+    "unit": "kJ/kg"
+  },
+  {
+    "id": "refrigeration",
+    "prompt": "A simple refrigeration example has h1=400, h2=440 and h4=240 kJ/kg. Find COP.",
+    "expected": 4,
+    "unit": "ratio"
+  },
+  {
+    "id": "econ-real",
+    "prompt": "Nominal annual interest is 6% with inflation 2%. Find real interest rate in percent.",
+    "expected": 3.9215686274509802,
+    "unit": "%"
+  },
+  {
+    "id": "econ-pv",
+    "prompt": "Calculate PV of five end-of-year payments of 1000 kr at 0% discount rate.",
+    "expected": 5000,
+    "unit": "kr"
+  },
+  {
+    "id": "shaft",
+    "prompt": "A solid circular shaft transmits 200 N·m torque and has diameter 50 mm. Find maximum shear stress in MPa.",
+    "expected": 8.148733086305041,
+    "unit": "MPa"
+  },
+  {
+    "id": "instr-12ma",
+    "prompt": "What percentage of calibrated span is indicated by 12 mA in a linear 4–20 mA transmitter?",
+    "expected": 50,
+    "unit": "%"
+  },
+  {
+    "id": "instr-4ma",
+    "prompt": "A transmitter spans 0–10 bar. What process pressure is indicated at 8 mA?",
+    "expected": 2.5,
+    "unit": "bar"
+  },
+  {
+    "id": "instr-P",
+    "prompt": "For SP=60, PV=50, Kp=2% per unit and bias=50%, find P-only output.",
+    "expected": 70,
+    "unit": "%"
+  },
+  {
+    "id": "pumps-npsha",
+    "prompt": "NPSHa: p_surface=101.325 kPa(abs), p_vapour=2.34 kPa, ρ=998 kg/m³, z=2 m, h_loss=0.5 m. Find NPSHa.",
+    "expected": 11.613888711585194,
+    "unit": "m"
+  },
+  {
+    "id": "steam-turbine",
+    "prompt": "A turbine has inlet enthalpy 3200 and outlet enthalpy 2600 kJ/kg. Estimate adiabatic specific work.",
+    "expected": 600,
+    "unit": "kJ/kg"
+  },
+  {
+    "id": "engine-fuel-power",
+    "prompt": "Fuel rate is 180 kg/h with LHV 42,600 kJ/kg. Find thermal input power.",
+    "expected": 2130,
+    "unit": "kW"
+  }
+]

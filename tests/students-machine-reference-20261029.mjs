@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {catalogue} from './lib/students-catalogue.mjs';
+import {evaluate} from './lib/students-numeric-expression.mjs';
+const rows=catalogue().MT_STUDY.sourceEquationRegister.filter(r=>r.id.startsWith('book-machine-'));
+const by=new Map(rows.map(r=>[r.id,r])),evidence={},pi=Math.PI;let assertions=0;
+function check(p,r,inputs,expected,reference='Explicit nominal-load reference case; applicable material/design criteria remain separate.') {
+ const id=`book-machine-p${p}-r${String(r).padStart(2,'0')}`,row=by.get(id);assert.ok(row,id);
+ const actual=evaluate(row.formula.split('=')[1].trim(),inputs);
+ assert.ok(Math.abs(actual-expected)<=2e-10*Math.max(Math.abs(expected),1e-20),id+': '+actual+' vs '+expected);assertions++;
+ (evidence[id]??={kind:'DISPLAYED_EXPRESSION_REFERENCE_CASE',reference,cases:[]}).cases.push({inputs,expected});
+}
+function excluded(p,r,reason) {
+ const id=`book-machine-p${p}-r${String(r).padStart(2,'0')}`,row=by.get(id);
+ assert.equal(row?.analyticalReview?.decision,'OPEN_MODEL_OR_SOURCE_LIMIT',id+' must remain reference only');
+ assert.ok(row.analyticalReview.finding&&row.conditions,id+' must explain the limit');
+ evidence[id]={kind:'EXCLUDED_FROM_SUPPORTED_CALCULATION',reason};assertions++;
+}
+const alpha=Math.atan(.1),rho=Math.atan(.2),G=100,d=.1;
+check(49,1,{s:.01*pi,'d₂':d},.1,'One turn advances 0.01π at circumference 0.1π; slope 0.1.');
+check(49,2,{G,'α':alpha,'ρ':rho},1500/49,'Resolve normal/friction and axial load along the inclined thread helix.');
+check(49,3,{'μ':.1,'β':pi/3},.2,'V-thread normal-force factor uses half the included angle.');
+check(49,4,{G,'d₂':d,'α':alpha,'ρ':rho},75/49,'Helix force times pitch radius 0.05 m.');
+check(49,5,{F_t:40,'d₂':.1},2);
+check(49,6,{G,'d₂':d,'α':alpha,'ρ':rho},-25/51,'Lowering while torque is signed in the raising direction; self-locking requires negative applied raising torque.');
+check(49,7,{G,'d₂':d,'α':alpha,'ρ':rho},25/51,'Same self-locking case, but applied torque positive in the lowering direction.');
+check(49,8,{'μ_c':.2,G:100,r_m:.03},.6);
+check(49,9,{N:.04,d_h:.02},.015,'Uniform-wear annular radius: inner/outer radii 0.01,0.02.');
+check(49,10,{T_thread:2,T_collar:.6},2.6);
+check(50,1,{F:600,A:3},200);
+check(50,2,{F:100*pi,d_core:2},100);
+check(50,3,{F:600,A_t:3},200);
+check(50,4,{T:pi,d_core:2},2);
+// General deviatoric-stress invariant J2, rather than another use of the compact formula.
+function mises(sigma,tau){const mean=sigma/3;return Math.sqrt(1.5*((sigma-mean)**2+2*mean**2+2*tau*tau));}
+check(50,5,{'σ':30,'τ':40},mises(30,40),'Equivalent stress from the full one-normal/one-shear deviatoric invariant.');
+check(50,6,{m:4,'μ':.3,R:10000,n:2,n_s:2},12000);
+excluded(50,7,'Source-specific weld reduction factor lacks a defensible material/joint/calibration basis. Arithmetic cannot supply one.');
+check(50,8,{s:3*Math.SQRT2},3,'Right-isosceles fillet throat from diagonal geometry.');
+check(50,9,{F:600,A_w:3},200);
+check(50,10,{a:3,l_eff:20},60);
+excluded(50,11,'The end deduction exists as a qualified historical rule, but actual full-throat start/stop geometry and the applicable assessment edition are not established for an operational joint.');
+check(50,12,{'σ_allow':200,'σ_w':50},4,'Residual allowable-to-applied ratio; not an extra factor when allowable already contains design reductions.');
+check(51,1,{M:120,W:4},30);
+check(51,2,{F:600,a:3,l_eff:20},10);
+check(51,3,{T:120,W_t:4},30);
+check(51,4,{'σ_w':30,'τ_w':40},mises(30,40));
+check(51,5,{F:200,d:.1,l:.2},10000);
+check(51,6,{n:5},10*pi);
+check(51,7,{D:.102,d:.1},.02);
+check(51,8,{R:.051,r:.05},.02);
+excluded(51,9,'K1 depends on historical chart geometry/film fraction and lubricant state; no universal independently calibrated coefficient is available.');
+check(51,10,{h_min:.0002,R:.051,r:.05},.2);
+check(52,1,{'ε_f':.2,r:.05,'ψ':.02},.0002);
+excluded(52,2,'K2 depends on the same source chart and operating/boundary conditions; a plausible numerical example would not validate the coefficient.');
+check(52,3,{D:.102,d:.1},.002);
+check(52,4,{R:.051,r:.05},.002);
+check(52,5,{F:6*pi,D:4,d:2},2,'Force over actual annular area π(2²−1²).');
+check(52,6,{'μ':.2,F:100,r_f:1.5},30);
+check(52,7,{D:4,d:2},1.5,'Uniform-wear integral: p(r)∝1/r gives mean radius (2+1)/2, distinct from uniform-pressure weighting.');
+check(53,1,{F:100,'μ':.2,v:3},60);
+check(53,2,{m_dot:.1,c_p:2000,'ΔT_oil':3},600);
+check(53,3,{P_f:120,P_oil:20,h_c:500/pi,l:.2,d:.1},10,'Heat balance: 100 W net through cylindrical area 0.02π m² at conductance 10 W/K.');
+check(53,4,{F_r:200},200);
+check(53,5,{F_a:200},200);
+check(53,6,{X:.5,F_r:200,Y:2,F_a:50},200,'Specified manufacturer factors in this case; no universal bearing factors asserted.');
+check(53,7,{C:200,P:100},8000000,'Eight million basic L10 revolutions for ball-bearing load ratio two; statistical basis retained.');
+check(53,8,{C:800,P:100},1024000000,'Roller exponent 10/3 at load ratio eight gives 2^10 million revolutions.');
+check(53,9,{L_h:2,n:5},36000,'Two hours at five revolutions each second.');
+check(53,10,{L_rev:36000,n_rpm:300},2,'300 rev/min × 120 min = 36000 revolutions.');
+check(53,11,{M_b:120,W:4},30);
+check(54,1,{T:120,W_p:4},30);
+check(54,2,{'τ':30,G:3000},.01);
+check(54,3,{'σ':30,'τ':40},mises(30,40));
+assert.equal(rows.length,53);assert.deepEqual(Object.keys(evidence).sort(),[...by.keys()].sort());
+if(process.argv.includes('--output'))fs.writeFileSync(process.argv[process.argv.indexOf('--output')+1],JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify({status:'PASS',expressions:53,referenceCaseExpressions:49,excludedHistoricalModels:4,assertions,scope:'Nominal mathematics, explicit load conventions and independently derived invariants; four historical model gaps are exclusions, never passed calculations.'}));

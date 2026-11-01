@@ -64,7 +64,7 @@ let server, browser;
       localStorage.setItem('mt.analytics.exclude', '1');
       localStorage.setItem('mt.settings', JSON.stringify({usageAnalytics: false, privacySentinel: 'keep'}));
       localStorage.setItem('mt.profile', JSON.stringify({name: 'Retained vessel'}));
-      localStorage.setItem('mt.lastSeenReleaseBuild', '20261019-v8-7-0');
+      localStorage.setItem('mt.lastSeenReleaseBuild', '20261101-v8-8-0');
     }
   });
   const page = await context.newPage();
@@ -99,9 +99,9 @@ let server, browser;
   await page.locator('#calcAirDraft').click();
   assert.match(await page.locator('#resAirDraft').textContent(), /2.70 m/);
   assert.equal(errors.length, 0, errors.join('\n'));
-  // Main's Education/professional links remain intact in this small integration.
-  assert.equal(await page.locator('a[href="/education/"]').count(), 1);
-  assert.equal(await page.locator('a[href="/professionals/"]').count(), 1);
+  // Unified Education and workspace entries remain available after privacy navigation.
+  assert.equal(await page.locator('.sidebar a[href="/students/"]').count(), 1);
+  assert.equal(await page.locator('.sidebar a[href="workspace.html"]').count(), 1);
   await context.close();
   const offlineContext = await browser.newContext({serviceWorkers: 'allow'});
   await offlineContext.route('**/*', route => route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
