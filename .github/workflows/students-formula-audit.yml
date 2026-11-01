@@ -15,7 +15,8 @@ on:
       - 'tests/education-*.cjs'
       - 'tests/analytics-*'
       - 'worker/**'
-      - 'docs/STUDENTS_*'
+      - '.gitignore'
+      - 'tests/internal-docs-*'
       - 'workspace*'
       - 'i18n-20261030.js'
       - 'language-*20261031.js'
@@ -47,6 +48,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Internal document boundary
+        run: node tests/internal-docs-boundary-20261101.mjs
       - name: Formula and catalogue integrity
         run: node tests/students-smoke-20261019.mjs
       - name: Education linked assets and offline shell
@@ -90,7 +93,7 @@ jobs:
           node tests/students-dimensions-followup-20261027.mjs students-dimensions-followup.json
           node tests/students-followup-reference-20261027.mjs
           node tests/students-review-report-20261027.mjs
-          git diff --exit-code docs/STUDENTS_REVIEW_FOLLOWUP_2026-10-27.csv
+          git diff --exit-code tests/fixtures/expression-reference/STUDENTS_REVIEW_FOLLOWUP_2026-10-27.csv
           node tests/students-if97-expanded-20261027.mjs
           node tests/students-if97-boundaries-20261027.mjs
           node tests/students-worked-cases-20261027.mjs
@@ -179,7 +182,7 @@ jobs:
           node tests/students-calculator-reference-20261029.mjs
           node tests/students-education-models-20261030.mjs
           node tests/students-practice-bank-reference-20261030.mjs
-          git diff --exit-code students/full-review-20261030.js docs/STUDENTS_FULL_EXPRESSION_EVIDENCE_2026-10-30.csv docs/STUDENTS_PRIMARY_FORMULA_REVIEW_2026-10-30.csv
+          git diff --exit-code students/full-review-20261030.js tests/fixtures/expression-reference/STUDENTS_FULL_EXPRESSION_EVIDENCE_2026-10-30.csv tests/fixtures/expression-reference/STUDENTS_PRIMARY_FORMULA_REVIEW_2026-10-30.csv
       - name: Generate complete editorial status report
         run: node tests/students-formula-completeness-20261020.mjs students-formula-completeness.csv
       - name: Upload editorial report

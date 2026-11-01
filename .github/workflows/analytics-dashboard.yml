@@ -11,9 +11,7 @@ on:
       - 'voyage-estimate-v861.js'
       - 'voyage-planning-draft-v1.js'
       - 'index.html'
-      - 'tests/analytics-*'
-      - 'docs/ANALYTICS_*'
-      - '.github/workflows/analytics-dashboard.yml'
+      - 'tests/analytics-*'      - '.github/workflows/analytics-dashboard.yml'
   push:
     branches: [main]
     paths:

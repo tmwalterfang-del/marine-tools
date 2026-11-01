@@ -15,7 +15,7 @@ const baseline = JSON.parse(
     fs.readFileSync("tests/fixtures/dimensional-baseline-20261027.json"),
   ),
   basis = JSON.parse(
-    fs.readFileSync("docs/STUDENTS_EXPRESSION_REVIEW_BASIS_2026-10-20.json"),
+    fs.readFileSync("tests/fixtures/expression-reference/STUDENTS_EXPRESSION_REVIEW_BASIS_2026-10-20.json"),
   );
 const out = w.MT_STUDY.sourceEquationRegister.map((r) => {
   let dimension = "DIMENSIONAL_PASS",
@@ -107,7 +107,7 @@ if (
 const header = Object.keys(out[0]),
   cell = (v) => '"' + String(v ?? "").replaceAll('"', '""') + '"';
 fs.writeFileSync(
-  "docs/STUDENTS_REVIEW_FOLLOWUP_2026-10-27.csv",
+  "tests/fixtures/expression-reference/STUDENTS_REVIEW_FOLLOWUP_2026-10-27.csv",
   [header, ...out.map((r) => header.map((k) => r[k]))]
     .map((row) => row.map(cell).join(","))
     .join("\n") + "\n",
