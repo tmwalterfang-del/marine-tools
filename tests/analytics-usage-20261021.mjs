@@ -22,7 +22,7 @@ async function dom(url='https://www.marinetools.app/',settings={},flags={}){
  const sent=[],d=new JSDOM(index,{url,runScripts:'outside-only',pretendToBeVisual:true});const w=d.window;
  w.fetch=async(u,init)=>{if(String(u).includes('/api/analytics/event'))sent.push(JSON.parse(init.body));return new Response('{}',{headers:{'content-type':'application/json'}})};
  w.scrollTo=()=>{};Object.defineProperty(w.HTMLElement.prototype,'innerText',{get(){return this.textContent}});w.localStorage.setItem('mt.settings',JSON.stringify(settings));
- if(flags.dnt)Object.defineProperty(w.navigator,'doNotTrack',{value:'1'});if(flags.automation)Object.defineProperty(w.navigator,'webdriver',{value:true});w.eval(js);w.eval(fs.readFileSync(new URL('../app.js',import.meta.url),'utf8'));await new Promise(r=>setTimeout(r,30));
+ if(flags.dnt)Object.defineProperty(w.navigator,'doNotTrack',{value:'1'});if(flags.automation)Object.defineProperty(w.navigator,'webdriver',{value:true});w.eval(js);w.eval(fs.readFileSync(new URL('../navigation-math.js',import.meta.url),'utf8'));w.eval(fs.readFileSync(new URL('../app.js',import.meta.url),'utf8'));await new Promise(r=>setTimeout(r,30));
  return{d,w,sent,close:()=>w.close()};
 }
 const a=await dom();
@@ -43,7 +43,7 @@ for(const id of ['vpdCalcBunker','vpdCalcScenarios','vpdCalcArrival','vpdCalcEmi
  a.w.document.getElementById('vpdDistance').value='0';let start=a.sent.length;a.w.document.getElementById(id).click();await new Promise(r=>setTimeout(r,5));check(a.sent.slice(start).some(x=>x.event==='calculation_invalid'&&x.tool===id),'planner invalid outcome '+id);
  a.w.document.getElementById('vpdDistance').value='1000';a.w.document.getElementById('vpdFuelDay').value='10';a.w.document.getElementById('vpdDensity').value='800';start=a.sent.length;a.w.document.getElementById(id).click();await new Promise(r=>setTimeout(r,5));check(a.sent.slice(start).filter(x=>x.event==='calculation_succeeded'&&x.tool===id).length===1,'planner produced result '+id);
 }
-const ve=fs.readFileSync(new URL('../voyage-estimate-v861.js',import.meta.url),'utf8').replace('window.__marineToolsVoyageEstimate={render};','window.__marineToolsVoyageEstimate={render,state,calculate};');
+const ve=fs.readFileSync(new URL('../voyage-estimate-v861.js',import.meta.url),'utf8').replace('window.__marineToolsVoyageEstimate={render,exportRegulatoryRoute:', 'window.__marineToolsVoyageEstimate={render,state,calculate,exportRegulatoryRoute:');
 a.w.HTMLElement.prototype.scrollIntoView=()=>{};a.w.eval(ve);const host=a.w.document.createElement('section');host.id='voyage-estimate';a.w.document.body.append(host);a.w.__marineToolsVoyageEstimate.render(host);await new Promise(r=>setTimeout(r,20));
 const api=a.w.__marineToolsVoyageEstimate;api.state.ready=true;api.state.engine={seaRoute:()=>({properties:{length:100,passages:[]}})};
 a.w.document.getElementById('veFromPort').value='1,1';a.w.document.getElementById('veToPort').value='40,40';a.w.document.getElementById('veSpeedKnots').value='0';let voyageStart=a.sent.length;await api.calculate();check(a.sent.slice(voyageStart).some(x=>x.event==='calculation_invalid'),'Voyage Estimate invalid speed');

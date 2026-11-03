@@ -222,7 +222,7 @@ function formulaBox(){return ''}
 
 function calcButton(id,label='Calculate'){return `<div class="actions"><button class="btn primary calc-action" id="${id}">${label}</button><button class="btn copy-result" type="button">Copy result</button><button class="btn share-result" type="button">Share result</button></div>`}
 function result(id,text='Enter values to calculate.'){return `<div class="result" id="${id}"><small>${text}</small></div>`}
-function hav(a,b){const R=3440.065,p1=rad(a.lat),p2=rad(b.lat),dp=rad(b.lat-a.lat),dl=rad(b.lon-a.lon);const q=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
+function hav(a,b){return window.MT_NAV_MATH.distance([Number(a.lon),Number(a.lat)],[Number(b.lon),Number(b.lat)])}
 function bearing(a,b){const y=Math.sin(rad(b.lon-a.lon))*Math.cos(rad(b.lat)),x=Math.cos(rad(a.lat))*Math.sin(rad(b.lat))-Math.sin(rad(a.lat))*Math.cos(rad(b.lat))*Math.cos(rad(b.lon-a.lon));return (deg(Math.atan2(y,x))+360)%360}
 
 function rhumb(a,b){
