@@ -49,8 +49,9 @@ let browser;
  await p.evaluate(()=>{__marineToolsOpenPage('quick');document.getElementById('unitVal').value='-1234.5';document.getElementById('unitType').value='nm-km';document.getElementById('calcUnit').click();});
  assert.match(await p.locator('#resUnit').innerText(),/−2\s?286,294 km/);
  await p.evaluate(()=>{document.getElementById('unitVal').value='0';document.getElementById('calcUnit').click();});assert.equal((await p.locator('#resUnit strong').innerText()).trim(),'0,000 km');
+ // Settle the deferred calculation record before seeding historical data.
+ await p.waitForFunction(()=>JSON.parse(localStorage.getItem('mt.history')||'[]').some(x=>x.title==='Unit converter'&&/^0[,\.]000 km/.test(x.result)));
  // Saved text is immutable, including English text and decimals already stored.
- await p.waitForTimeout(50);
  const old={title:'Old fuel result 12.50',page:'fuel',time:'2026-10-30T12:00:00Z',inputs:['Notes: user 12.50'],result:'12.50 m³ usable · 2.5 days'};
  await p.evaluate(old=>localStorage.setItem('mt.history',JSON.stringify([old])),old);
  await p.goto(base+'/index.html?page=home',{waitUntil:'domcontentloaded'});await p.evaluate(()=>MT_I18N.ready);
