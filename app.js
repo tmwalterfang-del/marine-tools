@@ -491,7 +491,7 @@ function renderHome(){
        <div id="homeToolResults" class="home-tool-results" hidden></div>
      </div>
      <div class="home-hero-actions"><button class="btn primary" id="homeBrowse">Browse tools ↓</button></div>
-     <div class="home-custom-link"><span>Need something specific?</span><a href="${CUSTOM_TOOL_URL}">Request a custom tool →</a></div>
+     <div class="home-custom-link"><a href="custom-calculators.html">Build your own calculator →</a><span>Need something specific?</span><a href="${CUSTOM_TOOL_URL}">Request a custom tool →</a></div>
    </div>
  </section>`);
  home.insertAdjacentHTML('beforeend',`
@@ -538,7 +538,7 @@ function renderHome(){
      </div>
    </div>
  </details>`);
- const homeCustom=$('.home-custom-link a');if(homeCustom)homeCustom.href=CUSTOM_TOOL_URL;
+ const homeCustom=$('.home-custom-link a[href^="mailto:"]');if(homeCustom)homeCustom.href=CUSTOM_TOOL_URL;
 
  const homeSearch=$('#homeToolSearch'),results=$('#homeToolResults');
  const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=toolSearchIndex().filter(x=>toolSearchText(x).includes(q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,10);results.innerHTML=hits.length?hits.map(x=>`<button type="button" data-go="${x.page}"${x.tool?` data-tool-target="${esc(x.tool)}"`:''}><span>${x.icon}</span><span class="home-search-copy"><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}${TOOL_META[x.title]?.how?` · ${esc(TOOL_META[x.title].how)}`:''}</small></span><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
