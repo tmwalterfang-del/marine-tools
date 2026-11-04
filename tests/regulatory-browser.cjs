@@ -223,13 +223,18 @@ async function main() {
     await page.mouse.move(pin.x + 14, pin.y + 14);
     await page.mouse.down(); await page.mouse.move(pin.x + 35, pin.y + 14, {steps: 5}); await page.mouse.up();
     assert.notEqual(await page.locator('.waypoint [name=lon]').inputValue(), beforeDrag, 'Dragging updates waypoint');
-    await page.locator('[data-waypoint="0"][data-action="remove"]').click();
+    await page.locator('#undo-waypoint').click();
+    assert.equal(await page.locator('.waypoint').count(), 0, 'Undo removes the last waypoint');
     await page.locator('#map-inspect').click();
     const inspectPoint = await findAreaPoint();
     await page.mouse.click(inspectPoint.x, inspectPoint.y);
     assert.equal(await page.locator('.waypoint').count(), 0, 'Inspect mode does not create a waypoint');
     await page.locator('.leaflet-popup').waitFor();
     await page.locator('#map-draw').click();
+    await page.locator('#layer-search').fill('Norskehavet');
+    assert.ok(await page.locator('.layer-list label:visible').count() > 0, 'Area search finds a matching layer');
+    assert.equal(await page.locator('.layer-list label:visible').filter({hasText: 'Norskehavet'}).count() > 0, true);
+    await page.locator('#layer-search').fill('');
     await page
       .locator("#voyage [name=routeName]")
       .fill("Bergen–Arctic reference");
@@ -245,7 +250,7 @@ async function main() {
       await row.locator("[name=lon]").fill(String(lon));
       await row.locator("[name=lat]").fill(String(lat));
     }
-    await page.locator("#analyze-route").click();
+    await page.locator("#quick-analyze").click();
     await page.waitForFunction(
       () =>
         document.querySelector("#route-table") ||
