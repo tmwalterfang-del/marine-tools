@@ -1123,17 +1123,31 @@
       ]
         .map(
           (category) =>
-            `<h3>${t(category + "Layer")}</h3>${catalogue.areas
+            `<h3>${t(category + "Layer")} <button type="button" class="layer-group" data-layer-group="${category}">${lang === "nb" ? "Slå av" : "Hide all"}</button></h3>${catalogue.areas
               .filter((a) => a.category === category)
               .map(
                 (a) =>
-                  `<label><input type="checkbox" data-layer="${a.id}" checked><span>${esc(a.name[lang])}<small id="layer-status-${a.id}"></small></span></label>`,
+                  `<label><input type="checkbox" data-layer="${a.id}" data-category="${category}" checked><span>${esc(a.name[lang])}<small id="layer-status-${a.id}"></small></span></label>`,
               )
               .join("")}`,
         )
         .join(
           "",
         )}</div></details><details class="panel"><summary>OpenStreetMap</summary>${check("baseMap", "baseMap", false)}<p class="muted">${t("baseMapNote")}</p></details><div class="notice warning"><strong>${t("incomplete")}</strong><p>${t("fullCoverageWarning")}</p><a href="#sources">${t("sources")}</a></div><div id="segment-detail"></div></aside></div><div id="route-results"></div>`;
+    const side = $(".map-side"), routePanel = $(".route-settings");
+    const consumptionPanel = routePanel.nextElementSibling, switchingPanel = consumptionPanel.nextElementSibling;
+    const actionPanel = switchingPanel.nextElementSibling, progress = actionPanel.nextElementSibling;
+    // Keep the controls in their original order ahead of map layers.
+    for (const el of [routePanel, consumptionPanel, switchingPanel, actionPanel, progress].reverse()) side.prepend(el);
+    const profileCard = document.createElement("section");
+    profileCard.className = "panel profile-context";
+    const missing = [];
+    if (!p.vessel.name) missing.push(lang === "nb" ? "fartøynavn" : "vessel name");
+    if (!p.vessel.serviceSpeed) missing.push(lang === "nb" ? "servicefart" : "service speed");
+    if (!p.vessel.keelDate) missing.push(lang === "nb" ? "kjølstrekksdato" : "keel date");
+    if (!p.engines.length) missing.push(lang === "nb" ? "motorer" : "engines");
+    profileCard.innerHTML = `<h3>${lang === "nb" ? "Skipsprofil" : "Vessel profile"}</h3><p>${esc(p.vessel.name || t("unknown"))} · ${t("speed")}: ${esc(p.vessel.serviceSpeed ?? t("unknown"))} kn · ${p.engines.length} ${lang === "nb" ? "motorer" : "engines"}</p><p class="muted">${missing.length ? (lang === "nb" ? "Mangler: " : "Missing: ") + missing.map(esc).join(", ") : (lang === "nb" ? "Grunnopplysningene er tilgjengelige." : "Basic vessel details are available.")}</p><button type="button" id="fill-profile">${lang === "nb" ? "Fyll inn manglende verdier fra profil" : "Fill missing values from profile"}</button> <a href="#profile">${t("profile")}</a>`;
+    side.prepend(profileCard);
     renderWaypoints();
     bindVoyage();
     updateLayerLabels();
@@ -1189,7 +1203,7 @@
     $("#waypoint-list").innerHTML = routeState.points
       .map(
         (p, i) =>
-          `<div class="waypoint"><label>${i === 0 ? (lang === "nb" ? "Avgang" : "Departure") : i === routeState.points.length - 1 ? (lang === "nb" ? "Ankomst" : "Destination") : "#" + (i + 1)} · ${t("lat")}<input name="lat" inputmode="decimal" value="${esc(p[1])}"></label><label>${t("lon")}<input name="lon" inputmode="decimal" value="${esc(p[0])}"></label><button data-waypoint="${i}" data-action="remove" aria-label="${esc(t("remove") + " " + (i + 1))}">×</button><div class="actions"><button data-waypoint="${i}" data-action="up" ${i === 0 ? "disabled" : ""}>↑ ${t("up")}</button><button data-waypoint="${i}" data-action="down" ${i === routeState.points.length - 1 ? "disabled" : ""}>↓ ${t("down")}</button></div></div>`,
+          `<div class="waypoint"><label>${i === 0 ? (lang === "nb" ? "Avgang" : "Departure") : i === routeState.points.length - 1 ? (lang === "nb" ? "Ankomst" : "Destination") : "#" + (i + 1)} · ${t("lat")}<input name="lat" inputmode="decimal" value="${esc(p[1])}"></label><label>${t("lon")}<input name="lon" inputmode="decimal" value="${esc(p[0])}"></label><button data-waypoint="${i}" data-action="remove" aria-label="${esc(t("remove") + " " + (i + 1))}">×</button><div class="actions"><button data-waypoint="${i}" data-action="up" ${i === 0 ? "disabled" : ""}>↑ ${t("up")}</button><button data-waypoint="${i}" data-action="insert" ${i === routeState.points.length - 1 ? "disabled" : ""}>${lang === "nb" ? "Sett inn etter" : "Insert after"}</button><button data-waypoint="${i}" data-action="down" ${i === routeState.points.length - 1 ? "disabled" : ""}>↓ ${t("down")}</button></div></div>`,
       )
       .join("");
     $$(".waypoint input").forEach(
@@ -1206,6 +1220,13 @@
           const i = Number(b.dataset.waypoint),
             a = b.dataset.action;
           if (a === "remove") routeState.points.splice(i, 1);
+          else if (a === "insert") {
+            try {
+              const pair = routeState.points.slice(i, i + 2).map(p => p.map(v => N.numeric(v, t("positionEntry"), {min: -180, max: 180})));
+              const middle = MT_NAV_MATH.interpolate(pair[0], pair[1], 0.5).map(v => Number(v.toFixed(6)));
+              routeState.points.splice(i + 1, 0, middle);
+            } catch (error) { announce(errorText(error), true); return; }
+          }
           else {
             const j = a === "up" ? i - 1 : i + 1;
             [routeState.points[i], routeState.points[j]] = [
@@ -1220,6 +1241,23 @@
     drawRoute();
   }
   function bindVoyage() {
+    $("#fill-profile").onclick = () => {
+      const p = P.profile(), speed = $("#voyage [name=speed]"), carrier = $("#voyage [name=carrierId]"), rate = $("#voyage [name=fuelRate]");
+      if (!speed.value.trim() && Number(p.vessel.serviceSpeed) > 0) speed.value = p.vessel.serviceSpeed;
+      const fuels = p.carriers.filter(c => c.category !== "battery" && c.category !== "consumable");
+      if (!carrier.value && fuels.length === 1) carrier.value = fuels[0].id;
+      const selected = fuels.find(c => c.id === carrier.value);
+      if (!rate.value.trim() && selected?.primaryUnit === "m3" && Number(p.operational.fuelDay) > 0) rate.value = Number(p.operational.fuelDay) / 24;
+      captureRoute(); invalidateRoute();
+      announce(lang === "nb" ? "Ledige felter er oppdatert fra skipsprofilen." : "Empty fields were filled from the vessel profile.");
+    };
+    $$("[data-layer-group]").forEach(button => button.onclick = () => {
+      const items = $$("[data-category]").filter(input => input.dataset.category === button.dataset.layerGroup);
+      const enabled = !items.every(input => input.checked);
+      items.forEach(input => input.checked = enabled);
+      button.textContent = enabled ? (lang === "nb" ? "Slå av" : "Hide all") : (lang === "nb" ? "Slå på" : "Show all");
+      drawAreas();
+    });
     for (const [id, mode] of [["map-draw", "route"], ["map-inspect", "inspect"]])
       $("#" + id).onclick = () => {
         captureRoute();
@@ -1401,7 +1439,12 @@
       updateLayerLabels();
       drawAreas();
     };
-    $$("[data-layer]").forEach((el) => (el.onchange = drawAreas));
+    $$("[data-layer]").forEach((el) => (el.onchange = () => {
+      const button = $$("[data-layer-group]").find(b => b.dataset.layerGroup === el.dataset.category);
+      const any = $$("[data-category]").some(input => input.dataset.category === el.dataset.category && input.checked);
+      if (button) button.textContent = any ? (lang === "nb" ? "Slå av" : "Hide all") : (lang === "nb" ? "Slå på" : "Show all");
+      drawAreas();
+    }));
     $("[name=baseMap]").onchange = toggleBase;
   }
   let overviewData = null,
@@ -1660,14 +1703,15 @@
           weight: 5,
         }).addTo(routeLayer);
         layer.on("click", () => selectSegment(i));
-        L.circleMarker([segment.from[1], segment.from[0]], {
-          radius: 4,
-          color: "#172938",
-          fillColor: "#fff",
-          fillOpacity: 1,
-        })
-          .addTo(entryLayer)
-          .on("click", () => selectSegment(i));
+        if (i > 0) {
+          const before = new Set(routeResult.segments[i - 1].areaIds), after = new Set(segment.areaIds);
+          const entered = [...after].filter(id => !before.has(id)), exited = [...before].filter(id => !after.has(id));
+          if (entered.length || exited.length) {
+            const label = [(entered.length ? (lang === "nb" ? "Inn: " : "Enter: ") + entered.map(areaName).join(", ") : ""), (exited.length ? (lang === "nb" ? "Ut: " : "Exit: ") + exited.map(areaName).join(", ") : "")].filter(Boolean).join(" · ");
+            L.circleMarker([segment.from[1], segment.from[0]], {radius: 6, color: "#fff", weight: 2, fillColor: entered.length ? "#008f77" : "#cf6a20", fillOpacity: 1})
+              .bindTooltip(esc(label)).addTo(entryLayer).on("click", () => selectSegment(i));
+          }
+        }
       }
     } else if (points.length > 1) {
       try {
@@ -1693,7 +1737,7 @@
     displayLine(points).forEach((p, i) => {
       const marker = L.marker(p, {
         draggable: true,
-        icon: L.divIcon({className: "reg-waypoint-icon", html: '<span>' + (i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14, 14]})
+        icon: L.divIcon({className: "reg-waypoint-icon " + (i === 0 ? "departure" : i === points.length - 1 ? "destination" : "intermediate"), html: '<span>' + (i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14, 14]})
       }).bindTooltip(String(i + 1)).addTo(waypointLayer);
       marker.on("click", e => L.DomEvent.stopPropagation(e));
       marker.on("dragend", () => {
@@ -1929,6 +1973,9 @@
     if (!x) return;
     $("#route-results").innerHTML =
       `<article class="panel"><h3>${t("routeOverview")} · ${esc(x.plan.name || "Marine Tools")}</h3><p>${esc(x.vessel.name || t("unknown"))} · ${dateText(x.segments[0].entry)}</p><div class="results"><div class="metric">${t("distance")}<strong>${fmt(x.totalNm)}</strong></div><div class="metric">${t("duration")}<strong>${fmt(x.totalHours)}</strong></div><div class="metric">${t("arrival")}<strong style="font-size:1rem">${dateText(x.arrival)}</strong></div>${x.consumption ? `<div class="metric">${t("consumption")}<strong>${fmt(x.consumption.totalAmount)} ${esc(x.consumption.unit)}</strong>${esc(x.consumption.carrierName)}</div>` : ""}${x.sox ? `<div class="metric">SO₂<strong>${fmt(x.sox.totalKgSO2)} kg</strong>${t("estimated")}</div>` : ""}${x.nox ? `<div class="metric">NOx<strong>${fmt(x.nox.kgNOx)} kg</strong>${t("estimated")}</div><div class="metric">${t("total")}<strong>${fmt(x.nox.totalNok)}</strong></div>` : ""}</div><p class="muted">${t("sourceDate")}: ${esc(x.catalogueVersion)} / ${x.verifiedOn}</p>${x.missingGeometry.length ? `<p class="error">${t("missingGeometry")}: ${x.missingGeometry.map(areaName).map(esc).join(", ")}</p>` : ""}${x.noxUnavailable ? `<p class="notice warning">NOx: ${esc(x.noxUnavailable)}</p>` : ""}<p class="notice warning">${t("fullCoverageWarning")}</p></article>${vesselSummary(x.vessel)}<section id="report-map" class="print-map"></section><h3>${t("areaOverview")}</h3><p>${t("allOverlap")}</p><div class="table-wrap"><table id="route-table"><thead><tr><th>#</th><th>${t("entry")} / ${t("exit")}</th><th>${t("positionEntry")} / ${t("positionExit")}</th><th>${t("distance")} / ${t("duration")}</th><th>${t("areas")}</th>${x.consumption ? `<th>${t("consumption")}</th>` : ""}${x.nox ? `<th>NOx / NOK</th>` : ""}</tr></thead><tbody>${x.segments.map((s, i) => `<tr data-segment-row="${i}"><td><button class="no-print" data-segment="${i}" aria-label="${esc(t("selectSegment") + " " + (i + 1))}">${i + 1}</button><span class="print-map">${i + 1}</span></td><td>${dateText(s.entry)}<small>${dateText(s.exit)}</small></td><td>${pointText(s.from)}<small>${pointText(s.to)}</small></td><td>${fmt(s.distanceNm)} NM<small>${fmt(s.hours)} h</small><small>${t("sulphur")}: ${fmt(MT_VOYAGE_ENVIRONMENT.limit(s))}%</small></td><td>${rulesText(s)}</td>${x.consumption ? `<td>${fmt(x.consumption.segments[i].amount)} ${esc(x.consumption.unit)}${x.consumption.segments[i].massKg == null ? "" : `<small>${fmt(x.consumption.segments[i].massKg)} kg</small>`}</td>` : ""}${x.nox ? `<td>${fmt(x.nox.segments[i].kgNOx)} kg<small>${fmt(x.nox.segments[i].totalNok)} NOK</small></td>` : ""}</tr>`).join("")}</tbody></table></div>${x.changeovers.length ? `<article class="panel"><h3>${t("switching")}</h3><p>${t("switchNote")}</p>${x.changeovers.map((e) => `<p><strong>${e.areaIds.map(areaName).map(esc).join(" · ")}: ${fmt(e.fromLimit)}% → ${fmt(e.toLimit)}%</strong><br>${t("entry")}: ${dateText(e.entry)} · ${pointText(e.entryPosition)}<br>${t("switchLimit")}: ${dateText(e.latestStart)}${e.startPosition ? " · " + pointText(e.startPosition) : " · " + t("beforeDeparture")}<br>${t("source")}: ${esc(e.source)}</p>`).join("")}</article>` : x.plan.changeoverHours ? `<p>${t("noSwitch")}</p>` : ""}<article class="panel"><h3>${t("reference")}</h3><p>${t("limits")}</p>${x.limitations[lang].map((p) => `<p>${esc(p)}</p>`).join("")}<p>${t("separateTax")}</p>${x.sox ? "<p>SO₂: " + esc(t("soxSource")) + ": " + esc(x.sox.source) + " · " + fmt(x.sox.factorKgT) + " kg/t</p>" : ""}${x.nox ? `<p>${t("estimateOnly")}</p><p>${t("chargeContext")}: ${esc(reason(x.nox.segments[0]?.items[0]?.charges.assessment.reason))}</p>` : ""}<div class="actions"><button id="route-csv">${t("csv")}</button><button id="route-json">${t("json")}</button><button id="route-html">${lang==="nb"?"Last ned rapport":"Download report"}</button><button id="route-print">${t("print")}</button></div></article>`;
+    const affected = [...new Set(x.segments.flatMap(s => s.areaIds))];
+    const uncertain = x.segments.filter(s => s.rules.some(r => r.nox?.status === "unconfirmed" || (r.requirements || []).some(q => q.vesselApplicability === "unconfirmed"))).length;
+    $("#route-results").insertAdjacentHTML("afterbegin", `<article class="panel voyage-findings"><h3>${lang === "nb" ? "Viktigste funn" : "Key findings"}</h3><p>${lang === "nb" ? "Områder langs reisen" : "Areas along the voyage"}: <strong>${affected.length ? affected.map(areaName).map(esc).join(" · ") : esc(t("outsideMapped"))}</strong></p><p>${lang === "nb" ? "Strekninger med uavklart fartøyvurdering" : "Segments with unconfirmed vessel applicability"}: <strong>${uncertain}</strong></p><p class="muted">${t("fullCoverageWarning")}</p></article>`);
     $$("[data-segment]").forEach(
       (b) => (b.onclick = () => selectSegment(Number(b.dataset.segment))),
     );
@@ -2497,6 +2544,8 @@
     window.addEventListener("hashchange", showTab);
     window.addEventListener("storage", (event) => {
       if (event.key === "mt.profile.v2" || event.key === "mt.profile") {
+        captureRoute();
+        captureRows();
         noxResult = null;
         routeResult = null;
         profileDraft = null;

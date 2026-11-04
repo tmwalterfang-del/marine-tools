@@ -8,7 +8,7 @@
       "geometrySource": "https://doi.org/10.14284/397",
       "verifiedOn": "2026-11-03",
       "coastlineSource": "ESRI Countries 2014 coastline as distributed by VLIZ ECA dataset (2020); positional accuracy unspecified",
-      "processing": "VLIZ source outline, topology-preserving simplification 0.00001 degree, then WGS84 geodesic interpolation at \u22641 NM. Legal North Sea/Baltic constant-latitude limits remain parallels.",
+      "processing": "VLIZ source outline, topology-preserving simplification 0.00001 degree, then WGS84 geodesic interpolation at ≤1 NM. Legal North Sea/Baltic constant-latitude limits remain parallels.",
       "geometryNotes": "VLIZ 2020 published ECA outline (processed June 2019); older source used only for these four unchanged designations. Long-coordinate segments are no longer interpreted as straight longitude/latitude chords.",
       "license": "CC-BY-4.0",
       "attribution": "Flanders Marine Institute (VLIZ), Belgium (2020), DOI:10.14284/397",
@@ -21,7 +21,7 @@
       "geometrySource": "https://doi.org/10.14284/397",
       "verifiedOn": "2026-11-03",
       "coastlineSource": "ESRI Countries 2014 coastline as distributed by VLIZ ECA dataset (2020); positional accuracy unspecified",
-      "processing": "VLIZ source outline, topology-preserving simplification 0.00001 degree, then WGS84 geodesic interpolation at \u22641 NM. Legal North Sea/Baltic constant-latitude limits remain parallels.",
+      "processing": "VLIZ source outline, topology-preserving simplification 0.00001 degree, then WGS84 geodesic interpolation at ≤1 NM. Legal North Sea/Baltic constant-latitude limits remain parallels.",
       "geometryNotes": "VLIZ 2020 published ECA outline (processed June 2019); older source used only for these four unchanged designations. Long-coordinate segments are no longer interpreted as straight longitude/latitude chords.",
       "license": "CC-BY-4.0",
       "attribution": "Flanders Marine Institute (VLIZ), Belgium (2020), DOI:10.14284/397",
@@ -34,7 +34,7 @@
       "geometrySource": "https://doi.org/10.14284/397",
       "verifiedOn": "2026-11-03",
       "coastlineSource": "ESRI Countries 2014 coastline as distributed by VLIZ ECA dataset (2020); positional accuracy unspecified",
-      "processing": "VLIZ source outline, topology-preserving simplification 0.00001 degree, then WGS84 geodesic interpolation at \u22641 NM. Legal North Sea/Baltic constant-latitude limits remain parallels.",
+      "processing": "VLIZ source outline, topology-preserving simplification 0.00001 degree, then WGS84 geodesic interpolation at ≤1 NM. Legal North Sea/Baltic constant-latitude limits remain parallels.",
       "geometryNotes": "VLIZ 2020 published ECA outline (processed June 2019); older source used only for these four unchanged designations. Long-coordinate segments are no longer interpreted as straight longitude/latitude chords.",
       "license": "CC-BY-4.0",
       "attribution": "Flanders Marine Institute (VLIZ), Belgium (2020), DOI:10.14284/397",
@@ -47,7 +47,7 @@
       "geometrySource": "https://doi.org/10.14284/397",
       "verifiedOn": "2026-11-03",
       "coastlineSource": "ESRI Countries 2014 coastline as distributed by VLIZ ECA dataset (2020); positional accuracy unspecified",
-      "processing": "VLIZ source outline, topology-preserving simplification 0.00001 degree, then WGS84 geodesic interpolation at \u22641 NM. Legal North Sea/Baltic constant-latitude limits remain parallels.",
+      "processing": "VLIZ source outline, topology-preserving simplification 0.00001 degree, then WGS84 geodesic interpolation at ≤1 NM. Legal North Sea/Baltic constant-latitude limits remain parallels.",
       "geometryNotes": "VLIZ 2020 published ECA outline (processed June 2019); older source used only for these four unchanged designations. Long-coordinate segments are no longer interpreted as straight longitude/latitude chords.",
       "license": "CC-BY-4.0",
       "attribution": "Flanders Marine Institute (VLIZ), Belgium (2020), DOI:10.14284/397",
@@ -60,7 +60,7 @@
       "geometrySource": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.315%2874%29.pdf",
       "verifiedOn": "2026-11-03",
       "coastlineSource": "VLIZ IHO Sea Areas v3; source coastline positional accuracy unspecified",
-      "processing": "Legal geodesics tessellated at \u22641 NM with WGS84 ellipsoid; source coastline topology-preserving simplification \u22640.00001 degree before overlays",
+      "processing": "Legal geodesics tessellated at ≤1 NM with WGS84 ellipsoid; source coastline topology-preserving simplification ≤0.00001 degree before overlays",
       "geometryNotes": "MARPOL II/13.9.4 legal coordinate chain; designation by MEPC.392(82). The reference coastline is not a hydrographic chart.",
       "legalVertexCount": 29,
       "license": "CC-BY-4.0 (coastal data); IMO legal coordinates",
@@ -72,7 +72,7 @@
       "geometrySource": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.361%2879%29.pdf",
       "verifiedOn": "2026-11-03",
       "coastlineSource": "VLIZ IHO Sea Areas v3; source coastline positional accuracy unspecified",
-      "processing": "Legal geodesics tessellated at \u22641 NM with WGS84 ellipsoid; source coastline topology-preserving simplification \u22640.00001 degree before overlays",
+      "processing": "Legal geodesics tessellated at ≤1 NM with WGS84 ellipsoid; source coastline topology-preserving simplification ≤0.00001 degree before overlays",
       "geometryNotes": "Legal Gibraltar/Canakkale entrance lines and Suez exclusion, over VLIZ IHO reference coastline.",
       "license": "CC-BY-4.0 (coastal data); IMO legal coordinates",
       "file": "mediterranean.geojson",
@@ -83,8 +83,8 @@
       "geometrySource": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.392%2882%29.pdf",
       "verifiedOn": "2026-11-03",
       "coastlineSource": "VLIZ IHO Sea Areas v3; source coastline positional accuracy unspecified",
-      "processing": "Legal geodesics tessellated at \u22641 NM with WGS84 ellipsoid; source coastline topology-preserving simplification \u22640.00001 degree before overlays",
-      "geometryNotes": "MEPC.392(82) Appendix VII 5.1 and 5.2: points 1\u2013179, joined through Hans Island and mainland coastline. Coastal overlay remains a reference dataset.",
+      "processing": "Legal geodesics tessellated at ≤1 NM with WGS84 ellipsoid; source coastline topology-preserving simplification ≤0.00001 degree before overlays",
+      "geometryNotes": "MEPC.392(82) Appendix VII 5.1 and 5.2: points 1–179, joined through Hans Island and mainland coastline. Coastal overlay remains a reference dataset.",
       "legalVertexCount": 179,
       "license": "CC-BY-4.0 (coastal data); IMO legal coordinates",
       "file": "canadian-arctic.geojson",
@@ -95,8 +95,8 @@
       "geometrySource": "https://ltsa.lrv.lt/public/canonical/1787556830/2290/MEPC.407%2884%29.pdf",
       "verifiedOn": "2026-11-03",
       "coastlineSource": "VLIZ IHO Sea Areas v3; source coastline positional accuracy unspecified",
-      "processing": "Legal geodesics tessellated at \u22641 NM with WGS84 ellipsoid; source coastline topology-preserving simplification \u22640.00001 degree before overlays",
-      "geometryNotes": "Adopted MEPC.407(84) points 1\u2013157 and referenced Canadian Arctic sections; existing North Sea excluded. Inland helper closures removed by coastal overlay.",
+      "processing": "Legal geodesics tessellated at ≤1 NM with WGS84 ellipsoid; source coastline topology-preserving simplification ≤0.00001 degree before overlays",
+      "geometryNotes": "Adopted MEPC.407(84) points 1–157 and referenced Canadian Arctic sections; existing North Sea excluded. Inland helper closures removed by coastal overlay.",
       "legalVertexCount": 157,
       "license": "CC-BY-4.0 (coastal data); IMO legal coordinates",
       "file": "north-east-atlantic.geojson",
@@ -108,7 +108,7 @@
       "verifiedOn": "2026-11-03",
       "license": "CC-BY (VLIZ coastal reference); legal coordinate facts",
       "attribution": "Flanders Marine Institute (2018), IHO Sea Areas v3, DOI:10.14284/323",
-      "processing": "WGS84 boundary lines tessellated at \u22641 NM; reference coastline simplified by \u22640.00001 degree",
+      "processing": "WGS84 boundary lines tessellated at ≤1 NM; reference coastline simplified by ≤0.00001 degree",
       "geometryNotes": "MARPOL Annex I/V Mediterranean Special Area: Gibraltar and Canakkale limits; not the ECA-specific Suez exclusion.",
       "file": "mediterranean-special.geojson",
       "sha256": "de4532e084bfccb028d8ddc7f4b496255cab67249c301481df4c1373ed354184"
@@ -119,8 +119,8 @@
       "verifiedOn": "2026-11-03",
       "license": "CC-BY (VLIZ coastal reference); legal coordinate facts",
       "attribution": "Flanders Marine Institute (2018), IHO Sea Areas v3, DOI:10.14284/323",
-      "processing": "WGS84 boundary lines tessellated at \u22641 NM; reference coastline simplified by \u22640.00001 degree",
-      "geometryNotes": "MEPC.380(80) annex 1 coordinates A\u2013J. H\u2013I follows the northern Sardinia coast. Reference WGS84 geodesic interpolation; check boundary-adjacent voyages against authority data.",
+      "processing": "WGS84 boundary lines tessellated at ≤1 NM; reference coastline simplified by ≤0.00001 degree",
+      "geometryNotes": "MEPC.380(80) annex 1 coordinates A–J. H–I follows the northern Sardinia coast. Reference WGS84 geodesic interpolation; check boundary-adjacent voyages against authority data.",
       "file": "nw-mediterranean-pssa.geojson",
       "sha256": "0299d20c6a97f9971f4d7e696917e6090f2f2bdfbe4bb335de0bf9e0888df30a"
     },
@@ -130,8 +130,8 @@
       "verifiedOn": "2026-11-03",
       "license": "CC-BY (VLIZ coastal reference); legal coordinate facts",
       "attribution": "Flanders Marine Institute (2018), IHO Sea Areas v3, DOI:10.14284/323",
-      "processing": "WGS84 boundary lines tessellated at \u22641 NM; reference coastline simplified by \u22640.00001 degree",
-      "geometryNotes": "Environmental Safety Regulations \u00a710a legal entrance lines; Hellesylt excluded, Tafjord included. Computation uses actual coastline components, not bounding rectangles.",
+      "processing": "WGS84 boundary lines tessellated at ≤1 NM; reference coastline simplified by ≤0.00001 degree",
+      "geometryNotes": "Environmental Safety Regulations §10a legal entrance lines; Hellesylt excluded, Tafjord included. Computation uses actual coastline components, not bounding rectangles.",
       "file": "geiranger-tafjord.geojson",
       "sha256": "c0722dfa63aade33036c0dcea9ae7a7593b83ba0597dd2cacbd056aa83e896d5"
     },
@@ -141,8 +141,8 @@
       "verifiedOn": "2026-11-03",
       "license": "CC-BY (VLIZ coastal reference); legal coordinate facts",
       "attribution": "Flanders Marine Institute (2018), IHO Sea Areas v3, DOI:10.14284/323",
-      "processing": "WGS84 boundary lines tessellated at \u22641 NM; reference coastline simplified by \u22640.00001 degree",
-      "geometryNotes": "Environmental Safety Regulations \u00a710a legal entrance lines; Hellesylt excluded, Tafjord included. Computation uses actual coastline components, not bounding rectangles.",
+      "processing": "WGS84 boundary lines tessellated at ≤1 NM; reference coastline simplified by ≤0.00001 degree",
+      "geometryNotes": "Environmental Safety Regulations §10a legal entrance lines; Hellesylt excluded, Tafjord included. Computation uses actual coastline components, not bounding rectangles.",
       "file": "naeroy-aurland.geojson",
       "sha256": "7409baef57a60db88317d272db1a162bd38bf52e8ef8bd9719714d03da5e7c0b"
     },
@@ -155,7 +155,7 @@
       },
       "geometrySource": "https://www.imo.org/en/ourwork/environment/pages/special-areas-marpol.aspx",
       "verifiedOn": "2026-11-03",
-      "geometryNotes": "Exact legal sea-area parallel south of 60\u00b0S, represented as a latitude band, not an approximate circle."
+      "geometryNotes": "Exact legal sea-area parallel south of 60°S, represented as a latitude band, not an approximate circle."
     },
     {
       "id": "antarctic-polar",
@@ -166,7 +166,7 @@
       },
       "geometrySource": "https://www.imo.org/en/ourwork/environment/pages/special-areas-marpol.aspx",
       "verifiedOn": "2026-11-03",
-      "geometryNotes": "Exact legal sea-area parallel south of 60\u00b0S, represented as a latitude band, not an approximate circle."
+      "geometryNotes": "Exact legal sea-area parallel south of 60°S, represented as a latitude band, not an approximate circle."
     },
     {
       "id": "china-hainan",
@@ -175,10 +175,83 @@
       "legalVertexCount": 20,
       "license": "Legal coordinate facts; VLIZ coastal reference CC-BY",
       "attribution": "China Ministry of Transport, 2018 plan table 2; VLIZ IHO Sea Areas v3 (2018), DOI:10.14284/323",
-      "processing": "20 legal coordinates joined using WGS84 geodesics at \u22641 NM; water-mask overlay, no inferred 12 NM buffer.",
+      "processing": "20 legal coordinates joined using WGS84 geodesics at ≤1 NM; water-mask overlay, no inferred 12 NM buffer.",
       "geometryNotes": "The source table does not explicitly state the geodetic datum or line interpolation. WGS84/geodesic interpretation is a reference assumption requiring confirmation. No GCJ-02 web-map offsets have been applied.",
       "file": "china-hainan.geojson",
       "sha256": "55fe11c5e082d3be9c3fe98604e3bff2b556de8dafa85d05d6d417d75ef8b04d"
+    },
+    {
+      "id": "saba-bank-pssa",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -63.93566666666667,
+                17.451
+              ],
+              [
+                -63.918166666666664,
+                17.483333333333334
+              ],
+              [
+                -63.722,
+                17.465666666666667
+              ],
+              [
+                -63.456833333333336,
+                17.63383333333333
+              ],
+              [
+                -63.54566666666667,
+                17.7225
+              ],
+              [
+                -63.49966666666667,
+                17.766333333333332
+              ],
+              [
+                -63.35166666666667,
+                17.672333333333334
+              ],
+              [
+                -63.182,
+                17.514666666666667
+              ],
+              [
+                -63.1875,
+                17.39666666666667
+              ],
+              [
+                -63.26416666666667,
+                17.271166666666666
+              ],
+              [
+                -63.448166666666665,
+                17.224
+              ],
+              [
+                -63.69683333333333,
+                17.175833333333333
+              ],
+              [
+                -63.8315,
+                17.3475
+              ],
+              [
+                -63.93566666666667,
+                17.451
+              ]
+            ]
+          ]
+        ]
+      },
+      "geometrySource": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.226%2864%29.pdf",
+      "verifiedOn": "2026-11-04",
+      "legalVertexCount": 13,
+      "license": "IMO legal coordinate facts",
+      "geometryNotes": "WGS84 coordinates from IMO MEPC.226(64), Annex 1. Line interpolation is not stated; straight coordinate segments are a reference assumption. Verify boundaries and associated routing measures against current official charts."
     }
   ]
 }

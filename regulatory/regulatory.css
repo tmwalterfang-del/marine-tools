@@ -652,3 +652,15 @@ input, select, textarea { background-color:#061c2c; border-color:#28536a; }
  #reg-map { height:440px; }
  .layer-list { max-height:42vh; }
 }
+/* Voyage workspace: map remains alongside inputs on wider screens. */
+.map-side .grid, .map-side .grid.two { grid-template-columns:minmax(0,1fr); }
+.profile-context p { margin:.5rem 0; }
+.profile-context button { margin:.35rem .3rem .2rem 0; }
+.layer-list h3 { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.layer-group { font-size:.75rem; padding:.3rem .5rem; white-space:nowrap; }
+.reg-waypoint-icon.departure span { background:#72e0ae; }
+.reg-waypoint-icon.destination span { background:#ffb979; }
+.reg-waypoint-icon.intermediate span { background:#fff; }
+.voyage-findings { border-left:3px solid #28c4f4; }
+@media screen and (min-width:1001px) { .map-column { position:sticky; top:12px; } }
+@media print { .map-column { position:static; } }

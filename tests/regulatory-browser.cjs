@@ -196,6 +196,16 @@ async function main() {
     assert.equal(await page.locator('#voyage [name=speed]').inputValue(), '10');
     assert.equal(await page.locator('#voyage [name=carrierId]').inputValue(), 'mgo');
     assert.equal(await page.locator('#voyage [name=fuelRate]').inputValue(), '1');
+    await page.locator('#voyage [name=speed]').fill('12');
+    await page.locator('#fill-profile').click();
+    assert.equal(await page.locator('#voyage [name=speed]').inputValue(), '12', 'Existing voyage input is preserved');
+    await page.locator('#voyage [name=speed]').fill('');
+    await page.locator('#fill-profile').click();
+    assert.equal(await page.locator('#voyage [name=speed]').inputValue(), '10', 'Missing value is filled from profile');
+    await page.locator('[data-layer-group="pssa"]').click();
+    assert.equal(await page.locator('[data-category="pssa"]:checked').count(), 0, 'Group hides all PSSAs');
+    await page.locator('[data-layer-group="pssa"]').click();
+    assert.equal(await page.locator('[data-category="pssa"]:checked').count(), 2, 'Group restores both PSSAs');
     await page.locator('#map-inspect').click();
     const findAreaPoint = () => page.evaluate(() => {
       const map = document.querySelector('#reg-map').getBoundingClientRect();
@@ -250,6 +260,9 @@ async function main() {
       await row.locator("[name=lon]").fill(String(lon));
       await row.locator("[name=lat]").fill(String(lat));
     }
+    await page.locator('[data-waypoint="0"][data-action="insert"]').click();
+    assert.equal(await page.locator('.waypoint').count(), 4, 'Insert adds a midpoint');
+    await page.locator('[data-waypoint="1"][data-action="remove"]').click();
     await page.locator("#quick-analyze").click();
     await page.waitForFunction(
       () =>
@@ -270,6 +283,7 @@ async function main() {
     assert.match(report, /Norskehavet/);
     assert.match(report, /Nordøst-Atlanteren/);
     assert.match(report, /Vedtatt framtidig/);
+    assert.match(report, /Viktigste funn/);
     assert.doesNotMatch(report, /undefined|NaN|Infinity/);
     for (const [id, extension] of [["route-json", ".json"], ["route-csv", ".csv"], ["route-html", ".html"]]) {
       const pending = page.waitForEvent("download");

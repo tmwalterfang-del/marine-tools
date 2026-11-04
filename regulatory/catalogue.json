@@ -24,7 +24,7 @@
     },
     {
       "from": "2010-07-01",
-      "percent": 1.0
+      "percent": 1
     },
     {
       "from": "2015-01-01",
@@ -871,6 +871,40 @@
           }
         }
       ]
+    },
+    {
+      "id": "saba-bank-pssa",
+      "geometryId": "saba-bank-pssa",
+      "name": {
+        "en": "Saba Bank · PSSA",
+        "nb": "Saba Bank · PSSA"
+      },
+      "category": "pssa",
+      "classification": "pssa",
+      "designationFrom": "2012-10-05",
+      "sources": [
+        "imo-saba-bank"
+      ],
+      "requirements": [
+        {
+          "code": "saba-bank-pssa",
+          "summary": {
+            "en": "PSSA with associated area-to-be-avoided and no-anchoring measures. These measures have their own boundaries and vessel applicability: consult current official charts and notices.",
+            "nb": "PSSA med tilknyttede områder som skal unngås og ankreforbud. Tiltakene har egne grenser og virkeområder: kontroller gjeldende offisielle kart og kunngjøringer."
+          },
+          "sources": [
+            "imo-saba-bank"
+          ],
+          "strength": "information",
+          "from": "2012-10-05"
+        }
+      ],
+      "verifiedOn": "2026-11-04",
+      "adoptionStatus": "adopted",
+      "geographyWarning": {
+        "en": "Reference boundary: line interpolation is not specified in the resolution. Confirm against official charts.",
+        "nb": "Referansegrense: linjetolkning er ikke angitt i resolusjonen. Kontroller mot offisielle kart."
+      }
     }
   ],
   "sources": [
@@ -1043,6 +1077,12 @@
       "verifiedOn": "2026-11-03",
       "scope": "Hainan 20-point boundary, 0.10% sulphur from 2022, domestic Chinese engine conditions. Mainland-wide 0.10% in 2025 was conditional on assessment, not an adopted limit in this instrument.",
       "scopeNb": "Hainans grense med 20 punkter, svovelgrense på 0,10 % fra 2022 og motorvilkår for kinesisk innenriksfart. En landsdekkende kystgrense på 0,10 % i 2025 var betinget av evaluering, ikke vedtatt i dette dokumentet."
+    },
+    {
+      "id": "imo-saba-bank",
+      "title": "IMO MEPC.226(64) · Saba Bank PSSA",
+      "url": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.226%2864%29.pdf",
+      "scope": "WGS84 PSSA boundary and associated protective measures."
     }
   ],
   "coverage": {
@@ -1081,7 +1121,8 @@
     "pssa": {
       "status": "partial",
       "areas": [
-        "nw-mediterranean-pssa"
+        "nw-mediterranean-pssa",
+        "saba-bank-pssa"
       ],
       "missing": "Other designated PSSAs and their individual associated protective measures are not yet geographically audited."
     },

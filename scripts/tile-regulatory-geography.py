@@ -34,8 +34,12 @@ def main():
     manifest=json.loads((args.source_dir/'geometry-manifest.json').read_text(encoding='utf-8'))
     cells={}; overview=[]; hashes={}; inline={}
     for record in manifest['features']:
-        if record.get('geometry',{}).get('type')=='LatitudeBand':
-            inline[record['id']]=record['geometry'];continue
+        if record.get('geometry',{}).get('type') in ('LatitudeBand', 'MultiPolygon'):
+            inline[record['id']]=record['geometry']
+            if record['geometry']['type']=='MultiPolygon':
+                assert shape(record['geometry']).is_valid
+                overview.append({'type':'Feature','properties':{'id':record['id'],'displayOnly':True},'geometry':record['geometry']})
+            continue
         feature=json.loads((args.source_dir/record['file']).read_text(encoding='utf-8'))
         geo=shape(feature['geometry']); assert geo.is_valid
         identifier=record['id']; hashes[identifier]=hashlib.sha256((args.source_dir/record['file']).read_bytes()).hexdigest()
