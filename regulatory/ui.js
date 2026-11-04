@@ -357,7 +357,8 @@
       changeoverSource: "",
     },
     routeResult = null,
-    map = null;
+    map = null,
+    mapMode = "route";
   function operationFields(value = {}) {
     return `<fieldset><legend>${t("chargeContext")}</legend><p class="muted">${t("separateTax")}</p><div class="grid">${select(
       "operation",
@@ -1094,8 +1095,13 @@
       plans = planList();
     if (!routeState.speed && p.vessel.serviceSpeed)
       routeState.speed = p.vessel.serviceSpeed;
+    const fuels = p.carriers.filter(c => c.category !== "battery" && c.category !== "consumable");
+    if (!routeState.id && !routeState.carrierId && fuels.length === 1) routeState.carrierId = fuels[0].id;
+    const selectedFuel = fuels.find(c => c.id === routeState.carrierId);
+    if (!routeState.id && !routeState.fuelRate && selectedFuel?.primaryUnit === "m3" && Number(p.operational.fuelDay) > 0)
+      routeState.fuelRate = Number(p.operational.fuelDay) / 24;
     $("#voyage").innerHTML =
-      `<h2 id="voyage-title">${t("voyage")}</h2><p>${t("mapHint")}</p><div class="map-layout"><div class="map-column"><div id="reg-map" role="region" aria-label="${esc(t("voyage"))}"></div><p id="map-detail-status" class="muted" role="status"></p><div class="actions map-actions no-print"><button id="fit-route">${t("fitMap")}</button><button id="world-view">${t("worldMap")}</button></div><div class="legend"><span><i class="swatch"></i>${t("active")}</span><span><i class="swatch future"></i>${t("future")}</span><span><i class="swatch route"></i>${t("routeLegend")}</span><span><i class="swatch overlap"></i>${t("overlap")}</span></div><p class="muted">${t("overview")}</p><div class="panel no-print"><div class="grid">${field("routeName", "routeName", routeState.name, "text", 'maxlength="120"')}${field("departure", "departure", routeState.departure, "datetime-local")}${field("speed", "speed", routeState.speed, "text", 'inputmode="decimal"')}</div><div class="actions"><label class="button">${t("importRoute")}<input id="route-file" type="file" accept=".gpx,.geojson,.json,.rtz" hidden></label><button id="nav-route">${t("importNavigation")}</button><button id="export-route">${t("exportRoute")}</button></div><p class="muted">${t("importGeometry")}</p><h3>${t("waypoints")}</h3><div id="waypoint-list"></div><button id="add-waypoint">＋ ${t("addWaypoint")}</button><div class="actions"><button id="save-plan">${t("saveRoute")}</button></div>${select("savedPlans", "savedPlan", [["", t("choose")], ...plans.map((x) => [x.id, x.name])])}<div class="actions"><button id="open-plan">${t("openPlan")}</button><button id="delete-plan">${t("deletePlan")}</button></div></div><details class="panel no-print"><summary>${t("consumption")}</summary><div class="grid two">${select("carrier", "carrierId", [["", t("choose")], ...p.carriers.filter((c) => c.category !== "battery" && c.category !== "consumable").map((c) => [c.id, `${c.name} (${c.primaryUnit})`])], routeState.carrierId)}${field("fuelHourly", "fuelRate", routeState.fuelRate, "text", 'inputmode="decimal"')}${field("soxFactor", "soxFactor", routeState.soxFactor, "text", 'inputmode="decimal"')}${field("soxSource", "soxSource", routeState.soxSource, "text", 'maxlength="600"')}</div><div class="actions"><button id="use-daily">${t("useEstimate")}</button></div>${check("emissionEstimate", "voyageNox", routeState.voyageNox)}<p class="muted">${t("emissionWarning")}</p><div id="voyage-loads" class="grid">${p.engines
+      `<h2 id="voyage-title">${t("voyage")}</h2><p>${t("mapHint")}</p><p class="muted">${lang === "nb" ? "Fartøyprofil" : "Vessel profile"}: <strong>${esc(p.vessel.name || t("unknown"))}</strong> · ${t("speed")}: ${esc(p.vessel.serviceSpeed ?? t("unknown"))} kn · ${p.engines.length} ${lang === "nb" ? "maskiner" : "engines"} · <a href="#profile">${t("profile")}</a></p><div class="map-layout"><div class="map-column"><div class="actions map-actions no-print"><button id="map-draw" type="button" aria-pressed="${mapMode === "route"}">${lang === "nb" ? "Tegn rute" : "Draw route"}</button><button id="map-inspect" type="button" aria-pressed="${mapMode === "inspect"}">${lang === "nb" ? "Undersøk områder" : "Inspect areas"}</button></div><p id="map-mode-hint" class="muted">${lang === "nb" ? "Klikk i kartet for å legge til veipunkter. Dra punktene for å justere ruten." : "Click the map to add waypoints. Drag points to adjust the route."}</p><div id="reg-map" role="region" aria-label="${esc(t("voyage"))}"></div><p id="map-detail-status" class="muted" role="status"></p><div class="actions map-actions no-print"><button id="fit-route">${t("fitMap")}</button><button id="world-view">${t("worldMap")}</button></div><div class="legend"><span><i class="swatch"></i>${t("active")}</span><span><i class="swatch future"></i>${t("future")}</span><span><i class="swatch route"></i>${t("routeLegend")}</span><span><i class="swatch overlap"></i>${t("overlap")}</span></div><p class="muted">${t("overview")}</p><div class="panel no-print"><div class="grid">${field("routeName", "routeName", routeState.name, "text", 'maxlength="120"')}${field("departure", "departure", routeState.departure, "datetime-local")}${field("speed", "speed", routeState.speed, "text", 'inputmode="decimal"')}</div><div class="actions"><label class="button">${t("importRoute")}<input id="route-file" type="file" accept=".gpx,.geojson,.json,.rtz" hidden></label><button id="nav-route">${t("importNavigation")}</button><button id="export-route">${t("exportRoute")}</button></div><p class="muted">${t("importGeometry")}</p><h3>${t("waypoints")}</h3><div id="waypoint-list"></div><button id="add-waypoint">＋ ${t("addWaypoint")}</button><div class="actions"><button id="save-plan">${t("saveRoute")}</button></div>${select("savedPlans", "savedPlan", [["", t("choose")], ...plans.map((x) => [x.id, x.name])])}<div class="actions"><button id="open-plan">${t("openPlan")}</button><button id="delete-plan">${t("deletePlan")}</button></div></div><details class="panel no-print"><summary>${t("consumption")}</summary><div class="grid two">${select("carrier", "carrierId", [["", t("choose")], ...p.carriers.filter((c) => c.category !== "battery" && c.category !== "consumable").map((c) => [c.id, `${c.name} (${c.primaryUnit})`])], routeState.carrierId)}${field("fuelHourly", "fuelRate", routeState.fuelRate, "text", 'inputmode="decimal"')}${field("soxFactor", "soxFactor", routeState.soxFactor, "text", 'inputmode="decimal"')}${field("soxSource", "soxSource", routeState.soxSource, "text", 'maxlength="600"')}</div><div class="actions"><button id="use-daily">${t("useEstimate")}</button></div>${check("emissionEstimate", "voyageNox", routeState.voyageNox)}<p class="muted">${t("emissionWarning")}</p><div id="voyage-loads" class="grid">${p.engines
         .filter((e) => e.kind !== "electric")
         .map((e) =>
           field(
@@ -1212,6 +1218,17 @@
     drawRoute();
   }
   function bindVoyage() {
+    for (const [id, mode] of [["map-draw", "route"], ["map-inspect", "inspect"]])
+      $("#" + id).onclick = () => {
+        captureRoute();
+        mapMode = mode;
+        $("#map-draw").setAttribute("aria-pressed", String(mode === "route"));
+        $("#map-inspect").setAttribute("aria-pressed", String(mode === "inspect"));
+        $("#map-mode-hint").textContent = lang === "nb" ? (mode === "route" ? "Klikk i kartet for å legge til veipunkter. Dra punktene for å justere ruten." : "Klikk et farget område for å se reglene.") : (mode === "route" ? "Click the map to add waypoints. Drag points to adjust the route." : "Click a coloured area to view its rules.");
+        map?.closePopup();
+        detailLayer?.remove(); detailLayer = null;
+        drawAreas();
+      };
     $("#fit-route").onclick = fitRoute;
     $("#world-view").onclick = () =>
       map?.setView([35, 0], 2, { animate: false });
@@ -1408,6 +1425,7 @@
     );
     map.on("moveend", scheduleDetails);
     map.on("click", (event) => {
+      if (mapMode !== "route") return;
       captureRoute();
       if (routeState.points.length >= 1000) return;
       const c = event.latlng.wrap();
@@ -1511,6 +1529,7 @@
     return L.geoJSON(
       { type: "Feature", properties: { id: area.id }, geometry },
       {
+        interactive: mapMode === "inspect",
         style: {
           color,
           weight: detailed ? 2 : 1.3,
@@ -1613,12 +1632,8 @@
     routeLayer = L.featureGroup().addTo(map);
     waypointLayer = L.featureGroup().addTo(map);
     entryLayer = L.featureGroup().addTo(map);
-    let points;
-    try {
-      points = routePoints();
-    } catch {
-      return;
-    }
+    const points = routeState.points.map(([lon, lat]) => [Number(lon), Number(lat)]);
+    if (!points.length || routeState.points.some(([lon, lat]) => String(lon).trim() === "" || String(lat).trim() === "") || points.some(([lon, lat]) => !Number.isFinite(lon) || !Number.isFinite(lat) || Math.abs(lon) > 180 || Math.abs(lat) > 90)) return;
     if (routeResult) {
       for (const [i, segment] of routeResult.segments.entries()) {
         const coords = [
@@ -1645,7 +1660,7 @@
           .addTo(entryLayer)
           .on("click", () => selectSegment(i));
       }
-    } else {
+    } else if (points.length > 1) {
       try {
         const route = MT_REGULATORY_GEO?.route(points);
         L.polyline(
@@ -1666,18 +1681,19 @@
         }).addTo(routeLayer);
       }
     }
-    displayLine(points).forEach((p, i) =>
-      L.circleMarker(p, {
-        radius: 7,
-        color: "#122b3c",
-        fillColor:
-          i === 0 ? "#65dfad" : i === points.length - 1 ? "#ffb270" : "#fff",
-        fillOpacity: 1,
-        weight: 2,
-      })
-        .bindTooltip(String(i + 1))
-        .addTo(waypointLayer),
-    );
+    displayLine(points).forEach((p, i) => {
+      const marker = L.marker(p, {
+        draggable: true,
+        icon: L.divIcon({className: "reg-waypoint-icon", html: '<span>' + (i + 1) + '</span>', iconSize: [28, 28], iconAnchor: [14, 14]})
+      }).bindTooltip(String(i + 1)).addTo(waypointLayer);
+      marker.on("click", e => L.DomEvent.stopPropagation(e));
+      marker.on("dragend", () => {
+        captureRoute();
+        const c = marker.getLatLng().wrap();
+        routeState.points[i] = [Number(c.lng.toFixed(6)), Number(c.lat.toFixed(6))];
+        renderWaypoints(); invalidateRoute();
+      });
+    });
   }
   function sliceGeometry(result, from, to) {
     const a = result.cumulativeNm,

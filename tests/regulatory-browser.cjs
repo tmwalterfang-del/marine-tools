@@ -192,6 +192,44 @@ async function main() {
     );
     await page.locator('#tabs a[href="#voyage"]').click();
     await page.locator(".leaflet-container").waitFor();
+    await page.waitForSelector("#reg-map svg path");
+    assert.equal(await page.locator('#voyage [name=speed]').inputValue(), '10');
+    assert.equal(await page.locator('#voyage [name=carrierId]').inputValue(), 'mgo');
+    assert.equal(await page.locator('#voyage [name=fuelRate]').inputValue(), '1');
+    await page.locator('#map-inspect').click();
+    const findAreaPoint = () => page.evaluate(() => {
+      const map = document.querySelector('#reg-map').getBoundingClientRect();
+      for (const path of document.querySelectorAll('#reg-map svg path.leaflet-interactive')) {
+        const matrix = path.getScreenCTM();
+        if (!matrix || path.getAttribute('fill') === 'none') continue;
+        const box = path.getBBox();
+        for (let x = 0.1; x < 1; x += 0.1) for (let y = 0.1; y < 1; y += 0.1) {
+          const pt = new DOMPoint(box.x + x * box.width, box.y + y * box.height);
+          if (!path.isPointInFill(pt)) continue;
+          const screen = pt.matrixTransform(matrix);
+          if (screen.x > map.left + 35 && screen.x < map.right - 35 && screen.y > map.top + 35 && screen.y < map.bottom - 35) return {x: screen.x, y: screen.y};
+        }
+      }
+      return null;
+    });
+    const areaPoint = await findAreaPoint();
+    assert.ok(areaPoint, 'A visible coloured area can be targeted');
+    await page.locator('#map-draw').click();
+    await page.mouse.click(areaPoint.x, areaPoint.y);
+    assert.equal(await page.locator('.waypoint').count(), 1, 'Drawing through coloured area adds a waypoint');
+    assert.equal(await page.locator('.reg-waypoint-icon').count(), 1, 'First waypoint is visible');
+    const beforeDrag = await page.locator('.waypoint [name=lon]').inputValue();
+    const pin = await page.locator('.reg-waypoint-icon').boundingBox();
+    await page.mouse.move(pin.x + 14, pin.y + 14);
+    await page.mouse.down(); await page.mouse.move(pin.x + 35, pin.y + 14, {steps: 5}); await page.mouse.up();
+    assert.notEqual(await page.locator('.waypoint [name=lon]').inputValue(), beforeDrag, 'Dragging updates waypoint');
+    await page.locator('[data-waypoint="0"][data-action="remove"]').click();
+    await page.locator('#map-inspect').click();
+    const inspectPoint = await findAreaPoint();
+    await page.mouse.click(inspectPoint.x, inspectPoint.y);
+    assert.equal(await page.locator('.waypoint').count(), 0, 'Inspect mode does not create a waypoint');
+    await page.locator('.leaflet-popup').waitFor();
+    await page.locator('#map-draw').click();
     await page
       .locator("#voyage [name=routeName]")
       .fill("Bergen–Arctic reference");

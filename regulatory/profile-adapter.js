@@ -19,6 +19,7 @@
         ...(p.vessel || {}),
         ...r,
         name: legacy.name ?? p.vessel?.name ?? "",
+        loa: r.loa ?? legacy.loa ?? p.vessel?.loa ?? null,
         serviceSpeed: legacy.serviceSpeed ?? p.vessel?.serviceSpeed ?? null,
       },
       operational: {
