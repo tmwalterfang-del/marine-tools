@@ -1262,15 +1262,22 @@ function renderSettings(){
 
 function exportData(){
  const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),extraLocal:Object.fromEntries([['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']].map(([n,k])=>[n,store.get(k,null)])),exported:new Date().toISOString()};
+ if(window.MT_PLATFORM){try{data.extraLocal.appToolDrafts=store.get('mt.app.tool-drafts.v1',null);data.extraLocal.educationRecords=window.MT_APP_EDUCATION_BACKUP?.exportRecords()||{};window.MT_PLATFORM.saveText('marine-tools-backup-'+localDateISO()+'.json',JSON.stringify(data,null,2),'application/json').catch(()=>{});}catch{toast('Could not prepare backup.')}return}
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=`marine-tools-backup-${localDateISO()}.json`;a.click();URL.revokeObjectURL(a.href);toast('Local backup downloaded.')
 }
 async function importDataBackup(file){
+ if(window.MT_PLATFORM&&file.size>8*1024*1024)return toast('Backup exceeds the 8 MB app limit.');
  try{
   const data=JSON.parse(await file.text());
+  window.MT_PLATFORM?.validateBackup?.(data);
+  if(data.extraLocal?.educationRecords&&!window.MT_APP_EDUCATION_BACKUP)throw Error('Education backup validation unavailable.');
+  window.MT_APP_EDUCATION_BACKUP?.validate(data.extraLocal?.educationRecords);
   if(!data||typeof data!=='object'||(!data.profile&&!data.consumption&&!data.bunkering&&!data.settings))return toast('This does not look like a Marine Tools backup.');
   if(!confirm('Restore this Marine Tools backup? Existing local values may be replaced.'))return;
   const mapping=[[K.profile,data.profile],[K.route,data.route],[K.lastAnalysis,data.lastAnalysis],[K.settings,data.settings],[K.theme,data.theme],[K.favorites,data.favorites],[K.recent,data.recent],[K.history,data.history],[K.consumption,data.consumption],[K.bunkHistory,data.bunkering],[K.weatherCache,data.weatherCache]];
   for(const [key,value] of mapping)if(value!==undefined&&value!==null)store.set(key,value);if(data.extraLocal&&typeof data.extraLocal==='object')for(const [n,k] of [['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']])if(data.extraLocal[n]!=null)store.set(k,data.extraLocal[n]);
+  if(window.MT_PLATFORM&&data.extraLocal?.appToolDrafts!=null)store.set('mt.app.tool-drafts.v1',data.extraLocal.appToolDrafts);
+  if(window.MT_APP_EDUCATION_BACKUP&&data.extraLocal?.educationRecords)window.MT_APP_EDUCATION_BACKUP.restore(data.extraLocal.educationRecords);
   toast('Backup restored. Reloading…');setTimeout(()=>location.reload(),500)
  }catch{toast('Could not restore backup JSON.')}
 }

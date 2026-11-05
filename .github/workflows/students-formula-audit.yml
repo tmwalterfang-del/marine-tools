@@ -205,6 +205,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install application build dependencies
+        run: npm ci --no-audit --no-fund
       - name: Install pinned browser test runner
         run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.62.1 axe-core@4.11.1
       - name: Install rendering engine and Linux dependencies

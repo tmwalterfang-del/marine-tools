@@ -1,0 +1,75 @@
+(function(){'use strict';
+const allowed=new Set(['home','fuel','energy-log','engineering','electrical','vessel-calcs','quick','profile','settings','privacy','about','contact','suggestions','navigation','voyage-planning-lab']);
+let suppress=false,stack=[],position=0,lastBack=0,installPrompt=null;
+const nb=()=>/^(nb|nn|no)/i.test(document.documentElement.lang);
+function updateAppLanguage(){
+ const b=document.getElementById('mt-app-back'),install=document.getElementById('mt-app-install'),update=document.getElementById('mt-app-update');
+ if(b)b.setAttribute('aria-label',nb()?'Forrige verktøy':'Previous tool');
+ if(install)install.textContent=nb()?'Installer app':'Install app';
+ if(update)update.textContent=nb()?'Bruk oppdatering':'Apply update';
+ const label=document.getElementById('mt-app-version');if(label)label.textContent=(nb()?'Åpen testing':'Open testing')+' '+window.MT_APP_CONFIG.version+' · '+window.MT_APP_CONFIG.buildNumber;
+ const offline=document.querySelector('#offlineBanner span');if(offline)offline.textContent=nb()?'Kalkulatorer, Education og lagrede inndata er tilgjengelige uten nett. Live AIS og vær er ikke tilgjengelig.':'Local calculators, Education and saved inputs remain available offline. Live AIS and weather are unavailable.';
+}
+function status(message){const el=document.getElementById('mt-app-status');if(el)el.textContent=message;if(window.MT_APP_NAV&&typeof window.toast==='function')window.toast(message)}
+function remember(id){document.documentElement.dataset.mtPage=id;try{localStorage.setItem('mt.app.last-page.v1',id)}catch{}}
+function go(id,push=true){if(!allowed.has(id))return false;suppress=true;window.__marineToolsOpenPage(id);suppress=false;if(push)pushPage(id);remember(id);updateBack();return true}
+function pushPage(id){if(stack[position]===id)return;stack=stack.slice(0,position+1);stack.push(id);position=stack.length-1;history.pushState({mtPage:id,mtPosition:position},'',pageUrl(id))}
+function pageUrl(id){const u=new URL(location.href);if(['http:','https:'].includes(u.protocol))u.searchParams.set('page',id);else u.hash='page='+id;return u.href}
+function updateBack(){const b=document.getElementById('mt-app-back');if(b){b.disabled=position<1;b.hidden=position<1}}
+function back(){const menu=document.getElementById('sidebar');if(menu?.classList.contains('open')){menu.classList.remove('open');document.getElementById('mobileMenu')?.setAttribute('aria-expanded','false');return true}if(position>0){history.back();return true}return false}
+window.addEventListener('mt-native-back',()=>{if(back())return;if(window.MT_PLATFORM?.exit){if(Date.now()-lastBack<2000)window.MT_PLATFORM.exit();else{lastBack=Date.now();status('Press back again to close Marine Tools.')}}});
+window.addEventListener('popstate',e=>{const id=allowed.has(e.state?.mtPage)?e.state.mtPage:'home',next=e.state?.mtPosition;if(Number.isInteger(next)&&stack[next]===id)position=next;else{stack=[id];position=0;history.replaceState({mtPage:id,mtPosition:0},'',pageUrl(id))}go(id,false)});
+window.addEventListener('mt-app-deep-link',e=>go(e.detail.page));
+window.addEventListener('mt-page-change',e=>{const id=e.detail.page;if(suppress||!allowed.has(id))return;pushPage(id);remember(id);updateBack()});
+window.addEventListener('mt-app-status',e=>status(e.detail.message));
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;const b=document.getElementById('mt-app-install');if(b)b.hidden=false});
+window.addEventListener('appinstalled',()=>{installPrompt=null;document.getElementById('mt-app-install').hidden=true;status('Marine Tools installed.')});
+document.addEventListener('click',e=>{const nav=e.target.closest('[data-go],[data-page]'),id=nav?.dataset.go||nav?.dataset.page;if(id&&!allowed.has(id)){e.preventDefault();e.stopImmediatePropagation();status('This online feature is not included in the local app candidate.');return}const a=e.target.closest('a[href]');if(!a||a.download||e.defaultPrevented)return;const u=new URL(a.href,location.href);if(a.getAttribute('href')?.startsWith('#')&&a.closest('#privacy')){const target=document.getElementById(u.hash.slice(1));if(target){e.preventDefault();target.scrollIntoView({block:'start'});return}}if(u.protocol==='https:'&&u.origin!==location.origin||u.protocol==='mailto:'){e.preventDefault();window.MT_PLATFORM.openUrl(u.href).catch(err=>status(err.message))}},true);
+document.addEventListener('keydown',e=>{if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();back()}});
+function init(){
+ document.documentElement.classList.add('mt-app');
+ const bar=document.querySelector('.topbar');bar.classList.add('mt-app-header');
+ const nav=document.createElement('div');nav.className='mt-app-navigation';
+ nav.innerHTML='<button id="mt-app-back" type="button" aria-label="Previous tool">←</button>';
+ const menu=document.getElementById('mobileMenu');if(menu)nav.prepend(menu);bar.prepend(nav);
+ const title=bar.querySelector('.top-brand');title.className='top-brand mt-app-title';
+ title.replaceChildren();const name=document.createElement('strong');name.textContent='Marine Tools';
+ const version=document.createElement('small');version.id='mt-app-version';version.textContent=(window.MT_APP_CONFIG.channelLabel||'Preview')+' '+window.MT_APP_CONFIG.version+' · '+window.MT_APP_CONFIG.buildNumber;
+ title.append(name,version);
+ const info=document.createElement('section');info.className='mt-app-info';info.setAttribute('aria-label','Application status');
+ info.innerHTML='<span id="mt-app-status" role="status" aria-live="polite"></span><button id="mt-app-install" type="button" hidden>Install app</button><button id="mt-app-update" type="button" hidden>Apply update</button>';
+ bar.after(info);
+ document.getElementById('mt-app-back').onclick=back;document.getElementById('mt-app-install').hidden=!installPrompt;
+ updateAppLanguage();new MutationObserver(updateAppLanguage).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+ document.getElementById('mt-app-install').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;document.getElementById('mt-app-install').hidden=true}};
+ status('Local calculators · live AIS/weather disabled.');
+ let saved='home';try{saved=localStorage.getItem('mt.app.last-page.v1')||'home'}catch{}
+ const initial=window.__MT_INITIAL_PAGE||(location.hash.startsWith('#page=')?location.hash.slice(6):new URL(location.href).searchParams.get('page'))||saved;
+ const id=allowed.has(initial)?initial:'home';stack=[id];history.replaceState({mtPage:id,mtPosition:0},'',pageUrl(id));go(id,false);
+ const measure=()=>document.documentElement.style.setProperty('--mt-header-height',bar.offsetHeight+'px');
+ measure();const size=new ResizeObserver(measure);size.observe(bar);window.addEventListener('resize',measure);window.visualViewport?.addEventListener('resize',measure);
+ // Android's IME can resize a landscape WebView after its initial focus scroll.
+ // Keep the complete focused field between the sticky header and keyboard.
+ let focusFrame=0;
+ const keepFocusedVisible=()=>{
+  focusFrame=0;const field=document.activeElement;
+  if(!field?.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="button"]),textarea,select')||!field.closest('.main-content'))return;
+  const viewport=window.visualViewport,offset=viewport?.offsetTop||0;
+  const safeBottom=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom'))||0;
+  const top=Math.max(bar.getBoundingClientRect().bottom,offset)+8,bottom=offset+(viewport?.height||innerHeight)-safeBottom-12;
+  const rect=field.getBoundingClientRect();if(bottom-top<rect.height)return;
+  const delta=rect.bottom>bottom?rect.bottom-bottom:rect.top<top?rect.top-top:0;
+  if(Math.abs(delta)>.5)window.scrollBy({top:delta,behavior:'instant'});
+ };
+ const queueFocus=()=>{if(!focusFrame)focusFrame=requestAnimationFrame(keepFocusedVisible)};
+ document.addEventListener('focusin',queueFocus);window.addEventListener('resize',queueFocus);window.visualViewport?.addEventListener('resize',queueFocus);
+ // Do not advertise network-only pages as available local app features.
+ for(const n of document.querySelectorAll('.nav-btn[data-page]'))if(!allowed.has(n.dataset.page))n.hidden=true;
+ if(!window.MT_NATIVE_APP&&'serviceWorker'in navigator)navigator.serviceWorker.ready.then(reg=>{
+  const show=()=>{if(!reg.waiting)return;const b=document.getElementById('mt-app-update');b.hidden=false;b.onclick=()=>{status('Applying update. Local drafts remain on this device.');navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});reg.waiting.postMessage({type:'SKIP_WAITING'})}};
+  show();reg.addEventListener('updatefound',()=>reg.installing?.addEventListener('statechange',show));
+ }).catch(()=>{});
+ window.MT_APP_NAV={go,back,canOpen:id=>allowed.has(id),get current(){return stack[position]}};
+}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0),{once:true});
+})();
