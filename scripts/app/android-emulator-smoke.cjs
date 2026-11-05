@@ -90,6 +90,12 @@ const watchdog=setTimeout(()=>{fs.writeFileSync('app-artifacts/android/timeout.j
   assert.ok((await page.locator('body').innerText()).length>200,'Education content loads offline');
   await page.goto('https://localhost/students/chapters.html');
   assert.ok((await page.locator('body').innerText()).length>200,'Chapters load offline');
+  await page.goto('https://localhost/students/interactive.html#trim');
+  const educationFrame=page.frameLocator('#frames iframe:not([hidden])');
+  await educationFrame.locator('.teaching-results svg:visible').first().waitFor({timeout:30000});
+  await educationFrame.locator('details.teaching-inputs summary').first().click();
+  assert.ok(await educationFrame.locator('input:visible').count(),'Interactive module inputs available offline');
+  checkpoint('interactive Education model loads in Android WebView offline');
   checkpoint('bundled Education and chapters load in Android WebView offline');
   fs.writeFileSync('app-artifacts/android/emulator-results.json',JSON.stringify({status:'PASS',version:appConfig.version,buildNumber:await page.evaluate(()=>MT_APP_CONFIG.buildNumber),packageId,sameDebugKeyUpgrade:!!process.env.MT_ANDROID_UPGRADE_APK,productionSigningTested:false,nativeClipboard:true,fileChooser:true,privateExportContents:true,backNavigation:true,offlineColdReopen:true,offlinePolicy:true,offlineEducation:true,calculation:'2.70 m with restored 1.5 m margin',physicalDevice:false,samsungDevice:false,recipientFileDelivery:'UNVERIFIED'},null,2));
  }catch(e){if(page)try{console.error(JSON.stringify(await page.evaluate(()=>({url:location.href,viewport:[innerWidth,innerHeight,visualViewport?.width,visualViewport?.height],scroll:[scrollX,scrollY,document.scrollingElement?.scrollHeight],bodyClass:document.body.className,dialogOpen:document.getElementById('mtReleaseDialog')?.open,button:document.getElementById('calcAirDraft')?.getBoundingClientRect().toJSON(),draft:localStorage.getItem('mt.app.tool-drafts.v1')}))))}catch{};fs.writeFileSync('app-artifacts/android/failure.json',JSON.stringify({error:e.message,passed},null,2));await device.screenshot({path:'app-artifacts/android/failure.png'}).catch(()=>{});throw e

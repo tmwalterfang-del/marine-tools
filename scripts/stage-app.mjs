@@ -8,7 +8,7 @@ const root=path.resolve(import.meta.dirname,'..'),out=path.join(root,'app-dist')
 const config=JSON.parse(fs.readFileSync(path.join(root,'apps/app-config.json')));
 if(config.productionApiEnabled||config.analyticsEnabled||config.channel!=='preview')throw Error('Only isolated preview packaging is enabled.');
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
-const csp="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ipc: http://ipc.localhost; font-src 'self' data:; worker-src 'self' blob:; frame-src 'none'; object-src 'none'";
+const csp="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ipc: http://ipc.localhost; font-src 'self' data:; worker-src 'self' blob:; frame-src 'self'; object-src 'none'";
 const excluded=new Set(['sw.js','analytics-v856.js','usage-analytics.js','support-widget-v857.js','regulatory.html','regulatory-links.js']);
 for(const name of fs.readdirSync(root).filter(n=>/\.(?:html|js|css)$/.test(n)&&!excluded.has(n))){
  let text=fs.readFileSync(path.join(root,name),'utf8');
