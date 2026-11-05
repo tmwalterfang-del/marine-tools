@@ -10,7 +10,7 @@ for p in sorted(root.glob('outputs/**/*')):
   assert not any(n.startswith(prefix+x+'/') for n in names for x in ['worker','tests','.git','regulatory']),str(p)
   info=json.loads(z.read(prefix+'build-info.json'))
   assert info['version']==config['version'] and info['targets']==config['distributionTargets'] and not info['productionApiEnabled'] and not info['analyticsEnabled'] and info['educationBundled']
-  assert prefix+'students/index.html' in names and prefix+'students/interactive.html' in names
+  assert prefix+'students/index.html' in names and prefix+'students/interactive.html' in names and prefix+'students/vendor/neutrium-if97.min.js' in names
   assert info['buildNumber']==config['buildNumber']
   preview=z.read(prefix+'app-preview.js').decode()
   packaged_config=json.loads(preview.split('window.MT_APP_CONFIG=',1)[1].split(';\n',1)[0])

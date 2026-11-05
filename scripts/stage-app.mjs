@@ -52,6 +52,9 @@ for(const name of fs.readdirSync(studentDir)){
  if(name.endsWith('.js'))data=Buffer.from(data.toString('utf8').replace(/if\s*\(\s*(["'])serviceWorker\1\s+in\s+navigator\s*\)/g,"if(!window.MT_NATIVE_APP && 'serviceWorker' in navigator)"));
  fs.writeFileSync(path.join(studentOut,name),data);
 }
+// Bundle the local steam-property library required by Mollier and related models.
+fs.mkdirSync(path.join(studentOut,'vendor'),{recursive:true});
+fs.copyFileSync(path.join(studentDir,'vendor','neutrium-if97.min.js'),path.join(studentOut,'vendor','neutrium-if97.min.js'));
 fs.copyFileSync(path.join(root,'LICENSE'),path.join(out,'LICENSE'));
 fs.writeFileSync(path.join(out,'education.html'),'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Education · Marine Tools</title><link rel="stylesheet" href="styles.css"><body style="padding:24px"><h1>Education</h1><p><a href="students/index.html">Open Education</a></p><p><a href="index.html">Back to tools</a></p></body></html>');
 fs.writeFileSync(path.join(out,'app-preview.js'),"window.MT_APP_PREVIEW=true;\nwindow.MT_APP_CONFIG="+JSON.stringify(config)+";\ntry{localStorage.setItem('mt.analytics.exclude','1');const s=JSON.parse(localStorage.getItem('mt.settings')||'{}');s.usageAnalytics=false;localStorage.setItem('mt.settings',JSON.stringify(s))}catch{}\n");
@@ -61,7 +64,7 @@ if(fs.existsSync(path.join(root,'apps/store/privacy-draft.html')))fs.copyFileSyn
 const manifest={id:'marine-tools-preview',name:config.name,short_name:'Marine Tools',description:'Local maritime calculator app candidate',start_url:'./index.html',scope:'./',display:'standalone',background_color:'#061c2f',theme_color:'#061c2f',icons:[192,512].map(size=>({src:'assets/icon-'+size+'.png',sizes:size+'x'+size,type:'image/png',purpose:'any maskable'})),shortcuts:[{name:'Vessel calculations',url:'./index.html?page=vessel-calcs'},{name:'Electrical tools',url:'./index.html?page=electrical'}]};
 fs.writeFileSync(path.join(out,'manifest.webmanifest'),JSON.stringify(manifest,null,2)+'\n');
 fs.writeFileSync(path.join(out,'build-info.json'),JSON.stringify({name:config.name,version:config.version,buildNumber:config.buildNumber,sourceCommit:/^[a-f0-9]{40}$/.test(process.env.GITHUB_SHA||'')?process.env.GITHUB_SHA:'local-working-tree',channel:config.channel,educationBundled:true,productionApiEnabled:false,analyticsEnabled:false,targets:config.distributionTargets},null,2)+'\n');
-const assets=fs.readdirSync(out).filter(f=>fs.statSync(path.join(out,f)).isFile()).map(f=>'./'+f).concat(fs.readdirSync(path.join(out,'assets')).map(f=>'./assets/'+f),fs.readdirSync(studentOut).map(f=>'./students/'+f));
+const assets=fs.readdirSync(out).filter(f=>fs.statSync(path.join(out,f)).isFile()).map(f=>'./'+f).concat(fs.readdirSync(path.join(out,'assets')).map(f=>'./assets/'+f),fs.readdirSync(studentOut).filter(f=>fs.statSync(path.join(studentOut,f)).isFile()).map(f=>'./students/'+f),['./students/vendor/neutrium-if97.min.js']);
 const digest=crypto.createHash('sha256');for(const asset of assets)digest.update(asset).update(fs.readFileSync(path.join(out,asset)));
 const cache='marine-tools-app-preview-'+config.version+'-'+digest.digest('hex').slice(0,16);
 const worker=[
