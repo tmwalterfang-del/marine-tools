@@ -79,3 +79,23 @@ jobs:
           name: marine-tools-android-emulator-report
           path: app-artifacts/android/
           if-no-files-found: warn
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm install --prefix /tmp/mt-browser --no-audit --no-fund playwright@1.62.1
+      - run: node /tmp/mt-browser/node_modules/playwright/cli.js install --with-deps webkit
+      - run: node scripts/stage-app.mjs
+      - name: Test bundled Education and app behavior
+        env:
+          NODE_PATH: /tmp/mt-browser/node_modules
+          MT_QA_ENGINE: webkit
+        run: |
+          node tests/app-education-package.cjs
+          node tests/app-browser-20261027.cjs webkit
