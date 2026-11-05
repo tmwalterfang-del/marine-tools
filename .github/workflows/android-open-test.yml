@@ -50,7 +50,7 @@ jobs:
           if-no-files-found: error
   emulator:
     needs: build
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
@@ -62,17 +62,31 @@ jobs:
           name: marine-tools-open-test-unsigned
           path: app-build
       - run: npm install --prefix /tmp/mt-browser --no-audit --no-fund playwright@1.62.1
+      - name: Enable KVM access
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Android emulator smoke test
         uses: reactivecircus/android-emulator-runner@v2
         env:
           NODE_PATH: /tmp/mt-browser/node_modules
         with:
           api-level: 35
-          arch: arm64-v8a
+          arch: x86_64
           profile: pixel_6
           script: |
             adb install -r $(find app-build -name '*debug*.apk' -type f | head -n 1)
             node scripts/app/android-emulator-smoke.cjs
+            adb uninstall com.marinetools.app
+            keytool -genkeypair -keystore /tmp/mt-test.keystore -storepass android -keypass android -alias androidtest -dname 'CN=Android emulator test' -keyalg RSA -keysize 2048 -validity 2
+            "$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -r | head -n 1)" sign --ks /tmp/mt-test.keystore --ks-key-alias androidtest --ks-pass pass:android --key-pass pass:android --out /tmp/mt-release.apk $(find app-build -name '*release*unsigned*.apk' -type f | head -n 1)
+            adb install /tmp/mt-release.apk
+            adb shell am start -W -n com.marinetools.app/.MainActivity
+            sleep 10
+            adb shell pidof com.marinetools.app
+            adb logcat -d -s AndroidRuntime:E | tee /tmp/mt-runtime.log
+            ! grep -q 'FATAL EXCEPTION' /tmp/mt-runtime.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
