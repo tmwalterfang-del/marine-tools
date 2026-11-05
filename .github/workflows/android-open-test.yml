@@ -1,5 +1,8 @@
 name: Android open-test candidate
 on:
+  pull_request:
+    branches: ['main']
+    paths: ['apps/**', 'students/**', 'scripts/**', 'tests/app-*.cjs', 'tests/app-*.mjs', 'package*.json', 'capacitor.config.json', '.github/workflows/android-open-test.yml']
   push:
     branches: ['codex/android-open-test-main-20261105']
   workflow_dispatch:
