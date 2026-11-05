@@ -17,7 +17,7 @@ for(const name of fs.readdirSync(root).filter(n=>/\.(?:html|js|css)$/.test(n)&&!
   text=text.replace(/<script[^>]*\bsrc=["'](?:usage-analytics|analytics-v856|support-widget-v857)\.js[^"']*["'][^>]*><\/script>/g,'');
   text=text.replace(/<script[^>]*\bsrc=["']regulatory-links\.js[^"']*["'][^>]*><\/script>/g,'');
   text=text.replace(/<meta name="robots"[^>]*>/,'<meta name="robots" content="noindex,nofollow">');
-  text=text.replace('</head>','<meta http-equiv="Content-Security-Policy" content="'+csp+'">'+(name==='index.html'?'<link rel="stylesheet" href="app-shell.css"><script src="app-preview.js"></script><script defer src="native-platform.js"></script><script defer src="app-shell.js"></script><script defer src="app-drafts.js"></script>':'<script src="app-preview.js"></script>')+'</head>');
+  text=text.replace('</head>','<meta http-equiv="Content-Security-Policy" content="'+csp+'">'+(name==='index.html'?'<link rel="stylesheet" href="app-shell.css"><script src="app-preview.js"></script><script defer src="native-platform.js"></script><script defer src="education-backup.js"></script><script defer src="app-shell.js"></script><script defer src="app-drafts.js"></script>':'<script src="app-preview.js"></script>')+'</head>');
   let inline=0;
   text=text.replace(/<script([^>]*?)>([\s\S]*?)<\/script>/g,(all,attrs,body)=>{
    if(/\bsrc=/.test(attrs))return all;
@@ -56,7 +56,7 @@ fs.copyFileSync(path.join(root,'LICENSE'),path.join(out,'LICENSE'));
 fs.writeFileSync(path.join(out,'education.html'),'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Education · Marine Tools</title><link rel="stylesheet" href="styles.css"><body style="padding:24px"><h1>Education</h1><p><a href="students/index.html">Open Education</a></p><p><a href="index.html">Back to tools</a></p></body></html>');
 fs.writeFileSync(path.join(out,'app-preview.js'),"window.MT_APP_PREVIEW=true;\nwindow.MT_APP_CONFIG="+JSON.stringify(config)+";\ntry{localStorage.setItem('mt.analytics.exclude','1');const s=JSON.parse(localStorage.getItem('mt.settings')||'{}');s.usageAnalytics=false;localStorage.setItem('mt.settings',JSON.stringify(s))}catch{}\n");
 await build({entryPoints:[path.join(root,'apps/shared/platform-entry.js')],outfile:path.join(out,'native-platform.js'),bundle:true,format:'iife',platform:'browser',target:['chrome110','safari15'],minify:true,legalComments:'eof'});
-for(const name of ['app-shell.js','app-shell.css','app-drafts.js','education-app.js'])fs.copyFileSync(path.join(root,'apps/shared',name),path.join(out,name));
+for(const name of ['app-shell.js','app-shell.css','app-drafts.js','education-app.js','education-backup.js'])fs.copyFileSync(path.join(root,'apps/shared',name),path.join(out,name));
 if(fs.existsSync(path.join(root,'apps/store/privacy-draft.html')))fs.copyFileSync(path.join(root,'apps/store/privacy-draft.html'),path.join(out,'app-privacy.html'));
 const manifest={id:'marine-tools-preview',name:config.name,short_name:'Marine Tools',description:'Local maritime calculator app candidate',start_url:'./index.html',scope:'./',display:'standalone',background_color:'#061c2f',theme_color:'#061c2f',icons:[192,512].map(size=>({src:'assets/icon-'+size+'.png',sizes:size+'x'+size,type:'image/png',purpose:'any maskable'})),shortcuts:[{name:'Vessel calculations',url:'./index.html?page=vessel-calcs'},{name:'Electrical tools',url:'./index.html?page=electrical'}]};
 fs.writeFileSync(path.join(out,'manifest.webmanifest'),JSON.stringify(manifest,null,2)+'\n');

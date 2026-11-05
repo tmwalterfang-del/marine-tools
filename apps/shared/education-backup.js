@@ -1,0 +1,8 @@
+/* Education data included only when the user exports a local app backup. */
+(function(){'use strict';
+ const allowed=k=>/^mt-student-[a-zA-Z0-9._:-]{1,100}$/.test(k)||/^mt\.study\.[a-zA-Z0-9._:-]{1,100}$/.test(k)||k==='mt.learning.next.v1';
+ function validate(entries){if(entries==null)return {};if(typeof entries!=='object'||Array.isArray(entries))throw Error('Invalid Education backup');const pairs=Object.entries(entries);if(pairs.length>500)throw Error('Too many Education records');let size=0,budget=200000;function check(node,depth){if(--budget<0||depth>40)throw Error('Education record too complex');if(node&&typeof node==='object')for(const [k,v] of Object.entries(node)){if(['__proto__','constructor','prototype'].includes(k))throw Error('Unsafe Education record');check(v,depth+1)}}for(const [key,value]of pairs){if(!allowed(key)||typeof value!=='string'||value.length>200000)throw Error('Invalid Education record');size+=value.length;if(size>4000000)throw Error('Education backup too large');if(key==='mt.study.last-module.v1'){if(!/^[a-z0-9-]{1,100}$/.test(value))throw Error('Invalid module');}else check(JSON.parse(value),0);}return entries;}
+ function exportRecords(){const out={};for(const key of Object.keys(localStorage))if(allowed(key)){const value=localStorage.getItem(key);if(value!==null)out[key]=value;}return validate(out);}
+ function restore(entries){validate(entries);const old=new Map();try{for(const [key,value]of Object.entries(entries)){old.set(key,localStorage.getItem(key));localStorage.setItem(key,value)}}catch(error){for(const [key,value]of old){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value)}catch{}}throw error}}
+ window.MT_APP_EDUCATION_BACKUP={exportRecords,validate,restore};
+})();

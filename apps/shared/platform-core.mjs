@@ -27,7 +27,7 @@ export function validateBackup(data){
  function visit(x,depth=0){if(--budget<0||depth>12)throw Error('Backup structure is too large or deep.');
   if(typeof x==='number'&&!Number.isFinite(x)||typeof x==='string'&&x.length>20000)throw Error('Invalid backup value.');
   if(Array.isArray(x)){if(x.length>3000)throw Error('Too many backup rows.');for(const y of x)visit(y,depth+1)}
-  else if(object(x)){for(const[k,v]of Object.entries(x)){if(['__proto__','prototype','constructor'].includes(k))throw Error('Unsafe backup key.');visit(v,depth+1)}}
+  else if(object(x)){for(const[k,v]of Object.entries(x)){if(['__proto__','prototype','constructor'].includes(k))throw Error('Unsafe backup key.');if(depth===1&&x===data.extraLocal&&k==='educationRecords')continue;visit(v,depth+1)}}
  }
  visit(data);
  for(const k of ['profile','settings','lastAnalysis','weatherCache','extraLocal'])if(data[k]!=null&&!object(data[k]))throw Error('Invalid backup object: '+k);
@@ -47,6 +47,11 @@ export function validateBackup(data){
    for(const k of ['carriers','machinery','tanks'])if(e.profileV2[k]!=null&&!Array.isArray(e.profileV2[k]))throw Error('Invalid profile rows.');
   }
   if(e.energyLog!=null&&!Array.isArray(e.energyLog))throw Error('Invalid energy log.');
+  if(e.appToolDrafts!=null){
+   const d=e.appToolDrafts;
+   if(!object(d)||d.schema!=='marine-tools-app-drafts'||d.version!==1||!object(d.fields)||Object.keys(d.fields).length>1000)throw Error('Invalid saved calculator inputs.');
+   for(const [key,value] of Object.entries(d.fields))if(!/^[a-zA-Z0-9_-]{1,100}$/.test(key)||!object(value)||typeof value.type!=='string'||!(typeof value.value==='boolean'||typeof value.value==='string'&&value.value.length<=2000))throw Error('Invalid saved calculator input.');
+  }
  }
  for(const row of data.history||[]){if(row.result!==undefined&&typeof row.result!=='string'||row.inputs!==undefined&&(!Array.isArray(row.inputs)||row.inputs.some(v=>typeof v!=='string')))throw Error('Invalid calculation history.')}
  for(const key of ['recent','favorites'])for(const row of data[key]||[])for(const field of ['title','page'])if(row[field]!==undefined&&typeof row[field]!=='string')throw Error('Invalid tool reference.');
