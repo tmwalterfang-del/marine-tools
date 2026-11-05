@@ -1,0 +1,78 @@
+name: Android open-test candidate
+on:
+  push:
+    branches: ['codex/android-open-test-main-20261105']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Validate staged app and native adapters
+        run: |
+          npm run test:app
+          npm run test:app:unit
+      - name: Generate Android project
+        run: npm run app:android:sync
+      - name: Build debug APK and optimized unsigned release
+        run: |
+          chmod +x apps/mobile/android/gradlew
+          apps/mobile/android/gradlew -p apps/mobile/android assembleDebug assembleRelease bundleRelease
+      - name: Verify package contents and release configuration
+        run: |
+          python3 scripts/app/check-android-package.py
+          test -s apps/mobile/android/app/build/outputs/mapping/release/mapping.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marine-tools-open-test-unsigned
+          path: |
+            apps/mobile/android/app/build/outputs/apk/debug/*.apk
+            apps/mobile/android/app/build/outputs/apk/release/*.apk
+            apps/mobile/android/app/build/outputs/bundle/release/*.aab
+            apps/mobile/android/app/build/outputs/mapping/release/
+            app-artifacts/android/
+          if-no-files-found: error
+  emulator:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: marine-tools-open-test-unsigned
+          path: app-build
+      - run: npm install --prefix /tmp/mt-browser --no-audit --no-fund playwright@1.62.1
+      - name: Android emulator smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          NODE_PATH: /tmp/mt-browser/node_modules
+        with:
+          api-level: 35
+          arch: arm64-v8a
+          profile: pixel_6
+          script: |
+            adb install -r $(find app-build -name '*debug*.apk' -type f | head -n 1)
+            node scripts/app/android-emulator-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: marine-tools-android-emulator-report
+          path: app-artifacts/android/
+          if-no-files-found: warn
