@@ -53,10 +53,9 @@ let browser;
  await p.waitForFunction(()=>JSON.parse(localStorage.getItem('mt.history')||'[]').some(x=>x.title==='Unit converter'&&/^0[,\.]000 km/.test(x.result)));
  // Saved text is immutable, including English text and decimals already stored.
  const old={title:'Old fuel result 12.50',page:'fuel',time:'2026-10-30T12:00:00Z',inputs:['Notes: user 12.50'],result:'12.50 m³ usable · 2.5 days'};
- // Seed from the next document, so a deferred record from the previous page cannot land on top of it.
+ // Seed at the start of the next document (once), so a deferred record from the previous page cannot land on top of it.
+ await p.addInitScript(old=>{if(!sessionStorage.getItem('mt-test-history-seeded')){sessionStorage.setItem('mt-test-history-seeded','1');localStorage.setItem('mt.history',JSON.stringify([old]))}},old);
  await p.goto(base+'/index.html?page=home',{waitUntil:'domcontentloaded'});await p.evaluate(()=>MT_I18N.ready);
- await p.evaluate(old=>localStorage.setItem('mt.history',JSON.stringify([old])),old);
- await p.reload({waitUntil:'domcontentloaded'});await p.evaluate(()=>MT_I18N.ready);
  await p.evaluate(()=>MT_I18N.set('nb'));assert.match(await p.locator('#historyHome').textContent(),/12\.50 m³ usable · 2\.5 days/);
  assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('mt.history'))),[old]);
  // New history stores the visible result once; switching language adds no entry.
