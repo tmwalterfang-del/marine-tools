@@ -24,6 +24,8 @@ on:
       - 'sidebar-v858.js'
       - 'custom-calculator*'
       - 'tests/marine-systems-*'
+      - 'marine-calculator*'
+      - 'tests/marine-calculators-*'
       - 'tests/custom-calculators-*'
       - 'language-systems-*'
       - 'app.js'
@@ -74,6 +76,7 @@ jobs:
           node tests/students-discovery-reference-20261030.mjs
           node tests/students-advanced-reference-20261030.mjs
           node tests/marine-systems-reference-20261102.cjs
+          node tests/marine-calculators-reference.cjs
           node tests/custom-calculators-core-20261102.cjs
           node tests/students-learning-cycle-engine-20261030.mjs
       - name: Independent circuit node balances
@@ -224,6 +227,7 @@ jobs:
           node tests/students-learning-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-discovery-cycle-browser-20261030.cjs ${{ matrix.browser }}
           node tests/marine-systems-browser-20261102.cjs ${{ matrix.browser }}
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/marine-calculators-browser.cjs; fi
           node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
