@@ -22,6 +22,15 @@ on:
       - 'language-*20261031.js'
       - 'product-*20261031.*'
       - 'sidebar-v858.js'
+      - 'custom-calculator*'
+      - 'tests/marine-systems-*'
+      - 'marine-calculator*'
+      - 'tests/marine-calculators-*'
+      - 'tests/site-discovery-browser.cjs'
+      - 'tests/site-offline-browser.cjs'
+      - 'sw.js'
+      - 'tests/custom-calculators-*'
+      - 'language-systems-*'
       - 'app.js'
       - 'index.html'
       - 'product-v860.js'
@@ -69,6 +78,9 @@ jobs:
         run: |
           node tests/students-discovery-reference-20261030.mjs
           node tests/students-advanced-reference-20261030.mjs
+          node tests/marine-systems-reference-20261102.cjs
+          node tests/marine-calculators-reference.cjs
+          node tests/custom-calculators-core-20261102.cjs
           node tests/students-learning-cycle-engine-20261030.mjs
       - name: Independent circuit node balances
         run: node tests/students-source-circuits-20261020.mjs
@@ -195,7 +207,7 @@ jobs:
 
   education-browsers:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -217,6 +229,10 @@ jobs:
           node tests/students-model-practice-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-learning-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-discovery-cycle-browser-20261030.cjs ${{ matrix.browser }}
+          node tests/marine-systems-browser-20261102.cjs ${{ matrix.browser }}
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/marine-calculators-browser.cjs; fi
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/site-discovery-browser.cjs; fi
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/site-offline-browser.cjs; fi
           node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
