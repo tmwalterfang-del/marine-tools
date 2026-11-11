@@ -44,7 +44,7 @@ function etaText(hours){
 }
 function typeName(x){return x.type==='field'?'Offshore field':x.type==='facility'?'Fixed facility':x.type==='custom'?'Custom position':'Port'}
 function sourceName(x){return x.source||(x.type==='port'?'UN/LOCODE-derived port directory':'User position')}
-function haversineKm(a,b){const R=6371,rad=Math.PI/180,lat1=a[1]*rad,lat2=b[1]*rad,dlat=(b[1]-a[1])*rad,dlon=(b[0]-a[0])*rad;const h=Math.sin(dlat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dlon/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(h)))}
+function haversineKm(a,b){if(typeof MT_GEO!=='undefined')return MT_GEO.inverse({lat:a[1],lon:a[0]},{lat:b[1],lon:b[0]}).distanceNm*1.852;const R=6371,rad=Math.PI/180,lat1=a[1]*rad,lat2=b[1]*rad,dlat=(b[1]-a[1])*rad,dlon=(b[0]-a[0])*rad;const h=Math.sin(dlat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dlon/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(h)))}
 function greatCircleNm(a,b){return haversineKm(a,b)/1.852}
 function isNorwayLocation(x){return !!x&&(String(x.code||'').startsWith('NO')||/norway|norwegian continental shelf/i.test(String(x.country||''))||x.type==='field'||x.type==='facility')}
 function needsCoastalNetwork(from,to){return isNorwayLocation(from)||isNorwayLocation(to)||haversineKm(from.coordinates,to.coordinates)<=750}

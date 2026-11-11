@@ -11,6 +11,8 @@ if(PRIVATE_PREVIEW){
   e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>e.request.mode==='navigate'?new Response('<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Private preview is offline</title><h1>Private preview requires an internet connection</h1><p>Reconnect and sign in through Cloudflare Access. Downloaded study reports and scenario files remain available separately.</p></html>',{status:503,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}}):Response.error()));
  });
 }else{
+// WGS 84 geodesy for navigation and route tools (GeographicLib + Turf subset).
+SHELL.push('./geographiclib-geodesic-2.2.0.min.js','./turf-7.4.0-subset.min.js','./navigation-geodesy-20261111.js');
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='SKIP_WAITING')self.skipWaiting()});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('marine-tools-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
