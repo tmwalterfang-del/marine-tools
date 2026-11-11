@@ -22,7 +22,7 @@ check('Public release title',release.history[0].title==='Education & your worksp
 check('Previous public release retained',release.history[1].version==='8.7.0'&&release.history[1].date==='2026-10-19');
 check('No full AIS acceptance claimed',!release.history[0].items.some(x=>/fully tested|certified|live CPA verified/i.test(x)));
 for(const file of ['release-v860.js','app.js','whats-new-v861.js'])check('Asset rotated '+file,read('index.html').includes(file+'?v='+release.build));
-check('Cache rotated',read('sw.js').includes('marine-tools-fullscale-20261101-v8-8-0'));
+check('Cache rotated',read('sw.js').includes('marine-tools-education-calculators-20261111-v1'));
 const prod=await worker.fetch(new Request('https://api.marinetools.app/api/release'),{},{});
 check('Production does not expose QA diagnostic headers',!prod.headers.has('access-control-expose-headers')&&!prod.headers.has('x-marine-tools-environment'));
 console.log(JSON.stringify({result:'PASS',assertions:checks,version:release.version,build:release.build}));

@@ -60,13 +60,16 @@ register('starting-air',x=>{
  if(x.on>=x.off)throw RangeError('Compressor cut-in must be below cut-out pressure.');
  const pref=1.01325,tr=(x.temperature+273.15)/(x.reference+273.15),factor=pref*tr/x.volume;let p=x.initial,running=p<=x.on,delivered=0,leaked=0,drawn=0,unmet=0,elapsed=0,drawDone=false,min=p;const initial=p,data=[];
  const record=t=>data.push({t,pressure:p,compressor:running?1:0,delivered,leaked,drawn,balance:p-initial-factor*(delivered-leaked-drawn)});record(0);
+ let steps=0;
  while(elapsed<600-1e-8){
+  if(++steps>200000)throw RangeError('Starting-air simulation did not converge.');
   if(!drawDone&&elapsed>=x.event-1e-9){const actual=Math.min(x.draw,p/factor);p-=factor*actual;drawn=actual;unmet=x.draw-actual;drawDone=true;min=Math.min(min,p);record(elapsed);}
   if(p<=x.on+1e-9)running=true;if(p>=x.off-1e-9)running=false;
   let dt=Math.min(.1,600-elapsed,!drawDone&&x.event>elapsed?x.event-elapsed:600),flow=(running?x.fad:0)/60-x.leak/60;
   // Hit hysteresis boundaries exactly; otherwise a coarse step can overshoot cut-out.
   if(flow>0&&p<x.off)dt=Math.min(dt,(x.off-p)/(factor*flow));else if(flow<0&&p>x.on)dt=Math.min(dt,(p-x.on)/(-factor*flow));
-  if(dt<1e-10){elapsed+=1e-10;continue;}
+  // Rounding can leave p a residue away from a switching pressure; snap to it so the state advances.
+  if(dt<1e-10){if(flow<0&&p>x.on)p=x.on;else if(flow>0&&p<x.off)p=x.off;elapsed+=1e-10;continue;}
   const supplied=(running?x.fad:0)*dt/60,removed=Math.min(x.leak*dt/60,p/factor+supplied);p=Math.max(0,p+factor*(supplied-removed));delivered+=supplied;leaked+=removed;elapsed+=dt;min=Math.min(min,p);if(data.length===0||elapsed-data.at(-1).t>=2-1e-9||elapsed>=600-1e-9)record(elapsed);
  }
  const mass=(p+pref)*1e5*x.volume/(287.05*(x.temperature+273.15)),idealRise=factor*x.fad/60;
