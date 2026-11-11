@@ -8,6 +8,8 @@ on:
       - 'students/**'
       - 'tests/students-*.mjs'
       - 'tests/students-*.py'
+      - 'tests/coolprop-*'
+      - '.github/workflows/ai-cross-review.yml'
       - 'tests/lib/**'
       - 'tests/fixtures/**'
       - 'scripts/generate-if97-reference-20261027.py'
@@ -172,8 +174,10 @@ jobs:
             students-dimensional-review.json
             students-dimensions-followup.json
           if-no-files-found: warn
-      - name: Install symbolic mathematics test dependency
-        run: python3 -m pip install sympy==1.14.0
+      - name: Install symbolic mathematics and CoolProp test dependencies
+        run: python3 -m pip install sympy==1.14.0 CoolProp==7.2.0
+      - name: Check R134a and IF97 property code against CoolProp 7.2.0
+        run: python3 tests/coolprop-reference-20261111.py
       - name: Independently check selected mathematical identities
         run: python3 tests/students-math-equations-20261020.py
       - name: Complete expression reference evidence and calculator regressions
