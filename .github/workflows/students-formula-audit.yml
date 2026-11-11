@@ -26,6 +26,9 @@ on:
       - 'tests/marine-systems-*'
       - 'marine-calculator*'
       - 'tests/marine-calculators-*'
+      - 'tests/site-discovery-browser.cjs'
+      - 'tests/site-offline-browser.cjs'
+      - 'sw.js'
       - 'tests/custom-calculators-*'
       - 'language-systems-*'
       - 'app.js'
@@ -228,6 +231,8 @@ jobs:
           node tests/students-discovery-cycle-browser-20261030.cjs ${{ matrix.browser }}
           node tests/marine-systems-browser-20261102.cjs ${{ matrix.browser }}
           if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/marine-calculators-browser.cjs; fi
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/site-discovery-browser.cjs; fi
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/site-offline-browser.cjs; fi
           node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
