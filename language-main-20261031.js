@@ -1,6 +1,16 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "Geodesic (GeographicLib) versus constant-course rhumb line, both on the WGS 84 ellipsoid.": "Geodetisk linje (GeographicLib) mot loksodrom med fast kurs, begge på WGS 84-ellipsoiden.",
+  "WGS 84 ellipsoid; a spherical approximation is used only if the geodesy library fails to load.": "WGS 84-ellipsoiden; kuletilnærming brukes bare hvis geodesibiblioteket ikke lastes.",
+  "Geodesic distance and initial course on the WGS 84 ellipsoid (GeographicLib).": "Geodetisk avstand og startkurs på WGS 84-ellipsoiden (GeographicLib).",
+  "Nearest point on the route legs (Turf), with distances measured on the WGS 84 ellipsoid (GeographicLib).": "Nærmeste punkt på rutens etapper (Turf), med avstander målt på WGS 84-ellipsoiden (GeographicLib).",
+  "Route legs are treated as great-circle segments.": "Rutens etapper behandles som storsirkelstrekninger.",
+  "Check the position.": "Kontroller posisjonen.",
+  "Inside configured AIS corridor.": "Innenfor den konfigurerte AIS-korridoren.",
+  "Outside configured AIS corridor.": "Utenfor den konfigurerte AIS-korridoren.",
+  "Nearest point on leg {0}, {1} NM along the route. Inside configured AIS corridor.": "Nærmeste punkt på etappe {0}, {1} NM langs ruten. Innenfor den konfigurerte AIS-korridoren.",
+  "Nearest point on leg {0}, {1} NM along the route. Outside configured AIS corridor.": "Nærmeste punkt på etappe {0}, {1} NM langs ruten. Utenfor den konfigurerte AIS-korridoren.",
   "Activity basis": "Aktivitetsgrunnlag",
   "Add a date and valid density.": "Legg inn dato og gyldig tetthet.",
   "Add at least one valid engine/source.": "Legg til minst én gyldig motor/kilde.",

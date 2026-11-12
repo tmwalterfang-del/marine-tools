@@ -23,6 +23,11 @@ on:
       - 'product-*20261031.*'
       - 'sidebar-v858.js'
       - 'app.js'
+      - 'sw.js'
+      - 'navigation-geodesy-*.js'
+      - 'geographiclib-geodesic-*.js'
+      - 'turf-*.js'
+      - 'tests/navigation-*.cjs'
       - 'index.html'
       - 'product-v860.js'
       - 'voyage-estimate-v861.js'
@@ -161,6 +166,7 @@ jobs:
           node tests/qa-preview-isolation-20261016.mjs
           node tests/qa-release-metadata-20261018.mjs
           node tests/qa-six-fixes-20261016.mjs
+          node tests/navigation-geodesy-20261111.cjs
       - name: Upload whole-site audit
         if: always()
         uses: actions/upload-artifact@v4
@@ -220,6 +226,7 @@ jobs:
           node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
+          node tests/navigation-geodesy-browser-20261111.cjs ${{ matrix.browser }}
           node tests/main-result-locale-browser-20261101.cjs ${{ matrix.browser }}
           node tests/main-release-20261101.cjs ${{ matrix.browser }}
           node tests/students-next-workspace-browser-20261030.cjs ${{ matrix.browser }}

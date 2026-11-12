@@ -54,17 +54,31 @@ chk('Compass','true',90+2-1,91.0,.05)
 g=9.80665;T=8;c=g*T/(2*math.pi);V=8*1852/3600
 Te=T/(1-V/c)  # following seas (waves travelling same direction as ship)
 chk('Encounter','s (following)',Te,11.93,.005)
-# great circle Oslofjord->Stavanger approx
-def hav(a,b,Rn=3440.065):
-    p1,p2=map(math.radians,(a[0],b[0]));dp=p2-p1;dl=math.radians(b[1]-a[1])
-    q=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2;return Rn*2*math.atan2(math.sqrt(q),math.sqrt(1-q))
+# Great circle and rhumb line on the WGS 84 ellipsoid (navigation-geodesy-20261111.js).
+# Independent: Vincenty (1975) inverse, and rhumb distance by Simpson integration of the meridian radius.
+A_,F_=6378137.0,1/298.257223563;B_=A_*(1-F_);E2_=F_*(2-F_)
+def vincenty(p,q):
+    L=math.radians(q[1]-p[1]);U1=math.atan((1-F_)*math.tan(math.radians(p[0])));U2=math.atan((1-F_)*math.tan(math.radians(q[0])))
+    lam=L
+    for _ in range(200):
+        sl,cl=math.sin(lam),math.cos(lam);ss=math.hypot(math.cos(U2)*sl,math.cos(U1)*math.sin(U2)-math.sin(U1)*math.cos(U2)*cl)
+        cs=math.sin(U1)*math.sin(U2)+math.cos(U1)*math.cos(U2)*cl;sg=math.atan2(ss,cs);sa=math.cos(U1)*math.cos(U2)*sl/ss;c2a=1-sa*sa
+        c2m=cs-2*math.sin(U1)*math.sin(U2)/c2a if c2a else 0;C=F_/16*c2a*(4+F_*(4-3*c2a));prev=lam
+        lam=L+(1-C)*F_*sa*(sg+C*ss*(c2m+C*cs*(-1+2*c2m*c2m)))
+        if abs(lam-prev)<1e-13:break
+    u2=c2a*(A_*A_-B_*B_)/(B_*B_);A=1+u2/16384*(4096+u2*(-768+u2*(320-175*u2)));Bc=u2/1024*(256+u2*(-128+u2*(74-47*u2)))
+    ds=Bc*ss*(c2m+Bc/4*(cs*(-1+2*c2m*c2m)-Bc/6*c2m*(-3+4*ss*ss)*(-3+4*c2m*c2m)))
+    az=math.degrees(math.atan2(math.cos(U2)*math.sin(lam),math.cos(U1)*math.sin(U2)-math.sin(U1)*math.cos(U2)*math.cos(lam)))
+    return B_*A*(sg-ds)/1852,(az+360)%360
+def rhumb_wgs84(p,q):
+    e=math.sqrt(E2_);psi=lambda f:math.log(math.tan(math.pi/4+f/2)*((1-e*math.sin(f))/(1+e*math.sin(f)))**(e/2))
+    p1,p2=math.radians(p[0]),math.radians(q[0]);dl=math.radians(((q[1]-p[1]+540)%360)-180);crs=math.atan2(dl,psi(p2)-psi(p1))
+    M=lambda f:A_*(1-E2_)/(1-E2_*math.sin(f)**2)**1.5;n=20000;h=(p2-p1)/n
+    m=M(p1)+M(p2)+sum((4 if i%2 else 2)*M(p1+i*h) for i in range(1,n))
+    return abs(m*h/3/math.cos(crs))/1852,(math.degrees(crs)+360)%360
 a=(59.42,10.48);b=(58.97,5.73)
-chk('GC','NM',hav(a,b),148.50,.005)
-y=math.sin(math.radians(b[1]-a[1]))*math.cos(math.radians(b[0]));x=math.cos(math.radians(a[0]))*math.sin(math.radians(b[0]))-math.sin(math.radians(a[0]))*math.cos(math.radians(b[0]))*math.cos(math.radians(b[1]-a[1]))
-chk('GC','brg',(math.degrees(math.atan2(y,x))+360)%360,261.6,.05)
-# rhumb
-dpsi=math.log(math.tan(math.pi/4+math.radians(b[0])/2)/math.tan(math.pi/4+math.radians(a[0])/2));dphi=math.radians(b[0]-a[0]);q=dphi/dpsi;dl=math.radians(b[1]-a[1])
-chk('Rhumb','NM',math.hypot(dphi,q*dl)*3440.065,148.53,.005); chk('Rhumb','brg',(math.degrees(math.atan2(dl,dpsi))+360)%360,259.5,.05)
+gcd,gcb=vincenty(a,b);chk('GC','NM',gcd,149.02,.005);chk('GC','brg',gcb,261.6,.05)
+rhd,rhb=rhumb_wgs84(a,b);chk('Rhumb','NM',rhd,149.05,.005);chk('Rhumb','brg',rhb,259.5,.05)
 chk('ETA','SOG',8.5,8.50,.005); chk('ETA','h',120/8.5,14+7/60,1/60)
 # wind component: course 90, from 230, 20 kn: rel=140 -> head = 20cos140 = -15.3 (tailwind), cross 20 sin140 = 12.9 from starboard
 chk('WindComp','tail',abs(20*math.cos(math.radians(140))),15.3,.05); chk('WindComp','cross',20*math.sin(math.radians(140)),12.9,.05)
