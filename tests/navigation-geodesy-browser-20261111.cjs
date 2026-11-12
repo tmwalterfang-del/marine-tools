@@ -28,6 +28,15 @@ const engine=process.argv[2]||'chromium',root=process.cwd();let browser,server;
   await p.evaluate(()=>{document.getElementById('nearLat').value='';document.getElementById('calcNearest').click()});await p.waitForTimeout(50);
   ok(/caution|invalid/.test(await p.locator('#resNearest').getAttribute('class')),'blank position is rejected');
   if(locale==='nb')ok(!(await p.evaluate(()=>[...(window.MT_I18N?.missing||[])])).some(m=>/along the route|WGS 84 ellipsoid|configured AIS corridor/.test(m)),'new texts translated');
+  // Position editor layout: every degree/minute/hemisphere field stays inside its fieldset and fields never overlap.
+  for(const width of [1440,1100,980,390,320]){
+   await p.setViewportSize({width,height:900});await p.waitForTimeout(80);
+   const bad=await p.evaluate(()=>{const out=[];for(const g of document.querySelectorAll('.coord-group')){if(!g.offsetParent)continue;const gr=g.getBoundingClientRect();
+    for(const row of g.querySelectorAll('.coord-row')){const els=[...row.querySelectorAll('input,select')].map(e=>e.getBoundingClientRect());
+     els.forEach((r,i)=>{if(r.left<gr.left-1||r.right>gr.right+1)out.push(`${g.querySelector('legend')?.textContent} field ${i} outside fieldset`);
+      if(i&&r.left<els[i-1].right-1&&r.top<els[i-1].bottom-1&&r.bottom>els[i-1].top+1)out.push(`${g.querySelector('legend')?.textContent} fields ${i-1}/${i} overlap`)})}}return out});
+   ok(bad.length===0,`position editor layout at ${width}px: `+bad.slice(0,4).join('; '));
+  }
   ok(errors.length===0,'no page errors: '+errors.join('; '));
   await context.close();
  }
