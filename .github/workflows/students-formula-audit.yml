@@ -48,6 +48,8 @@ on:
       - 'wmm2025-20261117.js'
       - 'vendor/geographiclib-geodesic-2.2.0.min.js'
       - 'tests/main-calculator-nb-coverage-20261117.cjs'
+      - 'tests/main-calculator-properties-20261117.cjs'
+      - 'product-ux-20261031.js'
       - 'language-main-20261031.js'
       - 'calc-references-20261117.js'
       - 'tests/main-calculator-validation-browser-20261117.cjs'
@@ -168,7 +170,11 @@ jobs:
       - name: Engineering explorer independent reference cases
         run: node tests/students-explorers-20261020.mjs
       - name: Install DOM integration test dependency
-        run: npm install --prefix /tmp/students-dom --no-audit --no-fund jsdom@26.1.0
+        run: npm install --prefix /tmp/students-dom --no-audit --no-fund jsdom@26.1.0 fast-check@4.10.2
+      - name: Property-based checks (parser, WGS84, WMM2025; fast-check, fixed seed)
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-properties-20261117.cjs
       - name: Units, compass and dock-water density reference cases
         env:
           NODE_PATH: /tmp/students-dom/node_modules
