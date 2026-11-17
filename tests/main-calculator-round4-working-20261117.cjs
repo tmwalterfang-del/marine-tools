@@ -80,7 +80,8 @@ let dom;
   const record = async result => JSON.parse(await download(result, 'json'));
   const cardValues = result => [...el(result).closest('.tool-card').querySelectorAll('input,select')].map(node => node.value);
   // Reference tuple: literal [label, substituted expression, hand value, unit,
-  // optional display tolerance]. Every emitted step must match one tuple.
+  // optional display tolerance]. Null means mathematically undefined (exact).
+  // Every emitted step must match one tuple.
   async function working(button, result, tool, inputs, outputs, references) {
     workingRuns++; click(button, result);
     assert.equal(d.querySelectorAll(`.calc-work[data-for="${result}"]`).length, 1, 'One working panel per result');
@@ -88,9 +89,10 @@ let dom;
     assert.equal(r.tool, tool); assert.deepEqual(r.inputs, machine(inputs));
     assert.deepEqual(Object.keys(r.outputs).sort(), Object.keys(outputs).sort());
     for (const [name, [value, unit]] of Object.entries(outputs)) {
-      near(r.outputs[name].value, value, 1e-10, result + ': output ' + name);
+      if (value === null) assert.equal(r.outputs[name].value, null, result + ': undefined output ' + name);
+      else near(r.outputs[name].value, value, 1e-10, result + ': output ' + name);
       assert.equal(r.outputs[name].unit, unit);
-      assert(csv.includes(`,output,${name},${r.outputs[name].value},${unit}`), 'CSV machine value: ' + name);
+      assert(csv.includes(`,output,${name},${r.outputs[name].value ?? ''},${unit}`), 'CSV machine value: ' + name);
     }
     const steps = [...box(result).querySelectorAll('.calc-work-steps > li')];
     assert.equal(steps.length, references.length, result + ': every step referenced');
@@ -100,12 +102,16 @@ let dom;
       assert.equal(li.querySelector('span').textContent, label);
       const parts = li.querySelector('code').textContent.split(' = ');
       assert.equal(parts.length, 2); assert.equal(parts[0], expression, result + ': substituted expression');
-      const number = parts[1].match(/^(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?)(?: (.*))?$/i);
-      assert(number, result + ': numeric RHS'); assert.equal(number[2] || '', unit);
-      near(Number(number[1]), value, tolerance, result + ': displayed step ' + label);
+      if (value === null) assert.equal(parts[1], '—' + (unit ? ' ' + unit : ''), result + ': undefined displayed step ' + label);
+      else {
+        const number = parts[1].match(/^(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?)(?: (.*))?$/i);
+        assert(number, result + ': numeric RHS'); assert.equal(number[2] || '', unit);
+        near(Number(number[1]), value, tolerance, result + ': displayed step ' + label);
+      }
       assert.equal(r.steps[i].label, label); assert.equal(r.steps[i].unit, unit);
-      near(r.steps[i].value, value, 1e-10, result + ': raw step ' + label);
-      assert(csv.includes(`,step,${label},${r.steps[i].value},${unit}`), 'CSV step value: ' + label);
+      if (value === null) assert.equal(r.steps[i].value, null, result + ': undefined raw step ' + label);
+      else near(r.steps[i].value, value, 1e-10, result + ': raw step ' + label);
+      assert(csv.includes(`,step,${label},${r.steps[i].value ?? ''},${unit}`), 'CSV step value: ' + label);
     });
     assert(r.validity.length > 0);
     assert.deepEqual([...box(result).querySelectorAll('.calc-work-validity li')].map(li => li.textContent), r.validity);
@@ -161,11 +167,12 @@ let dom;
     ['Total volume', '20.000 + 30.000 + 10.000', 60, 'm³'], ['Total mass in tonnes', '(16000.000 + 27000.000 + 10000.000) / 1000', 53, 't'],
     ['Weighted density', '53000.000 / 60.000', 883.3333333333334, 'kg/m³'], ['Average delivery', '60.000 / 3', 20, 'm³'], ['Average interval', '20.000 / (3 − 1)', 10, 'day']
   ]);
-  // Single zero-volume record: mass and averages 0; density 0 is the existing
-  // placeholder, not the undefined mathematical 0/0. No interval with one row.
+  // Single zero-volume record: mass and average delivery are 0; weighted
+  // density is 0/0, undefined. No interval with one row.
   bunkRows([['2026-01-01', 0, 800]]);
-  const emptyBunk = await working('calcBunkOverview', 'resBunkOverview', 'bunkering-overview', { date1: ['2026-01-01', ''], volume1: [0, 'm³'], density1: [800, 'kg/m³'] }, { totalVolume: [0, 'm³'], totalMass: [0, 't'], weightedDensity: [0, 'kg/m³'], averageDelivery: [0, 'm³'] }, [['2026-01-01', '0.000 × 800.000', 0, 'kg'], ['Total volume', '0.000', 0, 'm³'], ['Total mass in tonnes', '(0.000) / 1000', 0, 't'], ['Weighted density', 'No delivered volume', 0, 'kg/m³'], ['Average delivery', '0.000 / 1', 0, 'm³']]);
-  assert.match(emptyBunk.validity.join(' '), /placeholder; weighted density is undefined/);
+  const emptyBunk = await working('calcBunkOverview', 'resBunkOverview', 'bunkering-overview', { date1: ['2026-01-01', ''], volume1: [0, 'm³'], density1: [800, 'kg/m³'] }, { totalVolume: [0, 'm³'], totalMass: [0, 't'], weightedDensity: [null, 'kg/m³'], averageDelivery: [0, 'm³'] }, [['2026-01-01', '0.000 × 800.000', 0, 'kg'], ['Total volume', '0.000', 0, 'm³'], ['Total mass in tonnes', '(0.000) / 1000', 0, 't'], ['Weighted density', 'No delivered volume', null, 'kg/m³'], ['Average delivery', '0.000 / 1', 0, 'm³']]);
+  assert.equal(el('resBunkOverview').querySelector('tr > td').textContent, '— kg/m³');
+  assert(emptyBunk.validity.includes('With zero total volume, weighted density is undefined and is not shown.'));
 
   // Pipe: 600 L/min * .06 = 36 m3/h; /3600=.01 m3/s; 200/1000=.2 m;
   // area=pi*.2^2/4=pi/100=.031415926535897934 m2; v=1/pi=.3183098861837907.
@@ -252,10 +259,11 @@ let dom;
   ]);
   assert(el('resLoTrend').classList.contains('ok'), 'Exactly 25% above overall preserves current status');
   // Same date, increasing hours: 0/200*1000=0; 200 total hours. Calendar
-  // span=0, so L/day=0 is explicitly a display placeholder, not defined 0/0.
+  // span=0, so the calendar rate is 0/0, undefined.
   loRows([['2026-01-01', 1000, 99], ['2026-01-01', 1200, 0]]);
-  const sameDay = await working('calcLoTrend', 'resLoTrend', 'lube-oil-trend', { date1: ['2026-01-01', ''], runningHours1: [1000, 'h'], oilAdded1: [99, 'L'], date2: ['2026-01-01', ''], runningHours2: [1200, 'h'], oilAdded2: [0, 'L'] }, { totalOil: [0, 'L'], totalRunningHours: [200, 'h'], calendarSpan: [0, 'day'], overallRate: [0, 'L/1000 h'], latestRate: [0, 'L/1000 h'], calendarRate: [0, 'L/day'] }, [['2026-01-01 → 2026-01-01', '0.000 / (1200.000 − 1000.000) × 1000', 0, 'L/1000 h'], ['Total oil after baseline', '0.000', 0, 'L'], ['Total running hours', '(1200.000 − 1000.000)', 200, 'h'], ['Overall oil consumption rate', '0.000 / 200.000 × 1000', 0, 'L/1000 h'], ['Calendar oil consumption rate', 'No elapsed calendar days', 0, 'L/day']]);
-  assert.match(sameDay.validity.join(' '), /placeholder because the calendar rate is undefined/);
+  const sameDay = await working('calcLoTrend', 'resLoTrend', 'lube-oil-trend', { date1: ['2026-01-01', ''], runningHours1: [1000, 'h'], oilAdded1: [99, 'L'], date2: ['2026-01-01', ''], runningHours2: [1200, 'h'], oilAdded2: [0, 'L'] }, { totalOil: [0, 'L'], totalRunningHours: [200, 'h'], calendarSpan: [0, 'day'], overallRate: [0, 'L/1000 h'], latestRate: [0, 'L/1000 h'], calendarRate: [null, 'L/day'] }, [['2026-01-01 → 2026-01-01', '0.000 / (1200.000 − 1000.000) × 1000', 0, 'L/1000 h'], ['Total oil after baseline', '0.000', 0, 'L'], ['Total running hours', '(1200.000 − 1000.000)', 200, 'h'], ['Overall oil consumption rate', '0.000 / 200.000 × 1000', 0, 'L/1000 h'], ['Calendar oil consumption rate', 'No elapsed calendar days', null, 'L/day']]);
+  assert.match(el('resLoTrend').textContent, /— L\/day over 0\.0 days\./);
+  assert(sameDay.validity.includes('Same-day readings can have increasing running hours; with zero calendar span, the calendar rate is undefined and is not shown.'));
 
   // Electrical hand refs use sqrt(3)=1.7320508075688772935.
   // S=sqrt(3)*400*100/1000=40sqrt(3)=69.28203230275509 kVA;
@@ -295,8 +303,10 @@ let dom;
     const labels = [...box(result).querySelectorAll('.calc-work-steps > li > span')].map(node => node.textContent);
     assert(!labels.includes('TRANSLATED USER TEXT'), result + ': raw labels bypass translation');
     const csv = await download(result, 'csv');
-    for (const [name, item] of Object.entries(after.outputs)) assert(csv.includes(`,output,${name},${item.value},${item.unit}`));
+    for (const [name, item] of Object.entries(after.outputs)) assert(csv.includes(`,output,${name},${item.value ?? ''},${item.unit}`));
   }
+  assert.equal(el('resBunkOverview').querySelector('tr > td').textContent, '— kg/m³');
+  assert.match(el('resLoTrend').textContent, /— L\/day over 0,0 days\./);
   w.MT_I18N = { locale: 'en', t: text => text }; w.dispatchEvent(new w.CustomEvent('mt-locale-change'));
 
   // Existing invalid domains: each invalid run follows a valid result and must
@@ -318,5 +328,5 @@ let dom;
     ['calcImbalance', 'resImbalance', () => fields({ l1: 80, l2: 100, l3: 120 }), [() => fields({ l1: '' }), () => fields({ l1: -1 }), () => fields({ l1: 0, l2: 0, l3: 0 })]]
   ]) for (const bad of badCases) { reset(); click(button, result); assert(box(result)); bad(); click(button, result, false); }
   await flush(); assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ status: 'PASS', calculators: snapshots.size, handlerRuns, workingRuns, stepReferences, numericReferences, invalidRuns, scope: 'Literal hand references for every added step; all modes, row sorting, zero placeholders, raw labels, comma inputs, stable locale exports, invalid clearing. No layout, translation, device or operational acceptance.' }));
+  console.log(JSON.stringify({ status: 'PASS', calculators: snapshots.size, handlerRuns, workingRuns, stepReferences, numericReferences, invalidRuns, scope: 'Literal hand references for every added step; all modes, row sorting, undefined zero-denominator results, raw labels, comma inputs, stable locale exports, invalid clearing. No layout, translation, device or operational acceptance.' }));
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => dom?.window.close());
