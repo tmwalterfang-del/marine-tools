@@ -77,10 +77,13 @@ let dom;
   // At the south pole the Mercator log ratio is 0/0; the rhumb course is NaN.
   fields({ gcLat1: -90, gcLon1: 0, gcLat2: -90, gcLon2: 1 }); click('calcGcRhumb', 'resGcRhumb', false);
   w.eval(read('ui-v854.js')); await flush();
-  // At these bounded positions haversine q rounds to 1.0000000000000002;
-  // sqrt(1-q) is NaN in this UI's existing, unclamped spherical formula.
+  // Exact antipodes (8N 1E to 8S 179W). The old local copy here was unclamped (q rounded to 1.0000000000000002,
+  // so sqrt(1-q) was NaN and the result was refused). It now uses the shared navigation-math.js distance,
+  // which clamps, like the main calculator: distance is pi*R = 10807.283 NM and every initial course reaches B.
   fields({ navALatDeg: 8, navALatMin: 0, navALatHem: 'N', navALonDeg: 1, navALonMin: 0, navALonHem: 'E', navBLatDeg: 8, navBLatMin: 0, navBLatHem: 'S', navBLonDeg: 179, navBLonMin: 0, navBLonHem: 'W' });
-  click('calcBearing855', 'resBearing855', false);
+  click('calcBearing855', 'resBearing855', true);
+  assert.match(el('resBearing855').textContent, /10807.283 NM/, 'antipodal distance is pi*R');
+  assert.match(el('resBearing855').textContent, /08° 0.00000′ S · 179° 0.00000′ W/, 'antipodal destination is B');
   // Coordinate conversion's supported domain bounds every derived number.
   fields({ coordLatDeg: 90, coordLatMin: 0, coordLatHem: 'N', coordLonDeg: 180, coordLonMin: 0, coordLonHem: 'E' });
   click('calcCoords855', 'resCoords855', true);

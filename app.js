@@ -221,7 +221,7 @@ function formulaBox(){return ''}
 function calcButton(id,label='Calculate'){return `<div class="actions"><button class="btn primary calc-action" id="${id}">${label}</button><button class="btn copy-result" type="button">Copy result</button><button class="btn share-result" type="button">Share result</button></div>`}
 function result(id,text='Enter values to calculate.'){return `<div class="result" id="${id}" role="status" aria-live="polite"><small>${text}</small></div>`}
 function hav(a,b){return window.MT_NAV_MATH.distance([Number(a.lon),Number(a.lat)],[Number(b.lon),Number(b.lat)])}
-function bearing(a,b){const y=Math.sin(rad(b.lon-a.lon))*Math.cos(rad(b.lat)),x=Math.cos(rad(a.lat))*Math.sin(rad(b.lat))-Math.sin(rad(a.lat))*Math.cos(rad(b.lat))*Math.cos(rad(b.lon-a.lon));return (deg(Math.atan2(y,x))+360)%360}
+function bearing(a,b){return window.MT_NAV_MATH.bearing([Number(a.lon),Number(a.lat)],[Number(b.lon),Number(b.lat)])}
 
 function rhumb(a,b){
  const R=3440.065,p1=rad(a.lat),p2=rad(b.lat),dp=p2-p1;
@@ -233,7 +233,7 @@ function rhumb(a,b){
  return{distance:dist,bearing:brg}
 }
 
-function destination(a,brg,nm){const R=3440.065,d=nm/R,p1=rad(a.lat),l1=rad(a.lon),t=rad(brg);const p2=Math.asin(Math.sin(p1)*Math.cos(d)+Math.cos(p1)*Math.sin(d)*Math.cos(t));const l2=l1+Math.atan2(Math.sin(t)*Math.sin(d)*Math.cos(p1),Math.cos(d)-Math.sin(p1)*Math.sin(p2));return{lat:deg(p2),lon:((deg(l2)+540)%360)-180}}
+function destination(a,brg,nm){const p=window.MT_NAV_MATH.destination([Number(a.lon),Number(a.lat)],brg,nm);return{lat:p[1],lon:p[0]}}
 function routeDistance(r=state.route){let n=0;for(let i=1;i<r.length;i++)n+=hav(r[i-1],r[i]);return n}
 function shortestLonDelta(a,b){return ((b-a+540)%360+360)%360-180}
 function routeBBox(r=state.route,padNm=8){

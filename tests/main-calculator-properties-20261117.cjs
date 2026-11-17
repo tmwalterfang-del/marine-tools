@@ -22,6 +22,7 @@ const inertDocument = { readyState: 'loading', addEventListener() {}, querySelec
 const parse = load('product-ux-20261031.js', { document: inertDocument, addEventListener() {}, localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} }, sessionStorage: { getItem() { return null; }, setItem() {}, removeItem() {} }, location: { href: 'http://x/', search: '' }, history: { replaceState() {} } }).MT_PARSE_NUMBER;
 const geodesic = load('vendor/geographiclib-geodesic-2.2.0.min.js').geodesic;
 const wmm = load('wmm2025-20261117.js').MT_WMM2025;
+const nav = load('navigation-math.js').MT_NAV_MATH;
 assert.equal(typeof parse, 'function', 'MT_PARSE_NUMBER loaded');
 assert.ok(geodesic && geodesic.Geodesic.WGS84, 'GeographicLib loaded');
 assert.equal(typeof wmm.declination, 'function', 'WMM2025 loaded');
@@ -56,6 +57,22 @@ check('triangle inequality', fc.property(point, point, point, (a, b, c) => {
 check('direct then inverse returns the same distance and azimuth', fc.property(point, fc.double({ min: -180, max: 180, noNaN: true }), fc.double({ min: 1, max: 1.9e7, noNaN: true }), (a, azi, s) => {
   const d = g.Direct(a.lat, a.lon, azi, s), inv = g.Inverse(a.lat, a.lon, d.lat2, d.lon2);
   return Math.abs(inv.s12 - s) <= 1e-6 * Math.max(1, s / 1e6);
+}));
+
+// --- Shared spherical navigation (navigation-math.js) against GeographicLib on a sphere (f = 0) ---
+// GeographicLib is an independent implementation; with a = 3440.065 NM and f = 0 it solves the same sphere.
+const sphere = new geodesic.Geodesic.Geodesic(nav.R, 0);
+const navLat = fc.double({ min: -89.9, max: 89.9, noNaN: true });
+const notAntipodal = (a, b) => nav.distance([a.lon, a.lat], [b.lon, b.lat]) < 10700 && nav.distance([a.lon, a.lat], [b.lon, b.lat]) > 0.01;
+const angleDiff = (x, y) => { const d = Math.abs(((x - y) % 360 + 360) % 360); return Math.min(d, 360 - d); };
+check('shared distance and bearing match GeographicLib on the same sphere', fc.property(fc.record({ lat: navLat, lon }), fc.record({ lat: navLat, lon }), (a, b) => {
+  if (!notAntipodal(a, b)) return true;
+  const ref = sphere.Inverse(a.lat, a.lon, b.lat, b.lon);
+  return Math.abs(nav.distance([a.lon, a.lat], [b.lon, b.lat]) - ref.s12) < 1e-6 && angleDiff(nav.bearing([a.lon, a.lat], [b.lon, b.lat]), ref.azi1) < 1e-7;
+}));
+check('shared destination matches GeographicLib direct on the same sphere', fc.property(fc.record({ lat: navLat, lon }), fc.double({ min: 0, max: 360, noNaN: true }), fc.double({ min: 0, max: 10000, noNaN: true }), (a, brg, nm) => {
+  const ref = sphere.Direct(a.lat, a.lon, brg, nm), p = nav.destination([a.lon, a.lat], brg, nm);
+  return nav.distance(p, [((ref.lon2 + 540) % 360) - 180, ref.lat2]) < 1e-6;
 }));
 
 // --- WMM2025 (NOAA) -----------------------------------------------------------------------

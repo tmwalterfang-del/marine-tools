@@ -52,5 +52,29 @@
       z = A * Math.sin(a[1] * D) + B * Math.sin(b[1] * D);
     return [Math.atan2(y, x) / D, Math.atan2(z, Math.hypot(x, y)) / D];
   }
-  root.MT_NAV_MATH = { R, coordinate, delta, distance, interpolate };
+  // Initial great-circle bearing from a to b, degrees true in [0, 360).
+  function bearing(a, b) {
+    coordinate(a);
+    coordinate(b);
+    const p1 = a[1] * D,
+      p2 = b[1] * D,
+      dl = (b[0] - a[0]) * D,
+      y = Math.sin(dl) * Math.cos(p2),
+      x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+    return (Math.atan2(y, x) / D + 360) % 360;
+  }
+  // Point reached from a along an initial great-circle bearing (degrees) for a distance (NM); returns [lon, lat].
+  function destination(a, bearingDeg, distanceNm, radius = R) {
+    coordinate(a);
+    if (!Number.isFinite(bearingDeg) || !Number.isFinite(distanceNm) || !Number.isFinite(radius) || radius <= 0)
+      throw Error("Invalid bearing, distance or radius.");
+    const d = distanceNm / radius,
+      t = bearingDeg * D,
+      p1 = a[1] * D,
+      l1 = a[0] * D,
+      p2 = Math.asin(Math.sin(p1) * Math.cos(d) + Math.cos(p1) * Math.sin(d) * Math.cos(t)),
+      l2 = l1 + Math.atan2(Math.sin(t) * Math.sin(d) * Math.cos(p1), Math.cos(d) - Math.sin(p1) * Math.sin(p2));
+    return [((l2 / D + 540) % 360) - 180, p2 / D];
+  }
+  root.MT_NAV_MATH = { R, coordinate, delta, distance, interpolate, bearing, destination };
 })(typeof window === "undefined" ? globalThis : window);
