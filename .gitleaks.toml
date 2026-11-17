@@ -1,11 +1,13 @@
-# Gitleaks configuration: default rules plus a narrow allowlist for known false positives.
+# Gitleaks configuration: default rules plus narrow allowlists for reviewed false positives.
 # Reviewed 2026-11-17 (PR #65). Every entry below is public, non-secret content.
+# Single reviewed findings (a SHA-256 hash in the Education review fixture) are listed by fingerprint in .gitleaksignore.
 [extend]
 useDefault = true
 
-[allowlist]
-description = "Known non-secret values"
-# localStorage key names such as 'mt.voyageConsumptionCurve.v1' or 'mt-student-labs-v1'.
+[[allowlists]]
+description = "localStorage key names such as mt.voyageConsumptionCurve.v1 or mt-student-labs-v1"
 regexes = ['''^mt[.-][a-zA-Z0-9.-]+$''']
-# Test fixture of SHA-256 content hashes for the Education review context; app-dist/ is a generated, ignored build copy.
-paths = ['''tests/fixtures/students-full-review-context-20261030\.json''', '''^app-dist/''']
+
+[[allowlists]]
+description = "app-dist/ is a generated, git-ignored copy of the site"
+paths = ['''^app-dist/''']
