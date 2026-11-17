@@ -116,9 +116,9 @@ window.MT_CALC_REFERENCES = Object.freeze({
     tolerance: 'tests/main-calculator-round4-working-20261117.cjs checks hand oil rates within 1e-10 absolute in exports and undefined calendar rate exactly.'
   },
   'magnetic-compass': {
-    basis: 'True course adds east positive variation and deviation to compass course, with optional linear annual variation change and revolution wrapping.',
-    range: 'Course and corrections must be finite; optional epoch and calculation years must be integers from 1 through 9999 with a finite annual change.',
-    tolerance: 'tests/main-calculator-units-compass-density-20261117.cjs checks hand course and variation exports within 1e-12 degrees.'
+    basis: 'True course adds east positive variation and deviation to compass course, with optional linear annual change. Position and date suggestions use NOAA WMM2025 spherical harmonics on WGS84 at ellipsoid height zero; model estimates exclude local anomalies and vessel deviation.',
+    range: 'Manual corrections must be finite; optional variation years are integers from 1 through 9999. WMM2025 suggestions require latitude within ±90°, longitude within ±180°, decimal year 2025.0–2030.0 and horizontal intensity at least 6000 nT; both variation years start at the selected calendar year.',
+    tolerance: 'tests/main-calculator-wmm2025-20261117.cjs checks literal NOAA WMM2025 test values within published rounding: 0.005001° declination and 0.00000051°/year annual change. tests/main-calculator-units-compass-density-20261117.cjs checks hand course and variation exports within 1e-12 degrees.'
   },
   'motor-current': {
     basis: 'Balanced three phase motor current divides shaft power by efficiency, line voltage, power factor and the square root of three.',

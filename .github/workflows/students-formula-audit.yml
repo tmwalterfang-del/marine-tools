@@ -44,6 +44,8 @@ on:
       - 'tests/main-calculator-round5-20261117.cjs'
       - 'tests/main-calculator-round5b-20261117.cjs'
       - 'tests/main-calculator-wgs84-20261117.cjs'
+      - 'tests/main-calculator-wmm2025-20261117.cjs'
+      - 'wmm2025-20261117.js'
       - 'vendor/geographiclib-geodesic-2.2.0.min.js'
       - 'tests/main-calculator-nb-coverage-20261117.cjs'
       - 'language-main-20261031.js'
@@ -171,6 +173,10 @@ jobs:
         env:
           NODE_PATH: /tmp/students-dom/node_modules
         run: node tests/main-calculator-units-compass-density-20261117.cjs
+      - name: NOAA WMM2025 references and compass suggestions
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-wmm2025-20261117.cjs
       - name: Engineering working and interpolation/power reference cases
         env:
           NODE_PATH: /tmp/students-dom/node_modules
