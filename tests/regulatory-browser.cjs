@@ -342,6 +342,13 @@ async function main() {
           '<?xml version="1.0"?><gpx><rte><rtept lat="65" lon="4"/><rtept lat="66" lon="5"/></rte></gpx>',
         ),
       });
+    await page
+      .waitForFunction(
+        () => document.querySelectorAll(".waypoint").length === 2,
+        null,
+        { timeout: 5000 },
+      )
+      .catch(() => {});
     assert.equal(await page.locator(".waypoint").count(), 2);
     assert.equal(
       await page.locator("#route-table").count(),
@@ -357,6 +364,15 @@ async function main() {
           '<!DOCTYPE gpx [<!ENTITY x SYSTEM "https://example.invalid/secret">]><gpx/>',
         ),
       });
+    // File import is asynchronous (File.text()); WebKit can still show the
+    // previous import message when read immediately, so wait for the rejection.
+    await page
+      .waitForFunction(
+        () => /XML/.test(document.querySelector("#message")?.innerText || ""),
+        null,
+        { timeout: 5000 },
+      )
+      .catch(() => {});
     assert.match(await page.locator("#message").innerText(), /XML/);
     // AGENTS.md: layouts must work at 320 px in both languages.
     for (const lang of ["en", "nb"]) {
