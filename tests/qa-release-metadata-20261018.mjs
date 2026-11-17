@@ -22,7 +22,18 @@ check('Public release title',release.history[0].title==='Education & your worksp
 check('Previous public release retained',release.history[1].version==='8.7.0'&&release.history[1].date==='2026-10-19');
 check('No full AIS acceptance claimed',!release.history[0].items.some(x=>/fully tested|certified|live CPA verified/i.test(x)));
 for(const file of ['release-v860.js','app.js','whats-new-v861.js'])check('Asset rotated '+file,read('index.html').includes(file+'?v='+release.build));
-check('Cache rotated',read('sw.js').includes('marine-tools-education-20261116-v1'));
+check('Cache rotated',read('sw.js').includes('marine-tools-education-20261117-v1'));
+const shell=vm.runInNewContext(read('sw.js')+'\nSHELL',{
+ self:{location:{hostname:'marinetools.app'},addEventListener(){}}
+});
+check('Shared navigation math precached',shell.includes('./navigation-math.js'));
+check('Main-page regulatory links precached',shell.includes('./regulatory-links.js'));
+check('Regulatory map data excluded from offline shell',!shell.some(entry=>entry.startsWith('./regulatory/')));
+for(const entry of shell){
+ const file=new URL('../'+entry,import.meta.url);
+ check('Offline shell entry exists '+entry,fs.existsSync(file));
+ if(fs.statSync(file).isDirectory())check('Offline shell directory has index '+entry,fs.existsSync(new URL('index.html',file)));
+}
 const prod=await worker.fetch(new Request('https://api.marinetools.app/api/release'),{},{});
 check('Production does not expose QA diagnostic headers',!prod.headers.has('access-control-expose-headers')&&!prod.headers.has('x-marine-tools-environment'));
-console.log(JSON.stringify({result:'PASS',assertions:checks,version:release.version,build:release.build}));
+console.log(JSON.stringify({result:'PASS',assertions:checks,version:release.version,build:release.build,offlineShellEntries:shell.length}));
