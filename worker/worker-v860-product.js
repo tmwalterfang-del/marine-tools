@@ -1,7 +1,7 @@
 import previousWorker from "./worker-v858-dashboard.js";
 
-const VERSION="8.9.0";
-const BUILD="20261117-v8-9-0";
+const VERSION="8.10.0";
+const BUILD="20261117-v8-10-0";
 const RELEASED="2026-11-17";
 const DATASET="events.analyticsEngine.marine_tools_usage";
 const EVENTS=new Set(["calculation_completed","result_saved","result_exported","profile_value_used","offline_tool_used","visitor_type"]);

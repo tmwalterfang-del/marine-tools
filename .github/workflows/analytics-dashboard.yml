@@ -73,7 +73,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install browser test runner
-        run: npm install --prefix /tmp/analytics-browser --no-audit --no-fund playwright@1.62.1
+        run: npm install --prefix /tmp/analytics-browser --no-audit --no-fund playwright@1.63.0
       - name: Install rendering engine
         run: node /tmp/analytics-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
       - uses: actions/download-artifact@v4

@@ -43,7 +43,7 @@ This file is read by OpenAI Codex (`AGENTS.md`) and by Claude (through `CLAUDE.m
 ## Tests
 
 - CI lives in `.github/workflows/`. The main suite is `students-formula-audit.yml`; it filters on paths, so add new files to `paths:` when needed.
-- Browser tests run in Chromium, Firefox and WebKit: `node tests/<name>.cjs chromium|firefox|webkit`. They need `playwright@1.62.1`, `jsdom@26.1.0` and `axe-core@4.11.1` on `NODE_PATH`. The formula tests need Python with `sympy==1.14.0`.
+- Browser tests run in Chromium, Firefox and WebKit: `node tests/<name>.cjs chromium|firefox|webkit`. They need `playwright@1.63.0`, `jsdom@26.1.0` and `axe-core@4.11.1` on `NODE_PATH`. The formula tests need Python with `sympy==1.14.0`.
 - A pull request is not ready while CI is red. Do not weaken or delete an existing assertion to make CI pass without explaining why in the pull request.
 
 ## Never report as passed without evidence from the owner
