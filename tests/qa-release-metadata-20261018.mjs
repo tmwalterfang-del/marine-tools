@@ -22,7 +22,7 @@ check('Public release title',release.history[0].title==='Calculator quality & Sh
 check('Previous public release retained',release.history[1].version==='8.9.0'&&release.history[1].date==='2026-11-17');
 check('No full AIS acceptance claimed',!release.history[0].items.some(x=>/fully tested|certified|live CPA verified/i.test(x)));
 for(const file of ['release-v860.js','app.js','whats-new-v861.js'])check('Asset rotated '+file,read('index.html').includes(file+'?v='+release.build));
-check('Cache rotated',read('sw.js').includes('marine-tools-education-20261117-v5'));
+check('Cache rotated',read('sw.js').includes('marine-tools-education-20261117-v6'));
 const shell=vm.runInNewContext(read('sw.js')+'\nSHELL',{
  self:{location:{hostname:'marinetools.app'},addEventListener(){}}
 });

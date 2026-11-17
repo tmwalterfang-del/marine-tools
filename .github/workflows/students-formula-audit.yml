@@ -56,6 +56,8 @@ on:
       - 'tests/main-calculator-working-browser-20261117.cjs'
       - 'tests/main-calculator-route-dateline-20261117.cjs'
       - 'tests/students-calculator-working-reference-20261117.mjs'
+      - 'tests/seawater-density-reference-20261117.cjs'
+      - 'seawater-density-20261117.js'
       - 'ui-v861.css'
       - 'students/labs.css'
       - 'downloads.html'
@@ -181,6 +183,8 @@ jobs:
         env:
           NODE_PATH: /tmp/students-dom/node_modules
         run: node tests/main-calculator-units-compass-density-20261117.cjs
+      - name: TEOS-10 seawater density references (published GSW examples)
+        run: node tests/seawater-density-reference-20261117.cjs
       - name: NOAA WMM2025 references and compass suggestions
         env:
           NODE_PATH: /tmp/students-dom/node_modules

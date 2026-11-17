@@ -133,6 +133,12 @@ window.MT_CALCULATORS=[
  id:"fuel-density",name:"Fuel mass from volume",category:"Machinery & Energy",description:"Use density at the same actual/reference temperature as the measured volume.",
  fields:[F("vol","Fuel volume","m³",15,"nonnegative"),F("rho","Fuel density","t/m³",0.85)],
  compute:({vol,rho})=>({value:vol*rho,unit:"t",steps:[`Mass = volume × density = ${vol} × ${rho}`]})
+},
+{
+ id:"seawater-density",name:"Seawater density (TEOS-10)",category:"Ship Stability",description:"Density of seawater from practical salinity, in-situ temperature and sea pressure.",
+ fields:[F("sp","Practical salinity (PSS-78)","1",35,"nonnegative"),F("t","In-situ temperature","°C",15,"nonnegative"),F("p","Sea pressure","dbar",0,"nonnegative")],
+ compute:({sp,t,p})=>{let r;try{r=window.MT_SEAWATER.density(sp,t,p)}catch(e){return{value:NaN,unit:"kg/m³",steps:[],invalid:e&&e.message?e.message:"Seawater density could not be calculated within the supported range."}}return{value:r.rho,unit:"kg/m³",steps:[`ρ = 1 / v, v = (∂g/∂P)|SA=SR, t, p`,S("sr_gkg",`SR = 35.16504 / 35 × ${sp}`,r.referenceSalinityGPerKg,"g/kg"),S("v_m3kg",`v = vW + vS = ${window.MT_STUDENT_FORMAT(r.pureWaterSpecificVolumeM3PerKg)} + (${window.MT_STUDENT_FORMAT(r.salineSpecificVolumeM3PerKg)})`,r.specificVolumeM3PerKg,"m³/kg"),`ρ = ${window.MT_STUDENT_FORMAT(r.rhoTPerM3)} t/m³`,S("rho_kgm3",`ρ = 1 / v`,r.rho,"kg/m³")]}},
+ assumptions:["Absolute Salinity is taken as Reference Salinity (local salinity anomalies ignored).","In-situ temperature (ITS-90), not potential or Conservative Temperature."],range:"Salinity 0–40, temperature 0–40 °C, sea pressure 0–9989.87 dbar. For FWA/DWA use 0 dbar (surface)."
 }
 ];
 const mk=(id,category,prompt,expected,unit,steps,tolerance=0.05)=>({id,category,prompt,expected,unit,steps,tolerance});
