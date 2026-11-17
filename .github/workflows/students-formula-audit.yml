@@ -35,6 +35,9 @@ on:
       - 'weather-map-v854.js'
       - 'ui-v854.js'
       - 'tests/main-*.cjs'
+      - 'tests/main-calculator-validation-20261117.cjs'
+      - 'tests/main-calculator-validation-dom-20261117.cjs'
+      - 'tests/main-calculator-validation-browser-20261117.cjs'
       - 'students/labs.css'
       - 'downloads.html'
       - 'preview-server/**'
@@ -94,6 +97,8 @@ jobs:
           node tests/regulatory-geography.cjs
           node tests/regulatory-rules-voyage.cjs
           node tests/voyage-estimate-speed-transfer.mjs
+      - name: Main calculator validation reference cases
+        run: node tests/main-calculator-validation-20261117.cjs
       - name: Independent circuit node balances
         run: node tests/students-source-circuits-20261020.mjs
       - name: Qualified heat-transfer model references
@@ -153,6 +158,7 @@ jobs:
         env:
           NODE_PATH: /tmp/students-dom/node_modules
         run: |
+          node tests/main-calculator-validation-dom-20261117.cjs
           node tests/students-labs-dom-20261020.cjs
           node tests/students-lms-export-20261030.cjs
           node tests/students-chapter-navigation-20261020.cjs
@@ -247,6 +253,7 @@ jobs:
           node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
+          node tests/main-calculator-validation-browser-20261117.cjs ${{ matrix.browser }}
           node tests/main-result-locale-browser-20261101.cjs ${{ matrix.browser }}
           node tests/main-release-20261101.cjs ${{ matrix.browser }}
           node tests/students-next-workspace-browser-20261030.cjs ${{ matrix.browser }}
