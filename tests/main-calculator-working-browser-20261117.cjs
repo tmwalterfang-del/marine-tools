@@ -435,6 +435,15 @@ const CALCS = [
       // True wind 350° + 20° shows the mod-360 wrap.
       await page.evaluate(() => { for (const [id, v] of [["twCourse", "350"], ["twShip", "10"], ["twRel", "20"], ["twAws", "15"]]) { const x = document.getElementById(id); x.value = v; x.dispatchEvent(new Event("input", { bubbles: true })); } document.getElementById("calcTrueWind").click(); });
       ok(/mod 360 = 10/.test(await page.locator('.calc-work[data-for="resTrueWind"]').textContent()), "true wind apparent direction shows mod 360 = 10");
+      // Changing the shared route (undo last waypoint) also marks route fuel and closest-route results stale.
+      await page.evaluate(() => { document.getElementById("calcRouteFuel").click(); document.getElementById("calcNearest").click(); });
+      ok(!(await rfCard.evaluate((c) => c.classList.contains("calc-stale"))), "route fuel fresh after recalculation");
+      // Open Route Intelligence through the app's own data-go navigation (keeps this page state).
+      await page.evaluate(() => { const b = document.createElement("button"); b.dataset.go = "route-intelligence"; document.body.appendChild(b); b.click(); b.remove(); });
+      await page.locator("#undoWp").waitFor({ state: "attached" });
+      await page.evaluate(() => document.getElementById("undoWp").click());
+      ok(await rfCard.evaluate((c) => c.classList.contains("calc-stale")), "route change marks route fuel stale");
+      ok(await page.locator(".tool-card:has(#resNearest)").evaluate((c) => c.classList.contains("calc-stale")), "route change marks closest-route stale");
       // A NOx source named "Fuel" stays "Fuel" in Norwegian.
       await page.goto(base + "/index.html?page=engineering", { waitUntil: "domcontentloaded" });
       await page.locator("#calcNox").waitFor({ state: "attached" });
@@ -442,6 +451,13 @@ const CALCS = [
       await page.evaluate(() => window.MT_I18N.set("nb"));
       await page.waitForTimeout(400);
       ok(await page.locator('.calc-work[data-for="resNox"] .calc-work-steps li span').first().textContent() === "Fuel", "user-written NOx source name not translated");
+      // A built-in product name is system text and is translated: Urea solution → Urealøsning.
+      await page.goto(base + "/index.html?page=fuel", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcFuelUrea").waitFor({ state: "attached" });
+      await page.evaluate(() => { const p = document.getElementById("fuProduct"); p.value = "Urea solution"; p.dispatchEvent(new Event("change", { bubbles: true })); document.getElementById("calcFuelUrea").click(); });
+      await page.evaluate(() => window.MT_I18N.set("nb"));
+      await page.waitForTimeout(300);
+      ok(await page.locator('.calc-work[data-for="resFuelUrea"] .calc-work-steps li span').first().textContent() === "Urealøsning", "built-in product name translated in Norwegian working");
       await ctx.close();
     }
     // Language switch re-renders an open panel.

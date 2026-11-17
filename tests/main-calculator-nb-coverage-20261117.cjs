@@ -17,10 +17,11 @@ for (const m of src.matchAll(/(?:setWork|MT_SET_WORK\?\.)\(/g)) {
 const missing = new Set();
 const units = new Set();
 for (const c of calls) {
-  for (const m of c.matchAll(/(?:label|note):'((?:[^'\\]|\\.)*)'/g)) if (!cat[m[1]] && !common[m[1]]) missing.add("label/note: " + m[1]);
+  // Single- or double-quoted literals.
+  for (const m of c.matchAll(/(?:label|note):(['"])((?:(?!\1)[^\\]|\\.)*)\1/g)) { const s = m[2].replace(/\\(['"])/g, "$1"); if (!cat[s] && !common[s]) missing.add("label/note: " + s); }
   for (const m of c.matchAll(/note:[^,}]*\?'((?:[^'\\]|\\.)*)':'((?:[^'\\]|\\.)*)'/g)) for (const s of [m[1], m[2]]) if (!cat[s] && !common[s]) missing.add("note: " + s);
   const v = c.match(/validity:\[([\s\S]*?)\]\s*[})]/);
-  if (v) for (const m of v[1].matchAll(/'((?:[^'\\]|\\.)*)'/g)) { const s = m[1].replace(/\\'/g, "'"); if (!cat[s] && !common[s]) missing.add("validity: " + s); }
+  if (v) for (const m of v[1].matchAll(/(['"])((?:(?!\1)[^\\]|\\.)*)\1/g)) { const s = m[2].replace(/\\(['"])/g, "$1"); if (!cat[s] && !common[s]) missing.add("validity: " + s); }
   for (const m of c.matchAll(/unit:'([^']*)'/g)) units.add(m[1]);
 }
 console.log("setWork calls:", calls.length);

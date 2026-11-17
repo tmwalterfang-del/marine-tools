@@ -301,7 +301,9 @@ let dom;
     const after = await record(result);
     for (const key of ['inputs', 'outputs', 'steps', 'validity']) assert.deepEqual(after[key], before.record[key], result + ': stable ' + key);
     const labels = [...box(result).querySelectorAll('.calc-work-steps > li > span')].map(node => node.textContent);
-    assert(!labels.includes('TRANSLATED USER TEXT'), result + ': raw labels bypass translation');
+    // Fuel/urea product names come from a fixed list of system options and are translated on purpose
+    // (Codex review of round 5); the browser test checks Urea solution → Urealøsning. User-written labels stay raw.
+    if (result !== 'resFuelUrea') assert(!labels.includes('TRANSLATED USER TEXT'), result + ': raw labels bypass translation');
     const csv = await download(result, 'csv');
     for (const [name, item] of Object.entries(after.outputs)) assert(csv.includes(`,output,${name},${item.value ?? ''},${item.unit}`));
   }
