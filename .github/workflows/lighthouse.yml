@@ -1,0 +1,29 @@
+name: Lighthouse
+# Performance and accessibility budgets for the main pages (no site bytes added; CI only).
+on:
+  pull_request:
+    branches: [main]
+    paths: ['index.html', '*.js', '*.css', 'vendor/**', 'lighthouserc.json', '.github/workflows/lighthouse.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Lighthouse CI (Apache-2.0)
+        run: npm install --prefix /tmp/lhci --no-audit --no-fund @lhci/cli@0.15.1
+      - name: Collect and assert (accessibility >= 0.90 fails the job; performance, best practices and SEO warn)
+        run: /tmp/lhci/node_modules/.bin/lhci autorun --config=lighthouserc.json
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          if-no-files-found: warn
