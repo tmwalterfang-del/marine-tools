@@ -9,7 +9,15 @@ const rows=[
  ['force-diagram','Free-body forces & equilibrium','advanced-lab.html#force-diagram','Mechanics & materials',3],['truss','Plane truss builder','advanced-lab.html#truss','Mechanics & materials',3],['buckling','Euler column buckling','advanced-lab.html#buckling','Mechanics & materials',3],['thermal-expansion','Thermal expansion & restraint','advanced-lab.html#thermal-expansion','Mechanics & materials',3],
  ['pipe-network','Series & parallel pipe network','advanced-lab.html#pipe-network','Machinery & energy',11],['hydraulic-circuit','Hydraulic cylinder & valve','advanced-lab.html#hydraulic-circuit','Machinery & energy',11],['rankine','Rankine steam power cycle','advanced-lab.html#rankine','Machinery & energy',10],['refrigeration-ph','Refrigeration p–h cycle','advanced-lab.html#refrigeration-ph','Machinery & energy',12],
  ['resistor-network','Kirchhoff circuit builder','advanced-lab.html#resistor-network','Electrical & control',6],['induction-motor','Induction motor torque & slip','advanced-lab.html#induction-motor','Electrical & control',6],['unbalanced-three-phase','Unbalanced three-phase & neutral','advanced-lab.html#unbalanced-three-phase','Electrical & control',6],
- ['relative-motion','Relative motion & CPA/TCPA','advanced-lab.html#relative-motion','Ship & navigation',13],['bearing-fix','Bearing fixes & uncertainty','advanced-lab.html#bearing-fix','Ship & navigation',13]
+ ['relative-motion','Relative motion & CPA/TCPA','advanced-lab.html#relative-motion','Ship & navigation',13],['bearing-fix','Bearing fixes & uncertainty','advanced-lab.html#bearing-fix','Ship & navigation',13],
+ ["generator-sharing", "Generator synchronisation & load sharing", "systems-lab.html#generator-sharing", "Marine systems", 6],
+ ["blackout", "Power balance & generator loss", "systems-lab.html#blackout", "Marine systems", 8],
+ ["thruster-allocation", "Thruster force & moment allocation", "systems-lab.html#thruster-allocation", "Marine systems", 13],
+ ["mooring-forces", "Elastic mooring lines", "systems-lab.html#mooring-forces", "Marine systems", 3],
+ ["flooding", "Connected compartment flooding", "systems-lab.html#flooding", "Marine systems", 14],
+ ["separator", "Centrifugal separator", "systems-lab.html#separator", "Marine systems", 11],
+ ["freshwater", "Vacuum freshwater generator", "systems-lab.html#freshwater", "Marine systems", 10],
+ ["starting-air", "Starting-air receiver", "systems-lab.html#starting-air", "Marine systems", 9]
 ];
 root.MT_INTERACTIVE_MODULES=rows.map(([id,title,url,group,chapter])=>({id,title,url,group,chapter}));
 })(typeof window!=='undefined'?window:globalThis);

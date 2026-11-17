@@ -1,0 +1,44 @@
+# Dependency updates for Marine Tools.
+# Weekly, grouped and capped so update PRs do not crowd out feature work.
+# Security updates (enabled in Settings → Code security) arrive independently of this schedule.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Oslo"
+    open-pull-requests-limit: 3
+    groups:
+      capacitor:
+        patterns: ["@capacitor/*"]
+      tauri-cli:
+        patterns: ["@tauri-apps/*"]
+    commit-message:
+      prefix: "deps"
+
+  - package-ecosystem: "cargo"
+    directory: "/apps/desktop/src-tauri"
+    schedule:
+      interval: "monthly"
+      timezone: "Europe/Oslo"
+    open-pull-requests-limit: 2
+    groups:
+      tauri:
+        patterns: ["tauri*"]
+    commit-message:
+      prefix: "deps(desktop)"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      timezone: "Europe/Oslo"
+    open-pull-requests-limit: 2
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
