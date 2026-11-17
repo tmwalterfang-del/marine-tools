@@ -39,6 +39,8 @@ on:
       - 'tests/main-calculator-validation-dom-20261117.cjs'
       - 'tests/main-calculator-reference-20261117.cjs'
       - 'tests/main-calculator-validation-browser-20261117.cjs'
+      - 'tests/main-calculator-working-browser-20261117.cjs'
+      - 'ui-v861.css'
       - 'students/labs.css'
       - 'downloads.html'
       - 'preview-server/**'
@@ -256,6 +258,7 @@ jobs:
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-calculator-validation-browser-20261117.cjs ${{ matrix.browser }}
+          node tests/main-calculator-working-browser-20261117.cjs ${{ matrix.browser }}
           node tests/main-result-locale-browser-20261101.cjs ${{ matrix.browser }}
           node tests/main-release-20261101.cjs ${{ matrix.browser }}
           node tests/students-next-workspace-browser-20261030.cjs ${{ matrix.browser }}
