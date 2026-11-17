@@ -1229,7 +1229,14 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Organise projects, vessel profiles, calculations and workbook notes, with backup and export tools.": "Organiser prosjekter, fartøyprofiler, beregninger og arbeidsnotater, med verktøy for sikkerhetskopiering og eksport.",
   "Expanded English and Norwegian support, including result text, number formatting and worked steps.": "Utvidet støtte for engelsk og norsk, inkludert resultattekst, tallformat og mellomregninger.",
   "Cleaner navigation and improved layouts for desktop, tablet and mobile.": "Ryddigere navigasjon og forbedret visning på datamaskin, nettbrett og mobil.",
-  "Download selected study packages for offline learning.": "Last ned utvalgte studiepakker for læring uten nett."
+  "Download selected study packages for offline learning.": "Last ned utvalgte studiepakker for læring uten nett.",
+  "NOx & environmental voyage planning": "NOx og miljøplanlegging av reiser",
+  "NOx calculator for measured, fuel-based and energy-based emissions, with SCR and a separate Norwegian NOx tax and NOx Fund assessment.": "NOx-kalkulator for målte, drivstoffbaserte og energibaserte utslipp, med SCR og separat vurdering av norsk NOx-avgift og NOx-fond.",
+  "Voyage analysis on an interactive map with dated emission control and special areas along your route.": "Reiseanalyse på et interaktivt kart med datostyrte utslippskontrollområder og spesielle områder langs ruten.",
+  "Fuel changeover timing, consumption and NOx estimates per segment, with CSV, JSON and printable reports.": "Tidspunkt for drivstoffomlegging, forbruk og NOx-estimater per etappe, med CSV, JSON og utskriftsvennlige rapporter.",
+  "Import routes from GPX, RTZ or GeoJSON, or send a route from Voyage Estimate.": "Importer ruter fra GPX, RTZ eller GeoJSON, eller send en rute fra Voyage Estimate.",
+  "Regulatory coverage is not worldwide; verify requirements against official sources.": "Regelverksdekningen er ikke verdensomspennende. Kontroller kravene mot offisielle kilder.",
+  "Coordinate fields in navigation calculators no longer overlap on narrow screens.": "Koordinatfeltene i navigasjonskalkulatorene overlapper ikke lenger på smale skjermer."
  },
  "templates": [
   {
