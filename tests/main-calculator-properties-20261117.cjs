@@ -75,6 +75,13 @@ check('shared destination matches GeographicLib direct on the same sphere', fc.p
   return nav.distance(p, [((ref.lon2 + 540) % 360) - 180, ref.lat2]) < 1e-6;
 }));
 
+check('shared destination stays finite up to the poles (asin argument clamped)', fc.property(fc.double({ min: -90, max: 90, noNaN: true }), lon, fc.double({ min: 0, max: 360, noNaN: true }), fc.double({ min: 0, max: 10800, noNaN: true }), (la, lo, brg, nm) => {
+  const p = nav.destination([lo, la], brg, nm);
+  return Number.isFinite(p[0]) && Number.isFinite(p[1]) && Math.abs(p[1]) <= 90;
+}));
+// Regression found in review: 82N 0E due north 480.324 NM reaches the pole (asin argument rounded to 1.0000000000000002).
+assert.ok(Math.abs(nav.destination([0, 82], 0, nav.distance([0, 82], [0, 90]))[1] - 90) < 1e-9, '82N to the North Pole is finite');
+
 // --- WMM2025 (NOAA) -----------------------------------------------------------------------
 const year = fc.double({ min: 2025.0, max: 2030.0, noNaN: true });
 const wmmLat = fc.double({ min: -90, max: 90, noNaN: true });

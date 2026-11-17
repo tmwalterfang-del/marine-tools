@@ -72,7 +72,7 @@
       t = bearingDeg * D,
       p1 = a[1] * D,
       l1 = a[0] * D,
-      p2 = Math.asin(Math.sin(p1) * Math.cos(d) + Math.cos(p1) * Math.sin(d) * Math.cos(t)),
+      p2 = Math.asin(Math.max(-1, Math.min(1, Math.sin(p1) * Math.cos(d) + Math.cos(p1) * Math.sin(d) * Math.cos(t)))),
       l2 = l1 + Math.atan2(Math.sin(t) * Math.sin(d) * Math.cos(p1), Math.cos(d) - Math.sin(p1) * Math.sin(p2));
     return [((l2 / D + 540) % 360) - 180, p2 / D];
   }

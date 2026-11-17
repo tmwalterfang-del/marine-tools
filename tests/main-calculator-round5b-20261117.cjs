@@ -84,6 +84,15 @@ let dom;
   click('calcBearing855', 'resBearing855', true);
   assert.match(el('resBearing855').textContent, /10807.283 NM/, 'antipodal distance is pi*R');
   assert.match(el('resBearing855').textContent, /08° 0.00000′ S · 179° 0.00000′ W/, 'antipodal destination is B');
+  // Review regression: 82N 0E to the North Pole is a valid 480.324 NM leg (the shared destination clamps asin).
+  fields({ navALatDeg: 82, navALatMin: 0, navALatHem: 'N', navALonDeg: 0, navALonMin: 0, navALonHem: 'E', navBLatDeg: 90, navBLatMin: 0, navBLatHem: 'N', navBLonDeg: 0, navBLonMin: 0, navBLonHem: 'E' });
+  click('calcBearing855', 'resBearing855', true);
+  assert.match(el('resBearing855').textContent, /480.324 NM/, '82N to the pole is 480.324 NM (8 deg x 60.04 NM/deg on R = 3440.065 NM)');
+  // Review regression: fractional degrees plus minutes beyond 90 deg / 180 deg are refused, not thrown.
+  for (const over of [{ navALatDeg: 89.5, navALatMin: 59 }, { navALatDeg: 82, navALatMin: 0, navALonDeg: 179.5, navALonMin: 59 }]) {
+    fields(over);
+    click('calcBearing855', 'resBearing855', false, /Check coordinate inputs./);
+  }
   // Coordinate conversion's supported domain bounds every derived number.
   fields({ coordLatDeg: 90, coordLatMin: 0, coordLatHem: 'N', coordLonDeg: 180, coordLonMin: 0, coordLonHem: 'E' });
   click('calcCoords855', 'resCoords855', true);
