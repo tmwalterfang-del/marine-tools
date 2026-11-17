@@ -71,7 +71,7 @@ window.MT_CALCULATORS=[
 {
  id:"three-phase",name:"Balanced three-phase power",category:"Electrical Engineering",description:"Active power using RMS line voltage, line current and power factor.",
  fields:[F("u","Line voltage","V",440),F("i","Line current","A",120,"nonnegative"),F("pf","Power factor cos φ","0–1",0.85,"unitinterval")],
- compute:({u,i,pf})=>{const apparent=Math.sqrt(3)*u*i/1000,active=apparent*pf,reactive=apparent*Math.sqrt(Math.max(0,1-pf*pf));return{value:active,unit:"kW",steps:[`P = √3 × Uₗ × Iₗ × cos φ / 1000`,S("apparent_kVA",`S = √3 × ${u} V × ${i} A / 1000`,apparent,"kVA"),S("active_kW",`P = S × cos φ = S × ${pf}`,active,"kW"),S("reactive_kvar",`Q = S × √(1 − cos²φ)`,reactive,"kvar")]}},
+ compute:({u,i,pf})=>{const apparent=Math.sqrt(3)*u*i/1000,active=apparent*pf,reactive=apparent*Math.sqrt(Math.max(0,1-pf*pf));return{value:active,unit:"kW",steps:[`P = √3 × Uₗ × Iₗ × cos φ / 1000`,S("apparent_kVA",`S = √3 × ${u} V × ${i} A / 1000`,apparent,"kVA"),S("reactive_kvar",`Q = S × √(1 − cos²φ)`,reactive,"kvar"),S("active_kW",`P = S × cos φ = S × ${pf}`,active,"kW")]}},
  assumptions:["Balanced, sinusoidal three-phase load; Uₗ and Iₗ are RMS line values.","Harmonics and unbalance are ignored."],range:"U > 0 V, I ≥ 0 A, 0 ≤ cos φ ≤ 1."
 },
 {

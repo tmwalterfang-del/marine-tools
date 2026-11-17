@@ -55,6 +55,7 @@ on:
       - 'tests/main-calculator-validation-browser-20261117.cjs'
       - 'tests/main-calculator-working-browser-20261117.cjs'
       - 'tests/main-calculator-route-dateline-20261117.cjs'
+      - 'tests/students-calculator-working-reference-20261117.mjs'
       - 'ui-v861.css'
       - 'students/labs.css'
       - 'downloads.html'
@@ -263,6 +264,7 @@ jobs:
         run: |
           node tests/students-full-reference-20261030.mjs --generate
           node tests/students-calculator-reference-20261029.mjs
+          node tests/students-calculator-working-reference-20261117.mjs
           node tests/students-education-models-20261030.mjs
           node tests/students-practice-bank-reference-20261030.mjs
           git diff --exit-code students/full-review-20261030.js tests/fixtures/expression-reference/STUDENTS_FULL_EXPRESSION_EVIDENCE_2026-10-30.csv tests/fixtures/expression-reference/STUDENTS_PRIMARY_FORMULA_REVIEW_2026-10-30.csv
