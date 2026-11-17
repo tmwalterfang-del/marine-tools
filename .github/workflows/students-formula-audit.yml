@@ -43,6 +43,8 @@ on:
       - 'tests/main-calculator-round4-working-20261117.cjs'
       - 'tests/main-calculator-round5-20261117.cjs'
       - 'tests/main-calculator-round5b-20261117.cjs'
+      - 'tests/main-calculator-wgs84-20261117.cjs'
+      - 'vendor/geographiclib-geodesic-2.2.0.min.js'
       - 'tests/main-calculator-nb-coverage-20261117.cjs'
       - 'language-main-20261031.js'
       - 'calc-references-20261117.js'
@@ -185,6 +187,10 @@ jobs:
         env:
           NODE_PATH: /tmp/students-dom/node_modules
         run: node tests/main-calculator-round5b-20261117.cjs
+      - name: WGS84 primary geodesic references and spherical model isolation
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-wgs84-20261117.cjs
       - name: Check Norwegian for every Show working and reference text
         run: node tests/main-calculator-nb-coverage-20261117.cjs
       - name: Export and interactive DOM integration

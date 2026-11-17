@@ -16,9 +16,9 @@ window.MT_CALC_REFERENCES = Object.freeze({
     tolerance: 'tests/main-calculator-engineering-working-20261117.cjs checks hand energy and runtime exports within 1e-10 absolute.'
   },
   'bearing-distance': {
-    basis: 'Haversine distance and initial spherical bearing use an Earth radius of 3440.065 nautical miles.',
-    range: 'Use valid latitude and longitude positions with a defined initial bearing; coincident and antipodal bearings are ambiguous.',
-    tolerance: 'tests/main-calculator-working-browser-20261117.cjs checks an equatorial arc within 0.001 nautical miles and bearing within 0.005 degrees.'
+    basis: 'Haversine distance and initial spherical bearing use radius 3440.065 nautical miles; separately labelled WGS84 results use Karney inverse and direct geodesics with a = 6378137 m, f = 1 / 298.257223563 and 1852 m per nautical mile.',
+    range: 'Use valid latitude and longitude positions; courses at coincident, antipodal or polar endpoints may be ambiguous. WGS84 results require the GeographicLib library.',
+    tolerance: 'tests/main-calculator-working-browser-20261117.cjs checks an equatorial arc within 0.001 nautical miles and bearing within 0.005 degrees; tests/main-calculator-wgs84-20261117.cjs checks NGA equatorial and frozen Karney GeodTest distances within 0.001 m, azimuths within 1e-8 degrees and direct endpoints within 1e-9 degrees.'
   },
   'beaufort': {
     basis: 'The app assigns Beaufort force from its approximate knot threshold table.',
@@ -91,9 +91,9 @@ window.MT_CALC_REFERENCES = Object.freeze({
     tolerance: 'tests/main-calculator-round4-working-20261117.cjs checks hand load percentages and margins within 1e-10 absolute in exports.'
   },
   'great-circle-rhumb': {
-    basis: 'Spherical haversine and Mercator rhumb methods compare distances and courses using radius 3440.065 nautical miles.',
-    range: 'Use valid coordinates away from rhumb pole singularities and coincident or antipodal bearing ambiguities.',
-    tolerance: 'tests/main-calculator-working-browser-20261117.cjs checks equatorial distances within 0.005 nautical miles and courses within 0.05 degrees.'
+    basis: 'Spherical haversine and Mercator rhumb methods use radius 3440.065 nautical miles; separately labelled WGS84 results use Karney inverse geodesics with a = 6378137 m, f = 1 / 298.257223563 and 1852 m per nautical mile.',
+    range: 'Use valid coordinates away from rhumb pole singularities; courses at coincident, antipodal or polar endpoints may be ambiguous. WGS84 results require the GeographicLib library.',
+    tolerance: 'tests/main-calculator-working-browser-20261117.cjs checks equatorial distances within 0.005 nautical miles and courses within 0.05 degrees; tests/main-calculator-wgs84-20261117.cjs checks NGA equatorial and frozen Karney GeodTest distances within 0.001 m and azimuths within 1e-8 degrees.'
   },
   'gyro-correction': {
     basis: 'True course is gyro course plus east positive gyro error, wrapped to one revolution.',
