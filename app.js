@@ -1235,7 +1235,7 @@ function saveProfile(){
   maxHs:field('#pHs','maxHs'),maxWind:field('#pWind','maxWind'),maxCurrent:field('#pCur','maxCurrent'),
   minUKC:field('#pUkc','minUKC'),cpaAlert:field('#pCpa','cpaAlert'),corridor:field('#pCorr','corridor')
  };
- store.set(K.profile,state.profile);window.dispatchEvent(new Event('mt-profile-saved'));toast('Vessel profile saved.');renderEnvelope();updateHome();
+ store.set(K.profile,state.profile);if(typeof window!=='undefined'&&typeof Event==='function')window.dispatchEvent(new Event('mt-profile-saved'));toast('Vessel profile saved.');renderEnvelope();updateHome();
 }
 
 function localDataStats(){

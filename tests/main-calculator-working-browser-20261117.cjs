@@ -114,7 +114,7 @@ const CALCS = [
       ok(/Seilingstid/.test(rf) && /Drivstoff for seilasen/.test(rf), "route fuel: Norwegian step labels");
       const ww = await run("weather", "findWindow", "wwResult");
       ok(/innenfor grensene|utenfor grensene/.test(ww), "weather window: row status translated");
-      ok(!/strøm/.test(ww), "weather window: hidden current column is not shown");
+      ok(!/strøm/.test(await page.locator('.calc-work[data-for="wwResult"] .calc-work-steps').textContent()), "weather window: hidden current column is not shown in the steps");
       // User-written source names are never translated (AGENTS.md): "Total" exists in a catalogue as "Sum".
       const nox = await run("engineering", "calcNox", "resNox", () => {
         const n = document.querySelector(".nox-row .nox-name");

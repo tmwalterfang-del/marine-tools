@@ -31,7 +31,13 @@ console.log("units with words lacking nb:", wordUnits.join(" | ") || "none");
 // Symbol-only units are identical in Norwegian.
 const SAME = new Set(["rad/s", "rad/m", "bar", "kVA", "kVAr"]);
 const realWordUnits = wordUnits.filter((u) => !SAME.has(u));
+// Reference, range and checking-method sentences shown in the panel.
+global.window = {};
+require(path.join(root, "calc-references-20261117.js"));
+const refMissing = [];
+for (const [tool, r] of Object.entries(window.MT_CALC_REFERENCES)) for (const k of ["basis", "range", "tolerance"]) if (r[k] && !cat[r[k]] && !common[r[k]]) refMissing.push(tool + "." + k);
+assert.equal(refMissing.length, 0, "reference sentences without Norwegian: " + refMissing.length + " e.g. " + refMissing.slice(0, 5).join(", "));
 assert.ok(calls.length >= 40, "expected the Show working calls to be found: " + calls.length);
 assert.equal(missing.size, 0, "missing Norwegian strings: " + [...missing].join(" | "));
 assert.equal(realWordUnits.length, 0, "units without Norwegian: " + realWordUnits.join(" | "));
-console.log(JSON.stringify({ status: "PASS", setWorkCalls: calls.length }));
+console.log(JSON.stringify({ status: "PASS", setWorkCalls: calls.length, referenceTools: Object.keys(window.MT_CALC_REFERENCES).length }));
