@@ -82,7 +82,7 @@ let dom;
   // Fahrenheit: 0*9/5+32=32; 100*9/5+32=212; inverse (F-32)*5/9.
   // Literal inverse references are long division of these definitions.
   // Raw tolerances: <=1e-12 for ratios, <=1e-10 W for power constants.
-  // Display tolerance: 0.000000501 (half of six displayed decimal places).
+  // Display tolerance: 0.000501 (half of three displayed decimal places; working exports keep full precision).
   const conversionCases = [
     ['nm-km', 1, 1.852, 'NM', 'km', 1e-12],
     ['km-nm', 100, 53.99568034557235, 'km', 'NM', 1e-12],
@@ -115,7 +115,7 @@ let dom;
     assert.equal(r.tool, 'unit-converter'); assert.equal(r.inputs.conversion.value, type);
     assert.equal(r.inputs.value.unit, from); assert.equal(r.outputs.convertedValue.unit, to);
     near(r.outputs.convertedValue.value, expected, tolerance, type + ': raw');
-    near(Number(el('resUnit').querySelector('strong').textContent.split(' ')[0]), expected, 0.000000501, type + ': display');
+    near(Number(el('resUnit').querySelector('strong').textContent.split(' ')[0]), expected, 0.000501, type + ': display');
     working('resUnit', [['Unit conversion', expected, 0.000000000501]]);
     assert.match(box('resUnit').textContent, /Rounding is for display only/);
   }
@@ -227,7 +227,7 @@ let dom;
   const beforeLocale = await Promise.all(['resUnit', 'resCompass', 'resFwa'].map(record));
   const raw = ['unitVal', 'compC', 'compVar', 'compDev', 'compVarAnnual', 'fwaDensity'].map(id => el(id).value);
   w.MT_I18N = { locale: 'nb', t: text => text }; w.dispatchEvent(new w.CustomEvent('mt-locale-change'));
-  assert.match(el('resUnit').textContent, /5,401667/); assert.match(el('resCompass').textContent, /2,500° true/); assert.match(el('resFwa').textContent, /125,0 mm/);
+  assert.match(el('resUnit').textContent, /5,402 m\/s/); assert.match(el('resCompass').textContent, /2,500° true/); assert.match(el('resFwa').textContent, /125,0 mm/);
   assert.match(box('resUnit').querySelector('code').textContent, /10,500000000/);
   assert.deepEqual(['unitVal', 'compC', 'compVar', 'compDev', 'compVarAnnual', 'fwaDensity'].map(id => el(id).value), raw);
   for (const [i, id] of ['resUnit', 'resCompass', 'resFwa'].entries()) {
