@@ -40,6 +40,7 @@ on:
       - 'tests/main-calculator-reference-20261117.cjs'
       - 'tests/main-calculator-units-compass-density-20261117.cjs'
       - 'tests/main-calculator-engineering-working-20261117.cjs'
+      - 'tests/main-calculator-round4-working-20261117.cjs'
       - 'tests/main-calculator-validation-browser-20261117.cjs'
       - 'tests/main-calculator-working-browser-20261117.cjs'
       - 'ui-v861.css'
@@ -167,6 +168,10 @@ jobs:
         env:
           NODE_PATH: /tmp/students-dom/node_modules
         run: node tests/main-calculator-engineering-working-20261117.cjs
+      - name: Round four main calculator working reference cases
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-round4-working-20261117.cjs
       - name: Export and interactive DOM integration
         env:
           NODE_PATH: /tmp/students-dom/node_modules
