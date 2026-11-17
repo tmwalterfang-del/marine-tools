@@ -1914,8 +1914,12 @@
       }) + " UTC"
     );
   }
-  function areaName(id, language = lang) {
-    return catalogue.areas.find((a) => a.id === id)?.name[language] || id;
+  function areaName(id) {
+    return catalogue.areas.find((a) => a.id === id)?.name[lang] || id;
+  }
+  // English name for exports; single argument so it is safe in .map().
+  function areaNameEn(id) {
+    return catalogue.areas.find((a) => a.id === id)?.name.en || id;
   }
   function rulesText(segment) {
     return (
@@ -2035,7 +2039,7 @@
           s.to.join(" "),
           s.distanceNm,
           s.hours,
-          rule ? areaName(rule.areaId, "en") : en("outsideMapped"),
+          rule ? areaNameEn(rule.areaId) : en("outsideMapped"),
           rule?.sulphurPercent ?? s.globalSulphurPercent,
           rule?.nox?.status ?? "",
           (rule?.sources || ["imo-sox"])
