@@ -1309,6 +1309,25 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Calculate again before copying. The inputs have changed.": "Beregn på nytt før du kopierer. Inndata er endret.",
   "Calculate again before sharing. The inputs have changed.": "Beregn på nytt før du deler. Inndata er endret.",
   "Print calculation": "Skriv ut beregning",
+  "WGS84 geodesic distance": "Geodetisk distanse (WGS84)",
+  "Initial WGS84 course": "Startkurs (WGS84)",
+  "Final WGS84 course": "Sluttkurs (WGS84)",
+  "WGS84 destination latitude": "Breddegrad for destinasjon (WGS84)",
+  "WGS84 destination longitude": "Lengdegrad for destinasjon (WGS84)",
+  "Great-circle and rhumb-line results use a spherical Earth; WGS84 results use the ellipsoid.": "Storsirkel- og loksodromresultatene bruker en kulemodell av jorden; WGS84-resultatene bruker ellipsoiden.",
+  "WGS84 courses are forward azimuths at A and B; coincident, antipodal and polar courses may be ambiguous.": "WGS84-kursene er asimut fremover ved A og B; kurser ved sammenfallende, antipodiske eller polare punkter kan være tvetydige.",
+  "The unlabelled distance, course and destination use a spherical Earth; WGS84 results use the ellipsoid.": "Distanse, kurs og destinasjon uten merking bruker en kulemodell av jorden; WGS84-resultatene bruker ellipsoiden.",
+  "WGS84 inverse(A, B): s12 / 1852": "WGS84 invers(A, B): s12 / 1852",
+  "WGS84 inverse(A, B): azi1 mod 360°": "WGS84 invers(A, B): azi1 mod 360°",
+  "WGS84 inverse(A, B): azi2 mod 360°": "WGS84 invers(A, B): azi2 mod 360°",
+  "WGS84 direct(A, azi1, s12): latitude": "WGS84 direkte(A, azi1, s12): breddegrad",
+  "WGS84 direct(A, azi1, s12): longitude": "WGS84 direkte(A, azi1, s12): lengdegrad",
+  "Spherical haversine and Mercator rhumb methods use radius 3440.065 nautical miles; separately labelled WGS84 results use Karney inverse geodesics with a = 6378137 m, f = 1 / 298.257223563 and 1852 m per nautical mile.": "Haversine på kule og Mercator-loksodrom bruker radius 3440,065 nautiske mil; egne WGS84-resultater bruker Karneys inverse geodeter med a = 6378137 m, f = 1 / 298,257223563 og 1852 m per nautisk mil.",
+  "Use valid coordinates away from rhumb pole singularities; courses at coincident, antipodal or polar endpoints may be ambiguous. WGS84 results require the GeographicLib library.": "Bruk gyldige koordinater unna loksodromens singularitet ved polene; kurser ved sammenfallende, antipodiske eller polare endepunkter kan være tvetydige. WGS84-resultatene krever GeographicLib-biblioteket.",
+  "tests/main-calculator-working-browser-20261117.cjs checks equatorial distances within 0.005 nautical miles and courses within 0.05 degrees; tests/main-calculator-wgs84-20261117.cjs checks NGA equatorial and frozen Karney GeodTest distances within 0.001 m and azimuths within 1e-8 degrees.": "tests/main-calculator-working-browser-20261117.cjs kontrollerer distanser langs ekvator med toleranse 0,005 nautiske mil og kurser med toleranse 0,05 grader; tests/main-calculator-wgs84-20261117.cjs kontrollerer NGAs ekvatorverdi og faste GeodTest-distanser fra Karney med toleranse 0,001 m og asimut med toleranse 1e-8 grader.",
+  "Haversine distance and initial spherical bearing use radius 3440.065 nautical miles; separately labelled WGS84 results use Karney inverse and direct geodesics with a = 6378137 m, f = 1 / 298.257223563 and 1852 m per nautical mile.": "Haversine-distanse og startkurs på kule bruker radius 3440,065 nautiske mil; egne WGS84-resultater bruker Karneys inverse og direkte geodeter med a = 6378137 m, f = 1 / 298,257223563 og 1852 m per nautisk mil.",
+  "Use valid latitude and longitude positions; courses at coincident, antipodal or polar endpoints may be ambiguous. WGS84 results require the GeographicLib library.": "Bruk gyldige bredde- og lengdegrader; kurser ved sammenfallende, antipodiske eller polare endepunkter kan være tvetydige. WGS84-resultatene krever GeographicLib-biblioteket.",
+  "tests/main-calculator-working-browser-20261117.cjs checks an equatorial arc within 0.001 nautical miles and bearing within 0.005 degrees; tests/main-calculator-wgs84-20261117.cjs checks NGA equatorial and frozen Karney GeodTest distances within 0.001 m, azimuths within 1e-8 degrees and direct endpoints within 1e-9 degrees.": "tests/main-calculator-working-browser-20261117.cjs kontrollerer en bue langs ekvator med toleranse 0,001 nautiske mil og kurs med toleranse 0,005 grader; tests/main-calculator-wgs84-20261117.cjs kontrollerer NGAs ekvatorverdi og faste GeodTest-distanser fra Karney med toleranse 0,001 m, asimut med toleranse 1e-8 grader og direkte endepunkter med toleranse 1e-9 grader.",
   "Each calculation shows its basis, supported range and how it is checked, and exports carry every input needed to repeat it.": "Hver beregning viser grunnlag, gyldig område og hvordan den er kontrollert, og eksporten tar med alle inndata som trengs for å gjenta den.",
   "Remaining clearance is published clearance minus water level, air draft and margin in a shared datum.": "Gjenværende klaring er publisert klaring minus vannstand, høyde over vannlinjen og margin, med samme høydereferanse.",
   "Published clearance must be positive, air draft and margin nonnegative, and water level finite and signed.": "Publisert klaring må være positiv, høyde over vannlinjen og margin kan ikke være negative, og vannstanden må være et endelig tall med fortegn.",
@@ -1684,6 +1703,18 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Use vessel hydrostatic data; this is a planning approximation.": "Bruk fartøyets hydrostatiske data. Dette er en tilnærming for planlegging."
  },
  "templates": [
+  {
+   "en": "WGS84 {0} NM · initial {1}°T · final {2}°T",
+   "nb": "WGS84 {0} NM · start {1}°T · slutt {2}°T"
+  },
+  {
+   "en": "WGS84 destination {0} · {1}",
+   "nb": "WGS84-destinasjon {0} · {1}"
+  },
+  {
+   "en": "WGS84 decimal {0}, {1}",
+   "nb": "WGS84 desimal {0}, {1}"
+  },
   {
    "en": "min over {0} legs",
    "nb": "minimum over {0} strekninger"
