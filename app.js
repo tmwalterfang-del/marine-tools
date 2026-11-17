@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const API=/\.chatgpt\.site$/i.test(location.hostname)?'/live-api':/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)?'https://feature-qa-integrated-preview-20261015.api.marinetools.app':'https://api.marinetools.app';
-const APP_VERSION='8.8.0';
+const APP_VERSION='8.9.0';
 const SURVEY_URL='https://tally.so/r/5BWVZQ';
 const SUGGEST_URL='mailto:contact@marinetools.app?subject=Marine%20Tools%20suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Marine%20Tools.%0A%0AArea%20/%20tool%3A%0ASuggestion%20or%20problem%3A%0AWhat%20would%20make%20this%20better%3A%0AOptional%20context%3A%0A%0ARegards%2C%0A';
 const SUPPORT_URL='https://buymeacoffee.com/marinetools';
@@ -222,7 +222,7 @@ function formulaBox(){return ''}
 
 function calcButton(id,label='Calculate'){return `<div class="actions"><button class="btn primary calc-action" id="${id}">${label}</button><button class="btn copy-result" type="button">Copy result</button><button class="btn share-result" type="button">Share result</button></div>`}
 function result(id,text='Enter values to calculate.'){return `<div class="result" id="${id}"><small>${text}</small></div>`}
-function hav(a,b){const R=3440.065,p1=rad(a.lat),p2=rad(b.lat),dp=rad(b.lat-a.lat),dl=rad(b.lon-a.lon);const q=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
+function hav(a,b){return window.MT_NAV_MATH.distance([Number(a.lon),Number(a.lat)],[Number(b.lon),Number(b.lat)])}
 function bearing(a,b){const y=Math.sin(rad(b.lon-a.lon))*Math.cos(rad(b.lat)),x=Math.cos(rad(a.lat))*Math.sin(rad(b.lat))-Math.sin(rad(a.lat))*Math.cos(rad(b.lat))*Math.cos(rad(b.lon-a.lon));return (deg(Math.atan2(y,x))+360)%360}
 
 function rhumb(a,b){

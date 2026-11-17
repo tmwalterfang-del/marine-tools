@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>Environmental planning · Marine Tools</title>
+    <link rel="icon" href="assets/icon-192.png" />
+    <link rel="stylesheet" href="regulatory/vendor/leaflet.css" />
+    <link rel="stylesheet" href="regulatory/regulatory.css" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="index.html"
+        ><img src="assets/icon-192.png" alt="" width="42" height="42" /><span
+          >MARINE TOOLS</span
+        ></a
+      ><a href="index.html#fuel" data-copy="back">Back to tools</a
+      ><label
+        ><span data-copy="language">Language</span
+        ><select id="language">
+          <option value="en">English</option>
+          <option value="nb">Norsk bokmål</option>
+        </select></label
+      >
+    </header>
+    <main>
+      <div class="intro">
+        <span class="eyebrow" data-copy="environment"
+          >ENVIRONMENTAL PLANNING</span
+        >
+        <h1 data-copy="title">Emissions, areas & voyage planning</h1>
+        <p data-copy="intro">
+          Calculate emissions from documented inputs and inspect environmental
+          requirements along a planned voyage.
+        </p>
+      </div>
+      <nav class="tabs" aria-label="Environmental tools" id="tabs">
+        <a href="#nox" data-copy="nox">NOx & Norwegian charges</a
+        ><a href="#voyage" data-copy="voyage">Regulatory map & voyage</a
+        ><a href="#profile" data-copy="profile">Vessel & certification</a
+        ><a href="#sources" data-copy="sources">Sources & coverage</a>
+      </nav>
+      <p class="notice" data-copy="limits">
+        Planning reference only. A plotted route is not an approved passage
+        plan, and these results do not certify compliance.
+      </p>
+      <div id="message" role="status" aria-live="polite"></div>
+      <section id="nox" class="view" aria-labelledby="nox-title"></section>
+      <section
+        id="voyage"
+        class="view"
+        aria-labelledby="voyage-title"
+        hidden
+      ></section>
+      <section
+        id="profile"
+        class="view"
+        aria-labelledby="profile-title"
+        hidden
+      ></section>
+      <section
+        id="sources"
+        class="view"
+        aria-labelledby="sources-title"
+        hidden
+      ></section>
+    </main>
+    <footer>
+      <span data-copy="local"
+        >Vessel settings and saved plans stay in this browser. Export files to
+        transfer them.</span
+      ><a href="index.html#privacy" data-copy="privacy">Privacy</a>
+    </footer>
+    <script src="navigation-math.js"></script>
+    <script src="regulatory/nox-core.js"></script>
+    <script src="regulatory/spatial-core.js"></script>
+    <script src="regulatory/voyage-core.js"></script>
+    <script src="regulatory/rules-core.js"></script>
+    <script src="regulatory/route-io.js"></script>
+    <script src="regulatory/profile-adapter.js"></script>
+    <script src="regulatory/vendor/leaflet.js"></script>
+    <script src="regulatory/ui.js"></script>
+  </body>
+</html>

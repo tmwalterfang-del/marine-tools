@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "file": "eca-reg14-original.geojson",
+      "url": "https://geo.vliz.be/geoserver/MarineRegions/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=MarineRegions:eca_reg14_sox_pm&outputFormat=application/json&srsName=EPSG:4326",
+      "doi": "10.14284/397",
+      "sha256": "aea3d643212a453832d983e904f092e5d0eb2033440e597db8531c64261e6ae8",
+      "bytes": 28221210,
+      "retrievedOn": "2026-11-03",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "iho-original.geojson",
+      "url": "https://geo.vliz.be/geoserver/MarineRegions/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=MarineRegions:iho&outputFormat=application/json&srsName=EPSG:4326",
+      "doi": "10.14284/323",
+      "sha256": "88a2921a3a68500ef7a132c47b69e473c1410b6d56d64cc03158b40fd3bb804f",
+      "bytes": 247429239,
+      "retrievedOn": "2026-11-03",
+      "license": "CC-BY-4.0"
+    }
+  ],
+  "coastlineAccuracy": "unspecified",
+  "worldwideComplete": false
+}

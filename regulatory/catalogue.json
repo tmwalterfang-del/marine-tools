@@ -1,0 +1,1164 @@
+{
+  "schemaVersion": 1,
+  "version": "2026-11-03.1",
+  "verifiedOn": "2026-11-03",
+  "worldwideComplete": false,
+  "globalSulphur": [
+    {
+      "from": "2005-05-19",
+      "percent": 4.5
+    },
+    {
+      "from": "2012-01-01",
+      "percent": 3.5
+    },
+    {
+      "from": "2020-01-01",
+      "percent": 0.5
+    }
+  ],
+  "ecaSulphur": [
+    {
+      "from": "2005-05-19",
+      "percent": 1.5
+    },
+    {
+      "from": "2010-07-01",
+      "percent": 1
+    },
+    {
+      "from": "2015-01-01",
+      "percent": 0.1
+    }
+  ],
+  "areas": [
+    {
+      "id": "baltic-sea",
+      "name": {
+        "en": "Baltic Sea",
+        "nb": "Østersjøen"
+      },
+      "category": "emissions",
+      "classification": "combined-eca",
+      "designationFrom": "2005-05-19",
+      "sulphurFrom": "2006-05-19",
+      "noxFrom": "2021-01-01",
+      "construction": {
+        "keel": "2021-01-01"
+      },
+      "sources": [
+        "imo-areas",
+        "imo-sox",
+        "imo-nox",
+        "vliz-eca"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "north-sea",
+      "name": {
+        "en": "North Sea",
+        "nb": "Nordsjøen"
+      },
+      "category": "emissions",
+      "classification": "combined-eca",
+      "designationFrom": "2006-11-22",
+      "sulphurFrom": "2007-11-22",
+      "noxFrom": "2021-01-01",
+      "construction": {
+        "keel": "2021-01-01"
+      },
+      "sources": [
+        "imo-areas",
+        "imo-sox",
+        "imo-nox",
+        "vliz-eca"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "north-american",
+      "name": {
+        "en": "North American ECA",
+        "nb": "Nordamerikansk ECA"
+      },
+      "category": "emissions",
+      "classification": "combined-eca",
+      "designationFrom": "2011-08-01",
+      "sulphurFrom": "2012-08-01",
+      "noxFrom": "2016-01-01",
+      "construction": {
+        "keel": "2016-01-01"
+      },
+      "sources": [
+        "imo-areas",
+        "imo-sox",
+        "imo-nox",
+        "vliz-eca"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "us-caribbean",
+      "name": {
+        "en": "US Caribbean Sea ECA",
+        "nb": "USAs karibiske ECA"
+      },
+      "category": "emissions",
+      "classification": "combined-eca",
+      "designationFrom": "2013-01-01",
+      "sulphurFrom": "2014-01-01",
+      "noxFrom": "2016-01-01",
+      "construction": {
+        "keel": "2016-01-01"
+      },
+      "sources": [
+        "imo-areas",
+        "imo-sox",
+        "imo-nox",
+        "vliz-eca"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "mediterranean",
+      "name": {
+        "en": "Mediterranean Sea",
+        "nb": "Middelhavet"
+      },
+      "category": "emissions",
+      "classification": "sox-pm-eca",
+      "designationFrom": "2024-05-01",
+      "sulphurFrom": "2025-05-01",
+      "noxFrom": null,
+      "construction": null,
+      "sources": [
+        "361-79",
+        "imo-sox"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "norwegian-sea",
+      "name": {
+        "en": "Norwegian Sea",
+        "nb": "Norskehavet"
+      },
+      "category": "emissions",
+      "classification": "combined-eca",
+      "designationFrom": "2026-03-01",
+      "sulphurFrom": "2027-03-01",
+      "noxFrom": "2026-03-01",
+      "construction": {
+        "contract": "2026-03-01",
+        "noContractKeel": "2026-09-01",
+        "delivery": "2030-03-01"
+      },
+      "sources": [
+        "392-82",
+        "315-74",
+        "imo-sox",
+        "imo-nox"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "canadian-arctic",
+      "name": {
+        "en": "Canadian Arctic",
+        "nb": "Kanadisk Arktis"
+      },
+      "category": "emissions",
+      "classification": "combined-eca",
+      "designationFrom": "2026-03-01",
+      "sulphurFrom": "2027-03-01",
+      "noxFrom": "2026-03-01",
+      "construction": {
+        "keel": "2025-01-01"
+      },
+      "sources": [
+        "392-82",
+        "imo-sox",
+        "imo-nox"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "north-east-atlantic",
+      "name": {
+        "en": "North-East Atlantic",
+        "nb": "Nordøst-Atlanteren"
+      },
+      "category": "emissions",
+      "classification": "combined-eca",
+      "designationFrom": "2027-09-01",
+      "sulphurFrom": "2028-09-01",
+      "noxFrom": "2027-09-01",
+      "construction": {
+        "contract": "2027-01-01",
+        "noContractKeel": "2027-07-01",
+        "delivery": "2031-01-01"
+      },
+      "sources": [
+        "407-84",
+        "imo-sox",
+        "imo-nox"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "baltic-special",
+      "geometryId": "baltic-sea",
+      "name": {
+        "en": "Baltic Sea · MARPOL Special Area",
+        "nb": "Østersjøen · MARPOL-spesialområde"
+      },
+      "category": "discharge",
+      "classification": "marpol-special",
+      "designationFrom": "1983-10-02",
+      "sources": [
+        "imo-areas",
+        "discharge-amsa",
+        "baltic-sewage"
+      ],
+      "requirements": [
+        {
+          "code": "annex-i-special",
+          "summary": {
+            "en": "Annex I special-area controls apply to oil and oily mixtures. Machinery-space and tanker cargo-area rules differ; verify the discharge conditions and equipment.",
+            "nb": "Særkravene i vedlegg I gjelder olje og oljeholdige blandinger. Maskinrom og tanklastområder har ulike regler. Kontroller utslippsvilkår og utstyr."
+          },
+          "sources": [
+            "imo-areas",
+            "discharge-amsa"
+          ],
+          "applicability": {},
+          "from": "1983-10-02"
+        },
+        {
+          "code": "annex-v-special",
+          "summary": {
+            "en": "Annex V special-area discharge controls apply. Garbage is generally retained on board; only the specific permitted exceptions may be used.",
+            "nb": "Særkravene i vedlegg V gjelder avfallsutslipp. Avfall beholdes som hovedregel om bord. Bare uttrykkelig tillatte unntak kan benyttes."
+          },
+          "sources": [
+            "imo-areas",
+            "discharge-amsa"
+          ],
+          "applicability": {},
+          "from": "1989-10-01"
+        },
+        {
+          "code": "baltic-sewage-transition",
+          "summary": {
+            "en": "Baltic passenger sewage restrictions phase in for new ships in 2019 and existing ships in 2021, with the specified direct-voyage exception ending in 2023. Verify the relevant dates.",
+            "nb": "Kloakkreglene for passasjerskip fases inn for nye skip i 2019 og eksisterende skip i 2021. Det angitte direktefartsunntaket opphører i 2023. Kontroller relevant dato."
+          },
+          "sources": [
+            "baltic-sewage"
+          ],
+          "applicability": {
+            "shipTypes": [
+              "passenger"
+            ],
+            "requireAdministrationReview": true
+          },
+          "until": "2023-06-01",
+          "from": "2019-06-01"
+        },
+        {
+          "code": "baltic-sewage",
+          "summary": {
+            "en": "Passenger ships: use reception facilities or an approved sewage treatment plant meeting the special-area nutrient-removal requirements.",
+            "nb": "Passasjerskip: bruk mottaksanlegg eller godkjent kloakkrenseanlegg som oppfyller spesialområdets krav til næringsstoffjerning."
+          },
+          "sources": [
+            "baltic-sewage"
+          ],
+          "applicability": {
+            "shipTypes": [
+              "passenger"
+            ]
+          },
+          "from": "2023-06-01"
+        }
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "mediterranean-discharge",
+      "geometryId": "mediterranean-special",
+      "name": {
+        "en": "Mediterranean · MARPOL Special Area",
+        "nb": "Middelhavet · MARPOL-spesialområde"
+      },
+      "category": "discharge",
+      "classification": "marpol-special",
+      "designationFrom": "1983-10-02",
+      "sources": [
+        "imo-areas",
+        "discharge-amsa"
+      ],
+      "requirements": [
+        {
+          "code": "annex-i-special",
+          "summary": {
+            "en": "Annex I special-area controls apply to oil and oily mixtures. Machinery-space and tanker cargo-area rules differ; verify the discharge conditions and equipment.",
+            "nb": "Særkravene i vedlegg I gjelder olje og oljeholdige blandinger. Maskinrom og tanklastområder har ulike regler. Kontroller utslippsvilkår og utstyr."
+          },
+          "sources": [
+            "imo-areas",
+            "discharge-amsa"
+          ],
+          "applicability": {},
+          "from": "1983-10-02"
+        },
+        {
+          "code": "annex-v-special",
+          "summary": {
+            "en": "Annex V special-area discharge controls apply. Garbage is generally retained on board; only the specific permitted exceptions may be used.",
+            "nb": "Særkravene i vedlegg V gjelder avfallsutslipp. Avfall beholdes som hovedregel om bord. Bare uttrykkelig tillatte unntak kan benyttes."
+          },
+          "sources": [
+            "imo-areas",
+            "discharge-amsa"
+          ],
+          "applicability": {},
+          "from": "2009-05-01"
+        }
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "north-sea-special",
+      "geometryId": "north-sea",
+      "name": {
+        "en": "North Sea · Annex V Special Area",
+        "nb": "Nordsjøen · spesialområde etter vedlegg V"
+      },
+      "category": "discharge",
+      "classification": "marpol-special",
+      "designationFrom": "1991-02-18",
+      "sources": [
+        "imo-areas",
+        "discharge-amsa"
+      ],
+      "requirements": [
+        {
+          "code": "annex-v-special",
+          "summary": {
+            "en": "Annex V special-area discharge controls apply. Garbage is generally retained on board; only the specific permitted exceptions may be used.",
+            "nb": "Særkravene i vedlegg V gjelder avfallsutslipp. Avfall beholdes som hovedregel om bord. Bare uttrykkelig tillatte unntak kan benyttes."
+          },
+          "sources": [
+            "imo-areas",
+            "discharge-amsa"
+          ],
+          "applicability": {},
+          "from": "1991-02-18"
+        }
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "antarctic-special",
+      "geometryId": "antarctic-special",
+      "name": {
+        "en": "Antarctic · MARPOL Special Area",
+        "nb": "Antarktis · MARPOL-spesialområde"
+      },
+      "category": "discharge",
+      "classification": "marpol-special",
+      "designationFrom": "1992-03-17",
+      "sources": [
+        "imo-areas",
+        "discharge-amsa"
+      ],
+      "requirements": [
+        {
+          "code": "antarctic-oil",
+          "summary": {
+            "en": "Oil and oily-mixture discharges are prohibited in the Antarctic Special Area.",
+            "nb": "Utslipp av olje og oljeholdige blandinger er forbudt i det antarktiske spesialområdet."
+          },
+          "sources": [
+            "discharge-amsa"
+          ],
+          "applicability": {},
+          "from": "1992-03-17"
+        },
+        {
+          "code": "antarctic-nls",
+          "summary": {
+            "en": "Discharge of noxious liquid substances or mixtures containing them is prohibited.",
+            "nb": "Utslipp av skadelige flytende stoffer eller blandinger som inneholder slike stoffer er forbudt."
+          },
+          "sources": [
+            "discharge-amsa"
+          ],
+          "applicability": {},
+          "from": "1994-07-01"
+        },
+        {
+          "code": "annex-v-special",
+          "summary": {
+            "en": "Annex V special-area discharge controls apply. Garbage is generally retained on board; only the specific permitted exceptions may be used.",
+            "nb": "Særkravene i vedlegg V gjelder avfallsutslipp. Avfall beholdes som hovedregel om bord. Bare uttrykkelig tillatte unntak kan benyttes."
+          },
+          "sources": [
+            "imo-areas",
+            "discharge-amsa"
+          ],
+          "applicability": {},
+          "from": "1992-03-17"
+        }
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "nw-mediterranean-pssa",
+      "geometryId": "nw-mediterranean-pssa",
+      "name": {
+        "en": "North-Western Mediterranean · PSSA",
+        "nb": "Nordvestlige Middelhavet · PSSA"
+      },
+      "category": "pssa",
+      "classification": "pssa",
+      "designationFrom": "2023-07-07",
+      "sources": [
+        "380-80"
+      ],
+      "requirements": [
+        {
+          "code": "cetacean-protection",
+          "summary": {
+            "en": "Recommended protective measures: exercise caution around reported cetaceans, consider voluntary speed reduction to 10–13 kn while maintaining safe manoeuvrability, keep appropriate separation, and report sightings and strikes. This is not a blanket mandatory speed limit.",
+            "nb": "Anbefalte vernetiltak: vis aktsomhet ved meldte hvalobservasjoner, vurder frivillig fartsreduksjon til 10–13 knop med sikker manøvrering, hold egnet avstand og rapporter observasjoner og sammenstøt. Dette er ikke en generell påbudt fartsgrense."
+          },
+          "sources": [
+            "380-80"
+          ],
+          "applicability": {
+            "minGt": 300,
+            "shipTypes": [
+              "cargo",
+              "passenger",
+              "fishing",
+              "yacht"
+            ]
+          },
+          "strength": "recommended",
+          "from": "2023-07-07"
+        }
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "antarctic-polar",
+      "geometryId": "antarctic-polar",
+      "name": {
+        "en": "Antarctic · Polar Code",
+        "nb": "Antarktis · Polarkoden"
+      },
+      "category": "polar",
+      "classification": "polar-code",
+      "designationFrom": "2017-01-01",
+      "sources": [
+        "polar-code",
+        "polar-2026"
+      ],
+      "requirements": [
+        {
+          "code": "polar-safety",
+          "summary": {
+            "en": "Review Polar Code safety scope, Polar Ship Certificate, operational assessment, approved limitations, Polar Water Operational Manual and crew training. Safety scope and existing-ship survey phase-in require vessel-specific review.",
+            "nb": "Kontroller Polarkodens sikkerhetsvirkeområde, polarsertifikat, operasjonsvurdering, godkjente begrensninger, operasjonsmanual for polare farvann og opplæring. Sikkerhetsvirkeområde og innfasing ved besiktelse krever fartøyspesifikk vurdering."
+          },
+          "sources": [
+            "polar-code"
+          ],
+          "applicability": {
+            "requireAdministrationReview": true
+          },
+          "from": "2017-01-01"
+        },
+        {
+          "code": "polar-non-solas",
+          "summary": {
+            "en": "Navigation and voyage-planning chapters also cover fishing vessels ≥24 m, non-trade pleasure yachts ≥300 GT and cargo ships from 300 to below 500 GT. Check construction-dependent phase-in for existing vessels to 1 January 2027.",
+            "nb": "Navigasjons- og reiseplanleggingskapitlene omfatter også fiskefartøy ≥24 m, fritidsyachter utenfor næring ≥300 BT og lasteskip fra 300 til under 500 BT. Kontroller byggeavhengig innfasing for eksisterende fartøy fram til 1. januar 2027."
+          },
+          "sources": [
+            "polar-2026"
+          ],
+          "applicability": {
+            "requireAdministrationReview": true
+          },
+          "from": "2026-01-01"
+        }
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "geiranger-tafjord",
+      "geometryId": "geiranger-tafjord",
+      "name": {
+        "en": "Geiranger / Sunnylvsfjord / Tafjord",
+        "nb": "Geirangerfjorden / Sunnylvsfjorden / Tafjorden"
+      },
+      "category": "national",
+      "classification": "norway-world-heritage",
+      "designationFrom": "2019-03-01",
+      "sources": [
+        "no-environment",
+        "no-fjord-2025"
+      ],
+      "requirements": [
+        {
+          "code": "fjord-sulphur",
+          "summary": {
+            "en": "Use fuel at ≤0.10% sulphur or an approved closed-loop arrangement; an approved hybrid scrubber must operate in closed mode. Check visible-emission controls.",
+            "nb": "Bruk drivstoff med høyst 0,10 % svovel eller godkjent lukket renseordning. Et godkjent hybridanlegg må gå i lukket modus. Kontroller krav til synlige utslipp."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {},
+          "fuelSulphurPercent": 0.1,
+          "from": "2019-03-01"
+        },
+        {
+          "code": "fjord-sewage",
+          "summary": {
+            "en": "Sewage discharge prohibited for ships ≥400 GT or certified for more than 15 persons. Grey-water prohibition additionally uses ≥2500 GT and more than 100 certified persons.",
+            "nb": "Kloakkutslipp er forbudt for skip ≥400 BT eller sertifisert for mer enn 15 personer. Gråvannsforbudet bruker i tillegg ≥2500 BT og mer enn 100 sertifiserte personer."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {
+            "requireAdministrationReview": true
+          },
+          "from": "2019-03-01"
+        },
+        {
+          "code": "fjord-incineration",
+          "summary": {
+            "en": "Onboard waste incineration is prohibited.",
+            "nb": "Forbrenning av avfall om bord er forbudt."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {},
+          "from": "2019-03-01"
+        },
+        {
+          "code": "fjord-nox-noncargo",
+          "summary": {
+            "en": "Non-cargo ships ≥1000 GT: Tier III requirements apply irrespective of construction year, subject to documented exemptions.",
+            "nb": "Andre skip enn lasteskip med ≥1000 BT: Tier III-krav gjelder uavhengig av byggeår, med forbehold om dokumenterte fritak."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {
+            "minGt": 1000,
+            "excludeTypes": [
+              "cargo"
+            ]
+          },
+          "from": "2025-01-01"
+        },
+        {
+          "code": "fjord-nox-cargo",
+          "summary": {
+            "en": "Cargo ships ≥1000 GT: Tier III requirements apply irrespective of construction year.",
+            "nb": "Lasteskip med ≥1000 BT: Tier III-krav gjelder uavhengig av byggeår."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {
+            "minGt": 1000,
+            "shipTypes": [
+              "cargo"
+            ]
+          },
+          "from": "2030-01-01"
+        },
+        {
+          "code": "fjord-zero-small",
+          "summary": {
+            "en": "Passenger ships below 10,000 GT: energy used must not emit CO₂ or CH₄ directly, with narrowly defined pilot-fuel, biogas and exemption provisions. Check certification and shore-power requirements.",
+            "nb": "Passasjerskip under 10 000 BT: energien som brukes skal ikke gi direkte utslipp av CO₂ eller CH₄, med avgrensede bestemmelser om pilotdrivstoff, biogass og fritak. Kontroller sertifisering og landstrømkrav."
+          },
+          "sources": [
+            "no-fjord-2025"
+          ],
+          "applicability": {
+            "shipTypes": [
+              "passenger"
+            ],
+            "maxGtExclusive": 10000,
+            "requireAdministrationReview": true
+          },
+          "from": "2026-01-01"
+        },
+        {
+          "code": "fjord-zero-large",
+          "summary": {
+            "en": "Passenger ships ≥10,000 GT enter the CO₂/CH₄ zero-direct-emission regime. The specific biogas, pilot-fuel and exemption conditions must be checked.",
+            "nb": "Passasjerskip ≥10 000 BT omfattes av regimet uten direkte CO₂-/CH₄-utslipp. Vilkårene for biogass, pilotdrivstoff og fritak må kontrolleres."
+          },
+          "sources": [
+            "no-fjord-2025"
+          ],
+          "applicability": {
+            "shipTypes": [
+              "passenger"
+            ],
+            "minGt": 10000,
+            "requireAdministrationReview": true
+          },
+          "from": "2032-01-01"
+        },
+        {
+          "code": "fjord-temporary-exemption",
+          "summary": {
+            "en": "Qualifying smaller passenger ships may obtain an individual shore-power-related exemption, limited to two years at a time and never beyond 31 December 2029. This is not an automatic exemption.",
+            "nb": "Kvalifiserte mindre passasjerskip kan få individuelt landstrømrelatert fritak, høyst to år om gangen og aldri etter 31. desember 2029. Fritaket er ikke automatisk."
+          },
+          "sources": [
+            "no-fjord-2025"
+          ],
+          "applicability": {
+            "shipTypes": [
+              "passenger"
+            ],
+            "maxGtExclusive": 10000,
+            "requireAdministrationReview": true
+          },
+          "until": "2030-01-01",
+          "from": "2026-01-01"
+        }
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "naeroy-aurland",
+      "geometryId": "naeroy-aurland",
+      "name": {
+        "en": "Nærøyfjord / Aurlandsfjord",
+        "nb": "Nærøyfjorden / Aurlandsfjorden"
+      },
+      "category": "national",
+      "classification": "norway-world-heritage",
+      "designationFrom": "2019-03-01",
+      "sources": [
+        "no-environment",
+        "no-fjord-2025"
+      ],
+      "requirements": [
+        {
+          "code": "fjord-sulphur",
+          "summary": {
+            "en": "Use fuel at ≤0.10% sulphur or an approved closed-loop arrangement; an approved hybrid scrubber must operate in closed mode. Check visible-emission controls.",
+            "nb": "Bruk drivstoff med høyst 0,10 % svovel eller godkjent lukket renseordning. Et godkjent hybridanlegg må gå i lukket modus. Kontroller krav til synlige utslipp."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {},
+          "fuelSulphurPercent": 0.1,
+          "from": "2019-03-01"
+        },
+        {
+          "code": "fjord-sewage",
+          "summary": {
+            "en": "Sewage discharge prohibited for ships ≥400 GT or certified for more than 15 persons. Grey-water prohibition additionally uses ≥2500 GT and more than 100 certified persons.",
+            "nb": "Kloakkutslipp er forbudt for skip ≥400 BT eller sertifisert for mer enn 15 personer. Gråvannsforbudet bruker i tillegg ≥2500 BT og mer enn 100 sertifiserte personer."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {
+            "requireAdministrationReview": true
+          },
+          "from": "2019-03-01"
+        },
+        {
+          "code": "fjord-incineration",
+          "summary": {
+            "en": "Onboard waste incineration is prohibited.",
+            "nb": "Forbrenning av avfall om bord er forbudt."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {},
+          "from": "2019-03-01"
+        },
+        {
+          "code": "fjord-nox-noncargo",
+          "summary": {
+            "en": "Non-cargo ships ≥1000 GT: Tier III requirements apply irrespective of construction year, subject to documented exemptions.",
+            "nb": "Andre skip enn lasteskip med ≥1000 BT: Tier III-krav gjelder uavhengig av byggeår, med forbehold om dokumenterte fritak."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {
+            "minGt": 1000,
+            "excludeTypes": [
+              "cargo"
+            ]
+          },
+          "from": "2025-01-01"
+        },
+        {
+          "code": "fjord-nox-cargo",
+          "summary": {
+            "en": "Cargo ships ≥1000 GT: Tier III requirements apply irrespective of construction year.",
+            "nb": "Lasteskip med ≥1000 BT: Tier III-krav gjelder uavhengig av byggeår."
+          },
+          "sources": [
+            "no-environment"
+          ],
+          "applicability": {
+            "minGt": 1000,
+            "shipTypes": [
+              "cargo"
+            ]
+          },
+          "from": "2030-01-01"
+        },
+        {
+          "code": "fjord-zero-small",
+          "summary": {
+            "en": "Passenger ships below 10,000 GT: energy used must not emit CO₂ or CH₄ directly, with narrowly defined pilot-fuel, biogas and exemption provisions. Check certification and shore-power requirements.",
+            "nb": "Passasjerskip under 10 000 BT: energien som brukes skal ikke gi direkte utslipp av CO₂ eller CH₄, med avgrensede bestemmelser om pilotdrivstoff, biogass og fritak. Kontroller sertifisering og landstrømkrav."
+          },
+          "sources": [
+            "no-fjord-2025"
+          ],
+          "applicability": {
+            "shipTypes": [
+              "passenger"
+            ],
+            "maxGtExclusive": 10000,
+            "requireAdministrationReview": true
+          },
+          "from": "2026-01-01"
+        },
+        {
+          "code": "fjord-zero-large",
+          "summary": {
+            "en": "Passenger ships ≥10,000 GT enter the CO₂/CH₄ zero-direct-emission regime. The specific biogas, pilot-fuel and exemption conditions must be checked.",
+            "nb": "Passasjerskip ≥10 000 BT omfattes av regimet uten direkte CO₂-/CH₄-utslipp. Vilkårene for biogass, pilotdrivstoff og fritak må kontrolleres."
+          },
+          "sources": [
+            "no-fjord-2025"
+          ],
+          "applicability": {
+            "shipTypes": [
+              "passenger"
+            ],
+            "minGt": 10000,
+            "requireAdministrationReview": true
+          },
+          "from": "2032-01-01"
+        },
+        {
+          "code": "fjord-temporary-exemption",
+          "summary": {
+            "en": "Qualifying smaller passenger ships may obtain an individual shore-power-related exemption, limited to two years at a time and never beyond 31 December 2029. This is not an automatic exemption.",
+            "nb": "Kvalifiserte mindre passasjerskip kan få individuelt landstrømrelatert fritak, høyst to år om gangen og aldri etter 31. desember 2029. Fritaket er ikke automatisk."
+          },
+          "sources": [
+            "no-fjord-2025"
+          ],
+          "applicability": {
+            "shipTypes": [
+              "passenger"
+            ],
+            "maxGtExclusive": 10000,
+            "requireAdministrationReview": true
+          },
+          "until": "2030-01-01",
+          "from": "2026-01-01"
+        }
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted"
+    },
+    {
+      "id": "china-hainan",
+      "name": {
+        "en": "Hainan waters · Chinese domestic ECA",
+        "nb": "Hainan-farvann · kinesisk innenlandsk ECA"
+      },
+      "category": "national",
+      "classification": "national-deca",
+      "designationFrom": "2019-01-01",
+      "sources": [
+        "china-deca-2018"
+      ],
+      "verifiedOn": "2026-11-03",
+      "adoptionStatus": "adopted",
+      "geometryCaveat": {
+        "en": "The source table does not explicitly state the geodetic datum or line interpolation. WGS84/geodesic interpretation is a reference assumption requiring confirmation. No GCJ-02 web-map offsets have been applied.",
+        "nb": "Kildetabellen oppgir ikke uttrykkelig geodetisk datum eller linjeinterpolasjon. WGS84 og geodesiske linjer er brukt som referanseforutsetning og må bekreftes. Ingen GCJ-02-forskyvning fra nettkart er brukt."
+      },
+      "requirements": [
+        {
+          "code": "hainan-sulphur-2019",
+          "from": "2019-01-01",
+          "until": "2022-01-01",
+          "summary": {
+            "en": "The domestic coastal control-area fuel sulphur limit is 0.50% m/m.",
+            "nb": "Svovelgrensen i drivstoff i det innenlandske kystkontrollområdet er 0,50 % masse."
+          },
+          "sources": [
+            "china-deca-2018"
+          ],
+          "applicability": {},
+          "fuelSulphurPercent": 0.5
+        },
+        {
+          "code": "hainan-sulphur",
+          "from": "2022-01-01",
+          "summary": {
+            "en": "Seagoing vessels must use fuel with sulphur ≤0.10% m/m, subject to approved equivalents and applicable exceptions. This is a national DECA, not an IMO NOx ECA.",
+            "nb": "Sjøgående fartøy skal bruke drivstoff med svovelinnhold ≤0,10 % masse, med forbehold om godkjente likeverdige ordninger og relevante unntak. Dette er en nasjonal DECA, ikke en IMO NOx-ECA."
+          },
+          "sources": [
+            "china-deca-2018"
+          ],
+          "applicability": {},
+          "fuelSulphurPercent": 0.1
+        },
+        {
+          "code": "hainan-domestic-nox",
+          "from": "2022-01-01",
+          "summary": {
+            "en": "For Chinese domestic vessels built or substantially engine-converted from 2022, the stated ≥30 L/cylinder engine criterion can trigger Tier III. It is not a blanket Tier III rule for foreign vessels.",
+            "nb": "For kinesiske innenriksfartøy bygget eller vesentlig motorombygget fra 2022 kan det angitte kriteriet på ≥30 liter per sylinder utløse Tier III. Dette er ikke et generelt Tier III-krav for utenlandske fartøy."
+          },
+          "sources": [
+            "china-deca-2018"
+          ],
+          "applicability": {
+            "flags": [
+              "CN"
+            ],
+            "requireAdministrationReview": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "saba-bank-pssa",
+      "geometryId": "saba-bank-pssa",
+      "name": {
+        "en": "Saba Bank · PSSA",
+        "nb": "Saba Bank · PSSA"
+      },
+      "category": "pssa",
+      "classification": "pssa",
+      "designationFrom": "2012-10-05",
+      "sources": [
+        "imo-saba-bank"
+      ],
+      "requirements": [
+        {
+          "code": "saba-bank-pssa",
+          "summary": {
+            "en": "PSSA with associated area-to-be-avoided and no-anchoring measures. These measures have their own boundaries and vessel applicability: consult current official charts and notices.",
+            "nb": "PSSA med tilknyttede områder som skal unngås og ankreforbud. Tiltakene har egne grenser og virkeområder: kontroller gjeldende offisielle kart og kunngjøringer."
+          },
+          "sources": [
+            "imo-saba-bank"
+          ],
+          "strength": "information",
+          "from": "2012-10-05"
+        }
+      ],
+      "verifiedOn": "2026-11-04",
+      "adoptionStatus": "adopted",
+      "geographyWarning": {
+        "en": "Reference boundary: line interpolation is not specified in the resolution. Confirm against official charts.",
+        "nb": "Referansegrense: linjetolkning er ikke angitt i resolusjonen. Kontroller mot offisielle kart."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "imo-sox",
+      "title": "MARPOL Annex VI regulation 14",
+      "url": "https://www.imo.org/en/ourwork/environment/pages/sulphur-oxides-%28sox%29-%E2%80%93-regulation-14.aspx",
+      "verifiedOn": "2026-11-03",
+      "scope": "Global and ECA sulphur limits; approved equivalents and changeover procedures"
+    },
+    {
+      "id": "imo-areas",
+      "title": "IMO MARPOL Special Areas and ECA dates",
+      "url": "https://www.imo.org/en/ourwork/environment/pages/special-areas-marpol.aspx",
+      "verifiedOn": "2026-11-03",
+      "scope": "Legacy ECA implementation dates; newly amended Special Area dates require their resolutions"
+    },
+    {
+      "id": "imo-nox",
+      "title": "MARPOL Annex VI regulation 13",
+      "url": "https://www.imo.org/en/ourwork/environment/pages/nitrogen-oxides-(nox)-%E2%80%93-regulation-13.aspx",
+      "verifiedOn": "2026-11-03",
+      "scope": "Engine scope, NOx tiers, certification and exceptions"
+    },
+    {
+      "id": "361-79",
+      "title": "MEPC.361(79)",
+      "url": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.361%2879%29.pdf",
+      "verifiedOn": "2026-11-03",
+      "scope": "Mediterranean SOx/PM designation and legal limits"
+    },
+    {
+      "id": "392-82",
+      "title": "MEPC.392(82)",
+      "url": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.392%2882%29.pdf",
+      "verifiedOn": "2026-11-03",
+      "scope": "Canadian Arctic and Norwegian Sea; construction criteria; legal vertices"
+    },
+    {
+      "id": "315-74",
+      "title": "MEPC.315(74)",
+      "url": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.315%2874%29.pdf",
+      "verifiedOn": "2026-11-03",
+      "scope": "Norwegian Sea legal limits, MARPOL Annex II 13.9.4"
+    },
+    {
+      "id": "407-84",
+      "title": "MEPC.407(84)",
+      "url": "https://ltsa.lrv.lt/public/canonical/1787556830/2290/MEPC.407%2884%29.pdf",
+      "verifiedOn": "2026-11-03",
+      "scope": "Adopted North-East Atlantic ECA, 157 vertices; effective 2027-09-01 and sulphur application 2028-09-01"
+    },
+    {
+      "id": "vliz-eca",
+      "title": "VLIZ Emission Control Areas (2020), DOI 10.14284/397",
+      "url": "https://doi.org/10.14284/397",
+      "verifiedOn": "2026-11-03",
+      "scope": "CC-BY-4.0; four legacy ECA outlines only; processed June 2019"
+    },
+    {
+      "id": "vliz-iho",
+      "title": "VLIZ IHO Sea Areas, version 3 (2018)",
+      "url": "https://doi.org/10.14284/323",
+      "verifiedOn": "2026-11-03",
+      "scope": "Coastal reference overlay; CC-BY; positional accuracy unspecified"
+    },
+    {
+      "id": "vliz-license",
+      "title": "Marine Regions data licence",
+      "url": "https://www.marineregions.org/disclaimer.php",
+      "verifiedOn": "2026-11-03",
+      "scope": "CC-BY attribution and source update notices"
+    },
+    {
+      "id": "no-tax",
+      "title": "Norwegian NOx tax annual circular 2026",
+      "url": "https://www.skatteetaten.no/globalassets/rettskilder/avgiftsrundskriv/avgift-pa-nox-2026.pdf",
+      "verifiedOn": "2026-11-03",
+      "scope": "2026 scope, thresholds and exemptions"
+    },
+    {
+      "id": "no-rate",
+      "title": "Government NOx tax rates",
+      "url": "https://www.skatteetaten.no/satser/saravgift---nox/",
+      "verifiedOn": "2026-11-03",
+      "scope": "2026: NOK 26.94 per kg NOx"
+    },
+    {
+      "id": "no-fund",
+      "title": "NOx Fund contribution rates",
+      "url": "https://www.noxfondet.no/artikler/innbetalingssatser/",
+      "verifiedOn": "2026-11-03",
+      "scope": "2017–2026 historical table; 2026 ordinary 15, extraction 21 NOK/kg"
+    },
+    {
+      "id": "no-factor",
+      "title": "Norwegian Maritime Authority NOx factor documentation",
+      "url": "https://www.sdir.no/naringsfartoy/sertifikater-tillatelser-og-dokumenter-for-fartoy/informasjon-om-nox-avgift-og-utslippsfaktorbekreftelse/",
+      "verifiedOn": "2026-11-03",
+      "scope": "Documented engine factors and measurement evidence"
+    },
+    {
+      "id": "netpas-overview",
+      "title": "Netpas ECA and Ports List",
+      "url": "https://netpas.net/extension/common/seca_list.php",
+      "verifiedOn": "2026-11-03",
+      "role": "secondary-cross-check",
+      "scope": "Owner-supplied comparison of international, national and port requirements. Does not replace legal sources or provide licensed analysis geometry."
+    },
+    {
+      "id": "discharge-amsa",
+      "title": "AMSA MARPOL discharge standards",
+      "url": "https://www.amsa.gov.au/marine-environment/marine-pollution/discharge-standards",
+      "verifiedOn": "2026-11-03",
+      "scope": "Oil, noxious liquid substances and garbage: special-area controls and exceptions.",
+      "scopeNb": "Olje, skadelige flytende stoffer og avfall: særkrav og unntak i spesialområder."
+    },
+    {
+      "id": "baltic-sewage",
+      "title": "MCA MGN 631 (M+F), amendment 1",
+      "url": "https://www.gov.uk/government/publications/mgn-631-mf-amendment-1-the-merchant-shipping-prevention-of-pollution-by-sewage-from-ships-regulations-2020/mgn-631-mf-amendment-1-the-merchant-shipping-prevention-of-pollution-by-sewage-from-ships-regulations-2020",
+      "verifiedOn": "2026-11-03",
+      "scope": "Baltic passenger sewage rules and implementation on 1 June 2019, 2021 and 2023.",
+      "scopeNb": "Kloakkregler for passasjerskip i Østersjøen med anvendelsesdatoer 1. juni 2019, 2021 og 2023."
+    },
+    {
+      "id": "380-80",
+      "title": "MEPC.380(80), annexes 1 and 4",
+      "url": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.380%2880%29.pdf",
+      "verifiedOn": "2026-11-03",
+      "scope": "North-Western Mediterranean PSSA. Recommended protective measures for commercial ships and pleasure yachts from 300 GT.",
+      "scopeNb": "PSSA i nordvestlige Middelhavet. Anbefalte vernetiltak for kommersielle skip og fritidsyachter fra 300 BT."
+    },
+    {
+      "id": "polar-code",
+      "title": "IMO Polar Code and amendments",
+      "url": "https://www.imo.org/en/mediacentre/hottopics/pages/polar-default.aspx",
+      "verifiedOn": "2026-11-03",
+      "scope": "Safety and environmental chapters have different vessel scope. Check certification, operating limitations and applicable phase-in.",
+      "scopeNb": "Sikkerhets- og miljøkapitlene har ulikt virkeområde. Kontroller sertifikater, driftsbegrensninger og relevant innfasing."
+    },
+    {
+      "id": "polar-2026",
+      "title": "IMO: rules effective 1 January 2026",
+      "url": "https://www.imo.org/en/mediacentre/pressbriefings/pages/raft-of-shipping-rules-in-force-from-1-january-2026.aspx",
+      "verifiedOn": "2026-11-03",
+      "scope": "Polar navigation and voyage-planning requirements extended to specified fishing, pleasure and smaller cargo vessels.",
+      "scopeNb": "Polare krav til navigasjon og reiseplanlegging utvidet til angitte fiskefartøy, fritidsfartøy og mindre lasteskip."
+    },
+    {
+      "id": "no-environment",
+      "title": "Norway Environmental Safety Regulations, official English consolidation through 2024",
+      "url": "https://www.sdir.no/siteassets/engelske-forskrifter-pdf/30-may-2012-no.-488-environmental-safety-for-ships-and-mobile-offshore-units.pdf",
+      "verifiedOn": "2026-11-03",
+      "scope": "Sections 10a and 14b–14f; boundaries, discharge, fuel and differentiated NOx implementation. Read with the 2025 amendment.",
+      "scopeNb": "Paragrafene 10a og 14b–14f: grenser, utslipp, drivstoff og differensiert NOx-innfasing. Leses sammen med endringen fra 2025."
+    },
+    {
+      "id": "no-fjord-2025",
+      "title": "NMA amendment adopted 10 April 2025",
+      "url": "https://www.sdir.no/contentassets/ac4f83e167b749c3b3ffccbed0e730ff/eng-endring-av-miljosikkerhetsforskriften.pdf",
+      "verifiedOn": "2026-11-03",
+      "scope": "Passenger CO2/CH4 requirements from 2026 and 2032, conditional biogas alternative, shore power and exemptions.",
+      "scopeNb": "CO₂-/CH₄-krav for passasjerskip fra 2026 og 2032, betinget biogassalternativ, landstrøm og fritak."
+    },
+    {
+      "id": "china-deca-2018",
+      "title": "China MOT domestic emission-control implementation plan (2018), table 2",
+      "url": "https://xxgk.mot.gov.cn/2020/xzgfxwj/202303/t20230316_3775697.html",
+      "verifiedOn": "2026-11-03",
+      "scope": "Hainan 20-point boundary, 0.10% sulphur from 2022, domestic Chinese engine conditions. Mainland-wide 0.10% in 2025 was conditional on assessment, not an adopted limit in this instrument.",
+      "scopeNb": "Hainans grense med 20 punkter, svovelgrense på 0,10 % fra 2022 og motorvilkår for kinesisk innenriksfart. En landsdekkende kystgrense på 0,10 % i 2025 var betinget av evaluering, ikke vedtatt i dette dokumentet."
+    },
+    {
+      "id": "imo-saba-bank",
+      "title": "IMO MEPC.226(64) · Saba Bank PSSA",
+      "url": "https://wwwcdn.imo.org/localresources/en/KnowledgeCentre/IndexofIMOResolutions/MEPCDocuments/MEPC.226%2864%29.pdf",
+      "scope": "WGS84 PSSA boundary and associated protective measures."
+    }
+  ],
+  "coverage": {
+    "emissions": {
+      "status": "eight-eca-initial-coverage",
+      "areas": [
+        "baltic-sea",
+        "north-sea",
+        "north-american",
+        "us-caribbean",
+        "mediterranean",
+        "norwegian-sea",
+        "canadian-arctic",
+        "north-east-atlantic"
+      ]
+    },
+    "discharge": {
+      "status": "partial",
+      "areas": [
+        "baltic-special",
+        "mediterranean-discharge",
+        "north-sea-special",
+        "antarctic-special"
+      ],
+      "missing": [
+        "Black Sea",
+        "Red Sea",
+        "Gulfs",
+        "Gulf of Aden",
+        "North-West European waters",
+        "Oman area",
+        "Southern South African waters",
+        "Wider Caribbean"
+      ]
+    },
+    "pssa": {
+      "status": "partial",
+      "areas": [
+        "nw-mediterranean-pssa",
+        "saba-bank-pssa"
+      ],
+      "missing": "Other designated PSSAs and their individual associated protective measures are not yet geographically audited."
+    },
+    "national": {
+      "status": "partial",
+      "areas": [
+        "geiranger-tafjord",
+        "naeroy-aurland",
+        "china-hainan"
+      ],
+      "missing": [
+        "California fuel zone",
+        "Korean port ECAs",
+        "EU and other port-only requirements",
+        "Other national restrictions",
+        "Chinese mainland coastal and inland DECAs: legal river/coastal geometry not yet verified"
+      ]
+    },
+    "polar": {
+      "status": "partial",
+      "areas": [
+        "antarctic-polar"
+      ],
+      "missing": "Arctic Polar Code boundary and flag-specific implementation are not yet mapped."
+    }
+  },
+  "limitations": {
+    "en": [
+      "Coverage is incomplete. An area without a mapped record is not free of environmental requirements.",
+      "Reference coastlines have unspecified positional accuracy. Review boundary contacts against current legal and navigational sources.",
+      "This is a planning reference, not an approved passage plan or an official compliance certificate."
+    ],
+    "nb": [
+      "Dekningen er ufullstendig. Manglende kartlag betyr ikke at et område er uten miljøkrav.",
+      "Referansekystlinjene har uspesifisert posisjonsnøyaktighet. Kontroller grensenære passeringer mot gjeldende juridiske og nautiske kilder.",
+      "Dette er et planleggingsverktøy, ikke en godkjent seilingsplan eller et offisielt samsvarssertifikat."
+    ]
+  }
+}

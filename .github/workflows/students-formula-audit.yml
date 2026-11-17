@@ -40,6 +40,16 @@ on:
       - 'preview-server/**'
       - 'scripts/*20261030*'
       - '.github/workflows/students-formula-audit.yml'
+      - 'regulatory/**'
+      - 'regulatory.html'
+      - 'regulatory-links.js'
+      - 'navigation-math.js'
+      - 'tests/regulatory-*'
+      - 'tests/voyage-estimate-*'
+      - 'tests/navigation-coordinate-layout.cjs'
+      - 'tests/generate-regulatory-reference.py'
+      - 'scripts/*regulatory*'
+      - 'scripts/add-saba-bank.cjs'
   workflow_dispatch:
 
 permissions:
@@ -76,6 +86,14 @@ jobs:
           node tests/students-advanced-reference-20261030.mjs
           node tests/marine-systems-reference-20261102.cjs
           node tests/students-learning-cycle-engine-20261030.mjs
+      - name: NOx arithmetic, regulatory geography and voyage rules
+        run: |
+          node tests/regulatory-nox-core.cjs
+          node tests/regulatory-nox-reference.cjs
+          node tests/regulatory-spatial-core.cjs
+          node tests/regulatory-geography.cjs
+          node tests/regulatory-rules-voyage.cjs
+          node tests/voyage-estimate-speed-transfer.mjs
       - name: Independent circuit node balances
         run: node tests/students-source-circuits-20261020.mjs
       - name: Qualified heat-transfer model references
@@ -238,6 +256,8 @@ jobs:
           node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}
           node tests/education-acceptance-20261021.cjs ${{ matrix.browser }}
           node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
+          REGULATORY_BROWSER=${{ matrix.browser }} node tests/regulatory-browser.cjs
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/navigation-coordinate-layout.cjs; fi
           node tests/students-mollier-process-browser-20261027.cjs ${{ matrix.browser }}
           node tests/education-single-scroll-20261027.cjs ${{ matrix.browser }}
       - name: Save screenshots, browser results and report exports

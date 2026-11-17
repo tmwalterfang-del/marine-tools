@@ -44,7 +44,7 @@ function etaText(hours){
 }
 function typeName(x){return x.type==='field'?'Offshore field':x.type==='facility'?'Fixed facility':x.type==='custom'?'Custom position':'Port'}
 function sourceName(x){return x.source||(x.type==='port'?'UN/LOCODE-derived port directory':'User position')}
-function haversineKm(a,b){const R=6371,rad=Math.PI/180,lat1=a[1]*rad,lat2=b[1]*rad,dlat=(b[1]-a[1])*rad,dlon=(b[0]-a[0])*rad;const h=Math.sin(dlat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dlon/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(h)))}
+function haversineKm(a,b){return window.MT_NAV_MATH.distance(a,b,6371/1.852)*1.852}
 function greatCircleNm(a,b){return haversineKm(a,b)/1.852}
 function isNorwayLocation(x){return !!x&&(String(x.code||'').startsWith('NO')||/norway|norwegian continental shelf/i.test(String(x.country||''))||x.type==='field'||x.type==='facility')}
 function needsCoastalNetwork(from,to){return isNorwayLocation(from)||isNorwayLocation(to)||haversineKm(from.coordinates,to.coordinates)<=750}
@@ -193,6 +193,10 @@ function applyProfile(show=true){
 function draftLimits(){
   return state.engine&&state.engine.CANAL_MAX_DRAFT_M?state.engine.CANAL_MAX_DRAFT_M:DRAFT_LIMITS_FALLBACK;
 }
+function currentSpeed(){
+  const raw=$('#veSpeedKnots').value.trim();
+  return raw===''?NaN:(globalThis.MT_PARSE_NUMBER||Number)(raw);
+}
 function currentDraft(){
   const raw=$('#veDraftM')?.value?.trim();
   if(raw==null||raw==='')return null;
@@ -263,7 +267,7 @@ function routePreferences(){
   return{via,restrictions:[...new Set(restrictions)],labels};
 }
 function routeOptions(preferences,networkInfo){
-  const speed=(globalThis.MT_PARSE_NUMBER||Number)($('#veSpeedKnots').value),draft=currentDraft();
+  const speed=currentSpeed(),draft=currentDraft();
   const o={units:'nauticalmiles',speedKnots:speed,returnPassages:true};
   if(networkInfo&&networkInfo.network){o.network=networkInfo.network;o.maxSnapDistanceKm=networkInfo.resolutionKm<=20?35:65}
   if(Number.isFinite(draft)&&draft>0)o.vesselDraftMeters=draft;
@@ -309,7 +313,9 @@ function detailsRows(from,to,route,preferences,speed){
   return rows;
 }
 function renderEstimate(from,to,route,preferences){
-  const speed=(globalThis.MT_PARSE_NUMBER||Number)($('#veSpeedKnots').value),m=routeMetrics(route,speed),fuel=fuelEstimate(m.hours),[basis,pass]=routeBasis(preferences,route);
+  const speed=currentSpeed();
+  const geometry=route.geometry;if(geometry?.type==='LineString'){const points=geometry.coordinates.map(p=>[((p[0]+180)%360+360)%360-180,p[1]]);if(points.length){if(window.MT_NAV_MATH.distance(points[0],from.coordinates)>.001)points.unshift(from.coordinates);if(window.MT_NAV_MATH.distance(points.at(-1),to.coordinates)>.001)points.push(to.coordinates);state.regulatoryRoute={points,name:from.name+' → '+to.name,speed,source:'Voyage Estimate / searoute-ts '+LIB_VERSION};}}
+  const m=routeMetrics(route,speed),fuel=fuelEstimate(m.hours),[basis,pass]=routeBasis(preferences,route);
   $('#veDistanceValue').textContent=fmt(m.distanceNm,0)+' NM';
   $('#veEtaValue').textContent=etaText(m.hours);
   $('#veEtaSpeed').textContent='at '+fmt(speed,1)+' kn';
@@ -331,7 +337,7 @@ async function calculate(){
   showAlert(null,null);
   if(!state.ready){invalid('warn','<b>Estimator is still loading.</b> Try again when the status shows Ready.');return}
   const from=resolveLocation($('#veFromPort').value),to=resolveLocation($('#veToPort').value);
-  const speed=(globalThis.MT_PARSE_NUMBER||Number)($('#veSpeedKnots').value),draftRaw=$('#veDraftM').value.trim(),draft=draftRaw===''?null:(globalThis.MT_PARSE_NUMBER||Number)(draftRaw);
+  const speed=currentSpeed(),draftRaw=$('#veDraftM').value.trim(),draft=draftRaw===''?null:(globalThis.MT_PARSE_NUMBER||Number)(draftRaw);
   if(!from||!to){invalid('error','<b>Invalid location.</b> Select a port, Norwegian offshore field/facility, or enter latitude,longitude.');return}
   if(from.code===to.code){invalid('error','<b>Choose two different locations.</b>');return}
   if(!(speed>=1&&speed<=40)){invalid('error','<b>Check speed.</b> Enter a value from 1 to 40 kn.');return}
@@ -354,6 +360,7 @@ async function calculate(){
   }finally{btn.disabled=false;btn.textContent=old}
 }
 function clearAll(){
+  state.regulatoryRoute=null;
   $('#veFromPort').value='';$('#veToPort').value='';$('#veResultArea').hidden=true;showAlert(null,null);
 }
 function bind(){
@@ -489,5 +496,5 @@ function render(host){
   bind();init();
 }
 window.addEventListener('online',()=>{if($('#voyage-estimate')?.dataset.voyageEstimateRendered&&!state.ready)init()});
-window.__marineToolsVoyageEstimate={render};
+window.__marineToolsVoyageEstimate={render,exportRegulatoryRoute:()=>state.regulatoryRoute?structuredClone(state.regulatoryRoute):null};
 })();
