@@ -103,7 +103,7 @@ window.MT_CALCULATORS=[
 {
  id:"voyage-fuel",name:"Passage fuel estimate",category:"Machinery & Energy",description:"Simplified constant-speed daily fuel estimate, no reserve included.",
  fields:[F("dist","Distance","NM",1200,"nonnegative"),F("speed","Speed over ground","kn",12),F("daily","Fuel consumption","m³/day",24,"nonnegative")],
- compute:({dist,speed,daily})=>{const h=dist/speed,d=h/24;return{value:d*daily,unit:"m³",steps:[S("sea_time_h",`t = ${dist} NM / ${speed} kn`,h,"h"),S("sea_time_d",`t = t[h] / 24`,d,"d"),S("fuel_m3",`V = t[d] × ${daily} m³/d`,d*daily,"m³")]}},
+ compute:({dist,speed,daily})=>{const h=dist/speed,d=h/24;return{value:d*daily,unit:"m³",steps:[S("sea_time_h",`Sea time = ${dist} NM / ${speed} kn`,h,"h"),S("sea_time_d",`t = t[h] / 24`,d,"d"),S("fuel_m3",`V = t[d] × ${daily} m³/d`,d*daily,"m³")]}},
  assumptions:["Constant speed over ground and constant daily consumption for the whole passage.","No reserve, weather margin, port time or auxiliary consumption is included."],range:"Distance ≥ 0 NM, speed > 0 kn, consumption ≥ 0 m³/day. Planning estimate only."
 },
 {

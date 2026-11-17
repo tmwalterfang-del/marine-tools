@@ -395,3 +395,10 @@ button,input,select,textarea{font:inherit} button{color:inherit}.app-shell{displ
       linear-gradient(180deg,rgba(4,19,31,.76) 0%,rgba(4,19,31,.52) 35%,rgba(4,19,31,.82) 100%)!important;
   }
 }
+
+/* Layout stability (CLS): sidebar-v858.js regroups the menu after load, and page content is rendered by script.
+ * Keep the ungrouped menu invisible until it is arranged (it still reveals itself after 1.5 s if the script never runs),
+ * and give the main column at least one screen of height so the footer does not start mid-screen and jump. */
+@media (scripting: enabled){.sidebar:not([data-mt-menu="ready"]) .nav-list,.sidebar:not([data-mt-menu="ready"]) .nav-project{visibility:hidden;animation:mt-menu-reveal 0s 1.5s forwards}}
+@keyframes mt-menu-reveal{to{visibility:visible}}
+.main-content{min-height:100vh}

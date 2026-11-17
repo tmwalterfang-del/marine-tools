@@ -14388,6 +14388,10 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
    "generated": true
   },
   {
+   "en": "Sea time = {0} NM / {1} kn = {2} h",
+   "nb": "Seilingstid = {0} NM / {1} kn = {2} h"
+  },
+  {
    "en": "Sea time = {0} / {1} = {2} h",
    "nb": "Seilingstid = {0} / {1} = {2} h",
    "generated": true
