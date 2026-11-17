@@ -11,6 +11,8 @@ for(const name of names){
  let text=fs.readFileSync(path.join(root,name),'utf8');
  if(name==='index.html'){
   text=text.replace(/<script[^>]*\bsrc=["'](?:usage-analytics|analytics-v856)\.js[^"']*["'][^>]*><\/script>/g,'');
+  // Education is not packaged; its catalogue would resolve to education.html and throw.
+  text=text.replace(/<script[^>]*\bsrc=["']students\/[^"']*["'][^>]*><\/script>/g,'');
   text=text.replace(/<meta name="robots"[^>]*>/,'<meta name="robots" content="noindex,nofollow">');
   text=text.replace('</head>',`<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self' data:; worker-src 'self' blob:; frame-src 'none'; object-src 'none'"><script src="app-preview.js"></script></head>`);
  }
