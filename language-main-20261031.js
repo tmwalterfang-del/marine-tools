@@ -1309,6 +1309,7 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Calculate again before copying. The inputs have changed.": "Beregn på nytt før du kopierer. Inndata er endret.",
   "Calculate again before sharing. The inputs have changed.": "Beregn på nytt før du deler. Inndata er endret.",
   "Print calculation": "Skriv ut beregning",
+  "R × √(Δφ² + q²·Δλ²), q = cos φ₁ (same latitude)": "R × √(Δφ² + q²·Δλ²), q = cos φ₁ (samme breddegrad)",
   "With zero total volume, weighted density is undefined and is not shown.": "Når samlet volum er null, er vektet tetthet udefinert og vises ikke.",
   "Same-day readings can have increasing running hours; with zero calendar span, the calendar rate is undefined and is not shown.": "Avlesninger samme dag kan ha økende driftstimer; når det ikke har gått noen kalenderdager, er forbruket per dag udefinert og vises ikke.",
   "Show working for all main calculators: steps, validity and assumptions, with CSV/JSON export and printing.": "Vis utregning for alle hovedkalkulatorene: steg, gyldighet og forutsetninger, med eksport til CSV/JSON og utskrift.",

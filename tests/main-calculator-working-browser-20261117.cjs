@@ -325,6 +325,7 @@ const CALCS = [
       // Spherical R = 3440.065 NM: 1° of arc = 3440.065·π/180 = 60.0405 NM. A (0,0) → B (0,1): GC 60.0405 NM course 090; rhumb identical, difference 0.
       await setFields([...ddm("gcA", 0, 0), ...ddm("gcB", 0, 1)]); await click("calcGcRhumb");
       v = await vals("resGcRhumb"); near(v[0], 60.0405, 0.005, "GC distance"); near(v[1], 90, 0.05, "GC course"); near(v[2], 60.0405, 0.005, "rhumb distance"); near(v[3], 90, 0.05, "rhumb course"); near(v[4], 0, 0.005, "rhumb extra");
+      ok(/q = cos φ₁/.test(await page.locator('.calc-work[data-for="resGcRhumb"]').textContent()), "rhumb same-latitude branch shown (q = cos φ1, not 0/0)");
       await setFields([...ddm("navA", 0, 0), ...ddm("navB", 0, 1)]); await click("calcBearing855");
       v = await vals("resBearing855"); near(v[0], 60.0405, 0.001, "bearing tool distance (shown to 3 decimals; hand 60.04046)"); near(v[1], 90, 0.005, "bearing tool course");
       // Coordinate toolbox: 59° 25.278′ N, 10° 28.992′ E. Hand: 59 + 25.278/60 = 59.4213; 10 + 28.992/60 = 10.4832. Tol 1e-6.
@@ -339,12 +340,16 @@ const CALCS = [
       await page.evaluate(() => { const rows = [...document.querySelectorAll(".sc-speed")]; rows.forEach((r, i) => { r.value = i === 0 ? "10" : r.value; r.dispatchEvent(new Event("input", { bubbles: true })); }); });
       await setFields([["scDist", "1200"], ["scFuel", "30"], ["scRef", "12"]]); await click("calcScenarios");
       v = await vals("resScenarios"); near(v[0], 86.8056, 0.01, "scenario fuel at 10 kn");
+      await page.evaluate(() => window.MT_I18N.set("nb")); await page.waitForTimeout(200);
+      ok(await page.locator('.calc-work[data-for="resScenarios"] .calc-work-steps li span').first().textContent() === "10,0 kn", "scenario label follows language");
+      await page.evaluate(() => window.MT_I18N.set("en")); await page.waitForTimeout(200);
       await page.goto(base + "/index.html?page=weather", { waitUntil: "domcontentloaded" });
       await page.locator("#calcEncounter").waitFor({ state: "attached" });
       // Encounter: course 000, 10 kn (5.14444 m/s), waves from 180 (following), T 8 s. Hand: ω = 2π/8 = 0.785398;
       // k = ω²/9.80665 = 0.062901; ωe = 0.785398 − 0.062901·5.14444·cos0 = 0.461806; Te = 2π/0.461806 = 13.6057 s. Tol 0.005 s.
       await setFields([["weCourse", "0"], ["weSpeed", "10"], ["weFrom", "180"], ["wePeriod", "8"]]); await click("calcEncounter");
       v = await vals("resEncounter"); near(v[0], 0.785398, 1e-5, "wave frequency"); near(v[1], 0.062901, 1e-5, "wave number"); near(v[2], 0.461806, 1e-4, "encounter frequency"); near(v[3], 13.6057, 0.005, "encounter period");
+      ok(/max\(0\.00001/.test(await page.locator('.calc-work[data-for="resEncounter"]').textContent()), "encounter shows the frequency lower bound");
       await page.goto(base + "/index.html?page=quick", { waitUntil: "domcontentloaded" });
       await page.locator("#calcDST").waitFor({ state: "attached" });
       // Speed·distance·time: 120 NM at 12 kn = 10 h. Beaufort: 15 kn lies in 11–16 kn = force 4.
