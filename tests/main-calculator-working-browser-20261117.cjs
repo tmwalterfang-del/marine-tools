@@ -299,6 +299,67 @@ const CALCS = [
       ok(errors.length === 0, `round 3: no page errors: ${errors.join(" | ")}`);
       await ctx.close();
     }
+    // Round 4: Show working on the remaining navigation, quick and consumption tools, with hand references.
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+      await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+      await ctx.addInitScript(() => {
+        localStorage.setItem("mt.locale.v1", '"en"');
+        localStorage.setItem("mt.route", JSON.stringify([{ lat: 0, lon: 0 }, { lat: 0, lon: 1 }]));
+        localStorage.setItem("mt.profile", JSON.stringify({ serviceSpeed: 12, fuelDay: 24, corridor: 5 }));
+      });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on("pageerror", (e) => errors.push(e.message));
+      const vals = (res) => page.$$eval(`.calc-work[data-for="${res}"] .calc-work-steps code`, (cs) => cs.map((c) => (c.textContent.includes("=") ? Number(c.textContent.split("=").pop().trim().split(" ")[0].replace(/,/g, "")) : null)));
+      const near = (a, b, tol, m) => ok(typeof a === "number" && Math.abs(a - b) <= tol, `${m}: ${a} vs ${b}`);
+      const setFields = (pairs) => page.evaluate((pairs) => { for (const [id, v] of pairs) { const x = document.getElementById(id); x.value = v; x.dispatchEvent(new Event("input", { bubbles: true })); x.dispatchEvent(new Event("change", { bubbles: true })); } }, pairs);
+      const ddm = (p, lat, lon) => [[p + "LatDeg", String(Math.floor(Math.abs(lat)))], [p + "LatMin", String((Math.abs(lat) % 1) * 60)], [p + "LatHem", lat < 0 ? "S" : "N"], [p + "LonDeg", String(Math.floor(Math.abs(lon)))], [p + "LonMin", String((Math.abs(lon) % 1) * 60)], [p + "LonHem", lon < 0 ? "W" : "E"]];
+      const click = (id) => page.evaluate((id) => document.getElementById(id).click(), id);
+      await page.goto(base + "/index.html?page=navigation", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcBearing855").waitFor({ state: "attached" });
+      await page.waitForTimeout(400);
+      // Wind components: course 000, wind from 030 at 20 kn. Hand: rel 30°, head 20·cos30 = 17.3205, cross 20·sin30 = 10. Tol 0.005.
+      await setFields([["windCourse", "0"], ["windDir", "30"], ["windSpeed", "20"]]); await click("calcWindComp");
+      let v = await vals("resWindComp"); near(v[0], 30, 0.5, "wind rel"); near(v[1], 17.3205, 0.005, "wind head"); near(v[2], 10, 0.005, "wind cross");
+      // Spherical R = 3440.065 NM: 1° of arc = 3440.065·π/180 = 60.0405 NM. A (0,0) → B (0,1): GC 60.0405 NM course 090; rhumb identical, difference 0.
+      await setFields([...ddm("gcA", 0, 0), ...ddm("gcB", 0, 1)]); await click("calcGcRhumb");
+      v = await vals("resGcRhumb"); near(v[0], 60.0405, 0.005, "GC distance"); near(v[1], 90, 0.05, "GC course"); near(v[2], 60.0405, 0.005, "rhumb distance"); near(v[3], 90, 0.05, "rhumb course"); near(v[4], 0, 0.005, "rhumb extra");
+      await setFields([...ddm("navA", 0, 0), ...ddm("navB", 0, 1)]); await click("calcBearing855");
+      v = await vals("resBearing855"); near(v[0], 60.0405, 0.001, "bearing tool distance (shown to 3 decimals; hand 60.04046)"); near(v[1], 90, 0.005, "bearing tool course");
+      // Coordinate toolbox: 59° 25.278′ N, 10° 28.992′ E. Hand: 59 + 25.278/60 = 59.4213; 10 + 28.992/60 = 10.4832. Tol 1e-6.
+      await setFields([["coordLatDeg", "59"], ["coordLatMin", "25.278"], ["coordLatHem", "N"], ["coordLonDeg", "10"], ["coordLonMin", "28.992"], ["coordLonHem", "E"]]); await click("calcCoords855");
+      v = await vals("resCoords855"); near(v[0], 59.4213, 1e-6, "coord lat"); near(v[1], 10.4832, 1e-6, "coord lon");
+      // Closest route point: route (0,0)-(0,1); point 0°06′N 0°30′E. Hand (flat leg): 0.1° lat × 60 = 6.0 NM. Tol 0.01.
+      await setFields(ddm("near", 0.1, 0.5)); await click("calcNearest");
+      v = await vals("resNearest"); near(v[0], 6, 0.01, "closest route distance");
+      // 6 NM from the route with a 5 NM corridor: outside.
+      ok(/— outside/.test(await page.locator('.calc-work[data-for="resNearest"]').textContent()), "closest route corridor note: 6 NM is outside a 5 NM corridor");
+      // Passage scenarios: 1200 NM, 30 m³/day at 12 kn, scenario 10 kn. Hand: 30·(10/12)³·1200/10/24 = 30·0.578704·5 = 86.8056 m³. Tol 0.01.
+      await page.evaluate(() => { const rows = [...document.querySelectorAll(".sc-speed")]; rows.forEach((r, i) => { r.value = i === 0 ? "10" : r.value; r.dispatchEvent(new Event("input", { bubbles: true })); }); });
+      await setFields([["scDist", "1200"], ["scFuel", "30"], ["scRef", "12"]]); await click("calcScenarios");
+      v = await vals("resScenarios"); near(v[0], 86.8056, 0.01, "scenario fuel at 10 kn");
+      await page.goto(base + "/index.html?page=weather", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcEncounter").waitFor({ state: "attached" });
+      // Encounter: course 000, 10 kn (5.14444 m/s), waves from 180 (following), T 8 s. Hand: ω = 2π/8 = 0.785398;
+      // k = ω²/9.80665 = 0.062901; ωe = 0.785398 − 0.062901·5.14444·cos0 = 0.461806; Te = 2π/0.461806 = 13.6057 s. Tol 0.005 s.
+      await setFields([["weCourse", "0"], ["weSpeed", "10"], ["weFrom", "180"], ["wePeriod", "8"]]); await click("calcEncounter");
+      v = await vals("resEncounter"); near(v[0], 0.785398, 1e-5, "wave frequency"); near(v[1], 0.062901, 1e-5, "wave number"); near(v[2], 0.461806, 1e-4, "encounter frequency"); near(v[3], 13.6057, 0.005, "encounter period");
+      await page.goto(base + "/index.html?page=quick", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcDST").waitFor({ state: "attached" });
+      // Speed·distance·time: 120 NM at 12 kn = 10 h. Beaufort: 15 kn lies in 11–16 kn = force 4.
+      await setFields([["qDist", "120"], ["qSpeed", "12"]]); await click("calcDST");
+      v = await vals("resDST"); near(v[0], 10, 0.0005, "DST time");
+      await setFields([["bfKn", "15"]]); await click("calcBf");
+      v = await vals("resBf"); near(v[0], 4, 0, "Beaufort force");
+      await page.goto(base + "/index.html?page=fuel", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcConsumption").waitFor({ state: "attached" });
+      // Daily consumption: 100 → 102 m³ at 840 kg/m³. Hand: 2 m³; 2 × 840 = 1680 kg.
+      await setFields([["consMode", "difference"], ["consUnit", "m3"], ["consPrevious", "100"], ["consCurrent", "102"], ["consDensity", "840"], ["consDate", "2026-11-17"]]); await click("calcConsumption");
+      v = await vals("resConsumption"); near(v[0], 2, 1e-6, "consumed amount"); near(v[1], 2, 1e-6, "consumption volume"); near(v[2], 1680, 0.05, "consumption mass");
+      ok(errors.length === 0, `round 4: no page errors: ${errors.join(" | ")}`);
+      await ctx.close();
+    }
     // Language switch re-renders an open panel.
     const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });
     await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
