@@ -203,3 +203,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   body.print-one-card .print-target .print-meta{display:block;font-size:10pt;margin:0 0 8pt}
   body.print-one-card .print-target input,body.print-one-card .print-target select{border:1px solid #000}
 }
+/* Guidance strip: let the text wrap beside its heading on narrow screens (electrical cards overflowed by ~6 px at 320 px). */
+.tool-how{min-width:0;flex-wrap:wrap}.tool-how>span{min-width:0;flex:1 1 12em;overflow-wrap:anywhere}
