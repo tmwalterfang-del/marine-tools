@@ -358,7 +358,10 @@ async function main() {
         ),
       });
     assert.match(await page.locator("#message").innerText(), /XML/);
-    for (const width of [390, 768, 1440]) {
+    // AGENTS.md: layouts must work at 320 px in both languages.
+    for (const lang of ["en", "nb"]) {
+    await page.locator("#language").selectOption(lang);
+    for (const width of [320, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       for (const tab of ["nox", "voyage", "profile", "sources"]) {
         await page.locator('#tabs a[href="#' + tab + '"]').click();
@@ -370,9 +373,10 @@ async function main() {
         }));
         assert.ok(
           dimensions.body <= dimensions.view + 1,
-          tab + " overflows at " + width + ": " + JSON.stringify(dimensions),
+          tab + " overflows at " + width + " (" + lang + "): " + JSON.stringify(dimensions),
         );
       }
+    }
     }
     const output = process.env.REGULATORY_QA_DIR;
     if (output) {
