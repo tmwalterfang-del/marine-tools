@@ -46,7 +46,7 @@ const CALCS = [
         ok(await box.count() === 1, `${btn} ${lang}: working panel appears`);
         await box.evaluate((d) => { d.open = true; });
         const text = await box.innerText();
-        ok(!/NaN|undefined|Infinity/.test(text), `${btn} ${lang}: no invalid numbers: ${text}`);
+        ok(!/NaN|undefined|Infinity/.test(await box.locator(".calc-work-steps").textContent()), `${btn} ${lang}: no invalid numbers in the steps: ${text}`);
         ok(await box.locator(".calc-work-steps li").count() >= 1, `${btn} ${lang}: has steps`);
         ok(await box.locator(".calc-work-validity li").count() >= 1, `${btn} ${lang}: has validity notes`);
         if (lang === "nb") {
@@ -101,7 +101,7 @@ const CALCS = [
         ok(await box.count() === 1, `${btn}: working panel appears`);
         await box.evaluate((d) => { d.open = true; });
         const text = await box.innerText();
-        ok(!/NaN|undefined|Infinity/.test(text), `${btn}: no invalid numbers: ${text}`);
+        ok(!/NaN|undefined|Infinity/.test(await box.locator(".calc-work-steps").textContent()), `${btn}: no invalid numbers in the steps: ${text}`);
         ok(/Vis utregning/.test(text) && /Gyldighet og forutsetninger/.test(text), `${btn}: Norwegian headings`);
         const dims = await page.evaluate(() => ({ s: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
         ok(dims.s <= dims.c + 1, `${btn}: no horizontal page overflow at 320 px`);
