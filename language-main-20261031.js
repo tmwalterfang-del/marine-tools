@@ -1284,9 +1284,41 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Check base flow, head and power.": "Kontroller grunnverdiene for strømning, løftehøyde og effekt.",
   "Enter non-negative flow, head and power values.": "Oppgi verdier for strømning, løftehøyde og effekt som ikke er negative.",
   "Opening, received and closing urea quantities must be complete and non-negative.": "Urea ved start, mottatt og ved slutt må være utfylt og ikke negativt.",
-  "Complete every oil reading with a valid date, non-negative running hours and oil added.": "Fyll ut alle oljeavlesninger med gyldig dato, driftstimer og påfylt olje som ikke er negative."
+  "Complete every oil reading with a valid date, non-negative running hours and oil added.": "Fyll ut alle oljeavlesninger med gyldig dato, driftstimer og påfylt olje som ikke er negative.",
+  "Apparent wind direction (from)": "Tilsynelatende vindretning (fra)",
+  "True wind east component": "Sann vind, østkomponent",
+  "True wind north component": "Sann vind, nordkomponent",
+  "True wind speed": "Sann vindhastighet",
+  "Relative wind angle is measured clockwise from the bow; the wind blows from that direction.": "Relativ vindvinkel måles med klokken fra baugen, og vinden blåser fra den retningen.",
+  "Uses course and speed through the water. Over ground the result is the ground wind, which differs when there is current.": "Bruker kurs og fart gjennom vannet. Med kurs og fart over grunn blir resultatet bakkevinden, som avviker når det er strøm.",
+  "Instrument errors and sensor height are not corrected.": "Instrumentfeil og sensorhøyde korrigeres ikke.",
+  "Passage time": "Seilingstid",
+  "Fuel for the passage": "Drivstoff for seilasen",
+  "Assumes constant service speed and daily consumption for the whole route.": "Forutsetter konstant tjenestefart og døgnforbruk for hele ruten.",
+  "Weather, current, manoeuvring and port time are not included. Add a reserve.": "Vær, strøm, manøvrering og havnetid er ikke tatt med. Legg til en reserve.",
+  "within limits": "innenfor grensene",
+  "outside limits": "utenfor grensene",
+  "A window is a run of consecutive rows where every value is within its limit.": "Et vindu er en rekke etterfølgende rader der alle verdier er innenfor grensene.",
+  "Rows are checked in the order entered. Times between rows are not interpolated.": "Radene kontrolleres i den rekkefølgen de er lagt inn. Tidspunkter mellom radene interpoleres ikke.",
+  "Forecast values are not verified. Use official forecasts and the master's judgement.": "Prognoseverdiene er ikke kontrollert. Bruk offisielle prognoser og skipsførerens vurdering.",
+  "Total NOx": "Samlet NOx",
+  "Emission factors are taken as entered. Use certified or measured factors for reporting.": "Utslippsfaktorene brukes slik de er lagt inn. Bruk sertifiserte eller målte faktorer ved rapportering.",
+  "Urea use is recorded alongside and is not converted into an NOx reduction.": "Ureaforbruket registreres ved siden av og regnes ikke om til en NOx-reduksjon.",
+  "This is a period summary, not a regulatory NOx report or tax return.": "Dette er en periodeoppsummering, ikke en offisiell NOx-rapport eller avgiftsoppgave."
  },
  "templates": [
+  {
+   "en": "Hs {0} m (limit {1} m) · wind {2} kn (limit {3} kn)",
+   "nb": "Hs {0} m (grense {1} m) · vind {2} kn (grense {3} kn)"
+  },
+  {
+   "en": "Hs {0} m (limit {1} m) · wind {2} kn (limit {3} kn) · current {4} kn (limit {5} kn)",
+   "nb": "Hs {0} m (grense {1} m) · vind {2} kn (grense {3} kn) · strøm {4} kn (grense {5} kn)"
+  },
+  {
+   "en": "Σ {0} sources",
+   "nb": "Σ {0} kilder"
+  },
   {
    "en": "COG undefined · {0} kn SOG",
    "nb": "COG udefinert · {0} kn SOG"

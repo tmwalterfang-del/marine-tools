@@ -79,6 +79,53 @@ const CALCS = [
       ok(errors.length === 0, `${lang}: no page errors: ${errors.join(" | ")}`);
       await ctx.close();
     }
+    // Phase 2 calculators: true wind, route fuel, weather window and NOx (Norwegian, 320 px).
+    {
+      const ctx = await browser.newContext({ viewport: { width: 320, height: 800 } });
+      await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+      await ctx.addInitScript(() => {
+        localStorage.setItem("mt.locale.v1", '"nb"');
+        localStorage.setItem("mt.route", JSON.stringify([{ lat: 0, lon: 0 }, { lat: 0, lon: 1 }]));
+        localStorage.setItem("mt.profile", JSON.stringify({ serviceSpeed: 12, fuelDay: 24, corridor: 5 }));
+      });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on("pageerror", (e) => errors.push(e.message));
+      const run = async (pageId, btn, res, prepare) => {
+        await page.goto(base + "/index.html?page=" + pageId, { waitUntil: "domcontentloaded" });
+        await page.locator("#" + btn).waitFor({ state: "attached" });
+        await page.waitForTimeout(300);
+        if (prepare) await page.evaluate(prepare);
+        await page.evaluate((id) => document.getElementById(id).click(), btn);
+        const box = page.locator(`.calc-work[data-for="${res}"]`);
+        ok(await box.count() === 1, `${btn}: working panel appears`);
+        await box.evaluate((d) => { d.open = true; });
+        const text = await box.innerText();
+        ok(!/NaN|undefined|Infinity/.test(text), `${btn}: no invalid numbers: ${text}`);
+        ok(/Vis utregning/.test(text) && /Gyldighet og forutsetninger/.test(text), `${btn}: Norwegian headings`);
+        const dims = await page.evaluate(() => ({ s: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
+        ok(dims.s <= dims.c + 1, `${btn}: no horizontal page overflow at 320 px`);
+        return text;
+      };
+      const tw = await run("navigation", "calcTrueWind", "resTrueWind");
+      ok(/Sann vindhastighet/.test(tw), "true wind: Norwegian step label");
+      // Route of 1° along the equator ≈ 60.04 NM at 12 kn ≈ 5.0 h; 24 m³/day → ≈ 5.0 m³.
+      const rf = await run("navigation", "calcRouteFuel", "resRouteFuel");
+      ok(/Seilingstid/.test(rf) && /Drivstoff for seilasen/.test(rf), "route fuel: Norwegian step labels");
+      const ww = await run("weather", "findWindow", "wwResult");
+      ok(/innenfor grensene|utenfor grensene/.test(ww), "weather window: row status translated");
+      ok(!/strøm/.test(ww), "weather window: hidden current column is not shown");
+      // User-written source names are never translated (AGENTS.md): "Total" exists in a catalogue as "Sum".
+      const nox = await run("engineering", "calcNox", "resNox", () => {
+        const n = document.querySelector(".nox-row .nox-name");
+        n.value = "Total";
+        n.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      ok(/Samlet NOx/.test(nox), "NOx: total step translated");
+      ok(await page.locator('.calc-work[data-for="resNox"] .calc-work-steps li span').first().innerText() === "Total", "NOx: user-written source name kept as entered");
+      ok(errors.length === 0, `phase 2: no page errors: ${errors.join(" | ")}`);
+      await ctx.close();
+    }
     // Language switch re-renders an open panel.
     const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });
     await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
