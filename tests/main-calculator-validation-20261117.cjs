@@ -33,7 +33,7 @@ function harness() {
   const parser = fs.readFileSync(path.join(root, 'product-ux-20261031.js'), 'utf8').split(/\r?\n/);
   vm.runInContext(parser.find(s => s.startsWith('const DECIMAL=')), context);
   vm.runInContext(parser.find(s => s.startsWith('root.MT_PARSE_NUMBER=')).replace('root.MT_PARSE_NUMBER=', 'globalThis.MT_PARSE_NUMBER='), context);
-  for (const start of ['const inputNumber=', 'function setInvalidRes(', 'function setRes(']) vm.runInContext(lines.find(s => s.startsWith(start)), context);
+  for (const start of ['const inputNumber=', 'function setInvalidRes(', 'function finiteResults(', 'function setRes(']) vm.runInContext(lines.find(s => s.startsWith(start)), context);
   // The Show working panel is covered by main-calculator-working-browser-20261117.cjs; stub it here.
   vm.runInContext('function setWork(){}', context);
   function install(id) {
