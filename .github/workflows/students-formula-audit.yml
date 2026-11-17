@@ -37,6 +37,7 @@ on:
       - 'tests/main-*.cjs'
       - 'tests/main-calculator-validation-20261117.cjs'
       - 'tests/main-calculator-validation-dom-20261117.cjs'
+      - 'tests/main-calculator-reference-20261117.cjs'
       - 'tests/main-calculator-validation-browser-20261117.cjs'
       - 'students/labs.css'
       - 'downloads.html'
@@ -159,6 +160,7 @@ jobs:
           NODE_PATH: /tmp/students-dom/node_modules
         run: |
           node tests/main-calculator-validation-dom-20261117.cjs
+          node tests/main-calculator-reference-20261117.cjs
           node tests/students-labs-dom-20261020.cjs
           node tests/students-lms-export-20261030.cjs
           node tests/students-chapter-navigation-20261020.cjs
