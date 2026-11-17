@@ -208,3 +208,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* Reference and range for the calculation. */
 .calc-work-ref{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:2px;font-size:.85rem;color:var(--muted)}.calc-work-ref dt{font-weight:700;color:var(--soft);margin-top:4px}.calc-work-ref dd{margin:0;overflow-wrap:anywhere}
+
+/* History entries with stored working: compact action group that wraps on narrow screens. */
+.history-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}

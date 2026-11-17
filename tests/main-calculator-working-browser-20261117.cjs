@@ -460,6 +460,44 @@ const CALCS = [
       ok(await page.locator('.calc-work[data-for="resFuelUrea"] .calc-work-steps li span').first().textContent() === "Urealøsning", "built-in product name translated in Norwegian working");
       await ctx.close();
     }
+    // History keeps the structured working (additive 'work' field); old entries without it still load.
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+      await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+      await ctx.addInitScript(() => {
+        localStorage.setItem("mt.locale.v1", '"en"');
+        if (!sessionStorage.getItem("seeded")) {
+          sessionStorage.setItem("seeded", "1");
+          localStorage.setItem("mt.history", JSON.stringify([{ title: "Old entry", page: "fuel", time: "2026-01-01T00:00:00.000Z", inputs: ["ROB m³: 100"], result: "90 m³ usable" }]));
+        }
+      });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on("pageerror", (e) => errors.push(e.message));
+      await page.goto(base + "/index.html?page=fuel", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcRob").waitFor({ state: "attached" });
+      // ROB 300 m³, 20 m³/day, reserve 10 %. Hand: usable 270 m³; endurance 13.5 days.
+      await page.evaluate(() => { for (const [id, v] of [["rob", "300"], ["robDay", "20"], ["robRes", "10"]]) { const x = document.getElementById(id); x.value = v; x.dispatchEvent(new Event("input", { bubbles: true })); } document.getElementById("calcRob").click(); });
+      await page.waitForTimeout(150);
+      const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("mt.history")));
+      const old = stored.find((x) => x.title === "Old entry"), robEntry = stored.find((x) => x.work?.tool === "fuel-endurance");
+      ok(old && old.result === "90 m³ usable" && !old.work, "old history entry kept unchanged");
+      ok(robEntry && stored[0] === robEntry && Math.abs(robEntry.work.outputs.usableFuel.value - 270) < 1e-9 && Math.abs(robEntry.work.outputs.endurance.value - 13.5) < 1e-9, "new history entry stores the working (270 m³, 13.5 days)");
+      await page.goto(base + "/index.html?page=home", { waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(600);
+      ok(await page.locator("[data-history-json]").count() === stored.slice(0, 6).filter((x) => x.work).length && await page.locator("[data-history-copy]").count() === stored.slice(0, 6).length, "history shows JSON/CSV only for entries with working");
+      const p = page.waitForEvent("download");
+      await page.locator("[data-history-json]").first().evaluate((b) => b.click());
+      const f = await p; const chunks = []; for await (const c of await f.createReadStream()) chunks.push(c);
+      const j = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+      ok(j.tool === "fuel-endurance" && j.outputs.usableFuel.value === 270, "history JSON export matches the calculation");
+      const p2 = page.waitForEvent("download");
+      await page.locator("[data-history-csv]").first().evaluate((b) => b.click());
+      const f2 = await p2; const c2 = []; for await (const c of await f2.createReadStream()) c2.push(c);
+      ok(/^tool,section,name,value,unit/.test(Buffer.concat(c2).toString("utf8")), "history CSV export has the machine header");
+      ok(errors.length === 0, `history: no page errors: ${errors.join(" | ")}`);
+      await ctx.close();
+    }
     // Language switch re-renders an open panel.
     const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });
     await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
