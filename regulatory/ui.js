@@ -263,7 +263,12 @@
   };
   let lang = (() => {
     try {
+      let shared = null;
+      try {
+        shared = JSON.parse(localStorage.getItem("mt.locale.v1") || "null");
+      } catch {}
       return /^(nb|no|nn)/i.test(
+        (typeof shared === "string" && shared) ||
         localStorage.getItem("mt.lang") ||
           JSON.parse(localStorage.getItem("mt.settings") || "{}").language ||
           "",
@@ -275,6 +280,8 @@
     }
   })();
   const t = (k) => words[k]?.[lang === "nb" ? 1 : 0] ?? k,
+    // Export headers stay English so CSV columns do not change with language.
+    en = (k) => words[k]?.[0] ?? k,
     esc = (v) =>
       String(v ?? "").replace(
         /[&<>"']/g,
@@ -467,7 +474,11 @@
       invalidateNox();
     };
     if (noxResult) renderNoxResult();
-    $("#charge-context").addEventListener("input", invalidateNox);
+    $("#charge-context").addEventListener("input", () => {
+      invalidateNox();
+      // Voyage NOx charges use the same tax context.
+      if (routeResult && $("#route-results")) invalidateRoute();
+    });
   }
   function renderNoxRows() {
     const p = P.profile();
@@ -636,21 +647,21 @@
         "marine-tools-nox.csv",
         IO.csv([
           [
-            t("date"),
-            t("engine"),
-            t("mode"),
-            t("method"),
-            t("mass"),
-            t("quality"),
-            t("source"),
-            t("factor"),
-            t("unit"),
-            t("untreated"),
-            t("reduction"),
-            t("taxStatus"),
-            t("legal"),
-            t("government"),
-            t("fundCost"),
+            en("date"),
+            en("engine"),
+            en("mode"),
+            en("method"),
+            en("mass"),
+            en("quality"),
+            en("source"),
+            en("factor"),
+            en("unit"),
+            en("untreated"),
+            en("reduction"),
+            en("taxStatus"),
+            en("legal"),
+            en("government"),
+            en("fundCost"),
           ],
           ...x.items.map((r) => [
             r.date,
@@ -1390,7 +1401,15 @@
       try {
         const p = planList().find((x) => x.id === $("[name=savedPlan]").value);
         if (!p) return;
-        IO.clean(p.points.map((c) => c.map(Number)));
+        IO.clean(
+          p.points.map((c) =>
+            c.map((v) => {
+              if (typeof v === "number") return v;
+              const text = String(v ?? "").trim().replace(/−/g, "-");
+              return text === "" ? NaN : Number(text.replace(",", "."));
+            }),
+          ),
+        );
         routeState = { ...p };
         routeResult = null;
         renderVoyage();
@@ -1987,23 +2006,21 @@
       );
     $("#route-csv").onclick = () => {
       const header = [
-        t("segment"),
-        t("entry"),
-        t("exit"),
-        t("positionEntry"),
-        t("positionExit"),
-        t("distance"),
-        t("duration"),
-        t("areas"),
-        t("sulphur"),
-        t("taxStatus"),
-        t("legal"),
-        t("verify"),
-        t("consumption") +
+        en("segment"),
+        en("entry"),
+        en("exit"),
+        en("positionEntry"),
+        en("positionExit"),
+        en("distance"),
+        en("duration"),
+        en("areas"),
+        en("sulphur"),
+        en("taxStatus"),
+        en("legal"),
+        en("verify"),
+        en("consumption") +
           " (" +
-          (lang === "nb"
-            ? "første rad per strekning"
-            : "first row per segment") +
+          "first row per segment" +
           ")",
         "NOx kg (first row per segment)",
         "NOK (first row per segment)",
@@ -2532,6 +2549,7 @@
       if (location.hash === "#profile") captureProfile();
       lang = $("#language").value;
       try {
+        localStorage.setItem("mt.locale.v1", JSON.stringify(lang));
         localStorage.setItem("mt.lang", lang);
         const settings = JSON.parse(
           localStorage.getItem("mt.settings") || "{}",
