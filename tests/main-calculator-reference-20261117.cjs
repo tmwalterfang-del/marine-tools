@@ -50,7 +50,7 @@ let dom;
   assert.notEqual(w.MT_I18N?.locale, 'nb', 'Reference text must be English');
 
   const counts = {}, failures = [], panels = new Set();
-  let current = '', assertions = 0, handlerRuns = 0, panelRuns = 0;
+  let current = '', assertions = 0, noteAssertions = 0, handlerRuns = 0, panelRuns = 0;
   const el = id => { const node = d.getElementById(id); assert(node, 'Missing #' + id); return node; };
   function fields(values) {
     for (const [id, value] of Object.entries(values)) {
@@ -92,10 +92,10 @@ let dom;
     assert(row, `Missing ${heading} row in #${result}`);
     return row.querySelector('td').textContent.trim();
   }
-  // Each existing step must be matched to a named, literal hand reference.
-  // The six panels already present at c215852 are mandatory. The other four
-  // calculators are being edited concurrently: check their panels if present,
-  // and fail on any added step without a reference, never silently skip it.
+  // Each displayed step must match a named, literal hand reference:
+  // [label pattern, value, tolerance] or [label pattern, expected status note].
+  // The fuel-page route result has no panel yet; check it if one is added.
+  // Fail on every added step without a reference, never silently skip it.
   function work(result, references, required = true) {
     const boxes = d.querySelectorAll(`.calc-work[data-for="${result}"]`);
     if (!required && !boxes.length) return;
@@ -110,6 +110,14 @@ let dom;
       verify(() => assert(reference, `${result}: no independent reference for working step ${JSON.stringify(label)}`));
       if (!reference) continue;
       const code = row.querySelector('code')?.textContent || '';
+      if (typeof reference[1] === 'string') {
+        noteAssertions += 2;
+        const note = code.match(/ — (.*)$/u)?.[1];
+        verify(() => assert.equal(note, reference[1], `${result} working: ${label}: status note`));
+        verify(() => assert.doesNotMatch(code, /=/u,
+          `${result} working: ${label}: expected a status note without '= value', actual ${JSON.stringify(code)}`));
+        continue;
+      }
       if (reference[1] === null) {
         verify(() => assert.match(code, /=\s*(?:—|undefined|indeterminate)(?:\s|$)/iu,
           `${result} working: ${label}: expected undefined direction, actual ${JSON.stringify(code)}`));
@@ -157,7 +165,8 @@ let dom;
     // Total 2000 kWh = 2 MWh; 5 + 10 = 15 kg = 0.015 t;
     // weighted factor = 15000 / 2000 = 7.5 g/kWh.
     // Urea = 100 + 20 - 70 = 50 L; 50 / 2 = 25 L/MWh.
-    // Tolerances: kg/MWh/L 0.05; t 0.0005; factor/ratio 0.005.
+    // Tolerances: source kg 0.005; total kg/MWh/L 0.05; t 0.0005;
+    // factor/ratio 0.005.
     nox('power', [
       { '.nox-name': 'A', '.nox-a': 10, '.nox-b': 100, '.nox-factor': 5 },
       { '.nox-name': 'B', '.nox-a': 5, '.nox-b': 200, '.nox-factor': 10 }
@@ -166,14 +175,15 @@ let dom;
     numbers(rowText('resNox', 'Activity basis'), rx('^# MWh$'), [2], [0.05], 'Power basis');
     numbers(rowText('resNox', 'NOx factor summary'), rx('^# g/kWh weighted factor$'), [7.5], [0.005], 'Power factor');
     numbers(rowText('resNox', 'SCR / urea'), rx('^Urea solution used: # L · # L/MWh\\.$'), [50, 25], [0.05, 0.005], 'Power urea');
-    work('resNox', [[/total.*NOx|NOx.*total/i, 15, 0.05], [/activity|energy/i, 2000, 0.0005], [/weighted.*factor/i, 7.5, 0.005], [/urea.*used|urea.*balance/i, 50, 0.05], [/urea.*ratio|urea.*intensity/i, 25, 0.005]], false);
+    work('resNox', [[/^A$/, 5, 0.005], [/^B$/, 10, 0.005], [/^Total NOx$/, 15, 0.05]]);
   });
   await reference('calcNox', 'two fuel sources and total urea', () => {
     // Valid: named sources; finite fuel >= 0, factors >= 0, total fuel > 0.
     // A: 2 * 40 = 80 kg; B: 3 * 60 = 180 kg.
     // 80 + 180 = 260 kg = 0.260 t; fuel 2 + 3 = 5 t;
     // 260 / 5 = 52 kg/t; entered urea 100 L / 5 t = 20 L/t.
-    // Tolerances: kg/L 0.05, t NOx 0.0005, fuel/factor/ratio 0.005.
+    // Tolerances: source kg 0.005; total kg/L 0.05; t NOx 0.0005;
+    // fuel/factor/ratio 0.005.
     nox('fuel', [
       { '.nox-name': 'A', '.nox-a': 2, '.nox-factor': 40 },
       { '.nox-name': 'B', '.nox-a': 3, '.nox-factor': 60 }
@@ -182,14 +192,15 @@ let dom;
     numbers(rowText('resNox', 'Activity basis'), rx('^# t fuel$'), [5], [0.005], 'Fuel basis');
     numbers(rowText('resNox', 'NOx factor summary'), rx('^# kg/t weighted factor$'), [52], [0.005], 'Fuel factor');
     numbers(rowText('resNox', 'SCR / urea'), rx('^Urea solution used: # L · # L/t fuel\\.$'), [100, 20], [0.05, 0.005], 'Fuel urea');
-    work('resNox', [[/total.*NOx|NOx.*total/i, 260, 0.05], [/activity|fuel.*basis|total.*fuel/i, 5, 0.005], [/weighted.*factor/i, 52, 0.005], [/urea.*used/i, 100, 0.05], [/urea.*ratio|urea.*intensity/i, 20, 0.005]], false);
+    work('resNox', [[/^A$/, 80, 0.005], [/^B$/, 180, 0.005], [/^Total NOx$/, 260, 0.05]]);
   });
   await reference('calcNox', 'zero factor, inactive source and zero urea', () => {
     // Valid boundary: zero hours/factors/urea allowed; total activity > 0.
     // A: 10 * 100 = 1000 kWh, 1000 * 0 = 0 g.
     // B: 0 * 200 = 0 kWh, 0 * 10 = 0 g. Total 1 MWh, 0 kg = 0 t;
     // 0 / 1000 = 0 g/kWh; 0 L / 1 MWh = 0 L/MWh.
-    // Tolerances: kg/MWh/L 0.05, t 0.0005, factor/ratio 0.005.
+    // Tolerances: source kg 0.005; total kg/MWh/L 0.05; t 0.0005;
+    // factor/ratio 0.005.
     nox('power', [
       { '.nox-name': 'A', '.nox-a': 10, '.nox-b': 100, '.nox-factor': 0 },
       { '.nox-name': 'B', '.nox-a': 0, '.nox-b': 200, '.nox-factor': 10 }
@@ -198,13 +209,14 @@ let dom;
     numbers(rowText('resNox', 'Activity basis'), rx('^# MWh$'), [1], [0.05], 'Power basis');
     numbers(rowText('resNox', 'NOx factor summary'), rx('^# g/kWh weighted factor$'), [0], [0.005], 'Zero factor');
     numbers(rowText('resNox', 'SCR / urea'), rx('^Urea solution used: # L · # L/MWh\\.$'), [0, 0], [0.05, 0.005], 'Zero urea');
-    work('resNox', [[/total.*NOx|NOx.*total/i, 0, 0.05], [/activity|energy/i, 1000, 0.0005], [/weighted.*factor/i, 0, 0.005], [/urea/i, 0, 0.005]], false);
+    work('resNox', [[/^A$/, 0, 0.005], [/^B$/, 0, 0.005], [/^Total NOx$/, 0, 0.05]]);
   });
   await reference('calcNox', 'zero fuel emission factors without urea tracking', () => {
     // Valid boundary: factors may be 0, fuel positive, urea mode none.
     // 2 * 0 + 3 * 0 = 0 kg = 0 t; 2 + 3 = 5 t fuel;
     // 0 / 5 = 0 kg/t. No urea ratio is claimed when not tracked.
-    // Tolerances: kg 0.05; t NOx 0.0005; fuel/factor 0.005.
+    // Tolerances: source kg 0.005; total kg 0.05; t NOx 0.0005;
+    // fuel/factor 0.005.
     nox('fuel', [
       { '.nox-name': 'A', '.nox-a': 2, '.nox-factor': 0 },
       { '.nox-name': 'B', '.nox-a': 3, '.nox-factor': 0 }
@@ -213,7 +225,7 @@ let dom;
     numbers(rowText('resNox', 'Activity basis'), rx('^# t fuel$'), [5], [0.005], 'Fuel basis');
     numbers(rowText('resNox', 'NOx factor summary'), rx('^# kg/t weighted factor$'), [0], [0.005], 'Zero factor');
     assert.match(rowText('resNox', 'SCR / urea'), /Urea not included/);
-    work('resNox', [[/total.*NOx|NOx.*total/i, 0, 0.05], [/activity|fuel.*basis|total.*fuel/i, 5, 0.005], [/weighted.*factor/i, 0, 0.005]], false);
+    work('resNox', [[/^A$/, 0, 0.005], [/^B$/, 0, 0.005], [/^Total NOx$/, 0, 0.05]]);
   });
 
   for (const c of [
@@ -341,7 +353,7 @@ let dom;
     // Valid: finite coordinates, nonzero route, speed > 0, fuel/day >= 0.
     // At 4 m3/day: 12.008092146524 / 24 * 4 = 2.001348691087 m3.
     // Tols: distance 0.05 NM; fuel 0.005 m3; clock fields exact;
-    // working time 0.005 h (2 dp); working distance 0.05 NM.
+    // working time 0.005 h (2 dp).
     { name: 'two equatorial legs, both buttons', rate: 4, fuel: 2.001348691087 },
     // Valid boundary: same route/speed, zero daily fuel consumption.
     // 12.008092146524 / 24 * 0 = 0 m3; distance/time unchanged.
@@ -356,7 +368,7 @@ let dom;
         numbers(text(result), rx('^# m³ for # NM$'), [c.fuel, 120.080921465237], [0.005, 0.05], result);
         numbers(text(result, 'small'), rx('^# h # min at # kn\\.$'), [12, 0, 10], [0, 0, 0], result + ' time');
       }
-      work(result, [[/distance/i, 120.080921465237, 0.05], [/time|hours/i, 12.008092146524, 0.005], [/fuel/i, c.fuel, 0.005]], false);
+      work(result, [[/^Passage time$/, 12.008092146524, 0.005], [/^Fuel for the passage$/, c.fuel, 0.005]], result === 'resRouteFuel');
     }
   });
 
@@ -370,34 +382,37 @@ let dom;
   // course/angle finite; steady, horizontal motion without sensor corrections.
   // For every case, speed tolerance is 0.05 kn and FROM tolerance 0.5 degree;
   // any displayed component steps use 0.005 kn (2 dp) or tighter precision.
+  // Apparent FROM bearings are hand sums of course + relative angle, wrapped
+  // to [0,360): 36.869897645844, 0, 180, 90, -90 + 360 = 270,
+  // 90 + 90 = 180, and 0 degrees T; displayed bearing tolerance 0.5 degree.
   for (const c of [
     // Valid steady oblique case. cos(36.869897645844)=4/5, sin=3/5.
     // Apparent 5 kn FROM starboard bow -> TO (-3,-4) kn;
     // vessel (0,+3) -> true (-3,-1). Speed sqrt(9+1)=3.162277660168 kn;
     // FROM vector (+3,+1), atan(3/1)=71.565051177078 degrees T.
-    { name: 'oblique wind by 3-4-5 components', course: 0, ship: 3, rel: 36.869897645844, aws: 5, speed: 3.162277660168, from: 71.565051177078, ax: -3, ay: -4, vx: 0, vy: 3, tx: -3, ty: -1 },
+    { name: 'oblique wind by 3-4-5 components', course: 0, ship: 3, rel: 36.869897645844, aws: 5, appFrom: 36.869897645844, speed: 3.162277660168, from: 71.565051177078, ax: -3, ay: -4, vx: 0, vy: 3, tx: -3, ty: -1 },
     // Valid headwind boundary at relative 0. Apparent TO (0,-15), ship
     // (0,+5), true (0,-10): 10 kn FROM north = 0 degrees T.
-    { name: 'headwind', course: 0, ship: 5, rel: 0, aws: 15, speed: 10, from: 0, ax: 0, ay: -15, vx: 0, vy: 5, tx: 0, ty: -10 },
+    { name: 'headwind', course: 0, ship: 5, rel: 0, aws: 15, appFrom: 0, speed: 10, from: 0, ax: 0, ay: -15, vx: 0, vy: 5, tx: 0, ty: -10 },
     // Valid tailwind boundary at relative 180. Apparent TO (0,+5), ship
     // (0,+5), true (0,+10): 10 kn FROM south = 180 degrees T.
-    { name: 'tailwind', course: 0, ship: 5, rel: 180, aws: 5, speed: 10, from: 180, ax: 0, ay: 5, vx: 0, vy: 5, tx: 0, ty: 10 },
+    { name: 'tailwind', course: 0, ship: 5, rel: 180, aws: 5, appFrom: 180, speed: 10, from: 180, ax: 0, ay: 5, vx: 0, vy: 5, tx: 0, ty: 10 },
     // Valid starboard beam boundary, +90 relative. Apparent TO (-4,0), ship
     // (0,+3), true (-4,+3): sqrt(16+9)=5 kn; FROM (+4,-3),
     // 180 - atan(4/3) = 126.869897645844 degrees T.
-    { name: 'positive starboard beam angle', course: 0, ship: 3, rel: 90, aws: 4, speed: 5, from: 126.869897645844, ax: -4, ay: 0, vx: 0, vy: 3, tx: -4, ty: 3 },
+    { name: 'positive starboard beam angle', course: 0, ship: 3, rel: 90, aws: 4, appFrom: 90, speed: 5, from: 126.869897645844, ax: -4, ay: 0, vx: 0, vy: 3, tx: -4, ty: 3 },
     // Valid signed port beam boundary, -90 relative. Apparent TO (+4,0), ship
     // (0,+3), true (+4,+3): 5 kn; FROM (-4,-3),
     // 180 + atan(4/3) = 233.130102354156 degrees T.
-    { name: 'negative port beam angle', course: 0, ship: 3, rel: -90, aws: 4, speed: 5, from: 233.130102354156, ax: 4, ay: 0, vx: 0, vy: 3, tx: 4, ty: 3 },
+    { name: 'negative port beam angle', course: 0, ship: 3, rel: -90, aws: 4, appFrom: 270, speed: 5, from: 233.130102354156, ax: 4, ay: 0, vx: 0, vy: 3, tx: 4, ty: 3 },
     // Valid eastbound case, +90 relative. Apparent FROM south -> TO (0,+4),
     // ship (+3,0), true (+3,+4): 5 kn; FROM (-3,-4),
     // 180 + atan(3/4) = 216.869897645844 degrees T (rotation check).
-    { name: 'beam wind with eastbound vessel', course: 90, ship: 3, rel: 90, aws: 4, speed: 5, from: 216.869897645844, ax: 0, ay: 4, vx: 3, vy: 0, tx: 3, ty: 4 },
+    { name: 'beam wind with eastbound vessel', course: 90, ship: 3, rel: 90, aws: 4, appFrom: 180, speed: 5, from: 216.869897645844, ax: 0, ay: 4, vx: 3, vy: 0, tx: 3, ty: 4 },
     // Valid calm boundary: apparent TO (0,-10) + ship (0,+10) = (0,0).
     // Speed = 0 kn (tol 0.05); FROM has NO direction, because a zero vector
     // has no bearing. An arbitrary numeric FROM bearing is a disagreement.
-    { name: 'cancelling headwind has undefined direction', course: 0, ship: 10, rel: 0, aws: 10, speed: 0, from: null, ax: 0, ay: -10, vx: 0, vy: 10, tx: 0, ty: 0 }
+    { name: 'cancelling headwind has undefined direction', course: 0, ship: 10, rel: 0, aws: 10, appFrom: 0, speed: 0, from: null, ax: 0, ay: -10, vx: 0, vy: 10, tx: 0, ty: 0 }
   ]) await reference('calcTrueWind', c.name, () => {
     fields({ twCourse: c.course, twShip: c.ship, twRel: c.rel, twAws: c.aws }); click('calcTrueWind', 'resTrueWind');
     if (c.from === null) {
@@ -406,11 +421,10 @@ let dom;
         `Expected 0 kn with undefined FROM direction; actual ${JSON.stringify(text('resTrueWind'))}`));
     } else numbers(text('resTrueWind'), rx('^# kn from #°T$'), [c.speed, c.from], [0.05, 0.5], 'True wind speed/FROM');
     work('resTrueWind', [
-      [/apparent.*east/i, c.ax, 0.005], [/apparent.*north/i, c.ay, 0.005],
-      [/vessel.*east|ship.*east/i, c.vx, 0.005], [/vessel.*north|ship.*north/i, c.vy, 0.005],
-      [/true.*east/i, c.tx, 0.005], [/true.*north/i, c.ty, 0.005],
-      [/true.*speed/i, c.speed, 0.05], [/true.*from|true.*direction/i, c.from, 0.5]
-    ], false);
+      [/^Apparent wind direction \(from\)$/, c.appFrom, 0.5],
+      [/^True wind east component$/, c.tx, 0.005], [/^True wind north component$/, c.ty, 0.005],
+      [/^True wind speed$/, c.speed, 0.05]
+    ]);
   });
 
   function weather(rows, limits) {
@@ -428,17 +442,21 @@ let dom;
     // 11 fails wind 30>20, 12 fails current 2>1; 13/14 pass.
     // Two runs: 08:00-09:00 (2 rows), 13:00-14:00 (2 rows).
     // Counts/clock fields exact; these are row runs, not interpolated durations.
-    { name: 'separate windows and each rejecting limit', limits: { wwHs: 2, wwWind: 20, wwCur: 1 }, rows: [['08:00', 1, 10, 0.5], ['09:00', 1.5, 15, 0.8], ['10:00', 3, 10, 0.5], ['11:00', 1, 30, 0.5], ['12:00', 1, 10, 2], ['13:00', 1.5, 15, 0.8], ['14:00', 1, 10, 0.5]], groups: [[8, 0, 9, 0, 2], [13, 0, 14, 0, 2]], windows: 2, checked: 7, matching: 4 },
+    { name: 'separate windows and each rejecting limit', limits: { wwHs: 2, wwWind: 20, wwCur: 1 }, rows: [['08:00', 1, 10, 0.5], ['09:00', 1.5, 15, 0.8], ['10:00', 3, 10, 0.5], ['11:00', 1, 30, 0.5], ['12:00', 1, 10, 2], ['13:00', 1.5, 15, 0.8], ['14:00', 1, 10, 0.5]], groups: [[8, 0, 9, 0, 2], [13, 0, 14, 0, 2]], windows: 2, checked: 7, matching: 4,
+      steps: [[/^08:00$/, 'within limits'], [/^09:00$/, 'within limits'], [/^10:00$/, 'outside limits'], [/^11:00$/, 'outside limits'], [/^12:00$/, 'outside limits'], [/^13:00$/, 'within limits'], [/^14:00$/, 'within limits']] },
     // Valid inclusive boundary: limits (2,20,1), first two rows equal ALL
     // limits and pass; third Hs 2.001 > 2 fails. One 08:00-09:00 run of 2.
     // Counts and clock fields exact; nonnegative complete chronological rows.
-    { name: 'Hs, wind and current exactly at limits', limits: { wwHs: 2, wwWind: 20, wwCur: 1 }, rows: [['08:00', 2, 20, 1], ['09:00', 2, 20, 1], ['10:00', 2.001, 20, 1]], groups: [[8, 0, 9, 0, 2]], windows: 1, checked: 3, matching: 2 },
+    { name: 'Hs, wind and current exactly at limits', limits: { wwHs: 2, wwWind: 20, wwCur: 1 }, rows: [['08:00', 2, 20, 1], ['09:00', 2, 20, 1], ['10:00', 2.001, 20, 1]], groups: [[8, 0, 9, 0, 2]], windows: 1, checked: 3, matching: 2,
+      steps: [[/^08:00$/, 'within limits'], [/^09:00$/, 'within limits'], [/^10:00$/, 'outside limits']] },
     // Valid zero boundary: all three limits 0; all measurements 0 <= 0.
     // 08,09,10 form one run, 08:00-10:00, exactly 3 rows; counts/time tol 0.
-    { name: 'zero limits and zero weather', limits: { wwHs: 0, wwWind: 0, wwCur: 0 }, rows: [['08:00', 0, 0, 0], ['09:00', 0, 0, 0], ['10:00', 0, 0, 0]], groups: [[8, 0, 10, 0, 3]], windows: 1, checked: 3, matching: 3 },
+    { name: 'zero limits and zero weather', limits: { wwHs: 0, wwWind: 0, wwCur: 0 }, rows: [['08:00', 0, 0, 0], ['09:00', 0, 0, 0], ['10:00', 0, 0, 0]], groups: [[8, 0, 10, 0, 3]], windows: 1, checked: 3, matching: 3,
+      steps: [[/^08:00$/, 'within limits'], [/^09:00$/, 'within limits'], [/^10:00$/, 'within limits']] },
     // Valid: nonnegative complete rows, zero Hs limit. Every Hs 0.1 > 0;
     // no row passes, so 0 matching rows and 0 windows (exact counts).
-    { name: 'no matching window', limits: { wwHs: 0, wwWind: 20, wwCur: 1 }, rows: [['08:00', 0.1, 0, 0], ['09:00', 0.1, 0, 0], ['10:00', 0.1, 0, 0]], groups: [], windows: 0, checked: 3, matching: 0 }
+    { name: 'no matching window', limits: { wwHs: 0, wwWind: 20, wwCur: 1 }, rows: [['08:00', 0.1, 0, 0], ['09:00', 0.1, 0, 0], ['10:00', 0.1, 0, 0]], groups: [], windows: 0, checked: 3, matching: 0,
+      steps: [[/^08:00$/, 'outside limits'], [/^09:00$/, 'outside limits'], [/^10:00$/, 'outside limits']] }
   ]) await reference('findWindow', c.name, () => {
     weather(c.rows, c.limits);
     const main = el('wwResult').querySelector('strong'); assert(main);
@@ -449,11 +467,11 @@ let dom;
       verify(() => assert.equal(lines.length, c.windows, 'Window count'));
       c.groups.forEach((group, i) => numbers(lines[i] || '', rx('^#:# → #:# \\(# consecutive rows?\\)$'), group, [0, 0, 0, 0, 0], 'Window ' + (i + 1)));
     } else verify(() => assert.equal(main.textContent, 'No matching window in the supplied rows.'));
-    work('wwResult', [[/rows.*checked|supplied.*rows|total.*rows/i, c.checked, 0], [/matching.*rows|rows.*inside|rows.*within/i, c.matching, 0], [/windows|groups/i, c.windows, 0]], false);
+    work('wwResult', c.steps);
   });
 
   await flush();
   verify(() => assert.deepEqual(errors, [], 'Uncaught app errors'));
-  console.log(JSON.stringify({ status: failures.length ? 'FAIL' : 'PASS', cases: Object.values(counts).reduce((a, b) => a + b, 0), casesPerCalculator: counts, handlerRuns, numericAssertions: assertions, panelRuns, checkedPanels: [...panels], disagreements: failures }, null, 2));
+  console.log(JSON.stringify({ status: failures.length ? 'FAIL' : 'PASS', cases: Object.values(counts).reduce((a, b) => a + b, 0), casesPerCalculator: counts, handlerRuns, numericAssertions: assertions, noteAssertions, panelRuns, checkedPanels: [...panels], disagreements: failures }, null, 2));
   if (failures.length) process.exitCode = 1;
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => dom?.window.close());
