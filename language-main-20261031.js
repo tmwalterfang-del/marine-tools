@@ -1269,9 +1269,28 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Sulphur content (mass-weighted)": "Svovelinnhold (masseveid)",
   "Volumes and densities must be at the same reference temperature.": "Volumer og tettheter må gjelde samme referansetemperatur.",
   "Assumes ideal mixing without volume contraction.": "Forutsetter ideell blanding uten volumkontraksjon.",
-  "Compatibility and stability of the blend are not evaluated.": "Blandingens kompatibilitet og stabilitet vurderes ikke."
+  "Compatibility and stability of the blend are not evaluated.": "Blandingens kompatibilitet og stabilitet vurderes ikke.",
+  "Complete every speed scenario with a positive speed.": "Fyll ut alle fartsscenarioer med en positiv fart.",
+  "Check service speed and daily fuel consumption.": "Kontroller tjenestefart og døgnforbruk av drivstoff.",
+  "Service speed must be above zero and daily fuel consumption must be non-negative.": "Tjenestefarten må være over null, og døgnforbruket kan ikke være negativt.",
+  "Check weather limits.": "Kontroller værgrensene.",
+  "Enter non-negative wave, wind and current limits.": "Oppgi grenser for bølger, vind og strøm som ikke er negative.",
+  "Check forecast rows.": "Kontroller prognoseradene.",
+  "Wave height, wind and current must be complete and non-negative.": "Bølgehøyde, vind og strøm må være utfylt og ikke negative.",
+  "Complete course, speed, wave direction and period.": "Fyll ut kurs, fart, bølgeretning og periode.",
+  "Complete every measured speed and consumption point.": "Fyll ut alle målte punkter for fart og forbruk.",
+  "Measured speed points must be unique.": "Hvert målepunkt må ha en egen fart.",
+  "Complete every bunkering row with a valid date, non-negative volume and positive density.": "Fyll ut alle bunkringsrader med gyldig dato, volum som ikke er negativt og positiv tetthet.",
+  "Check base flow, head and power.": "Kontroller grunnverdiene for strømning, løftehøyde og effekt.",
+  "Enter non-negative flow, head and power values.": "Oppgi verdier for strømning, løftehøyde og effekt som ikke er negative.",
+  "Opening, received and closing urea quantities must be complete and non-negative.": "Urea ved start, mottatt og ved slutt må være utfylt og ikke negativt.",
+  "Complete every oil reading with a valid date, non-negative running hours and oil added.": "Fyll ut alle oljeavlesninger med gyldig dato, driftstimer og påfylt olje som ikke er negative."
  },
  "templates": [
+  {
+   "en": "COG undefined · {0} kn SOG",
+   "nb": "COG udefinert · {0} kn SOG"
+  },
   {
    "en": "Add {0} to My Tools",
    "nb": "Legg til {0} i Mine verktøy"
