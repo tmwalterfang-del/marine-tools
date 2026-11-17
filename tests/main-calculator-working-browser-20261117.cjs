@@ -365,6 +365,85 @@ const CALCS = [
       ok(errors.length === 0, `round 4: no page errors: ${errors.join(" | ")}`);
       await ctx.close();
     }
+    // Round 5: every Show working panel fits at 320 px in English and Norwegian.
+    for (const lang of ["en", "nb"]) {
+      const ctx = await browser.newContext({ viewport: { width: 320, height: 900 } });
+      await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+      await ctx.addInitScript((l) => {
+        localStorage.setItem("mt.locale.v1", JSON.stringify(l));
+        localStorage.setItem("mt.route", JSON.stringify([{ lat: 0, lon: 0 }, { lat: 0, lon: 1 }]));
+        localStorage.setItem("mt.profile", JSON.stringify({ serviceSpeed: 12, fuelDay: 24, corridor: 5 }));
+      }, lang);
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on("pageerror", (e) => errors.push(e.message));
+      let panels = 0;
+      for (const pageId of ["navigation", "quick", "fuel", "vessel-calcs", "engineering", "electrical", "weather"]) {
+        await page.goto(base + "/index.html?page=" + pageId, { waitUntil: "domcontentloaded" });
+        await page.waitForTimeout(700);
+        const r = await page.evaluate(async () => {
+          for (const v of document.querySelectorAll("section.page.active [id$=View]")) { v.value = "all"; v.dispatchEvent(new Event("change", { bubbles: true })); }
+          for (const b of document.querySelectorAll("section.page.active button.calc-action, section.page.active #calcConsumption")) { b.click(); await new Promise((r) => setTimeout(r, 20)); }
+          const view = document.documentElement.clientWidth, bad = [];
+          const boxes = [...document.querySelectorAll("section.page.active .calc-work")];
+          for (const d of boxes) {
+            d.open = true;
+            const card = d.closest(".tool-card")?.getBoundingClientRect();
+            for (const e of [d, ...d.querySelectorAll("*")]) {
+              const rr = e.getBoundingClientRect();
+              if (rr.width && (rr.right > (card ? card.right : view) + 1 || e.scrollWidth > e.clientWidth + 2 && getComputedStyle(e).overflowX === "visible")) { bad.push(d.dataset.for + ":" + e.tagName.toLowerCase() + "." + String(e.className).split(" ")[0]); break; }
+            }
+          }
+          return { panels: boxes.length, bad, page: document.documentElement.scrollWidth <= view + 1 };
+        });
+        panels += r.panels;
+        ok(r.bad.length === 0, `${lang} ${pageId}: working panels fit at 320 px: ${r.bad.join(", ")}`);
+        ok(r.page, `${lang} ${pageId}: no horizontal page overflow at 320 px`);
+      }
+      ok(panels >= 40, `${lang}: Show working panels rendered across pages: ${panels}`);
+      ok(errors.length === 0, `${lang} all panels: no page errors: ${errors.join(" | ")}`);
+      await ctx.close();
+    }
+    // Round 5: Codex findings — profile save stales route fuel, user text untranslated, CSV numbers, calculatedAt, angle wrap.
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+      await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+      await ctx.addInitScript(() => {
+        localStorage.setItem("mt.locale.v1", '"en"');
+        localStorage.setItem("mt.route", JSON.stringify([{ lat: 0, lon: 0 }, { lat: 0, lon: 1 }]));
+        localStorage.setItem("mt.profile", JSON.stringify({ serviceSpeed: 10, fuelDay: 24, corridor: 5 }));
+      });
+      const page = await ctx.newPage();
+      const download = async (sel) => { const p = page.waitForEvent("download"); await page.locator(sel).evaluate((b) => b.click()); const f = await p; const c = []; for await (const x of await f.createReadStream()) c.push(x); return Buffer.concat(c).toString("utf8"); };
+      await page.goto(base + "/index.html?page=navigation", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcRouteFuel").waitFor({ state: "attached" });
+      await page.evaluate(() => document.getElementById("calcRouteFuel").click());
+      const rfCard = page.locator(".tool-card:has(#resRouteFuel)");
+      ok(!(await rfCard.evaluate((c) => c.classList.contains("calc-stale"))), "route fuel fresh");
+      await page.evaluate(() => window.dispatchEvent(new Event("mt-profile-saved")));
+      ok(await rfCard.evaluate((c) => c.classList.contains("calc-stale")), "saving the vessel profile marks route fuel stale");
+      // Set & drift with course 270°, STW 10, zero drift: north component is ~ -1.8e-15; CSV must hold a parseable number.
+      await page.evaluate(() => { for (const [id, v] of [["sdCourse", "270"], ["sdStw", "10"], ["sdSet", "0"], ["sdDrift", "0"]]) { const x = document.getElementById(id); x.value = v; x.dispatchEvent(new Event("input", { bubbles: true })); } document.getElementById("calcSetDrift").click(); });
+      const csv1 = await download('.calc-work[data-for="resSetDrift"] .calc-work-csv');
+      const north = csv1.split("\n").find((l) => l.includes("North component"));
+      ok(north && !north.includes("'") && Number.isFinite(Number(north.split(",")[3])), "CSV keeps tiny negative numbers parseable: " + north);
+      // calculatedAt is fixed at calculation time: two downloads give the same timestamp.
+      const j1 = JSON.parse(await download('.calc-work[data-for="resSetDrift"] .calc-work-json'));
+      await page.waitForTimeout(1100);
+      const j2 = JSON.parse(await download('.calc-work[data-for="resSetDrift"] .calc-work-json'));
+      ok(j1.calculatedAt && j1.calculatedAt === j2.calculatedAt, "calculatedAt does not change between downloads");
+      // True wind 350° + 20° shows the mod-360 wrap.
+      await page.evaluate(() => { for (const [id, v] of [["twCourse", "350"], ["twShip", "10"], ["twRel", "20"], ["twAws", "15"]]) { const x = document.getElementById(id); x.value = v; x.dispatchEvent(new Event("input", { bubbles: true })); } document.getElementById("calcTrueWind").click(); });
+      ok(/mod 360 = 10/.test(await page.locator('.calc-work[data-for="resTrueWind"]').textContent()), "true wind apparent direction shows mod 360 = 10");
+      // A NOx source named "Fuel" stays "Fuel" in Norwegian.
+      await page.goto(base + "/index.html?page=engineering", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcNox").waitFor({ state: "attached" });
+      await page.evaluate(() => { const n = document.querySelector(".nox-row .nox-name"); n.value = "Fuel"; n.dispatchEvent(new Event("input", { bubbles: true })); document.getElementById("calcNox").click(); });
+      await page.evaluate(() => window.MT_I18N.set("nb"));
+      await page.waitForTimeout(400);
+      ok(await page.locator('.calc-work[data-for="resNox"] .calc-work-steps li span').first().textContent() === "Fuel", "user-written NOx source name not translated");
+      await ctx.close();
+    }
     // Language switch re-renders an open panel.
     const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });
     await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
