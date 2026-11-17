@@ -289,7 +289,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install pinned browser test runner
-        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.64.1 axe-core@4.11.1
+        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.63.0 axe-core@4.11.1
       - name: Install rendering engine and Linux dependencies
         run: node /tmp/education-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
       - name: Responsive Education and whole-site browser checks
