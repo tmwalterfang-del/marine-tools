@@ -10,7 +10,7 @@ let browser;
  const p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));
  await p.goto('https://www.marinetools.app/');await p.locator('#mtReleaseDialog[open]').waitFor();
  assert.match(await p.locator('#mtReleaseSubtitle').textContent(),/v8\.10\.0 · 2026-11-17/);
- assert.match(await p.locator('.mt-release-current').textContent(),/Show working for ten calculators/);
+ assert.match(await p.locator('.mt-release-current').textContent(),/Show working for 21 calculators/);
  await p.evaluate(()=>MT_I18N.set('nb'));assert.match(await p.locator('.mt-release-current').textContent(),/Bedre kalkulatorer og Vis utregning[\s\S]*Resultater merkes som utdaterte/);
  await p.locator('#mtReleaseDone').click();await p.reload();await p.waitForTimeout(800);assert.equal(await p.locator('#mtReleaseDialog[open]').count(),0);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('mt.profile')).name),'Retained release fixture');
  assert.equal(await p.locator('a[href*="play.google.com"],a[href*="downloads.html"]').count(),0);
