@@ -294,7 +294,13 @@ async function main() {
       for await (const chunk of await file.createReadStream()) data.push(chunk);
       const contents = Buffer.concat(data).toString("utf8");
       if (extension === ".json") assert.ok(JSON.parse(contents).segments.length);
-      if (extension === ".csv") assert.match(contents, /Norskehavet/);
+      // AGENTS.md: exports stay identical across languages. The page is in
+      // Norwegian here, but CSV headers and area names stay English.
+      if (extension === ".csv") {
+        assert.match(contents, /Norwegian Sea/);
+        assert.doesNotMatch(contents, /Norskehavet|Ingen kartlagt/);
+        assert.match(contents.split(/\r?\n/)[0], /^﻿?"Segment","Entry \(UTC\)"/);
+      }
       if (extension === ".html") {
         assert.match(contents, /<svg/);
         assert.match(contents, /Norskehavet/);

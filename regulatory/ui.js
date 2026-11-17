@@ -477,7 +477,8 @@
     $("#charge-context").addEventListener("input", () => {
       invalidateNox();
       // Voyage NOx charges use the same tax context.
-      if (routeResult && $("#route-results")) invalidateRoute();
+      // Also cancel an analysis in flight, which captured the old context.
+      if (routeResult || window.__regWorker) invalidateRoute();
     });
   }
   function renderNoxRows() {
@@ -1189,6 +1190,12 @@
       return [v.lon, v.lat];
     });
   }
+  // Comma-aware coordinate value; blank is invalid (NaN), not zero.
+  function coordNum(v) {
+    if (typeof v === "number") return v;
+    const text = String(v ?? "").trim().replace(/−/g, "-");
+    return text === "" ? NaN : Number(text.replace(",", "."));
+  }
   function routePoints() {
     return IO.clean(
       routeState.points.map((p) =>
@@ -1198,15 +1205,17 @@
   }
   function invalidateRoute() {
     routeResult = null;
-    $("#route-results").replaceChildren();
-    $("#segment-detail").replaceChildren();
-    $("#route-progress").textContent = t("recalculate");
+    $("#route-results")?.replaceChildren();
+    $("#segment-detail")?.replaceChildren();
+    const progress = $("#route-progress");
+    if (progress) progress.textContent = t("recalculate");
     if (window.__regWorker) {
       window.__regWorker.terminate();
       window.__regWorker = null;
     }
-    $("#analyze-route").disabled = false;
-    drawRoute();
+    const analyze = $("#analyze-route");
+    if (analyze) analyze.disabled = false;
+    if (map) drawRoute();
   }
   function renderWaypoints() {
     const count = $("#waypoint-count");
@@ -1401,15 +1410,7 @@
       try {
         const p = planList().find((x) => x.id === $("[name=savedPlan]").value);
         if (!p) return;
-        IO.clean(
-          p.points.map((c) =>
-            c.map((v) => {
-              if (typeof v === "number") return v;
-              const text = String(v ?? "").trim().replace(/−/g, "-");
-              return text === "" ? NaN : Number(text.replace(",", "."));
-            }),
-          ),
-        );
+        IO.clean(p.points.map((c) => c.map(coordNum)));
         routeState = { ...p };
         routeResult = null;
         renderVoyage();
@@ -1703,7 +1704,7 @@
     routeLayer = L.featureGroup().addTo(map);
     waypointLayer = L.featureGroup().addTo(map);
     entryLayer = L.featureGroup().addTo(map);
-    const points = routeState.points.map(([lon, lat]) => [Number(lon), Number(lat)]);
+    const points = routeState.points.map(([lon, lat]) => [coordNum(lon), coordNum(lat)]);
     if (!points.length || routeState.points.some(([lon, lat]) => String(lon).trim() === "" || String(lat).trim() === "") || points.some(([lon, lat]) => !Number.isFinite(lon) || !Number.isFinite(lat) || Math.abs(lon) > 180 || Math.abs(lat) > 90)) return;
     if (routeResult) {
       for (const [i, segment] of routeResult.segments.entries()) {
@@ -1913,8 +1914,8 @@
       }) + " UTC"
     );
   }
-  function areaName(id) {
-    return catalogue.areas.find((a) => a.id === id)?.name[lang] || id;
+  function areaName(id, language = lang) {
+    return catalogue.areas.find((a) => a.id === id)?.name[language] || id;
   }
   function rulesText(segment) {
     return (
@@ -2034,7 +2035,7 @@
           s.to.join(" "),
           s.distanceNm,
           s.hours,
-          rule ? areaName(rule.areaId) : t("outsideMapped"),
+          rule ? areaName(rule.areaId, "en") : en("outsideMapped"),
           rule?.sulphurPercent ?? s.globalSulphurPercent,
           rule?.nox?.status ?? "",
           (rule?.sources || ["imo-sox"])
