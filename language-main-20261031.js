@@ -1309,6 +1309,21 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Calculate again before copying. The inputs have changed.": "Beregn på nytt før du kopierer. Inndata er endret.",
   "Calculate again before sharing. The inputs have changed.": "Beregn på nytt før du deler. Inndata er endret.",
   "Print calculation": "Skriv ut beregning",
+  "Suggest variation from position and date (WMM2025)": "Foreslå misvisning ut fra posisjon og dato (WMM2025)",
+  "Latitude ° (+N / −S)": "Breddegrad ° (+N / −S)",
+  "Longitude ° (+E / −W)": "Lengdegrad ° (+Ø / −V)",
+  "Use WMM2025 estimate": "Bruk WMM2025-anslag",
+  "The estimate applies to the selected date. Both variation years are set to that calendar year; request a new estimate for another date.": "Anslaget gjelder valgt dato. Begge misvisningsårene settes til det kalenderåret; be om et nytt anslag for en annen dato.",
+  "Position, date or corrections changed; suggest variation again.": "Posisjon, dato eller korreksjoner er endret; foreslå misvisning på nytt.",
+  "Enter latitude from −90 to 90° and longitude from −180 to 180°.": "Oppgi breddegrad fra −90 til 90° og lengdegrad fra −180 til 180°.",
+  "Enter a valid date for WMM2025.": "Oppgi en gyldig dato for WMM2025.",
+  "WMM2025 is valid only from 2025.0 to 2030.0; variation was not changed.": "WMM2025 gjelder bare fra 2025,0 til 2030,0; misvisningen ble ikke endret.",
+  "WMM2025 is unavailable; variation was not changed.": "WMM2025 er ikke tilgjengelig; misvisningen ble ikke endret.",
+  "WMM2025 could not calculate this estimate; variation was not changed.": "WMM2025 kunne ikke beregne dette anslaget; misvisningen ble ikke endret.",
+  "No suggestion: horizontal intensity is below 6000 nT (WMM caution or blackout zone); use current chart information and vessel procedures.": "Ingen forslag: horisontal feltstyrke er under 6000 nT (WMM-varsel- eller blackout-sone); bruk gjeldende kartinformasjon og fartøyets prosedyrer.",
+  "True course adds east positive variation and deviation to compass course, with optional linear annual change. Position and date suggestions use NOAA WMM2025 spherical harmonics on WGS84 at ellipsoid height zero; model estimates exclude local anomalies and vessel deviation.": "Rettvisende kurs er kompasskurs pluss misvisning og deviasjon med øst som positiv, med valgfri lineær årlig endring. Forslag ut fra posisjon og dato bruker NOAAs WMM2025 (sfæriske harmoniske) på WGS84 ved ellipsoidehøyde null; modellanslag tar ikke med lokale anomalier eller fartøyets deviasjon.",
+  "Manual corrections must be finite; optional variation years are integers from 1 through 9999. WMM2025 suggestions require latitude within ±90°, longitude within ±180°, decimal year 2025.0–2030.0 and horizontal intensity at least 6000 nT; both variation years start at the selected calendar year.": "Manuelle korreksjoner må være endelige tall; valgfrie misvisningsår er heltall fra 1 til 9999. WMM2025-forslag krever breddegrad innenfor ±90°, lengdegrad innenfor ±180°, desimalår 2025,0–2030,0 og horisontal feltstyrke på minst 6000 nT; begge misvisningsårene starter på valgt kalenderår.",
+  "tests/main-calculator-wmm2025-20261117.cjs checks literal NOAA WMM2025 test values within published rounding: 0.005001° declination and 0.00000051°/year annual change. tests/main-calculator-units-compass-density-20261117.cjs checks hand course and variation exports within 1e-12 degrees.": "tests/main-calculator-wmm2025-20261117.cjs kontrollerer NOAAs WMM2025-testverdier innenfor publisert avrunding: 0,005001° misvisning og 0,00000051°/år årlig endring. tests/main-calculator-units-compass-density-20261117.cjs kontrollerer håndregnet kurs og eksportert misvisning med toleranse 1e-12 grader.",
   "WGS84 geodesic distance": "Geodetisk distanse (WGS84)",
   "Initial WGS84 course": "Startkurs (WGS84)",
   "Final WGS84 course": "Sluttkurs (WGS84)",
@@ -1703,6 +1718,10 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Use vessel hydrostatic data; this is a planning approximation.": "Bruk fartøyets hydrostatiske data. Dette er en tilnærming for planlegging."
  },
  "templates": [
+  {
+   "en": "WMM2025 · {0} · variation {1}° (+E / −W), annual change {2}′/year. Model estimate at 0 km above the WGS84 ellipsoid; excludes local magnetic anomalies and vessel deviation. Verify against current chart information and vessel procedures.",
+   "nb": "WMM2025 · {0} · misvisning {1}° (+Ø / −V), årlig endring {2}′/år. Modellanslag 0 km over WGS84-ellipsoiden; lokale magnetiske anomalier og fartøyets deviasjon er ikke tatt med. Kontroller mot gjeldende kartinformasjon og fartøyets prosedyrer."
+  },
   {
    "en": "WGS84 {0} NM · initial {1}°T · final {2}°T",
    "nb": "WGS84 {0} NM · start {1}°T · slutt {2}°T"
