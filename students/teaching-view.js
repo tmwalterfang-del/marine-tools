@@ -15,7 +15,7 @@ if(narrow.addEventListener)narrow.addEventListener('change',e=>{for(const d of w
 const toolbar=document.createElement('div');toolbar.className='teaching-toolbar';
 const toggle=document.createElement('button');toggle.type='button';toggle.id='presentation-toggle';toggle.setAttribute('aria-pressed','false');toggle.textContent='Presentation view';toolbar.append(toggle);
 const hint=document.createElement('span');hint.textContent='Larger diagrams for teaching';toolbar.append(hint);(document.querySelector('.workspace-toolbar')||main).prepend(toolbar);
-let presenting=false,previousScroll=0,layoutPending=false,viewportHeightOverride=null;
+let presenting=false,previousScroll=0,layoutPending=false,viewportHeightOverride=null,unsizedRetries=0;
 // Size the whole SVG viewport, including its axes. Preserve the viewBox aspect
 // ratio instead of letting a wide monitor turn the diagram into a tall poster.
 function fitPresentation(){
@@ -36,8 +36,11 @@ function fitPresentation(){
    value.style.fontSize=(size*value.clientWidth/value.scrollWidth*.98)+'px';
   }
  }
+ let unsized=false;
  for(const svg of document.querySelectorAll('.teaching-results svg')){
-  if(!svg.getBoundingClientRect().width)continue;
+  // A chart in a visible result card may not have its width yet (WebKit lays out after the class change);
+  // retry a few frames instead of leaving it without a presentation height.
+  if(!svg.getBoundingClientRect().width){if(svg.closest('.teaching-results')?.offsetParent)unsized=true;continue}
   const box=svg.viewBox?.baseVal;if(!box?.width||!box.height)continue;
   const top=svg.getBoundingClientRect().top+(window.scrollY||0);
   const legend=svg.nextElementSibling?.classList.contains('legend')?svg.nextElementSibling.getBoundingClientRect().height:0;
@@ -45,6 +48,7 @@ function fitPresentation(){
   const height=Math.max(180,Math.min(svg.getBoundingClientRect().width*box.height/box.width,available));
   const value=Math.round(height)+'px';if(svg.style.getPropertyValue('--teaching-chart-height')!==value)svg.style.setProperty('--teaching-chart-height',value);
  }
+ if(unsized&&unsizedRetries<10){unsizedRetries++;scheduleFit()}else unsizedRetries=0;
 }
 function scheduleFit(){if(!layoutPending){layoutPending=true;requestAnimationFrame(fitPresentation)}}
 window.addEventListener('resize',scheduleFit);
