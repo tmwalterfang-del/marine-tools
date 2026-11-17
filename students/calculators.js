@@ -5,6 +5,8 @@ window.MT_STUDENT_FORMAT=n=>Number(n).toLocaleString('en-GB',{
  notation:Math.abs(n)>0&&(Math.abs(n)<.0001||Math.abs(n)>=1e7)?'scientific':'standard'
 });
 const F=(key,label,unit,initial,check="positive")=>({key,label,unit,initial,check});
+// Keyed working step: the intermediate value is kept as a number (for tests and export) and shown as "expr = value unit".
+const S=(key,expr,value,unit)=>({key,expr,value,unit,toString(){return `${this.expr} = ${window.MT_STUDENT_FORMAT(this.value)} ${this.unit}`}});
 window.MT_CALCULATORS=[
 {
  id:"displacement",name:"Mass displacement",category:"Ship Stability",description:"Find displacement mass from submerged volume and water density.",
@@ -69,7 +71,8 @@ window.MT_CALCULATORS=[
 {
  id:"three-phase",name:"Balanced three-phase power",category:"Electrical Engineering",description:"Active power using RMS line voltage, line current and power factor.",
  fields:[F("u","Line voltage","V",440),F("i","Line current","A",120,"nonnegative"),F("pf","Power factor cos φ","0–1",0.85,"unitinterval")],
- compute:({u,i,pf})=>({value:Math.sqrt(3)*u*i*pf/1000,unit:"kW",steps:[`P = √3 × Uₗ × Iₗ × cos φ / 1000`,`P = √3 × ${u} × ${i} × ${pf} / 1000`]})
+ compute:({u,i,pf})=>{const apparent=Math.sqrt(3)*u*i/1000,active=apparent*pf,reactive=apparent*Math.sqrt(Math.max(0,1-pf*pf));return{value:active,unit:"kW",steps:[`P = √3 × Uₗ × Iₗ × cos φ / 1000`,S("apparent_kVA",`S = √3 × ${u} V × ${i} A / 1000`,apparent,"kVA"),S("active_kW",`P = S × cos φ = S × ${pf}`,active,"kW"),S("reactive_kvar",`Q = S × √(1 − cos²φ)`,reactive,"kvar")]}},
+ assumptions:["Balanced, sinusoidal three-phase load; Uₗ and Iₗ are RMS line values.","Harmonics and unbalance are ignored."],range:"U > 0 V, I ≥ 0 A, 0 ≤ cos φ ≤ 1."
 },
 {
  id:"series-resistance",name:"Series resistance",category:"Electrical Engineering",description:"Two resistors connected in series.",
@@ -89,7 +92,8 @@ window.MT_CALCULATORS=[
 {
  id:"hydraulic-power",name:"Ideal pump hydraulic power",category:"Fluids & Hydraulics",description:"Hydraulic power; does not account for shaft losses.",
  fields:[F("rho","Fluid density","kg/m³",1000),F("flow","Volume flow","m³/h",36),F("head","Pump head","m",20)],
- compute:({rho,flow,head})=>({value:rho*9.80665*(flow/3600)*head/1000,unit:"kW",steps:[`Q = ${flow} / 3600 m³/s`,`P = ρgQH / 1000`]})
+ compute:({rho,flow,head})=>{const q=flow/3600,w=rho*9.80665*q*head;return{value:w/1000,unit:"kW",steps:[`P = ρ g Q H`,S("flow_m3s",`Q = ${flow} m³/h / 3600`,q,"m³/s"),S("power_W",`P = ${rho} × 9.80665 × Q × ${head}`,w,"W"),S("power_kW",`P = P[W] / 1000`,w/1000,"kW")]}},
+ assumptions:["Ideal hydraulic (water) power: pump, motor and shaft losses are not included.","Standard gravity g = 9.80665 m/s²; H is the total head the pump delivers."],range:"ρ > 0, Q > 0, H > 0. Divide by pump efficiency to estimate shaft power."
 },
 {
  id:"pump-time",name:"Tank pumping time",category:"Fluids & Hydraulics",description:"Simple transfer duration at constant volumetric flow.",
@@ -99,7 +103,8 @@ window.MT_CALCULATORS=[
 {
  id:"voyage-fuel",name:"Passage fuel estimate",category:"Machinery & Energy",description:"Simplified constant-speed daily fuel estimate, no reserve included.",
  fields:[F("dist","Distance","NM",1200,"nonnegative"),F("speed","Speed over ground","kn",12),F("daily","Fuel consumption","m³/day",24,"nonnegative")],
- compute:({dist,speed,daily})=>({value:dist/speed/24*daily,unit:"m³",steps:[`Sea time = ${dist} / ${speed} = ${window.MT_STUDENT_FORMAT(dist/speed)} h`,`Fuel = sea time / 24 × ${daily}`]})
+ compute:({dist,speed,daily})=>{const h=dist/speed,d=h/24;return{value:d*daily,unit:"m³",steps:[S("sea_time_h",`t = ${dist} NM / ${speed} kn`,h,"h"),S("sea_time_d",`t = t[h] / 24`,d,"d"),S("fuel_m3",`V = t[d] × ${daily} m³/d`,d*daily,"m³")]}},
+ assumptions:["Constant speed over ground and constant daily consumption for the whole passage.","No reserve, weather margin, port time or auxiliary consumption is included."],range:"Distance ≥ 0 NM, speed > 0 kn, consumption ≥ 0 m³/day. Planning estimate only."
 },
 {
  id:"battery-runtime",name:"Battery autonomy",category:"Machinery & Energy",description:"Illustrative available energy and run time for steady load.",
@@ -109,17 +114,20 @@ window.MT_CALCULATORS=[
 {
  id:"heat-energy",name:"Sensible heating energy",category:"Thermodynamics",description:"Approximate heat required at constant specific heat, ignoring losses.",
  fields:[F("m","Mass","kg",100),F("cp","Specific heat","kJ/(kg·K)",4.18),F("dt","Temperature increase","K",20,"nonnegative")],
- compute:({m,cp,dt})=>({value:m*cp*dt/3600,unit:"kWh",steps:[`Q = m × cp × ΔT = ${m} × ${cp} × ${dt} kJ`,`Convert kJ to kWh: ÷3600`]})
+ compute:({m,cp,dt})=>{const kj=m*cp*dt;return{value:kj/3600,unit:"kWh",steps:[`Q = m × cp × ΔT`,S("heat_kJ",`Q = ${m} kg × ${cp} kJ/(kg·K) × ${dt} K`,kj,"kJ"),S("heat_kWh",`Q = Q[kJ] / 3600`,kj/3600,"kWh")]}},
+ assumptions:["Constant specific heat over the temperature range; no phase change.","Heat losses to the surroundings are ignored."],range:"m > 0 kg, cp > 0, ΔT ≥ 0 K. For evaporation or boiling use enthalpy (steam tables) instead."
 },
 {
  id:"shaft-power",name:"Shaft power",category:"Machinery & Energy",description:"Mechanical power from rotational speed and torque.",
  fields:[F("rpm","Speed","rpm",1500),F("torque","Torque","N·m",500,"nonnegative")],
- compute:({rpm,torque})=>({value:2*Math.PI*rpm*torque/60000,unit:"kW",steps:[`P = 2π n M / (60 × 1000)`,`n = ${rpm} rpm; M = ${torque} N·m`]})
+ compute:({rpm,torque})=>{const w=2*Math.PI*rpm/60,p=w*torque;return{value:p/1000,unit:"kW",steps:[`P = ω M, ω = 2π n / 60`,S("omega_rads",`ω = 2π × ${rpm} / 60`,w,"rad/s"),S("power_W",`P = ω × ${torque} N·m`,p,"W"),S("power_kW",`P = P[W] / 1000`,p/1000,"kW")]}},
+ assumptions:["Steady speed and torque (mean values over a revolution)."],range:"n > 0 rpm, M ≥ 0 N·m."
 },
 {
  id:"sfoc",name:"Specific fuel consumption",category:"Machinery & Energy",description:"Specific fuel oil consumption from a measured fuel mass flow and output.",
  fields:[F("fuel","Fuel flow","kg/h",150,"nonnegative"),F("power","Shaft power","kW",750)],
- compute:({fuel,power})=>({value:fuel*1000/power,unit:"g/kWh",steps:[`SFOC = (${fuel} kg/h × 1000 g/kg) / ${power} kW`]})
+ compute:({fuel,power})=>{const g=fuel*1000;return{value:g/power,unit:"g/kWh",steps:[`SFOC = ṁ / P`,S("fuel_gh",`ṁ = ${fuel} kg/h × 1000`,g,"g/h"),S("sfoc_gkWh",`SFOC = ṁ / ${power} kW`,g/power,"g/kWh")]}},
+ assumptions:["Fuel mass flow and power are measured over the same steady period.","Not corrected to ISO reference conditions or to a standard lower heating value (ISO 3046-1)."],range:"Fuel flow ≥ 0 kg/h, power > 0 kW."
 },
 {
  id:"fuel-density",name:"Fuel mass from volume",category:"Machinery & Energy",description:"Use density at the same actual/reference temperature as the measured volume.",
