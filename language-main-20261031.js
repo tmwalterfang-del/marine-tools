@@ -1304,9 +1304,17 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Total NOx": "Samlet NOx",
   "Emission factors are taken as entered. Use certified or measured factors for reporting.": "Utslippsfaktorene brukes slik de er lagt inn. Bruk sertifiserte eller målte faktorer ved rapportering.",
   "Urea use is recorded alongside and is not converted into an NOx reduction.": "Ureaforbruket registreres ved siden av og regnes ikke om til en NOx-reduksjon.",
-  "This is a period summary, not a regulatory NOx report or tax return.": "Dette er en periodeoppsummering, ikke en offisiell NOx-rapport eller avgiftsoppgave."
+  "This is a period summary, not a regulatory NOx report or tax return.": "Dette er en periodeoppsummering, ikke en offisiell NOx-rapport eller avgiftsoppgave.",
+  "Inputs changed. Calculate again to update the result.": "Inndata er endret. Beregn på nytt for å oppdatere resultatet.",
+  "Calculate again before copying. The inputs have changed.": "Beregn på nytt før du kopierer. Inndata er endret.",
+  "Calculate again before sharing. The inputs have changed.": "Beregn på nytt før du deler. Inndata er endret.",
+  "Print calculation": "Skriv ut beregning"
  },
  "templates": [
+  {
+   "en": "Marine Tools {0} · {1} · printed {2}",
+   "nb": "Marine Tools {0} · {1} · skrevet ut {2}"
+  },
   {
    "en": "{0} kn · direction undefined",
    "nb": "{0} kn · retning udefinert"

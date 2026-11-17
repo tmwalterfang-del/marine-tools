@@ -189,3 +189,18 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .calc-work-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 /* Narrow screens: put the Latitude/Longitude label above the fields so long Norwegian words fit. */
 @media (max-width:420px){.coord-group .coord-row{grid-template-columns:repeat(3,minmax(0,1fr))}.coord-group .coord-row>span{grid-column:1/-1;padding-bottom:0}}
+/* Stale result: inputs changed after the last calculation. Text note, not colour alone. */
+.result-stale-note{margin:10px 0 0;padding:6px 10px;border-left:3px solid #e0ad4d;background:rgba(224,173,77,.10);color:var(--text);font-size:.85rem}
+.calc-stale .result{opacity:.55}
+.calc-work-actions button:disabled{opacity:.5;cursor:not-allowed}
+.print-meta{display:none}
+/* Print one calculation card with its working expanded. */
+@media print{
+  body.print-one-card *{visibility:hidden}
+  body.print-one-card .print-target,body.print-one-card .print-target *{visibility:visible}
+  body.print-one-card .print-target{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none;background:#fff;color:#000}
+  body.print-one-card .print-target *{color:#000!important;background:transparent!important;box-shadow:none!important}
+  body.print-one-card .print-target button,body.print-one-card .print-target .actions,body.print-one-card .print-target .fav-toggle{display:none!important}
+  body.print-one-card .print-target .print-meta{display:block;font-size:10pt;margin:0 0 8pt}
+  body.print-one-card .print-target input,body.print-one-card .print-target select{border:1px solid #000}
+}

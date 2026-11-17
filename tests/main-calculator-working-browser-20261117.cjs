@@ -126,6 +126,63 @@ const CALCS = [
       ok(errors.length === 0, `phase 2: no page errors: ${errors.join(" | ")}`);
       await ctx.close();
     }
+    // Stale results, accessible invalid fields and printing one calculation.
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+      await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+      await ctx.addInitScript(() => {
+        localStorage.setItem("mt.locale.v1", '"en"');
+        window.__printed = [];
+        window.print = () => window.__printed.push({
+          body: document.body.classList.contains("print-one-card"),
+          target: !!document.querySelector(".tool-card.print-target"),
+          meta: document.querySelector(".print-target .print-meta")?.textContent || "",
+          working: !!document.querySelector(".print-target .calc-work[open]"),
+        });
+        Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (t) => { (window.__copied ||= []).push(t); } } });
+      });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on("pageerror", (e) => errors.push(e.message));
+      await page.goto(base + "/index.html?page=vessel-calcs", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcAnchor").waitFor({ state: "attached" });
+      await page.evaluate(() => document.querySelector("#mtReleaseDialog[open]")?.close());
+      ok(await page.locator("#resAnchor").getAttribute("role") === "status", "results are announced (role=status)");
+      await page.evaluate(() => document.getElementById("calcAnchor").click());
+      const card = page.locator('.tool-card:has(#resAnchor)');
+      ok(!(await card.evaluate((c) => c.classList.contains("calc-stale"))), "fresh after calculating");
+      // Edit an input: the result becomes stale; export, copy and print are blocked.
+      await page.evaluate(() => { const x = document.getElementById("anchorChain"); x.value = "200"; x.dispatchEvent(new Event("input", { bubbles: true })); });
+      await page.waitForTimeout(50);
+      ok(await card.evaluate((c) => c.classList.contains("calc-stale")), "edit marks the result stale");
+      ok(/Calculate again/.test(await card.locator(".result-stale-note").innerText()), "stale note explains what to do");
+      ok(await card.locator(".calc-work-csv").isDisabled(), "CSV export disabled while stale");
+      await card.locator(".copy-result").evaluate((b) => b.click());
+      await page.waitForTimeout(50);
+      ok(!(await page.evaluate(() => (window.__copied || []).length)), "copy refused while stale");
+      ok(/Calculate again before copying/.test(await page.locator("#toast").innerText()), "copy explains why");
+      // Recalculate: fresh again, note removed, new panel enabled.
+      await page.evaluate(() => document.getElementById("calcAnchor").click());
+      ok(!(await card.evaluate((c) => c.classList.contains("calc-stale"))) && await card.locator(".result-stale-note").count() === 0, "recalculation clears stale state");
+      ok(!(await card.locator(".calc-work-csv").isDisabled()), "export enabled after recalculation");
+      // Print exactly this card, working expanded, with version and time; cleaned up afterwards.
+      await card.locator(".calc-work-print").evaluate((b) => b.click());
+      const printed = await page.evaluate(() => window.__printed[0]);
+      ok(printed && printed.body && printed.target && printed.working, "print shows only the card with working expanded");
+      ok(/Marine Tools \d+\.\d+\.\d+ · .+ · printed \d{4}-\d\d-\d\d \d\d:\d\d UTC/.test(printed.meta), "print header has version, tool and time: " + printed.meta);
+      await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+      ok(await page.evaluate(() => !document.body.classList.contains("print-one-card") && !document.querySelector(".print-target,.print-meta")), "print state cleaned up");
+      // Invalid input: the blank field is marked aria-invalid and points at the message.
+      await page.goto(base + "/index.html?page=fuel", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcRob").waitFor({ state: "attached" });
+      await page.evaluate(() => { const d = document.getElementById("robDay"); d.value = ""; d.dispatchEvent(new Event("input", { bubbles: true })); document.getElementById("calcRob").click(); });
+      ok(await page.locator("#robDay").getAttribute("aria-invalid") === "true" && await page.locator("#robDay").getAttribute("aria-describedby") === "resRob", "blank field marked invalid and described by the result");
+      ok(await page.locator("#rob").getAttribute("aria-invalid") === null, "valid fields are not marked invalid");
+      await page.evaluate(() => { const d = document.getElementById("robDay"); d.value = "20"; d.dispatchEvent(new Event("input", { bubbles: true })); document.getElementById("calcRob").click(); });
+      ok(await page.locator("#robDay").getAttribute("aria-invalid") === null, "invalid mark removed after a valid result");
+      ok(errors.length === 0, `stale/print/a11y: no page errors: ${errors.join(" | ")}`);
+      await ctx.close();
+    }
     // Language switch re-renders an open panel.
     const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });
     await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
