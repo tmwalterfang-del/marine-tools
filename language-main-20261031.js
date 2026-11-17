@@ -1308,6 +1308,10 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
  },
  "templates": [
   {
+   "en": "{0} kn · direction undefined",
+   "nb": "{0} kn · retning udefinert"
+  },
+  {
    "en": "Hs {0} m (limit {1} m) · wind {2} kn (limit {3} kn)",
    "nb": "Hs {0} m (grense {1} m) · vind {2} kn (grense {3} kn)"
   },
