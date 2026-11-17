@@ -123,6 +123,9 @@ const CALCS = [
       });
       ok(/Samlet NOx/.test(nox), "NOx: total step translated");
       ok(await page.locator('.calc-work[data-for="resNox"] .calc-work-steps li span').first().innerText() === "Total", "NOx: user-written source name kept as entered");
+      // Display units in the working panel are translated (exports keep English units).
+      const unitText = await run("quick", "calcUnit", "resUnit", () => { const s = document.getElementById("unitType"); s.value = "kw-hp"; s.dispatchEvent(new Event("change", { bubbles: true })); });
+      ok(/hk \(mekanisk\)/.test(unitText) && !/hp \(mechanical\)/.test(unitText), "unit: horsepower unit translated in working: " + unitText.slice(0, 200));
       ok(errors.length === 0, `phase 2: no page errors: ${errors.join(" | ")}`);
       await ctx.close();
     }
@@ -180,6 +183,56 @@ const CALCS = [
       ok(await page.locator("#rob").getAttribute("aria-invalid") === null, "valid fields are not marked invalid");
       await page.evaluate(() => { const d = document.getElementById("robDay"); d.value = "20"; d.dispatchEvent(new Event("input", { bubbles: true })); document.getElementById("calcRob").click(); });
       ok(await page.locator("#robDay").getAttribute("aria-invalid") === null, "invalid mark removed after a valid result");
+      // Existing descriptions are kept: only the result id is added and removed.
+      await page.evaluate(() => { const d = document.getElementById("robDay"); d.setAttribute("aria-describedby", "existing-help"); d.value = ""; d.dispatchEvent(new Event("input", { bubbles: true })); document.getElementById("calcRob").click(); });
+      ok(await page.locator("#robDay").getAttribute("aria-describedby") === "existing-help resRob", "existing aria-describedby kept when marking invalid");
+      await page.evaluate(() => { const d = document.getElementById("robDay"); d.value = "20"; d.dispatchEvent(new Event("input", { bubbles: true })); document.getElementById("calcRob").click(); });
+      ok(await page.locator("#robDay").getAttribute("aria-describedby") === "existing-help", "existing aria-describedby restored after a valid result");
+      // A history filter is not a calculation input.
+      await page.evaluate(() => document.getElementById("calcRob").click());
+      const robCard = page.locator(".tool-card:has(#resRob)");
+      const filter = page.locator("#consHistoryFilter");
+      if (await filter.count()) {
+        await page.evaluate(() => { const c = document.querySelector('.tool-card:has(#consHistoryFilter)'); c.querySelector('button.calc-action')?.click(); const f = document.getElementById("consHistoryFilter"); f.selectedIndex = (f.selectedIndex + 1) % f.options.length; f.dispatchEvent(new Event("change", { bubbles: true })); });
+        await page.waitForTimeout(50);
+        ok(!(await page.locator('.tool-card:has(#consHistoryFilter)').evaluate((c) => c.classList.contains("calc-stale"))), "history filter does not mark the result stale");
+        // Copy summary is blocked once the consumption inputs change.
+        await page.evaluate(() => { const c = document.querySelector('.tool-card:has(#consHistoryFilter)'); const x = [...c.querySelectorAll('input[data-mt-numeric="true"]')].find((i) => !i.closest("[hidden]")); x.value = String((Number(x.value) || 0) + 5); x.dispatchEvent(new Event("input", { bubbles: true })); window.__copied = []; });
+        await page.waitForTimeout(50);
+        if (await page.locator('.tool-card:has(#consHistoryFilter)').evaluate((c) => c.classList.contains("calc-stale"))) {
+          await page.evaluate(() => document.getElementById("copyConsumption").click());
+          await page.waitForTimeout(50);
+          ok(!(await page.evaluate(() => window.__copied.length)), "Copy summary refused while stale");
+        }
+      }
+      ok(!(await robCard.evaluate((c) => c.classList.contains("calc-stale"))), "ROB fresh after recalculation");
+      // Adding or removing a row marks the result stale.
+      await page.goto(base + "/index.html?page=engineering", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcNox").waitFor({ state: "attached" });
+      await page.evaluate(() => document.getElementById("calcNox").click());
+      const noxCard = page.locator(".tool-card:has(#resNox)");
+      ok(!(await noxCard.evaluate((c) => c.classList.contains("calc-stale"))), "NOx fresh after calculating");
+      await page.evaluate(() => document.getElementById("addNoxRow").click());
+      await page.waitForTimeout(50);
+      ok(await noxCard.evaluate((c) => c.classList.contains("calc-stale")), "adding a row marks the result stale");
+      // Optional fields inside <details> are never marked invalid.
+      await page.goto(base + "/index.html?page=quick", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcCompass").waitFor({ state: "attached" });
+      await page.evaluate(() => { const c = document.getElementById("compC"); c.value = ""; c.dispatchEvent(new Event("input", { bubbles: true })); document.getElementById("calcCompass").click(); });
+      ok(await page.locator("#compC").getAttribute("aria-invalid") === "true", "blank compass course marked invalid");
+      ok(await page.evaluate(() => [...document.querySelector(".tool-card:has(#compC) details").querySelectorAll("input")].every((x) => !x.hasAttribute("aria-invalid"))), "optional variation-year fields not marked invalid");
+      // Print hides other content with display:none and cleans up after the dialog without afterprint.
+      await page.evaluate(() => { const c = document.getElementById("compC"); c.value = "90"; c.dispatchEvent(new Event("input", { bubbles: true })); document.getElementById("calcCompass").click(); window.__printed = []; window.print = () => window.__printed.push(document.querySelectorAll(".print-hidden").length); });
+      await page.locator('.calc-work[data-for="resCompass"] .calc-work-print').evaluate((b) => b.click());
+      ok((await page.evaluate(() => window.__printed[0])) > 0, "print hides the rest of the page (print-hidden)");
+      await page.waitForTimeout(20);
+      await page.evaluate(() => window.dispatchEvent(new Event("pointermove")));
+      ok(await page.evaluate(() => !document.querySelector(".print-hidden,.print-target,.print-meta") && !document.body.classList.contains("print-one-card")), "print cleanup without afterprint");
+      // Enhanced navigation results are announced too.
+      await page.goto(base + "/index.html?page=navigation", { waitUntil: "domcontentloaded" });
+      await page.locator("#calcBearing855").waitFor({ state: "attached" });
+      await page.evaluate(() => document.getElementById("calcBearing855").click());
+      ok(await page.locator("#resBearing855").getAttribute("role") === "status" && await page.locator("#resBearing855").getAttribute("aria-live") === "polite", "enhanced navigation result announced");
       ok(errors.length === 0, `stale/print/a11y: no page errors: ${errors.join(" | ")}`);
       await ctx.close();
     }

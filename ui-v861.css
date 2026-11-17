@@ -196,9 +196,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .print-meta{display:none}
 /* Print one calculation card with its working expanded. */
 @media print{
-  body.print-one-card *{visibility:hidden}
-  body.print-one-card .print-target,body.print-one-card .print-target *{visibility:visible}
-  body.print-one-card .print-target{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none;background:#fff;color:#000}
+  body.print-one-card .print-hidden{display:none!important}
+  body.print-one-card .print-target{margin:0;width:100%;border:0;box-shadow:none;background:#fff;color:#000}
   body.print-one-card .print-target *{color:#000!important;background:transparent!important;box-shadow:none!important}
   body.print-one-card .print-target button,body.print-one-card .print-target .actions,body.print-one-card .print-target .fav-toggle{display:none!important}
   body.print-one-card .print-target .print-meta{display:block;font-size:10pt;margin:0 0 8pt}
