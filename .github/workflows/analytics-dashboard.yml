@@ -62,7 +62,8 @@ jobs:
   browsers:
     needs: integration
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Ubuntu 26 runner images can take several minutes for the WebKit apt dependencies.
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
