@@ -12,7 +12,7 @@ Each scenario uses a fresh process to isolate provider and token caches. All cre
 For Chromium integration with the actual Worker chain and mocked providers, install Playwright and Leaflet in a temporary dependency folder (no production credentials):
 
 ```sh
-npm install --prefix /tmp/marine-tools-qa playwright@1.64.0 leaflet@1.9.4
+npm install --prefix /tmp/marine-tools-qa playwright@1.65.1 leaflet@1.9.4
 /tmp/marine-tools-qa/node_modules/.bin/playwright install --with-deps chromium
 QA_PLAYWRIGHT_MODULE=file:///tmp/marine-tools-qa/node_modules/playwright/index.mjs \
 QA_LEAFLET_DIR=/tmp/marine-tools-qa/node_modules/leaflet/dist \
