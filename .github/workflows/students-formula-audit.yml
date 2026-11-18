@@ -284,8 +284,12 @@ jobs:
           if-no-files-found: warn
 
   education-browsers:
-    # Pinned: on the Ubuntu 26 images the WebKit apt dependencies took 20–29 minutes.
     runs-on: ubuntu-24.04
+    # The official Playwright image has the browsers and their Linux libraries preinstalled;
+    # installing the WebKit apt dependencies on the runner took 20–29 minutes in Nov 2026.
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --user 1001
     # Split in two shards per engine: one 30-minute job per engine hit its time limit in WebKit.
     timeout-minutes: 30
     strategy:
@@ -300,8 +304,8 @@ jobs:
           node-version: '22'
       - name: Install pinned browser test runner
         run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.65.1 axe-core@4.11.1
-      - name: Install rendering engine and Linux dependencies
-        run: node /tmp/education-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
+      - name: Check the preinstalled rendering engine matches the runner
+        run: node /tmp/education-browser/node_modules/playwright/cli.js install ${{ matrix.browser }}
       - name: Education browser checks
         if: matrix.shard == 'education'
         env:
