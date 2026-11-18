@@ -101,7 +101,7 @@ function init(){
     injectExtras(project)
   }
   document.addEventListener('click',e=>{if(e.target.closest?.('.tool-card button'))setTimeout(renderRecent,160)});
-  window.addEventListener('storage',e=>{if(e.key===RECENT_KEY)renderRecent()});menuObserver=new MutationObserver(queueMenu);arrangeMenu();setTimeout(arrangeMenu,0);
+  window.addEventListener('storage',e=>{if(e.key===RECENT_KEY)renderRecent()});menuObserver=new MutationObserver(queueMenu);arrangeMenu();document.querySelector('.sidebar')?.setAttribute('data-mt-menu','ready');setTimeout(arrangeMenu,0);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

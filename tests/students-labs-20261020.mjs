@@ -26,4 +26,14 @@ const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8'),html=read
 for(const id of ['stability','controls','engine'])ok(html.includes('id="'+id+'"'),'deep-linked module '+id);
 for(const asset of ['labs.html','labs.css','lab-models.js','labs.js'])ok(sw.includes("'./students/"+asset+"'"),'offline shell includes '+asset);
 ok(read('students/index.html').includes('href="interactive.html"')&&['labs.html#stability','labs.html#controls','labs.html#engine'].every(url=>read('students/interactive-catalogue-20261030.js').includes(url)),'student entry reaches all three labs through the shared workspace');ok(!/fetch\s*\(|XMLHttpRequest|sendBeacon|eval\s*\(/.test(read('students/labs.js')),'local model with no API calls or dynamic evaluation');
+// Exercise the actual local display formatter without starting browser UI.
+// KM=8.5 m, no moved weight and no free surface: KG just above 8.5 leaves
+// a real negative raw GM. Its two-decimal display must be 0.00, never -0.00.
+const labsSource=read('students/labs.js'),format=vm.runInNewContext(labsSource.slice(labsSource.indexOf('const f='),labsSource.indexOf('const datasets='))+'\nf;');
+const marginal=M.stability({...input,kg:8.500000000001,weight:0,density:0});
+ok(Number.isFinite(marginal.gm)&&marginal.gm<0&&marginal.gm>-.000000001,'marginal GM keeps its raw negative value');
+ok(format(marginal.gm)==='0.00','corrected GM never formats as negative zero');
+ok(format(-0)==='0.00','IEEE negative zero formats as unsigned zero');
+ok(format(-.01)==='-0.01','a visible real negative GM retains its sign');
+ok(marginal.gm<0,'formatting does not mutate raw GM');
 console.log(JSON.stringify({status:'PASS',checks,scope:'independent model, boundary and static-integration checks; real browser remains separate'}));
