@@ -284,7 +284,8 @@ jobs:
           if-no-files-found: warn
 
   education-browsers:
-    runs-on: ubuntu-latest
+    # Pinned: on the Ubuntu 26 images the WebKit apt dependencies took 20–29 minutes.
+    runs-on: ubuntu-24.04
     # Split in two shards per engine: one 30-minute job per engine hit its time limit in WebKit.
     timeout-minutes: 30
     strategy:

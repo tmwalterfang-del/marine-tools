@@ -61,7 +61,8 @@ jobs:
 
   browsers:
     needs: integration
-    runs-on: ubuntu-latest
+    # Pinned: on the Ubuntu 26 images the WebKit apt dependencies took 20–29 minutes.
+    runs-on: ubuntu-24.04
     # Ubuntu 26 runner images can take several minutes for the WebKit apt dependencies.
     timeout-minutes: 25
     strategy:
