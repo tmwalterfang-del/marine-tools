@@ -1310,7 +1310,7 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Calculate again before sharing. The inputs have changed.": "Beregn på nytt før du deler. Inndata er endret.",
   "Print calculation": "Skriv ut beregning",
   "Education working, seawater density & smoother loading": "Utregning i Education, sjøvannstetthet og roligere lasting",
-  "Education: six core calculators show every intermediate value with units, plus assumptions and the valid range.": "Education: seks sentrale kalkulatorer viser hver mellomverdi med enhet, i tillegg til forutsetninger og gyldighetsområde.",
+  "Education: all 61 calculators show every intermediate value with units, plus assumptions and the valid range.": "Education: alle 61 kalkulatorene viser hver mellomverdi med enhet, i tillegg til forutsetninger og gyldighetsområde.",
   "Seawater density from salinity and temperature (TEOS-10): fill the FWA/DWA dock-water density, or study it as an Education calculator.": "Sjøvannstetthet ut fra saltholdighet og temperatur (TEOS-10): fyll inn dokkvannstettheten i FWA/DWA, eller bruk den som Education-kalkulator.",
   "The starting-air system is drawn as a full teaching circuit with compressor state, valves and receiver pressure.": "Startluftsystemet er tegnet som en komplett undervisningskrets med kompressorstatus, ventiler og trykk i beholderen.",
   "Steadier loading: the menu and footer no longer jump while a page loads.": "Roligere lasting: menyen og bunnteksten hopper ikke lenger mens siden lastes.",
