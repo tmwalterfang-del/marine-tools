@@ -115,8 +115,11 @@ let browser, server, checks = 0;
   await p.waitForFunction(() => document.getElementById('mtRouteDdmList')?.textContent.includes('13° 0.00000′ N'));
   assert.match(await p.locator('#mtRouteDdmList').innerText(), /180° 0.00000′ W/);
   await p.evaluate(() => __marineToolsOpenPage('weather'));
-  await p.locator('#wxPosLatMin').waitFor();
+  // Attached (not necessarily scrolled into view) is enough to receive the position event;
+  // then wait until the handler has written the fields before asserting the exact values.
+  await p.locator('#wxPosLatMin').waitFor({ state: 'attached', timeout: 60000 });
   await p.evaluate(() => window.dispatchEvent(new CustomEvent('mt:weather-position', { detail: { lat: 12 + 59.999999 / 60, lon: -179 - 59.999999 / 60 } })));
+  await p.waitForFunction(() => document.getElementById('wxPosLatDeg')?.value === '13' && document.getElementById('wxPosLonHem')?.value === 'W', null, { timeout: 15000 });
   assert.equal(await p.locator('#wxPosLatDeg').inputValue(), '13'); assert.equal(await p.locator('#wxPosLatMin').inputValue(), '0.00000');
   assert.equal(await p.locator('#wxPosLonDeg').inputValue(), '180'); assert.equal(await p.locator('#wxPosLonHem').inputValue(), 'W');
   // The binding wrappers must be used in the real page as well.
