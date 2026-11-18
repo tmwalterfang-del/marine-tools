@@ -45,7 +45,7 @@
   {id:"engine-displacement",name:"Engine swept volume",category:"Marine Engines",
    description:"Swept volume from bore, stroke and number of cylinders.",
    fields:[F("bore","Cylinder bore","mm",300),F("stroke","Piston stroke","mm",400),F("cyl","Cylinders","count",6)],
-   compute:({bore,stroke,cyl})=>R(Math.PI*(bore/1000)**2*(stroke/1000)*cyl/4*1000,"L",["V = zπD²S / 4",S("bore_m",`D = ${bore} / 1000`,bore/1000,"m"),S("stroke_m",`S = ${stroke} / 1000`,stroke/1000,"m"),S("cylinder_volume_m3","V₁ = πD²S / 4",Math.PI*(bore/1000)**2*(stroke/1000)/4,"m³"),S("total_volume_m3",`V = ${cyl} × V₁`,Math.PI*(bore/1000)**2*(stroke/1000)*cyl/4,"m³"),S("total_volume_L","V[L] = V[m³] × 1000",Math.PI*(bore/1000)**2*(stroke/1000)*cyl/4*1000,"L")],{invalid:Number.isInteger(cyl)?null:"Cylinder count must be whole."}),
+   compute:({bore,stroke,cyl})=>R(Math.PI*(bore/1000)**2*(stroke/1000)*cyl/4*1000,"L",["V = zπD²S / 4","Convert mm to m; convert m³ to litres by ×1000.",S("bore_m",`D = ${bore} / 1000`,bore/1000,"m"),S("stroke_m",`S = ${stroke} / 1000`,stroke/1000,"m"),S("cylinder_volume_m3","V₁ = πD²S / 4",Math.PI*(bore/1000)**2*(stroke/1000)/4,"m³"),S("total_volume_m3",`V = ${cyl} × V₁`,Math.PI*(bore/1000)**2*(stroke/1000)*cyl/4,"m³"),S("total_volume_L","V[L] = V[m³] × 1000",Math.PI*(bore/1000)**2*(stroke/1000)*cyl/4*1000,"L")],{invalid:Number.isInteger(cyl)?null:"Cylinder count must be whole."}),
    assumptions:["All cylinders have identical circular bores and strokes; clearance volume is excluded."],
    range:"D > 0 mm; S > 0 mm; z is a positive integer."
   },

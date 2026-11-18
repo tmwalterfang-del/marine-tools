@@ -24,13 +24,13 @@ window.MT_CALCULATORS=[
 {
  id:"add-kg",name:"New KG after loading",category:"Ship Stability",description:"Vertical center of gravity after adding a cargo mass; no free-surface correction.",
  fields:[F("dis","Initial displacement","t",10000),F("kg","Initial KG","m",6,"nonnegative"),F("load","Loaded mass","t",500,"nonnegative"),F("loadkg","Cargo KG above keel","m",12,"nonnegative")],
- compute:({dis,kg,load,loadkg})=>({value:(dis*kg+load*loadkg)/(dis+load),unit:"m",steps:[`KG₁ = (Δ × KG + w × kg) / (Δ + w)`,S("moment_initial_tm",`M₀ = ${dis} × ${kg}`,dis*kg,"tm"),S("moment_added_tm",`Mw = ${load} × ${loadkg}`,load*loadkg,"tm"),S("displacement_new_t",`Δ₁ = ${dis} + ${load}`,dis+load,"t"),S("kg_new_m",`KG₁ = (${window.MT_STUDENT_FORMAT(dis*kg)} + ${window.MT_STUDENT_FORMAT(load*loadkg)}) / ${window.MT_STUDENT_FORMAT(dis+load)}`,(dis*kg+load*loadkg)/(dis+load),"m")]}),
+ compute:({dis,kg,load,loadkg})=>({value:(dis*kg+load*loadkg)/(dis+load),unit:"m",steps:[`KG₁ = (Δ × KG + w × kg) / (Δ + w)`,S("moment_initial_tm",`Old moment = ${dis} × ${kg}`,dis*kg,"tm"),S("moment_added_tm",`Added moment = ${load} × ${loadkg}`,load*loadkg,"tm"),S("displacement_new_t",`Δ₁ = ${dis} + ${load}`,dis+load,"t"),S("kg_new_m",`KG₁ = (${window.MT_STUDENT_FORMAT(dis*kg)} + ${window.MT_STUDENT_FORMAT(load*loadkg)}) / ${window.MT_STUDENT_FORMAT(dis+load)}`,(dis*kg+load*loadkg)/(dis+load),"m")]}),
  assumptions:["Moments are taken about the keel; the loaded mass acts at its own centre of gravity.","No free-surface correction: use corrected GM for slack tanks."],range:"Displacement > 0 t; loaded mass, KG and cargo KG ≥ 0."
 },
 {
  id:"discharge-kg",name:"New KG after discharging",category:"Ship Stability",description:"Vertical center of gravity after removing a known weight.",
  fields:[F("dis","Initial displacement","t",12000),F("kg","Initial KG","m",6,"nonnegative"),F("removed","Discharged mass","t",700,"nonnegative"),F("remkg","Removed weight KG","m",10,"nonnegative")],
- compute:({dis,kg,removed,remkg})=>({value:(dis*kg-removed*remkg)/(dis-removed),unit:"m",steps:[`New KG = (Δ × KG − w × kg) / (Δ − w)`,S("moment_initial_tm",`M₀ = ${dis} × ${kg}`,dis*kg,"tm"),S("moment_removed_tm",`Mw = ${removed} × ${remkg}`,removed*remkg,"tm"),S("displacement_new_t",`Δ₁ = ${dis} − ${removed}`,dis-removed,"t"),S("kg_new_m",`KG₁ = (${window.MT_STUDENT_FORMAT(dis*kg)} − ${window.MT_STUDENT_FORMAT(removed*remkg)}) / ${window.MT_STUDENT_FORMAT(dis-removed)}`,(dis*kg-removed*remkg)/(dis-removed),"m")],invalid:removed>=dis?"Discharged mass must be less than original displacement.":null}),
+ compute:({dis,kg,removed,remkg})=>({value:(dis*kg-removed*remkg)/(dis-removed),unit:"m",steps:[`New KG = (Δ × KG − w × kg) / (Δ − w)`,S("moment_initial_tm",`Old moment = ${dis} × ${kg}`,dis*kg,"tm"),S("moment_removed_tm",`Removed moment = ${removed} × ${remkg}`,removed*remkg,"tm"),S("displacement_new_t",`Δ₁ = ${dis} − ${removed}`,dis-removed,"t"),S("kg_new_m",`KG₁ = (${window.MT_STUDENT_FORMAT(dis*kg)} − ${window.MT_STUDENT_FORMAT(removed*remkg)}) / ${window.MT_STUDENT_FORMAT(dis-removed)}`,(dis*kg-removed*remkg)/(dis-removed),"m")],invalid:removed>=dis?"Discharged mass must be less than original displacement.":null}),
  assumptions:["Moments are taken about the keel; the removed mass is taken from its own centre of gravity.","No free-surface correction."],range:"0 ≤ discharged mass < displacement; KG values ≥ 0."
 },
 {
@@ -54,7 +54,7 @@ window.MT_CALCULATORS=[
 {
  id:"trim-change",name:"Simple trim change",category:"Cargo & Survey",description:"Calculated trim from known longitudinal trimming moment and MCT 1 cm.",
  fields:[F("weight","Weight shifted","t",100,"nonnegative"),F("distance","Longitudinal shift","m",20,"nonnegative"),F("mct","MCT 1 cm","tm/cm",200)],
- compute:({weight,distance,mct})=>({value:weight*distance/mct,unit:"cm",steps:[`Trim = w × d / MCT1cm`,S("trimming_moment_tm",`M = ${weight} × ${distance}`,weight*distance,"tm"),S("trim_cm",`Trim = ${window.MT_STUDENT_FORMAT(weight*distance)} / ${mct}`,weight*distance/mct,"cm")],warning:"Magnitude only; the sign (trim by bow/stern) requires stated conventions."}),
+ compute:({weight,distance,mct})=>({value:weight*distance/mct,unit:"cm",steps:[`Trim = w × d / MCT1cm`,S("trimming_moment_tm",`Trimming moment = w × d = ${weight} × ${distance}`,weight*distance,"tm"),S("trim_cm",`Trim = ${window.MT_STUDENT_FORMAT(weight*distance)} / ${mct}`,weight*distance/mct,"cm")],warning:"Magnitude only; the sign (trim by bow/stern) requires stated conventions."}),
  assumptions:["MCT 1 cm is taken as constant for the current draft; the shift does not change displacement."],range:"Weight and shift ≥ 0, MCT 1 cm > 0 tm/cm."
 },
 {
@@ -126,7 +126,7 @@ window.MT_CALCULATORS=[
 {
  id:"battery-runtime",name:"Battery autonomy",category:"Machinery & Energy",description:"Illustrative available energy and run time for steady load.",
  fields:[F("cap","Nominal battery energy","kWh",800),F("dod","Permitted DoD","fraction",0.8,"unitinterval"),F("eta","Efficiency","fraction",0.92,"unitinterval"),F("load","Electrical demand","kW",100)],
- compute:({cap,dod,eta,load})=>({value:cap*dod*eta/load,unit:"h",steps:[`t = E × DoD × η / P`,S("usable_energy_kWh",`Usable energy = ${cap} × ${dod} × ${eta}`,cap*dod*eta,"kWh"),S("runtime_h",`t = ${window.MT_STUDENT_FORMAT(cap*dod*eta)} kWh / ${load} kW`,cap*dod*eta/load,"h")]}),
+ compute:({cap,dod,eta,load})=>({value:cap*dod*eta/load,unit:"h",steps:[`t = E × DoD × η / P`,S("usable_energy_kWh",`Usable energy = ${cap} × ${dod} × ${eta}`,cap*dod*eta,"kWh"),S("runtime_h",`Duration = ${window.MT_STUDENT_FORMAT(cap*dod*eta)} kWh / ${load} kW`,cap*dod*eta/load,"h")]}),
  assumptions:["Constant load and efficiency; ageing, temperature and C-rate effects are ignored."],range:"Energy and load > 0; 0 ≤ DoD ≤ 1; 0 ≤ efficiency ≤ 1."
 },
 {

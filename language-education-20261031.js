@@ -19,6 +19,7 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Seawater density could not be calculated within the supported range.": "Sjøvannstettheten kunne ikke beregnes innenfor det støttede området.",
   "Assumptions": "Forutsetninger",
   "Valid range": "Gyldighetsområde",
+
   "The solute is fully dissolved; volume is the final solution volume at the stated conditions.": "Det oppløste stoffet er helt oppløst; volumet er sluttvolumet av løsningen ved de oppgitte betingelsene.",
   "n > 0 mol; V > 0 L.": "n > 0 mol; V > 0 L.",
   "Solute amount is conserved with no reaction, precipitation or loss.": "Stoffmengden er bevart, uten reaksjon, utfelling eller tap.",
@@ -8853,6 +8854,18 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "NPV = Σ(CFt/(1+r)^t) − investment": "NPV = Σ(CFt/(1+r)^t) − investering"
  },
  "templates": [
+  {
+   "en": "Removed moment = {0} × {1} = {2} tm",
+   "nb": "Fjernet moment = {0} × {1} = {2} tm"
+  },
+  {
+   "en": "Trimming moment = w × d = {0} × {1} = {2} tm",
+   "nb": "Trimmoment = w × d = {0} × {1} = {2} tm"
+  },
+  {
+   "en": "Duration = {0} kWh / {1} kW = {2} h",
+   "nb": "Varighet = {0} kWh / {1} kW = {2} h"
+  },
   {
    "en": "span = {0} − {1} = {2} EU",
    "nb": "spenn = {0} − {1} = {2} EU"
