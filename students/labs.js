@@ -1,7 +1,8 @@
 (function(){
 'use strict';
 const M=window.MT_LABS,$=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
-const f=(v,d=2)=>v.toLocaleString('en-GB',{maximumFractionDigits:d,minimumFractionDigits:d});
+// Normalize the displayed sign only; model values and exported datasets stay raw.
+const f=(v,d=2)=>{const formatted=v.toLocaleString('en-GB',{maximumFractionDigits:d,minimumFractionDigits:d});return /^[-−]0(?:\.0+)?$/.test(formatted)?formatted.slice(1):formatted;};
 const datasets={},invalid={};
 const formIds=['stability','signal','pid','engine'];
 function values(form){const out={};for(const input of form.elements){if(!input.name)continue;if((window.MT_INPUT_KIND?window.MT_INPUT_KIND(input):input.type)==='checkbox'){out[input.name]=input.checked;continue}if((window.MT_INPUT_KIND?window.MT_INPUT_KIND(input):input.type)==='number'){if(!input.value.trim())throw RangeError('Complete every numerical input.');out[input.name]=(globalThis.MT_PARSE_NUMBER||Number)(input.value)}else out[input.name]=input.value}return out}
