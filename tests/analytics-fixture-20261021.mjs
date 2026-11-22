@@ -28,3 +28,13 @@ export async function fixtureHtml(){const r=await worker.fetch(new Request('http
 export async function fixtureResponse(mode='normal',range='24h'){
  return worker.fetch(new Request('https://api.marinetools.app/admin/api/analytics?range='+range,{headers}),{ANALYTICS_SQL:fixtureBinding(mode)},{});
 }
+
+export function storeFixture(){
+ return {providers:{
+  googlePlay:{status:'ready',package:'app.marinetools',freshness:'2026-11-20',totals:{installs:42,uninstalls:3,activeInstalls:35,currentInstalls:38},countries:[{name:'NO',installs:30,uninstalls:2,activeInstalls:26}],versions:[{name:'12',installs:42,uninstalls:3,activeInstalls:35}],crash:{weightedDailyRate:0.004},anr:{weightedDailyRate:0.002},warnings:[],source:'fixture'},
+  microsoftStore:{status:'ready',kind:'msix',appId:'fixture-store-id',totals:{acquisitions:18,installs:15,dailyActiveUsers:7,monthlyActiveUsers:12,sessions:44,failures:1},ratings:{count:4,average:4.75,stars:{one:0,two:0,three:0,four:1,five:3}},markets:[{name:'NO',value:12}],versions:[{name:'0.2.0',value:44}],source:'fixture'}
+ }};
+}
+export async function storeFixtureResponse(range='24h'){
+ return worker.fetch(new Request('https://api.marinetools.app/admin/api/store-analytics?range='+range,{headers}),{STORE_ANALYTICS_FIXTURE:storeFixture()},{});
+}
