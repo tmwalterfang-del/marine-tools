@@ -47,17 +47,18 @@ jobs:
       - name: Worker, loading and failure acceptance with synthetic SQL
         env:
           NODE_PATH: /tmp/analytics-dom/node_modules
-          MT_ANALYTICS_WORKER_MODULE: /tmp/analytics-worker/worker-v860-dashboard.js
+          MT_ANALYTICS_WORKER_MODULE: /tmp/analytics-worker/worker-v861-app-analytics.js
         run: |
           node tests/analytics-dashboard-20261021.mjs
           node tests/analytics-usage-20261021.mjs
+          node tests/analytics-store-20261122.mjs
           node tests/qa-preview-isolation-20261016.mjs
           node tests/qa-release-metadata-20261018.mjs
       - name: Share the tested deployable bundle with browser jobs
         uses: actions/upload-artifact@v4
         with:
           name: analytics-worker-build
-          path: /tmp/analytics-worker/worker-v860-dashboard.js
+          path: /tmp/analytics-worker/worker-v861-app-analytics.js
 
   browsers:
     needs: integration
@@ -83,7 +84,7 @@ jobs:
       - name: Dashboard browser acceptance with synthetic SQL
         env:
           NODE_PATH: /tmp/analytics-browser/node_modules
-          MT_ANALYTICS_WORKER_MODULE: /tmp/analytics-worker/worker-v860-dashboard.js
+          MT_ANALYTICS_WORKER_MODULE: /tmp/analytics-worker/worker-v861-app-analytics.js
         run: node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}
       - name: Save fixture screenshots and results
         if: always()

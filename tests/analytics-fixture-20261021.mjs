@@ -1,6 +1,6 @@
 // Synthetic data only. No network calls, account credentials or analytics writes.
 // CI sets this to the exact wrangler dry-run bundle that is deployed.
-export const worker=(await import(process.env.MT_ANALYTICS_WORKER_MODULE||'../worker/worker-v860-dashboard.js')).default;
+export const worker=(await import(process.env.MT_ANALYTICS_WORKER_MODULE||'../worker/worker-v861-app-analytics.js')).default;
 export const headers={'cf-access-jwt-assertion':'local-test-fixture','cf-access-authenticated-user-email':'fixture@example.invalid'};
 export function fixtureBinding(mode='normal',calls=[]){return{async query(input){
  calls.push(input);const q=input.query;
@@ -27,4 +27,14 @@ export function fixtureBinding(mode='normal',calls=[]){return{async query(input)
 export async function fixtureHtml(){const r=await worker.fetch(new Request('https://api.marinetools.app/admin/analytics',{headers}),{},{});return(await r.text()).replace('<div class="shell">','<div class="shell"><div class="banner"><b>TEST FIXTURE — synthetic data, not live analytics.</b></div>')}
 export async function fixtureResponse(mode='normal',range='24h'){
  return worker.fetch(new Request('https://api.marinetools.app/admin/api/analytics?range='+range,{headers}),{ANALYTICS_SQL:fixtureBinding(mode)},{});
+}
+
+export function storeFixture(){
+ return {providers:{
+  googlePlay:{status:'ready',package:'app.marinetools',freshness:'2026-11-20',totals:{installs:42,uninstalls:3,activeInstalls:35,currentInstalls:38,storeVisitors:120,storeAcquisitions:30,storeConversionRate:0.25},countries:[{name:'NO',installs:30,uninstalls:2,activeInstalls:26}],versions:[{name:'12',installs:42,uninstalls:3,activeInstalls:35}],storeTraffic:[{name:'Google Play search',visitors:80,acquisitions:24,conversionRate:0.3}],crash:{weightedDailyRate:0.004},anr:{weightedDailyRate:0.002},warnings:[],source:'fixture'},
+  microsoftStore:{status:'ready',kind:'msix',appId:'fixture-store-id',totals:{acquisitions:18,installs:15,dailyActiveUsers:7,monthlyActiveUsers:12,sessions:44,failures:1},ratings:{count:4,average:4.75,stars:{one:0,two:0,three:0,four:1,five:3}},markets:[{name:'NO',value:12}],versions:[{name:'0.2.0',value:44}],source:'fixture'}
+ }};
+}
+export async function storeFixtureResponse(range='24h'){
+ return worker.fetch(new Request('https://api.marinetools.app/admin/api/store-analytics?range='+range,{headers}),{STORE_ANALYTICS_FIXTURE:storeFixture()},{});
 }
