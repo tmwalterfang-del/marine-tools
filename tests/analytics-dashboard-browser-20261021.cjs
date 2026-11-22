@@ -23,7 +23,7 @@ function check(ok,label){checks.push({ok:!!ok,label});assert.ok(ok,label)}
  async function loaded(){await page.waitForFunction(()=>!document.getElementById('mtAnalyticsLoadState').textContent.startsWith('Loading'));await page.waitForTimeout(200)}
  await page.goto('https://dashboard.example.invalid/admin/analytics');check(await page.evaluate(()=>typeof window.MT_DASHBOARD_REQUEST==='function'),'deployable bundle initializes browser transport');await loaded();
  check(requests===1&&(await text('sessions'))==='10'&&(await text('v860Calc'))==='7','one request fills all panel renderers');
- check((await text('mtUsageCards')).includes('Estimated browsers')&&(await text('mtUsageCards')).includes('8')&&(await text('mtUsageTools')).includes('Three-phase power')&&(await text('mtUsageSources')).includes('teaching'),'audience, readable tool reach and sources render from shared response');
+ check((await text('mtUsageCards')).includes('Estimated browsers')&&(await text('mtUsageCards')).includes('8')&&(await text('mtUsageTools')).includes('Three-phase power')&&(await text('mtUsageSources')).includes('linkedin')&&(await text('mtUsageCampaigns')).includes('launch-2026')&&(await text('mtUsageCountries')).includes('NO'),'audience, readable tool reach and sources render from shared response');
  check((await text('v860Offline'))==='—'&&(await page.locator('#mtV860Product').textContent()).includes('Calculation clicks'),'honest click and offline labels');
  check((await text('searches'))==='3'&&(await text('mtRuntimeSmokeBody')).includes('ERROR'),'complete search schema and actual scheduled failure are rendered');
  await page.screenshot({path:path.join(out,'dashboard-desktop.png'),fullPage:true});
