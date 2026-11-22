@@ -14,7 +14,7 @@ check(empty.status===200&&emptyBody.providers.googlePlay.status==='not-configure
 check(!JSON.stringify(emptyBody).match(/client_secret|private_key|service_account/i),'configuration response exposes no credential values');
 
 const fixture={providers:{
- googlePlay:{status:'ready',totals:{installs:42,uninstalls:3,activeInstalls:35,currentInstalls:38},countries:[{name:'NO',installs:30}],versions:[{name:'12',installs:42}],crash:{weightedDailyRate:.004},anr:{weightedDailyRate:.002}},
+ googlePlay:{status:'ready',totals:{installs:42,uninstalls:3,activeInstalls:35,currentInstalls:38,storeVisitors:120,storeAcquisitions:30,storeConversionRate:.25},countries:[{name:'NO',installs:30}],versions:[{name:'12',installs:42}],storeTraffic:[{name:'Google Play search',visitors:80,acquisitions:24,conversionRate:.3}],crash:{weightedDailyRate:.004},anr:{weightedDailyRate:.002}},
  microsoftStore:{status:'ready',kind:'msix',totals:{acquisitions:18,installs:15,dailyActiveUsers:7,monthlyActiveUsers:12,sessions:44,failures:1},ratings:{average:4.75},markets:[{name:'NO',value:12}],versions:[{name:'0.2.0',value:44}]}
 }};
 const seeded=await worker.fetch(new Request(endpoint,{headers:adminHeaders}),{STORE_ANALYTICS_FIXTURE:fixture},{});
