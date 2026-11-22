@@ -31,7 +31,7 @@ export async function fixtureResponse(mode='normal',range='24h'){
 
 export function storeFixture(){
  return {providers:{
-  googlePlay:{status:'ready',package:'app.marinetools',freshness:'2026-11-20',totals:{installs:42,uninstalls:3,activeInstalls:35,currentInstalls:38},countries:[{name:'NO',installs:30,uninstalls:2,activeInstalls:26}],versions:[{name:'12',installs:42,uninstalls:3,activeInstalls:35}],crash:{weightedDailyRate:0.004},anr:{weightedDailyRate:0.002},warnings:[],source:'fixture'},
+  googlePlay:{status:'ready',package:'app.marinetools',freshness:'2026-11-20',totals:{installs:42,uninstalls:3,activeInstalls:35,currentInstalls:38,storeVisitors:120,storeAcquisitions:30,storeConversionRate:0.25},countries:[{name:'NO',installs:30,uninstalls:2,activeInstalls:26}],versions:[{name:'12',installs:42,uninstalls:3,activeInstalls:35}],storeTraffic:[{name:'Google Play search',visitors:80,acquisitions:24,conversionRate:0.3}],crash:{weightedDailyRate:0.004},anr:{weightedDailyRate:0.002},warnings:[],source:'fixture'},
   microsoftStore:{status:'ready',kind:'msix',appId:'fixture-store-id',totals:{acquisitions:18,installs:15,dailyActiveUsers:7,monthlyActiveUsers:12,sessions:44,failures:1},ratings:{count:4,average:4.75,stars:{one:0,two:0,three:0,four:1,five:3}},markets:[{name:'NO',value:12}],versions:[{name:'0.2.0',value:44}],source:'fixture'}
  }};
 }
