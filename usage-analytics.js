@@ -31,7 +31,7 @@ function browserFamily(){
 function platform(){
  try{if(window.Capacitor?.isNativePlatform?.())return safe(window.Capacitor.getPlatform?.()||'native',24)||'native'}catch{}
  try{if(window.__TAURI_INTERNALS__)return'windows-app'}catch{}
- if(matchMedia?.('(display-mode: standalone)')?.matches||navigator.standalone===true)return'pwa';
+ if(window.matchMedia?.('(display-mode: standalone)')?.matches||navigator.standalone===true)return'pwa';
  return'web';
 }
 function referral(){
