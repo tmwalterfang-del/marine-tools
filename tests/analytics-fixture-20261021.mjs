@@ -1,6 +1,6 @@
 // Synthetic data only. No network calls, account credentials or analytics writes.
 // CI sets this to the exact wrangler dry-run bundle that is deployed.
-export const worker=(await import(process.env.MT_ANALYTICS_WORKER_MODULE||'../worker/worker-v860-dashboard.js')).default;
+export const worker=(await import(process.env.MT_ANALYTICS_WORKER_MODULE||'../worker/worker-v861-app-analytics.js')).default;
 export const headers={'cf-access-jwt-assertion':'local-test-fixture','cf-access-authenticated-user-email':'fixture@example.invalid'};
 export function fixtureBinding(mode='normal',calls=[]){return{async query(input){
  calls.push(input);const q=input.query;
