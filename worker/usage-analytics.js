@@ -6,7 +6,7 @@ const id=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.te
 const name=v=>/^[a-z0-9_-]{1,80}$/i.test(v||'')?v:'';
 const token=(v,max=64)=>String(v||'').toLowerCase().replace(/[^a-z0-9._-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,max);
 const host=v=>String(v||'').toLowerCase().replace(/^www\./,'').replace(/[^a-z0-9.-]/g,'').slice(0,120);
-const path=v=>{const s=String(v||'/');return s.startsWith('/')?s.replace(/[^a-z0-9/_ .-]/gi,'').slice(0,120)||'/':'/'};
+const path=v=>{const s=String(v||'/').split(/[?#]/,1)[0];return s.startsWith('/')?s.replace(/[^a-z0-9/_ .-]/gi,'').slice(0,120)||'/':'/'};
 function json(body,status,origin){return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json;charset=utf-8','cache-control':'no-store','access-control-allow-origin':origin||'null','vary':'Origin'}})}
 export async function acceptUsage(request,env){
  if(request.method!=='POST')return null;
