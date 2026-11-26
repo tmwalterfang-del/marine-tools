@@ -38,6 +38,8 @@ jobs:
           node --check app.js
           node --check worker/worker-v860-product.js
           node --check worker/worker-v860-dashboard.js
+          node --check worker/store-analytics.js
+          node --check worker/worker-v861-app-analytics.js
 
       - name: Navigation calculation smoke test
         run: node tests/navigation-smoke.mjs

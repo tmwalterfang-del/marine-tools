@@ -72,7 +72,7 @@ grep -q 'data-page="voyage-estimate"' index.html || { echo '::error::Voyage Esti
 grep -Fq "function page(id){ensurePage(id);document.querySelectorAll('.page')" app.js || { echo '::error::Page navigation selector regression detected.'; exit 1; }
 grep -q 'overflow-y:auto!important' sidebar-v858.css || { echo '::error::Sidebar scrolling fix is missing.'; exit 1; }
 grep -q 'position:static' sidebar-v858.css || { echo '::error::Expanded Project menu must remain inside the scroll flow.'; exit 1; }
-grep -q 'worker/worker-v860-dashboard.js' wrangler.jsonc || { echo '::error::Production Wrangler is not pointing at the current dashboard wrapper.'; exit 1; }
+grep -q 'worker/worker-v861-app-analytics.js' wrangler.jsonc || { echo '::error::Production Wrangler is not pointing at the current app-analytics wrapper.'; exit 1; }
 grep -Fq '*/15 * * * *' wrangler.jsonc || { echo '::error::Cloudflare runtime smoke cron is missing.'; exit 1; }
 
 echo 'Deployment checks passed. Backend health, Weather, global-wave and AIS runtime checks execute inside Cloudflare, where the public WAF cannot block the synthetic runner.'

@@ -4,11 +4,12 @@ const engine=process.argv[2]||'chromium',out=path.resolve('qa-education-'+engine
 let browser,mode='normal',requests=0,hold=false,releaseOld;const errors=[],checks=[];
 function check(ok,label){checks.push({ok:!!ok,label});assert.ok(ok,label)}
 (async()=>{
- const {fixtureHtml,fixtureResponse}=await import('./analytics-fixture-20261021.mjs'),html=await fixtureHtml();
+ const {fixtureHtml,fixtureResponse,storeFixtureResponse}=await import('./analytics-fixture-20261021.mjs'),html=await fixtureHtml();
  browser=await pw[engine].launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:900}});page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());if(u.origin!=='https://dashboard.example.invalid')return route.abort();
   if(u.pathname==='/admin/analytics')return route.fulfill({status:200,contentType:'text/html',body:html});
+  if(u.pathname==='/admin/api/store-analytics'){const r=await storeFixtureResponse(u.searchParams.get('range')||'24h');return route.fulfill({status:r.status,contentType:'application/json',body:await r.text()})}
   if(u.pathname!=='/admin/api/analytics')return route.fulfill({status:404,body:''});
   requests++;const kind=mode,range=u.searchParams.get('range');if(hold&&range==='7d'){hold=false;await new Promise(resolve=>{releaseOld=resolve})}
   if(kind==='network')return route.abort();
@@ -21,14 +22,16 @@ function check(ok,label){checks.push({ok:!!ok,label});assert.ok(ok,label)}
  });
  const text=id=>page.locator('#'+id).textContent();
  async function loaded(){await page.waitForFunction(()=>!document.getElementById('mtAnalyticsLoadState').textContent.startsWith('Loading'));await page.waitForTimeout(200)}
- await page.goto('https://dashboard.example.invalid/admin/analytics');check(await page.evaluate(()=>typeof window.MT_DASHBOARD_REQUEST==='function'),'deployable bundle initializes browser transport');await loaded();
+ async function appsLoaded(range){await page.waitForFunction(r=>{var e=document.getElementById('mtAppsState');return e&&!e.textContent.startsWith('Loading')&&(!r||e.textContent.includes(r))},range||null);}
+ await page.goto('https://dashboard.example.invalid/admin/analytics');check(await page.evaluate(()=>typeof window.MT_DASHBOARD_REQUEST==='function'),'deployable bundle initializes browser transport');await loaded();await appsLoaded('24h');
  check(requests===1&&(await text('sessions'))==='10'&&(await text('v860Calc'))==='7','one request fills all panel renderers');
- check((await text('mtUsageCards')).includes('Estimated browsers')&&(await text('mtUsageCards')).includes('8')&&(await text('mtUsageTools')).includes('Three-phase power')&&(await text('mtUsageSources')).includes('teaching'),'audience, readable tool reach and sources render from shared response');
+ check((await text('mtUsageCards')).includes('Estimated browsers')&&(await text('mtUsageCards')).includes('8')&&(await text('mtUsageTools')).includes('Three-phase power')&&(await text('mtUsageSources')).includes('linkedin')&&(await text('mtUsageCampaigns')).includes('launch-2026')&&(await text('mtUsageCountries')).includes('NO'),'audience, readable tool reach and sources render from shared response');
+ check((await text('mtGoogleCards')).includes('42')&&(await text('mtGoogleCards')).includes('25.00%')&&(await text('mtGoogleCountries')).includes('NO')&&(await text('mtGoogleTraffic')).includes('Google Play search')&&(await text('mtMicrosoftCards')).includes('18')&&(await text('mtMicrosoftCards')).includes('4.75')&&(await text('mtMicrosoftMarkets')).includes('NO'),'Google Play and Microsoft Store aggregates render from isolated synthetic provider fixture');
  check((await text('v860Offline'))==='—'&&(await page.locator('#mtV860Product').textContent()).includes('Calculation clicks'),'honest click and offline labels');
  check((await text('searches'))==='3'&&(await text('mtRuntimeSmokeBody')).includes('ERROR'),'complete search schema and actual scheduled failure are rendered');
  await page.screenshot({path:path.join(out,'dashboard-desktop.png'),fullPage:true});
  for(const [width,height]of [[390,844],[844,390],[1440,900]]){await page.setViewportSize({width,height});await page.waitForTimeout(180);check(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+2),'dashboard fits '+width+'x'+height);if(width===390)await page.screenshot({path:path.join(out,'dashboard-mobile.png'),fullPage:true})}
- for(const range of ['7d','30d','90d']){await page.locator('[data-range="'+range+'"]').click();await loaded();check((await text('mtAnalyticsLoadState')).includes(range),'range '+range+' loads')}
+ for(const range of ['7d','30d','90d']){await page.locator('[data-range="'+range+'"]').click();await loaded();await appsLoaded(range);check((await text('mtAnalyticsLoadState')).includes(range),'range '+range+' loads')}
  check(requests===4,'one request per range selection');
  mode='failure';await page.locator('#refresh').click();await loaded();check((await text('sessions'))==='—'&&(await text('v860Calc'))==='—'&&(await text('mtTechState'))==='Unavailable'&&await page.locator('#chart svg').count()===0,'full failure clears stale metrics and plot');
  check((await text('mtUsageCards')).includes('unavailable')&&!(await text('mtUsageTools')).includes('Three-phase power'),'failed refresh clears new audience metrics');
@@ -39,7 +42,7 @@ function check(ok,label){checks.push({ok:!!ok,label});assert.ok(ok,label)}
  mode='empty';await page.locator('#refresh').click();await loaded();check((await text('sessions'))==='0'&&(await text('mtTechSuccess'))==='—'&&(await text('v860Returning'))==='—','empty results distinguished from failed query');
  mode='normal';hold=true;await page.locator('[data-range="7d"]').click();while(!releaseOld)await page.waitForTimeout(20);await page.locator('[data-range="30d"]').click();await loaded();releaseOld();await page.waitForTimeout(250);check((await text('periodLabel')).includes('30')&&await page.evaluate(()=>window.__mtAnalyticsDashboardData.range==='30d'),'late old range does not overwrite current period');
  const app=await browser.newPage({serviceWorkers:'block'});app.on('pageerror',e=>errors.push(e.message));let events=[];
- await app.addInitScript(()=>{Object.defineProperty(navigator,'webdriver',{get:()=>false});localStorage.setItem('mt.lastSeenReleaseBuild','20261117-v8-11-0')});
+ await app.addInitScript(()=>{Object.defineProperty(navigator,'webdriver',{get:()=>false});localStorage.setItem('mt.lastSeenReleaseBuild','20261117-v8-11-0');localStorage.setItem('mt.settings',JSON.stringify({usageAnalytics:true}));localStorage.setItem('mt.analytics.consent.v1',JSON.stringify({status:'granted',revision:'2026-11-22',at:'2026-11-22T00:00:00.000Z'}))});
  await app.route('**/*',async route=>{const u=new URL(route.request().url());if(u.origin==='https://api.marinetools.app'&&u.pathname==='/api/analytics/event'){events.push(JSON.parse(route.request().postData()));return route.fulfill({status:202,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{}'})}if(u.origin!=='https://www.marinetools.app')return route.abort();const file=path.resolve('.'+u.pathname+(u.pathname==='/'?'index.html':''));if(!file.startsWith(process.cwd()+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return route.fulfill({status:404,body:''});return route.fulfill({path:file,contentType:file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':undefined})});
  await app.goto('https://www.marinetools.app/');await app.locator('[data-page="electrical"]').first().click();await app.locator('#elV').fill('0');await app.locator('#calc3p').click();await app.waitForTimeout(100);
  check(events.some(x=>x.event==='calculation_invalid')&&!events.some(x=>x.event==='calculation_succeeded'),'real app rejects invalid inputs without false success');
