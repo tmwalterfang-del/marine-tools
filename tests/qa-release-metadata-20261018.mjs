@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import worker from '../worker/worker-v860-dashboard.js';
+import worker from '../worker/worker-v861-app-analytics.js';
 const read=f=>fs.readFileSync(new URL('../'+f,import.meta.url),'utf8');
 const release=vm.runInNewContext('('+read('release-v860.js').match(/const RELEASE=(\{.*?\});window\.__MARINE_TOOLS_RELEASE/s)[1]+')');
 let checks=0;const check=(name,value)=>{assert(value,name);checks++;};

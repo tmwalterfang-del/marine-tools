@@ -34,7 +34,7 @@ const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
 const store={get(k,f=null){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 
-const DEFAULT_SETTINGS={usageAnalytics:true};
+const DEFAULT_SETTINGS={usageAnalytics:false};
 function appSettings(){return{...DEFAULT_SETTINGS,...(store.get(K.settings,{})||{})}}
 function saveAppSettings(next){store.set(K.settings,{...appSettings(),...next})}
 function analyticsEnabled(){if(window.MT_USAGE&&!window.MT_USAGE.enabled())return false;return !/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(location.hostname)&&appSettings().usageAnalytics!==false&&navigator.doNotTrack!=='1'}
@@ -1245,11 +1245,11 @@ function localDataStats(){
  return{consumption:consumptionHistory().length,bunkering:bunkeringHistory().length,history:calcHistory().length,favorites:favorites().length,route:state.route.length,weather:Boolean(store.get(K.weatherCache,null)?.forecast?.length),kb:bytes/1024}
 }
 function renderSettings(){
- const s=appSettings(),st=localDataStats(),dnt=navigator.doNotTrack==='1';
+ const s=appSettings(),st=localDataStats(),dnt=navigator.doNotTrack==='1',analyticsConsent=window.MT_USAGE?.consentStatus?.()||'unset';
  $('#settings').innerHTML=pageTitle('Settings','Local-first preferences, backup/restore and privacy controls.')+`
  <div class="grid-2">
   <article class="panel"><div class="panel-body"><h3>Appearance</h3><label>Theme<select id="setTheme"><option value="dark">Dark maritime</option><option value="bridge">Bridge Dark</option></select></label><div class="actions"><button class="btn primary" id="saveSet">Save</button></div></div></article>
-  <article class="panel"><div class="panel-body"><h3>Usage analytics</h3><label class="toggle-row"><input id="excludeAnalytics" type="checkbox" ${localStorage.getItem('mt.analytics.exclude')==='1'?'checked':''}><span><b>Exclude this browser from analytics</b><small>Use for development and your own testing. Applies to this browser only.</small></span></label><label class="toggle-row"><input id="setAnalytics" type="checkbox" ${s.usageAnalytics!==false&&!dnt?'checked':''} ${dnt?'disabled':''}><span><b>Help improve Marine Tools</b><small>Send usage events with a random browser identifier (expires after 180 days), visit identifier and coarse traffic source. Calculation values, vessel profile, routes and weather positions are never included.</small></span></label>${dnt?'<p class="helper">Your browser has Do Not Track enabled, so Marine Tools usage analytics stays disabled.</p>':''}<div class="actions">${button('Privacy & data','privacy','btn')}</div></div></article>
+  <article class="panel"><div class="panel-body"><h3>Usage analytics</h3><label class="toggle-row"><input id="excludeAnalytics" type="checkbox" ${localStorage.getItem('mt.analytics.exclude')==='1'?'checked':''}><span><b>Exclude this browser from analytics</b><small>Use for development and your own testing. Applies to this browser only.</small></span></label><label class="toggle-row"><input id="setAnalytics" type="checkbox" ${analyticsConsent==='granted'&&s.usageAnalytics!==false&&!dnt?'checked':''} ${dnt?'disabled':''}><span><b>Help improve Marine Tools</b><small>Optional analytics uses a random browser and visit identifier plus traffic source, referrer domain, campaign, country, device, OS, browser and platform. Calculation values, vessel profile, routes, weather positions and full referring URLs are never included.</small></span></label>${dnt?'<p class="helper">Your browser has Do Not Track enabled, so Marine Tools usage analytics stays disabled.</p>':''}<div class="actions">${button('Privacy & data','privacy','btn')}</div></div></article>
  </div>
  <article class="panel" style="margin-top:12px"><div class="panel-body">
   <div class="settings-head"><div><h3>Data stored on this device</h3><p class="helper">Operational entries stay in this browser unless you export or restore them yourself.</p></div><span class="storage-size">${nf(st.kb,1)} KB</span></div>
@@ -1257,11 +1257,11 @@ function renderSettings(){
   <div class="actions"><button class="btn primary" id="exportData">Download backup</button><button class="btn" id="importData">Restore backup</button><input id="importDataFile" type="file" accept=".json,application/json" hidden><button class="btn" id="clearHistorySet">Clear calculation history</button><button class="btn danger-soft" id="clearData">Clear all local data</button></div>
   <p class="helper">The backup contains your locally stored Marine Tools settings and histories. It does not contain usage analytics already sent to the server.</p>
  </div></article>
- <details class="panel info-fold"><summary><span><b>Data principle</b><small>How Marine Tools handles operational data</small></span><strong>Show</strong></summary><div class="panel-body"><p class="helper">Marine Tools keeps entered operational data local where possible. Online requests send only the context needed for that request. Usage analytics records page/tool identifiers, device class, app version, visible time, coarse source and random browser/visit identifiers. Browser counts estimate browsers, not people. No cross-device matching is used. Disable analytics or exclude this browser above.</p></div></details>`;
+ <details class="panel info-fold"><summary><span><b>Data principle</b><small>How Marine Tools handles operational data</small></span><strong>Show</strong></summary><div class="panel-body"><p class="helper">Marine Tools keeps entered operational data local where possible. Online requests send only the context needed for that request. Optional usage analytics starts only after consent. It can record page/tool identifiers, device and platform context, country, traffic source, referrer domain, campaign and random browser/visit identifiers. Browser counts estimate browsers, not people. No cross-device matching is used. Disable analytics or exclude this browser above.</p></div></details>`;
  $('#setTheme').value=state.theme;
  $('#excludeAnalytics').onchange=e=>window.MT_USAGE?.exclude(e.target.checked);
- $('#saveSet').onclick=()=>{setTheme($('#setTheme').value);saveAppSettings({usageAnalytics:$('#setAnalytics')?.checked!==false});toast('Settings saved.')};
- if($('#setAnalytics'))$('#setAnalytics').onchange=e=>{saveAppSettings({usageAnalytics:e.target.checked});if(e.target.checked){sendAnalyticsEvent('analytics_enabled',{page:'settings'});analyticsVisibleSince=performance.now()}else flushAnalyticsEngagement(true);toast(e.target.checked?'Usage analytics enabled.':'Usage analytics disabled.')};
+ $('#saveSet').onclick=()=>{setTheme($('#setTheme').value);const allow=$('#setAnalytics')?.checked===true;saveAppSettings({usageAnalytics:allow});window.MT_USAGE?.setConsent(allow?'granted':'denied');toast('Settings saved.')};
+ if($('#setAnalytics'))$('#setAnalytics').onchange=e=>{saveAppSettings({usageAnalytics:e.target.checked});window.MT_USAGE?.setConsent(e.target.checked?'granted':'denied');if(e.target.checked){sendAnalyticsEvent('analytics_enabled',{page:'settings'});analyticsVisibleSince=performance.now()}else flushAnalyticsEngagement(true);toast(e.target.checked?'Usage analytics enabled.':'Usage analytics disabled.')};
  $('#exportData').onclick=exportData;
  $('#importData').onclick=()=>$('#importDataFile').click();
  $('#importDataFile').onchange=e=>{const f=e.target.files?.[0];if(f)importDataBackup(f);e.target.value=''};
