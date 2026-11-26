@@ -35,6 +35,27 @@ on:
       - 'weather-map-v854.js'
       - 'ui-v854.js'
       - 'tests/main-*.cjs'
+      - 'tests/main-calculator-validation-20261117.cjs'
+      - 'tests/main-calculator-validation-dom-20261117.cjs'
+      - 'tests/main-calculator-reference-20261117.cjs'
+      - 'tests/main-calculator-units-compass-density-20261117.cjs'
+      - 'tests/main-calculator-engineering-working-20261117.cjs'
+      - 'tests/main-calculator-round4-working-20261117.cjs'
+      - 'tests/main-calculator-round5-20261117.cjs'
+      - 'tests/main-calculator-round5b-20261117.cjs'
+      - 'tests/main-calculator-wgs84-20261117.cjs'
+      - 'tests/main-calculator-wmm2025-20261117.cjs'
+      - 'wmm2025-20261117.js'
+      - 'vendor/geographiclib-geodesic-2.2.0.min.js'
+      - 'tests/main-calculator-nb-coverage-20261117.cjs'
+      - 'tests/main-calculator-properties-20261117.cjs'
+      - 'product-ux-20261031.js'
+      - 'language-main-20261031.js'
+      - 'calc-references-20261117.js'
+      - 'tests/main-calculator-validation-browser-20261117.cjs'
+      - 'tests/main-calculator-working-browser-20261117.cjs'
+      - 'tests/main-calculator-route-dateline-20261117.cjs'
+      - 'ui-v861.css'
       - 'students/labs.css'
       - 'downloads.html'
       - 'preview-server/**'
@@ -94,6 +115,8 @@ jobs:
           node tests/regulatory-geography.cjs
           node tests/regulatory-rules-voyage.cjs
           node tests/voyage-estimate-speed-transfer.mjs
+      - name: Main calculator validation reference cases
+        run: node tests/main-calculator-validation-20261117.cjs
       - name: Independent circuit node balances
         run: node tests/students-source-circuits-20261020.mjs
       - name: Qualified heat-transfer model references
@@ -148,11 +171,47 @@ jobs:
       - name: Engineering explorer independent reference cases
         run: node tests/students-explorers-20261020.mjs
       - name: Install DOM integration test dependency
-        run: npm install --prefix /tmp/students-dom --no-audit --no-fund jsdom@26.1.0
+        run: npm install --prefix /tmp/students-dom --no-audit --no-fund jsdom@26.1.0 fast-check@4.10.2
+      - name: Property-based checks (parser, WGS84, WMM2025; fast-check, fixed seed)
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-properties-20261117.cjs
+      - name: Units, compass and dock-water density reference cases
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-units-compass-density-20261117.cjs
+      - name: NOAA WMM2025 references and compass suggestions
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-wmm2025-20261117.cjs
+      - name: Engineering working and interpolation/power reference cases
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-engineering-working-20261117.cjs
+      - name: Round four main calculator working reference cases
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-round4-working-20261117.cjs
+      - name: Main calculator references and full export provenance
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-round5-20261117.cjs
+      - name: Check main calculator numeric range rejection
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-round5b-20261117.cjs
+      - name: WGS84 primary geodesic references and spherical model isolation
+        env:
+          NODE_PATH: /tmp/students-dom/node_modules
+        run: node tests/main-calculator-wgs84-20261117.cjs
+      - name: Check Norwegian for every Show working and reference text
+        run: node tests/main-calculator-nb-coverage-20261117.cjs
       - name: Export and interactive DOM integration
         env:
           NODE_PATH: /tmp/students-dom/node_modules
         run: |
+          node tests/main-calculator-validation-dom-20261117.cjs
+          node tests/main-calculator-reference-20261117.cjs
           node tests/students-labs-dom-20261020.cjs
           node tests/students-lms-export-20261030.cjs
           node tests/students-chapter-navigation-20261020.cjs
@@ -230,7 +289,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install pinned browser test runner
-        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.62.1 axe-core@4.11.1
+        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.63.0 axe-core@4.11.1
       - name: Install rendering engine and Linux dependencies
         run: node /tmp/education-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
       - name: Responsive Education and whole-site browser checks
@@ -247,6 +306,9 @@ jobs:
           node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
+          node tests/main-calculator-validation-browser-20261117.cjs ${{ matrix.browser }}
+          node tests/main-calculator-working-browser-20261117.cjs ${{ matrix.browser }}
+          node tests/main-calculator-route-dateline-20261117.cjs ${{ matrix.browser }}
           node tests/main-result-locale-browser-20261101.cjs ${{ matrix.browser }}
           node tests/main-release-20261101.cjs ${{ matrix.browser }}
           node tests/students-next-workspace-browser-20261030.cjs ${{ matrix.browser }}

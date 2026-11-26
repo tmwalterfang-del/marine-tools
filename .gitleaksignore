@@ -1,0 +1,3 @@
+# Reviewed false positives, one fingerprint (file:rule:line) each. A path allowlist would hide the whole file.
+# SHA-256 content hash of the api-gravity-60-f Education page (not a key):
+tests/fixtures/students-full-review-context-20261030.json:generic-api-key:6161
