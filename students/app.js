@@ -26,7 +26,7 @@ const tr={
  en:{formulas:"Formulas",symbols:"Symbols",calculators:"Calculators",practice:"Exercises",sheet:"My Formula Sheet",progress:"Progress",selftest:"Self-test",
  search:"Search: TPC, GM, trim, Ohm's law, electrical ...",all:"All subjects",savedOnly:"Saved only",
  loadMore:"Show more",noMatches:"No matches. Try a different term or subject.",copy:"Copy",save:"Save",saved:"Saved",
- openCalc:"Open calculator",working:"Show working",hideWorking:"Hide working",
+ openCalc:"Open calculator",working:"Show working",hideWorking:"Hide working",assumptions:"Assumptions",validRange:"Valid range",
  answer:"Check answer",solution:"Show solution",hideSolution:"Hide solution",next:"Next",previous:"Previous",
  good:"Correct within tolerance.",bad:"Not quite. Check units and try again.",
  invalid:"Check your input values.",reset:"Reset progress"}
@@ -255,7 +255,7 @@ function calculate(){
  if(error){el("calc-output").innerHTML='<p class="error" role="alert">'+enc(error)+'</p>';el("calc-steps").innerHTML="";return}
  el("calc-output").innerHTML='<span class="eyebrow">RESULT</span><strong>'+fmt(result.value)+' <small>'+enc(result.unit)+'</small></strong>'+
  (result.warning?'<p class="warning">'+enc(result.warning)+'</p>':"");
- el("calc-steps").innerHTML=state.showSteps?'<ol>'+result.steps.map(step=>'<li>'+enc(step)+'</li>').join("")+'</ol>':"";
+ el("calc-steps").innerHTML=state.showSteps?'<ol>'+result.steps.map(step=>'<li>'+enc(String(step))+'</li>').join("")+'</ol>'+(c.assumptions?.length?'<h4>'+enc(tt("assumptions"))+'</h4><ul class="calc-assumptions">'+c.assumptions.map(x=>'<li>'+enc(x)+'</li>').join("")+'</ul>':"")+(c.range?'<h4>'+enc(tt("validRange"))+'</h4><p class="calc-range">'+enc(c.range)+'</p>':""):"";
  el("working-toggle").textContent=tt(state.showSteps?"hideWorking":"working");
 }
 function levelFor(e){

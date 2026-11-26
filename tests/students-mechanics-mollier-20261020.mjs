@@ -16,7 +16,8 @@ let passed=0;
 function check(x,m){assert.ok(x,m);passed++}
 function close(a,b,m,tol=1e-9){check(Math.abs(a-b)<tol,m)}
 check(formula.length===444,"444 independent formula entries");
-check(win.MT_CALCULATORS.length===59,"59 calculators");
+// 60 since seawater-density was added to students/calculators.js (2026-11-17).
+check(win.MT_CALCULATORS.length===60,"60 calculators");
 check(win.MT_PRACTICE.length===36,"36 practices");
 check(student.mechanicsPage42.formulaIds.length===7,"7 formulas from page 42");
 for(const id of student.mechanicsPage42.formulaIds){

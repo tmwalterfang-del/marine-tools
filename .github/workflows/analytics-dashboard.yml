@@ -62,8 +62,10 @@ jobs:
 
   browsers:
     needs: integration
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Pinned: on the Ubuntu 26 images the WebKit apt dependencies took 20–29 minutes.
+    runs-on: ubuntu-24.04
+    # Ubuntu 26 runner images can take several minutes for the WebKit apt dependencies.
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -74,7 +76,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install browser test runner
-        run: npm install --prefix /tmp/analytics-browser --no-audit --no-fund playwright@1.63.0
+        run: npm install --prefix /tmp/analytics-browser --no-audit --no-fund playwright@1.65.1
       - name: Install rendering engine
         run: node /tmp/analytics-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
       - uses: actions/download-artifact@v4

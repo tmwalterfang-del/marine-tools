@@ -55,6 +55,9 @@ on:
       - 'tests/main-calculator-validation-browser-20261117.cjs'
       - 'tests/main-calculator-working-browser-20261117.cjs'
       - 'tests/main-calculator-route-dateline-20261117.cjs'
+      - 'tests/students-calculator-working-reference-20261117.mjs'
+      - 'tests/seawater-density-reference-20261117.cjs'
+      - 'seawater-density-20261117.js'
       - 'ui-v861.css'
       - 'students/labs.css'
       - 'downloads.html'
@@ -180,6 +183,8 @@ jobs:
         env:
           NODE_PATH: /tmp/students-dom/node_modules
         run: node tests/main-calculator-units-compass-density-20261117.cjs
+      - name: TEOS-10 seawater density references (published GSW examples)
+        run: node tests/seawater-density-reference-20261117.cjs
       - name: NOAA WMM2025 references and compass suggestions
         env:
           NODE_PATH: /tmp/students-dom/node_modules
@@ -263,6 +268,8 @@ jobs:
         run: |
           node tests/students-full-reference-20261030.mjs --generate
           node tests/students-calculator-reference-20261029.mjs
+          node tests/students-calculator-working-reference-20261117.mjs
+          node tests/students-calculator-working-core-reference-20261118.mjs
           node tests/students-education-models-20261030.mjs
           node tests/students-practice-bank-reference-20261030.mjs
           git diff --exit-code students/full-review-20261030.js tests/fixtures/expression-reference/STUDENTS_FULL_EXPRESSION_EVIDENCE_2026-10-30.csv tests/fixtures/expression-reference/STUDENTS_PRIMARY_FORMULA_REVIEW_2026-10-30.csv
@@ -277,22 +284,30 @@ jobs:
           if-no-files-found: warn
 
   education-browsers:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    # The official Playwright image has the browsers and their Linux libraries preinstalled;
+    # installing the WebKit apt dependencies on the runner took 20–29 minutes in Nov 2026.
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --user 1001
+    # Split in two shards per engine: one 30-minute job per engine hit its time limit in WebKit.
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         browser: [chromium, firefox, webkit]
+        shard: [education, site]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Install pinned browser test runner
-        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.63.0 axe-core@4.11.1
-      - name: Install rendering engine and Linux dependencies
-        run: node /tmp/education-browser/node_modules/playwright/cli.js install --with-deps ${{ matrix.browser }}
-      - name: Responsive Education and whole-site browser checks
+        run: npm install --prefix /tmp/education-browser --no-audit --no-fund playwright@1.65.1 axe-core@4.11.1
+      - name: Check the preinstalled rendering engine matches the runner
+        run: node /tmp/education-browser/node_modules/playwright/cli.js install ${{ matrix.browser }}
+      - name: Education browser checks
+        if: matrix.shard == 'education'
         env:
           NODE_PATH: /tmp/education-browser/node_modules
         run: |
@@ -301,10 +316,19 @@ jobs:
           node tests/students-learning-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-discovery-cycle-browser-20261030.cjs ${{ matrix.browser }}
           node tests/marine-systems-browser-20261102.cjs ${{ matrix.browser }}
-          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/site-discovery-browser.cjs; fi
-          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/site-offline-browser.cjs; fi
           node tests/students-analysis-browser-20261030.cjs ${{ matrix.browser }}
           node tests/students-product-cleanup-browser-20261031.cjs ${{ matrix.browser }}
+          node tests/education-acceptance-20261021.cjs ${{ matrix.browser }}
+          node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
+          node tests/students-mollier-process-browser-20261027.cjs ${{ matrix.browser }}
+          node tests/education-single-scroll-20261027.cjs ${{ matrix.browser }}
+      - name: Main site, workspace and app browser checks
+        if: matrix.shard == 'site'
+        env:
+          NODE_PATH: /tmp/education-browser/node_modules
+        run: |
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/site-discovery-browser.cjs; fi
+          if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/site-offline-browser.cjs; fi
           node tests/main-numeric-input-browser-20261031.cjs ${{ matrix.browser }}
           node tests/main-calculator-validation-browser-20261117.cjs ${{ matrix.browser }}
           node tests/main-calculator-working-browser-20261117.cjs ${{ matrix.browser }}
@@ -316,16 +340,12 @@ jobs:
           node tests/students-session-browser-20261027.cjs ${{ matrix.browser }}
           node tests/app-browser-20261027.cjs ${{ matrix.browser }}
           node tests/analytics-dashboard-browser-20261021.cjs ${{ matrix.browser }}
-          node tests/education-acceptance-20261021.cjs ${{ matrix.browser }}
-          node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
           REGULATORY_BROWSER=${{ matrix.browser }} node tests/regulatory-browser.cjs
           if [ "${{ matrix.browser }}" = "chromium" ]; then node tests/navigation-coordinate-layout.cjs; fi
-          node tests/students-mollier-process-browser-20261027.cjs ${{ matrix.browser }}
-          node tests/education-single-scroll-20261027.cjs ${{ matrix.browser }}
       - name: Save screenshots, browser results and report exports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: education-browser-${{ matrix.browser }}
+          name: education-browser-${{ matrix.browser }}-${{ matrix.shard }}
           path: qa-education-${{ matrix.browser }}/
           if-no-files-found: warn

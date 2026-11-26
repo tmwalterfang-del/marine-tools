@@ -1309,6 +1309,21 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Calculate again before copying. The inputs have changed.": "Beregn på nytt før du kopierer. Inndata er endret.",
   "Calculate again before sharing. The inputs have changed.": "Beregn på nytt før du deler. Inndata er endret.",
   "Print calculation": "Skriv ut beregning",
+  "Education working, seawater density & smoother loading": "Utregning i Education, sjøvannstetthet og roligere lasting",
+  "Education: all 61 calculators show every intermediate value with units, plus assumptions and the valid range.": "Education: alle 61 kalkulatorene viser hver mellomverdi med enhet, i tillegg til forutsetninger og gyldighetsområde.",
+  "Seawater density from salinity and temperature (TEOS-10): fill the FWA/DWA dock-water density, or study it as an Education calculator.": "Sjøvannstetthet ut fra saltholdighet og temperatur (TEOS-10): fyll inn dokkvannstettheten i FWA/DWA, eller bruk den som Education-kalkulator.",
+  "The starting-air system is drawn as a full teaching circuit with compressor state, valves and receiver pressure.": "Startluftsystemet er tegnet som en komplett undervisningskrets med kompressorstatus, ventiler og trykk i beholderen.",
+  "Steadier loading: the menu and footer no longer jump while a page loads.": "Roligere lasting: menyen og bunnteksten hopper ikke lenger mens siden lastes.",
+  "Estimate density from temperature and salinity (TEOS-10)": "Anslå tetthet ut fra temperatur og saltholdighet (TEOS-10)",
+  "Water temperature °C": "Vanntemperatur °C",
+  "Practical salinity (PSS-78)": "Praktisk saltholdighet (PSS-78)",
+  "Use TEOS-10 estimate": "Bruk TEOS-10-anslag",
+  "Surface pressure; local salinity anomalies are ignored. A hydrometer reading of the dock water is preferred.": "Overflatetrykk; lokale avvik i saltholdighet er ikke tatt med. En hydrometermåling av dokkvannet er å foretrekke.",
+  "TEOS-10 is unavailable; density was not changed.": "TEOS-10 er ikke tilgjengelig; tettheten ble ikke endret.",
+  "Enter water temperature and practical salinity.": "Oppgi vanntemperatur og praktisk saltholdighet.",
+  "Practical salinity must be between 0 and 40 (PSS-78).": "Praktisk saltholdighet må være mellom 0 og 40 (PSS-78).",
+  "Water temperature must be between 0 and 40 °C.": "Vanntemperaturen må være mellom 0 og 40 °C.",
+  "Density could not be calculated for these inputs.": "Tettheten kunne ikke beregnes for disse verdiene.",
   "Great-circle and bearing tools also show precise WGS84 ellipsoid distance and courses (GeographicLib).": "Storsirkel- og peilingsverktøyene viser også nøyaktig avstand og kurs på WGS84-ellipsoiden (GeographicLib).",
   "The compass tool can suggest variation and annual change from position and date with NOAA WMM2025.": "Kompassverktøyet kan foreslå misvisning og årlig endring ut fra posisjon og dato med NOAAs WMM2025.",
   "Calculation history keeps the full working, with JSON/CSV export from the start page.": "Beregningshistorikken tar vare på hele utregningen, med JSON/CSV-eksport fra startsiden.",
@@ -1721,6 +1736,10 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Use vessel hydrostatic data; this is a planning approximation.": "Bruk fartøyets hydrostatiske data. Dette er en tilnærming for planlegging."
  },
  "templates": [
+  {
+   "en": "TEOS-10 estimate: {0} kg/m³ at {1} °C and salinity {2}. Entered as an assumed density; measure the dock water where possible.",
+   "nb": "TEOS-10-anslag: {0} kg/m³ ved {1} °C og saltholdighet {2}. Lagt inn som antatt tetthet; mål dokkvannet når det er mulig."
+  },
   {
    "en": "WMM2025 · {0} · variation {1}° (+E / −W), annual change {2}′/year. Model estimate at 0 km above the WGS84 ellipsoid; excludes local magnetic anomalies and vessel deviation. Verify against current chart information and vessel procedures.",
    "nb": "WMM2025 · {0} · misvisning {1}° (+Ø / −V), årlig endring {2}′/år. Modellanslag 0 km over WGS84-ellipsoiden; lokale magnetiske anomalier og fartøyets deviasjon er ikke tatt med. Kontroller mot gjeldende kartinformasjon og fartøyets prosedyrer."

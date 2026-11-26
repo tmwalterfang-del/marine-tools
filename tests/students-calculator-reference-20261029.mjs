@@ -33,6 +33,9 @@ const cases = [
   ['shaft-power', {rpm:600,torque:20}, .4*pi, 'kW'],
   ['sfoc', {fuel:12,power:60}, 200, 'g/kWh'],
   ['fuel-density', {vol:40,rho:.8}, 32, 't'],
+  // Published TEOS-10 example gsw_rho_t_exact(SA=34.7118 g/kg, t=28.7856 degC, p=10 dbar) = 1021.840173185531 kg/m3
+  // (teos-10.org/pubs/gsw/html/gsw_rho_t_exact.html). The calculator takes Practical Salinity with SA = SR = SP x 35.16504/35.
+  ['seawater-density', {sp:34.7118*35/35.16504,t:28.7856,p:10}, 1021.840173185531, 'kg/m³'],
   ['molar-concentration', {moles:3,litres:12}, .25, 'mol/L'],
   ['dilution-volume', {c1:3,v1:.4,c2:.6}, 2, 'L'],
   ['ph', {activity:1e-8}, 8, 'pH'],
@@ -88,8 +91,9 @@ function run(id, inputs) {
   const result=calculator.compute(inputs); assert.ok(!result.invalid,id+': '+result.invalid);
   return result;
 }
-assert.equal(cases.length,60); assert.equal(calculators.size,60);
-assert.equal(new Set(cases.map(c=>c[0])).size,60);
+// 61 since seawater-density was added (2026-11-17); every calculator still needs exactly one reference case.
+assert.equal(cases.length,61); assert.equal(calculators.size,61);
+assert.equal(new Set(cases.map(c=>c[0])).size,61);
 for(const [id,inputs,expected,unit] of cases) {
   const result=run(id,inputs); near(result.value,expected,id);
   assert.equal(result.unit,unit,id+' unit');

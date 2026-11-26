@@ -31,4 +31,38 @@ function strongPH(Ca,Va,Cb,Vb){const excess=(Ca*Va-Cb*Vb)/(Va+Vb),root=Math.sqrt
 for(const acid of ['strong','weak'])for(const baseVolume of [0,12.5,25,50,200]){z=run('titration',{acid,baseVolume});near(z.values.H+z.values.Na,z.values.OH+z.values.A,1e-10,2e-14);near(z.values.H*z.values.OH,1e-14,1e-12,1e-25);near(z.values.Ct,z.values.HA+z.values.A,1e-12);if(acid==='strong')near(z.values.pH,strongPH(.1,25,.1,baseVolume),1e-12);assert.ok(z.data.every((q,i,a)=>i===0||q.pH>=a[i-1].pH-1e-10));checks++;}
 near(run('titration',{acid:'strong',baseVolume:25}).values.pH,7);assert.ok(run('titration',{acid:'weak',baseVolume:25}).values.pH>7);checks++;near(run('titration',{acid:'weak',baseVolume:12.5}).values.pH,4.76,0,.001);const Ka=10**-4.76,H=(-Ka+Math.sqrt(Ka*Ka+4*Ka*.1))/2;near(run('titration',{acid:'weak',baseVolume:0}).values.H,H,1e-8);throws(()=>run('titration',{baseVolume:-1}));
 for(const[id,schema]of Object.entries(S)){const result=run(id);if(!result.exercise)continue;assert.ok(Number.isFinite(result.exercise.expected),id);assert.ok(result.exercise.steps.length>0);checks++;}
+// Exact zeros follow from conservation or an analytically constant profile.
+// No implementation formula is used to manufacture these expected values.
+function exactZero(value,label){assert.strictEqual(value,0,label);checks++;}
+function metricValue(model,label){return model.metrics.find(row=>row[0]===label)?.[1];}
+z=run('hydrostatics',{profile:'box',length:103.7,breadth:19.3,depth:10,draft:5.1,flare:0,stations:41});
+// A constant rectangular section integrates exactly under either rule.
+exactZero(metricValue(z,'Integration-method difference'),'box integration comparison is zero');
+z=run('hydrostatics',{profile:'parabolic',length:100,breadth:20,depth:10,draft:5,flare:0,stations:5});
+// Five equally spaced areas are [0,75,100,75,0] m². Simpson gives
+// 6666 2/3 m³, trapezoid 6250 m³: the genuine difference is 416 2/3 m³.
+near(metricValue(z,'Integration-method difference'),416.6666666666667);
+z=run('titration',{acid:'strong',acidConcentration:.1,acidVolume:25,baseConcentration:.1,baseVolume:10});
+exactZero(z.values.residual,'titration electrical neutrality');exactZero(metricValue(z,'Charge-balance residual'),'titration charge-balance card');
+for(const row of z.data)exactZero(row.residual,'titration sample charge balance');
+z=run('psychrometrics',{process:'heating',temperature:0,humidity:5,target:40});
+// Pure sensible heating adds no water and removes none, even when the
+// humidity ratio -> vapour pressure -> humidity ratio round trip differs.
+exactZero(z.values.condensate,'pure heating condensate removal');exactZero(metricValue(z,'Condensate removal'),'pure heating condensate card');
+assert.ok(z.values.duty>0&&Number.isFinite(z.values.duty));checks++;
+z=run('psychrometrics',{process:'cooling',temperature:30,humidity:80,target:10,flow:2});
+assert.ok(z.values.condensate>0&&metricValue(z,'Condensate removal')>0,'genuine condensate removal remains visible');checks++;
+// Independent star-load example: 100 V line, 10+j10 Ω phases gives
+// Q=500 var. At f=1000/(2pi)=159.15494309189535 Hz, a star bank of
+// 50 µF per phase also supplies 500 var, so net Q and phase angle are zero.
+const compensated={connection:'star',bank:'star',voltage:100,frequency:159.15494309189535,resistance:10,reactance:10,capacitance:50};
+z=run('three-phase',compensated);
+exactZero(z.values.netQ,'exact reactive compensation');exactZero(metricValue(z,'Net reactive power'),'compensated reactive power card');
+exactZero(metricValue(z,'Supply angle: positive lagging'),'compensated supply angle card');
+exactZero(z.data[0].v0,'phase A voltage at its initial zero');exactZero(z.data[0].i0,'compensated phase A current at its initial zero');
+exactZero(z.tables[1].rows[1][1],'initial voltage plotted-data table');exactZero(z.tables[2].rows[1][1],'initial current plotted-data table');
+for(const row of z.tables[0].rows.slice(1))assert.strictEqual(row[4],row[2],'phasor voltage/current angles coincide');checks++;
+for(const row of z.plots.find(plot=>plot.id==='power').data)exactZero(row.net,'compensated reactive power plotted/table row');
+// An extra 0.01 µF supplies an extra 0.1 var: keep this real leading misfit.
+z=run('three-phase',{...compensated,capacitance:50.01});near(z.values.netQ,-.1);assert.ok(metricValue(z,'Net reactive power')<0);checks++;
 console.log(JSON.stringify({status:'PASS',newModels:11,checks,scope:'Independent geometry, tensor rotation, phase power, mass/energy/charge balances, Parseval integration, gear kinematics, unit round trips, analytic hull integrals, interval statistics and titration roots; invalid-domain checks.'}));

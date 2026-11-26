@@ -28,6 +28,7 @@ const sandbox={};
 new Function('window',srcFormulas)(sandbox);
 new Function('window',srcFormulasExt)(sandbox);
 new Function('window',srcFormulasExpand)(sandbox);
+new Function('window',read('seawater-density-20261117.js'))(sandbox); // loaded before calculators.js, as in students/index.html
 new Function('window',srcCalculators)(sandbox);
 new Function('window',srcCalculatorsExt)(sandbox);
 new Function('window',srcCalculatorsExpand)(sandbox);
@@ -192,7 +193,8 @@ ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('273.15')),'
 ok(sandbox.MT_STUDY.physicsChapter20261020.notes.some(x=>x.includes('Doppler')),'Doppler approximation warning preserved');
 ok(html.includes('physics-chapter-20261020.js')&&sw.includes("'./students/physics-chapter-20261020.js'"),'physics pack included in preview and offline cache');
 ok(formulas.length===575,'full chapter expansion contains 575 unique formula entries');
-ok(calculators.length===60,'eight independently authored applied engineering calculators loaded');
+// 61 since the TEOS-10 seawater-density calculator was added (2026-11-17).
+ok(calculators.length===61,'eight independently authored applied engineering calculators loaded');
 ok(exercises.length===36,'six applied engineering exercises loaded');
 ok(formulas.filter(x=>x.category==='Instrumentation & Control').length>=5,'instrumentation domain formulas included');
 ok(sandbox.MT_STUDY.groups.some(g=>g.categories.includes('Instrumentation & Control')),'instrumentation subject discoverable');
