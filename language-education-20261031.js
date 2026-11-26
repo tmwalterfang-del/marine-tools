@@ -1,6 +1,29 @@
 /* Reviewed Norwegian education catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.education={
  "strings": {
+  "16 topics · ONE WORKSPACE": "16 emner · ETT ARBEIDSOMRÅDE",
+  "Find your topic.": "Finn emnet ditt.",
+  "Choose a subject to explore formulas, worked examples and exercises.": "Velg et fag for å utforske formler, løste eksempler og oppgaver.",
+  "Beam loads and deflection": "Bjelkelaster og nedbøyning",
+  "Otto and Diesel cycles": "Otto- og dieselprosesser",
+  "Engine power and fuel": "Motoreffekt og drivstoff",
+  "IF97 Mollier chart": "Mollierdiagram (IF97)",
+  "Pump duty and NPSH": "Pumpens driftspunkt og NPSH",
+  "Refrigeration energy balance": "Energibalanse i kjøleanlegg",
+  "Course and current": "Kurs og strøm",
+  "Lift origins and cross curves": "Løfteutgangspunkt og krysskurver",
+  "Stability and GZ": "Stabilitet og GZ",
+  "Cash flows and NPV": "Kontantstrømmer og nåverdi",
+  "Interactive tools and exports": "Interaktive verktøy og eksport",
+  "Engines and fuel": "Motorer og drivstoff",
+  "Mollier h–s": "Mollier h–s",
+  "RLC, heat, current and investment explorers": "Utforskere for RLC, varme, strøm og investering",
+  "Use the export panel inside a module for HTML reports that can be printed to PDF, vector SVG graphs, CSV data and JSON scenarios. Reopen JSON in the same module to recalculate. Formula bookmarks can also be printed from My Formula Sheet.": "Bruk eksportpanelet i en modul for HTML-rapporter som kan skrives ut til PDF, SVG-grafer i vektorformat, CSV-data og JSON-scenarioer. Åpne JSON-filen i samme modul for å regne på nytt. Formelbokmerker kan også skrives ut fra Formelarket mitt.",
+  "Interactive workspace · Marine Tools": "Interaktivt arbeidsområde · Marine Tools",
+  "Skip to selected module": "Hopp til valgt modul",
+  "GZ, pump, tank, heat…": "GZ, pumpe, tank, varme …",
+  "Selected interactive module": "Valgt interaktiv modul",
+  "Exit presentation": "Avslutt presentasjon",
   "Compare": "Sammenlign",
   "Seawater density (TEOS-10)": "Sjøvannstetthet (TEOS-10)",
   "Density of seawater from practical salinity, in-situ temperature and sea pressure.": "Sjøvannets tetthet ut fra praktisk saltholdighet, in situ-temperatur og sjøtrykk.",
@@ -8854,6 +8877,10 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "NPV = Σ(CFt/(1+r)^t) − investment": "NPV = Σ(CFt/(1+r)^t) − investering"
  },
  "templates": [
+  {
+   "en": "{0} interactive module",
+   "nb": "Interaktiv modul: {0}"
+  },
   {
    "en": "Removed moment = {0} × {1} = {2} tm",
    "nb": "Fjernet moment = {0} × {1} = {2} tm"
