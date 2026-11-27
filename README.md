@@ -41,6 +41,10 @@ Marine Tools includes:
 - **Offline status** — clearly separates local tools from live-data functions.
 - **Live-data age** — AIS and forecast context show fetch age and stale-data status.
 
+## Education
+
+Marine Tools Education is public at [marinetools.app/students](https://www.marinetools.app/students/) for maritime students and teachers: a library of 575 formulas in 16 topics, 61 calculators that show every intermediate step, 53 interactive models with a presentation view, 292 exercises with hints and step-by-step solutions, self-tests, local progress and a printable formula sheet. It works in English and Norwegian, needs no account and keeps progress in the browser. Results are teaching and practice aids, not class-approved calculations.
+
 ## Safety
 
 Marine Tools is a **planning and calculation aid**. It is not ECDIS, approved navigation equipment, a certified decision-support system, PMS, electronic logbook or checklist/SMS system. Users remain responsible for verifying inputs, units, assumptions and results against approved systems, official sources, vessel-specific documentation and applicable procedures.
@@ -56,8 +60,9 @@ Live-data tools send only the route or position context needed to return the req
 
 The feature branch includes development app packages for Android/Samsung,
 iOS Simulator, Windows and macOS, plus a staged public PWA. Setup and build
-commands are in [apps/README.md](apps/README.md). Education remains a protected
-online preview and is excluded from the public offline package. These are
+commands are in [apps/README.md](apps/README.md). Education is public on the
+web but not yet included in the native app packages, where it opens as an online
+link. These are
 development builds; no app-store release or production signing is configured.
 
 ## License
