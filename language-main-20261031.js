@@ -16,6 +16,7 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "The link contains the values in this calculator": "Lenken inneholder verdiene i denne kalkulatoren",
   "Values from a shared link are filled in. Check them and press Calculate – nothing has been saved.": "Verdier fra en delt lenke er fylt inn. Kontroller dem og trykk Beregn – ingenting er lagret.",
   "Maritime glossary (English/Norwegian) →": "Maritim ordliste (engelsk/norsk) →",
+  "Maritime glossary and abbreviations →": "Maritim ordliste og forkortelser →",
   "Glossary": "Ordliste",
   "Start with your job, direct tool links & lessons for teachers": "Start med jobben din, direkte verktøylenker og timer for lærere",
   "Start with your job: the home page groups the tools by task – bunkering, passage planning, the electrical watch, an ECA, stability, the shore office and teaching.": "Start med jobben din: forsiden samler verktøyene etter oppgave – bunkring, seilasplanlegging, elektrovakten, ECA, stabilitet, landkontoret og undervisning.",
