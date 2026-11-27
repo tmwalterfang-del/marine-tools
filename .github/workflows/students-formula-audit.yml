@@ -322,6 +322,7 @@ jobs:
           node tests/education-responsive-20261020.cjs ${{ matrix.browser }}
           node tests/students-mollier-process-browser-20261027.cjs ${{ matrix.browser }}
           node tests/education-single-scroll-20261027.cjs ${{ matrix.browser }}
+          node tests/students-lessons-browser-20261127.cjs ${{ matrix.browser }}
       - name: Main site, workspace and app browser checks
         if: matrix.shard == 'site'
         env:

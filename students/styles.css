@@ -226,3 +226,17 @@ footer a{font-size:11px;text-decoration:none;color:var(--muted)}
 .worked-case-select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 @media(max-width:680px){.formula-grid{display:block}.formula-grid>.formula-card{margin-bottom:14px}}
+
+/* Ready-made 45-minute lessons */
+.lessons{margin:28px auto;max-width:1200px;padding:0 16px}
+.lessons-head p{max-width:780px;color:#a9bccb;line-height:1.5}
+.lessons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px;margin-top:14px}
+.lesson-card{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid rgba(120,191,220,.25);border-radius:12px;background:rgba(13,24,36,.6);color:#e8eef3;text-decoration:none;min-width:0}
+.lesson-card:hover,.lesson-card:focus-visible{border-color:#f2b441}
+.lesson-num{font-weight:800;color:#f2b441;font-size:.85em;letter-spacing:.08em}
+.lesson-card b{overflow-wrap:anywhere;line-height:1.3}
+.lesson-card small{color:#9fb3c4}
+.lesson-open{margin-top:auto;color:#78bfdc;font-weight:600;padding-top:6px}
+.lessons-grid.compact .lesson-card{padding:10px 14px}
+.lessons-more{margin-top:12px}
+.lessons-more summary{cursor:pointer;color:#78bfdc;font-weight:600}
