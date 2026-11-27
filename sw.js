@@ -5,7 +5,7 @@ SHELL.push('./language-systems-20261102.js','./students/systems-lab.html','./stu
  './workspace-core-20261030.js','./students/analysis-core-20261030.js','./students/analysis-adapter-20261030.js',
  './students/study-next-tools-20261030.js','./students/next-tools-20261030.css','./students/handover-20261030.js',
  './students/handover-ui-20261030.js','./product-ux-20261031.js','./language-common-20261031.js','./i18n-20261030.js');
-SHELL.push('./navigation-math.js','./regulatory-links.js','./calc-references-20261117.js','./vendor/geographiclib-geodesic-2.2.0.min.js','./wmm2025-20261117.js');
+SHELL.push('./navigation-math.js','./regulatory-links.js','./calc-references-20261117.js','./vendor/geographiclib-geodesic-2.2.0.min.js','./vendor/qrcode-generator-1.4.4.js','./wmm2025-20261117.js');
 // Private Pages previews must return to the Access gate after a session ends.
 // Never keep an offline copy of protected HTML or code on these origins.
 const PRIVATE_PREVIEW=/(?:\.pages\.dev|\.chatgpt\.site)$/i.test(self.location.hostname);
