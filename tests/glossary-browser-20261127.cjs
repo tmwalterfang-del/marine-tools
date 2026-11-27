@@ -9,9 +9,11 @@ const slug=t=>String(t).toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').r
 let browser;
 (async()=>{
  // data integrity, without a browser
- const sb={window:{}};const ctxv=vm.createContext(sb);for(const f of ['glossary-data.js','glossary-data-more.js','glossary-data-3.js','glossary-data-4.js','glossary-data-5.js','glossary-data-6.js','glossary-data-7.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
+ const sb={window:{}};const ctxv=vm.createContext(sb);for(const f of fs.readdirSync(path.join(root,'glossary')).filter(f=>/^glossary-data(-more|-\d+)?\.js$/.test(f)).sort((a,b)=>(a==='glossary-data.js'?0:a==='glossary-data-more.js'?1:+/-(\d+)\.js$/.exec(a)[1])-(b==='glossary-data.js'?0:b==='glossary-data-more.js'?1:+/-(\d+)\.js$/.exec(b)[1])))vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
  const T=sb.window.MT_GLOSSARY,C=sb.window.MT_GLOSSARY_CATS;assert.ok(T.length>=1500,'at least 1500 terms');
- assert.equal(new Set(T.map(t=>t.id)).size,T.length,'term ids are unique');
+ assert.equal(new Set(T.map(t=>t.id)).size,T.length,'term ids are unique'); const rank=f=>f==='glossary-data.js'?0:f==='glossary-data-more.js'?1:+/-(\d+)\.js$/.exec(f)[1];
+ const tags=[...fs.readFileSync(path.join(root,'glossary.html'),'utf8').matchAll(/src="glossary\/(glossary-data[^"]*)"/g)].map(m=>m[1]);
+ assert.deepEqual(tags,fs.readdirSync(path.join(root,'glossary')).filter(f=>/^glossary-data(-more|-\d+)?\.js$/.test(f)).sort((a,b)=>rank(a)-rank(b)),'every data file is loaded by glossary.html, in order');
  assert.equal(new Set(T.map(t=>t.term.toLowerCase())).size,T.length,'term names are unique');
  for(const t of T){assert.match(t.id,/^[a-z0-9-]+$/,'id format '+t.id);assert.ok(C[t.cat],'known category for '+t.id);assert.ok(t.term&&typeof t.d==='string'&&t.d.length>20&&t.d.length<300,'term and short explanation for '+t.id)}
  for(const k of Object.keys(C))assert.ok(T.some(t=>t.cat===k),'category in use: '+k);
@@ -19,7 +21,7 @@ let browser;
  const aliases=Function('return '+src.match(/const TOOL_LINK_ALIASES=(\{[^;]*\});/)[1])();
  for(const t of T.filter(x=>x.tool)){if(t.tool.startsWith('?tool=')){const id=t.tool.slice(6);assert.ok(ids.has(aliases[id]||id),'tool link resolves for '+t.id+' ('+id+')')}else{const p=t.tool.split('#')[0].replace(/^\//,'');assert.ok(fs.existsSync(path.join(root,p))&&(fs.statSync(path.join(root,p)).isFile()||fs.existsSync(path.join(root,p,'index.html'))),'page exists for '+t.id)}}
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
- browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900}});const page=await ctx.newPage();await ctx.route('https://api.marinetools.app/**',r=>{const o=r.request().headers().origin||'*';r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':o,'access-control-allow-credentials':'true','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,OPTIONS'},body:'{}'})});
+ browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});const page=await ctx.newPage();await ctx.route('https://api.marinetools.app/**',r=>{const h=r.request().headers(),o=h.origin||'null';r.fulfill({status:r.request().method()==='OPTIONS'?204:200,contentType:'application/json',headers:{'access-control-allow-origin':o,'access-control-allow-credentials':'true','access-control-allow-headers':h['access-control-request-headers']||'content-type','access-control-allow-methods':h['access-control-request-method']||'GET,POST','vary':'Origin'},body:r.request().method()==='OPTIONS'?'':'{}'})});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/glossary.html');await page.waitForFunction(()=>!document.getElementById('g-list').hasAttribute('aria-busy'),null,{timeout:15000});
  assert.equal(await page.locator('.g-term').count(),T.length,'all terms listed');

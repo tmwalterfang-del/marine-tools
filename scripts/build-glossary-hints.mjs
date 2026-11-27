@@ -4,7 +4,7 @@
 import fs from 'node:fs'; import path from 'node:path'; import vm from 'node:vm'; import {fileURLToPath} from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ctx = vm.createContext({window: {}});
-for (const f of ['glossary-data.js', 'glossary-data-more.js', 'glossary-data-3.js', 'glossary-data-4.js', 'glossary-data-5.js', 'glossary-data-6.js', 'glossary-data-7.js']) vm.runInContext(fs.readFileSync(path.join(root, 'glossary', f), 'utf8'), ctx);
+for (const f of fs.readdirSync(path.join(root,'glossary')).filter(f=>/^glossary-data(-more|-\d+)?\.js$/.test(f)).sort((a,b)=>(a==='glossary-data.js'?0:a==='glossary-data-more.js'?1:+/-(\d+)\.js$/.exec(a)[1])-(b==='glossary-data.js'?0:b==='glossary-data-more.js'?1:+/-(\d+)\.js$/.exec(b)[1]))) vm.runInContext(fs.readFileSync(path.join(root, 'glossary', f), 'utf8'), ctx);
 const byId = Object.fromEntries(ctx.window.MT_GLOSSARY.map(t => [t.id, t]));
 // [glossary id, case-sensitive abbreviations, case-insensitive words (English + Norwegian UI wording)]
 const MAP = [
