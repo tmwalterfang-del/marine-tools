@@ -11,7 +11,8 @@ let browser;
  const G=Object.fromEntries(ctxv.window.MT_GLOSSARY.map(t=>[t.id,t]));
  assert.ok(fs.readFileSync(path.join(root,'sw.js'),'utf8').includes("'./glossary/glossary-hints.js'"),'hints work offline');
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
- browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900}});const page=await ctx.newPage();
+ browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900}});const page=await ctx.newPage();await ctx.route('https://api.marinetools.app/**',r=>r.fulfill({status:200,contentType:'application/json',body:'{}'})); // no live API in tests (WebKit reports CORS failures as page errors)
+ 
  const errors=[];page.on('pageerror',e=>errors.push(e.message));const close=()=>page.evaluate(()=>document.querySelector('#mtReleaseDialog[open]')?.close());
  const card='.tool-card[data-tool-title="Fuel ROB & endurance"]';
  await page.goto(base+'/?tool=rob');await page.waitForTimeout(1500);await close();
