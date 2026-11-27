@@ -9,8 +9,8 @@ const slug=t=>String(t).toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').r
 let browser;
 (async()=>{
  // data integrity, without a browser
- const sb={window:{}};const ctxv=vm.createContext(sb);for(const f of ['glossary-data.js','glossary-data-more.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
- const T=sb.window.MT_GLOSSARY,C=sb.window.MT_GLOSSARY_CATS;assert.ok(T.length>=500,'at least 500 terms');
+ const sb={window:{}};const ctxv=vm.createContext(sb);for(const f of ['glossary-data.js','glossary-data-more.js','glossary-data-3.js','glossary-data-4.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
+ const T=sb.window.MT_GLOSSARY,C=sb.window.MT_GLOSSARY_CATS;assert.ok(T.length>=900,'at least 900 terms');
  assert.equal(new Set(T.map(t=>t.id)).size,T.length,'term ids are unique');
  assert.equal(new Set(T.map(t=>t.term.toLowerCase())).size,T.length,'term names are unique');
  for(const t of T){assert.match(t.id,/^[a-z0-9-]+$/,'id format '+t.id);assert.ok(C[t.cat],'known category for '+t.id);assert.ok(t.term&&typeof t.d==='string'&&t.d.length>20&&t.d.length<300,'term and short explanation for '+t.id)}
@@ -23,7 +23,7 @@ let browser;
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/glossary.html');await page.waitForTimeout(500);
  assert.equal(await page.locator('.g-term').count(),T.length,'all terms listed');
- assert.ok(await page.evaluate(()=>{const s=document.querySelector('script[type="application/ld+json"]');const j=s&&JSON.parse(s.textContent);return j&&j['@type']==='DefinedTermSet'&&j.hasDefinedTerm.length>=500}),'DefinedTermSet structured data');
+ assert.ok(await page.evaluate(()=>{const s=document.querySelector('script[type="application/ld+json"]');const j=s&&JSON.parse(s.textContent);return j&&j['@type']==='DefinedTermSet'&&j.hasDefinedTerm.length>=900}),'DefinedTermSet structured data');
  // search: abbreviations rank first, case-insensitive, words inside explanations also match
  await page.fill('#g-q','sfoc');assert.equal((await page.$$eval('.g-term',x=>x.map(e=>e.id)))[0],'sfoc','abbreviation ranks first');
  await page.fill('#g-q','LAYTIME');assert.ok((await page.$$eval('.g-term',x=>x.map(e=>e.id))).includes('laytime'),'case-insensitive search');
