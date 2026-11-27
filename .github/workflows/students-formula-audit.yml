@@ -337,6 +337,7 @@ jobs:
           node tests/main-home-roles-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-guide-video-links-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-backup-compat-browser-20261127.cjs ${{ matrix.browser }}
+          node tests/main-tool-feedback-print-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-result-locale-browser-20261101.cjs ${{ matrix.browser }}
           node tests/main-release-20261101.cjs ${{ matrix.browser }}
           node tests/students-next-workspace-browser-20261030.cjs ${{ matrix.browser }}

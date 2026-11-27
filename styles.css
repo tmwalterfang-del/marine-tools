@@ -412,3 +412,10 @@ html{scroll-padding-top:78px}
 .tool-example-note{margin:0 0 10px;padding:8px 12px;border-left:3px solid #f2b441;background:rgba(242,180,65,.10);border-radius:6px;font-size:.92em;line-height:1.4;overflow-wrap:anywhere}
 .tool-feedback a.tool-watch{color:#f2b441;font-weight:600}
 .tool-feedback a.tool-watch:hover{color:#ffd27a}
+.tool-card-actions{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:10px 0 2px;padding:0 16px;font-size:.9em}
+.tool-print{background:none;border:0;padding:0;color:#78bfdc;font:inherit;cursor:pointer}
+.tool-print:hover,.tool-print:focus-visible{color:#a9e8ff;text-decoration:underline}
+.tool-helpful{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center;color:#9fb3c4}
+.tool-helpful button{background:transparent;border:1px solid rgba(120,191,220,.35);border-radius:999px;padding:2px 10px;cursor:pointer;font:inherit;line-height:1.4}
+.tool-helpful button:hover,.tool-helpful button:focus-visible{border-color:#f2b441}
+.tool-helpful a{color:#78bfdc}
