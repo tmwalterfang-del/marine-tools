@@ -1,6 +1,8 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "This workspace backup has no app records. Restore it in Workspace → Data & backup.": "Denne sikkerhetskopien fra arbeidsområdet har ingen appdata. Gjenopprett den i Arbeidsområde → Data og sikkerhetskopi.",
+  "Restore the app records from this workspace backup? Existing local values may be replaced. Projects and Education progress are restored in Workspace.": "Gjenopprette appdataene fra denne sikkerhetskopien? Eksisterende lokale verdier kan bli erstattet. Prosjekter og fremdrift i Education gjenopprettes i arbeidsområdet.",
   "▶ Watch the guide video": "▶ Se guidevideoen",
   "START WITH YOUR JOB": "START MED JOBBEN DIN",
   "What do you need to do today?": "Hva skal du gjøre i dag?",

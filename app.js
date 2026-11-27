@@ -1332,9 +1332,13 @@ function exportData(){
  const data={format:'Marine Tools local backup',version:APP_VERSION,profile:state.profile,route:state.route,lastAnalysis:store.get(K.lastAnalysis,null),settings:appSettings(),theme:state.theme,favorites:favorites(),recent:recentTools(),history:calcHistory(),consumption:consumptionHistory(),bunkering:bunkeringHistory(),weatherCache:store.get(K.weatherCache,null),extraLocal:Object.fromEntries([['profileV2','mt.profile.v2'],['energyLog','mt.energyLog.v1'],['consumptionCurve','mt.voyageConsumptionCurve.v1'],['lastVoyageEstimate','mt.voyageEstimate.last']].map(([n,k])=>[n,store.get(k,null)])),exported:new Date().toISOString()};
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=`marine-tools-backup-${localDateISO()}.json`;a.click();URL.revokeObjectURL(a.href);toast('Local backup downloaded.')
 }
+/* A workspace backup (schema marine-tools-backup) stores the same localStorage records as JSON strings; restore only the app's own records. */
+const APP_BACKUP_KEYS=['mt.profile','mt.profile.v2','mt.route','mt.history','mt.consumption','mt.bunkHistory','mt.energyLog.v1','mt.settings','mt.theme','mt.favorites','mt.recent','mt.locale.v1'];
+function restoreWorkspaceBackup(data){const rows=Object.entries(data.entries).filter(([k,v])=>APP_BACKUP_KEYS.includes(k)&&typeof v==='string'&&v.length<4e6).filter(([,v])=>{try{JSON.parse(v);return true}catch{return false}});if(!rows.length)return toast('This workspace backup has no app records. Restore it in Workspace → Data & backup.');if(!confirm('Restore the app records from this workspace backup? Existing local values may be replaced. Projects and Education progress are restored in Workspace.'))return;for(const [k,v] of rows)localStorage.setItem(k,v);toast('Backup restored. Reloading…');setTimeout(()=>location.reload(),500)}
 async function importDataBackup(file){
  try{
   const data=JSON.parse(await file.text());
+  if(data&&data.schema==='marine-tools-backup'&&data.entries&&typeof data.entries==='object'&&!Array.isArray(data.entries))return restoreWorkspaceBackup(data);
   if(!data||typeof data!=='object'||(!data.profile&&!data.consumption&&!data.bunkering&&!data.settings))return toast('This does not look like a Marine Tools backup.');
   if(!confirm('Restore this Marine Tools backup? Existing local values may be replaced.'))return;
   const mapping=[[K.profile,data.profile],[K.route,data.route],[K.lastAnalysis,data.lastAnalysis],[K.settings,data.settings],[K.theme,data.theme],[K.favorites,data.favorites],[K.recent,data.recent],[K.history,data.history],[K.consumption,data.consumption],[K.bunkHistory,data.bunkering],[K.weatherCache,data.weatherCache]];
