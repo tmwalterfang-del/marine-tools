@@ -134,6 +134,43 @@ function requestedInitialPage(){
  return id&&document.getElementById(id)&&PAGE_RENDERERS[id]?id:'';
 }
 function openTool(pageId,title=''){page(pageId);if(title)setTimeout(()=>{const card=$$('.tool-card').find(x=>x.dataset.toolTitle===title);if(card){if(card.hidden&&card.dataset.toolGroup){const sel=pageId==='fuel'?$('#fuelView'):pageId==='engineering'?$('#engView'):null;if(sel){sel.value=card.dataset.toolGroup;sel.dispatchEvent(new Event('change'))}}card.scrollIntoView({behavior:'smooth',block:'start'});card.classList.add('tool-focus');setTimeout(()=>card.classList.remove('tool-focus'),1600)}},80)}
+/* Deep links: ?tool=<id> opens one calculator; &example=1 fills the example values used in the guide videos.
+   IDs are slugs of the English tool title (stable across languages); short campaign aliases map to them. */
+function toolSlug(title){return String(title||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
+const TOOL_LINK_ALIASES={rob:'fuel-rob-and-endurance',endurance:'fuel-rob-and-endurance',transfer:'tank-transfer','fuel-density':'fuel-temperature-correction',blend:'fuel-blending','bunker-log':'bunkering-history-and-export','bunker-overview':'bunkering-overview','port-distance':'port-distance-and-sea-time',eta:'current-corrected-eta','set-drift':'set-and-drift','gc-rhumb':'great-circle-vs-rhumb-line',bearing:'bearing-distance-and-destination','true-wind':'true-apparent-wind',wind:'wind-component',encounter:'wave-encounter-period','weather-window':'weather-window-finder','air-draft':'air-draft-bridge-clearance',anchor:'anchor-swing-radius',fwa:'fwa-dwa',generator:'generator-load-margin','three-phase':'three-phase-power',motor:'motor-current',imbalance:'current-imbalance',transformer:'transformer-calculator',battery:'battery-runtime',beaufort:'beaufort-converter',dst:'speed-distance-time',units:'unit-converter',compass:'compass-gyro-correction',nox:'nox-reporting-helper','energy-log':'daily-consumption-and-reporting'};
+/* Example values = the inputs shown in the Marine Tools guide videos (results verified there). Fields only; nothing is calculated or saved automatically. */
+const TOOL_EXAMPLES={
+ 'fuel-rob-and-endurance':{rob:182,robDay:14.5,robRes:3},
+ 'tank-transfer':{tankCap:420,tankNow:150,tankMove:200,tankRate:60},
+ 'fuel-temperature-correction':{fuelVol:300,fuelDensity:970,fuelTemp:45,fuelRef:15},
+ 'fuel-blending':{blendVA:150,blendDA:988,blendSA:0.45,blendVB:293,blendDB:991,blendSB:0.48},
+ 'current-corrected-eta':{etaDist:539,etaStw:12.5,etaCur:-0.8},
+ 'set-and-drift':{sdCourse:190,sdStw:12.5,sdSet:250,sdDrift:1.2},
+ 'great-circle-vs-rhumb-line':{gcLat1:60.40,gcLon1:5.30,gcLat2:51.95,gcLon2:4.05},
+ 'bearing-distance-and-destination':{navLat1:60.40,navLon1:5.30,navLat2:51.95,navLon2:4.05},
+ 'wind-component':{windCourse:190,windDir:240,windSpeed:28},
+ 'true-apparent-wind':{twCourse:200,twShip:12,twRel:40,twAws:30},
+ 'wave-encounter-period':{weCourse:150,weSpeed:12,weFrom:240,wePeriod:9},
+ 'air-draft-bridge-clearance':{airPublished:40,airWater:1.2,airDraft:34.5,airMargin:2},
+ 'anchor-swing-radius':{anchorChain:150,anchorDepth:25,anchorLoa:150},
+ 'fwa-dwa':{fwaDisp:12500,fwaTpc:25},
+ 'generator-load-margin':{genCap:1200,genLoad:870},
+ 'three-phase-power':{elV:440,elA:820,elPf:0.85},
+ 'motor-current':{motKw:75,motV:440},
+ 'current-imbalance':{l1:412,l2:398,l3:430},
+ 'transformer-calculator':{trKva:500,trV1:440,trV2:230},
+ 'battery-runtime':{batKwh:200,batSoc:80,batMin:20,batLoad:45},
+ 'beaufort-converter':{bfKn:28},
+ 'speed-distance-time':{qDist:84,qSpeed:14},
+ 'compass-gyro-correction':{compMode:'magnetic',compC:186,compVar:2,compDev:-1}
+};
+function toolBySlug(raw){const id=toolSlug(TOOL_LINK_ALIASES[String(raw||'').toLowerCase()]||raw);return id?STATIC_TOOL_INDEX.find(x=>toolSlug(x.title)===id)||null:null}
+function toolLink(title,example=false){const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('tool',toolSlug(title));if(example)u.searchParams.set('example','1');return u.toString()}
+function fillToolExample(title){const ex=TOOL_EXAMPLES[toolSlug(title)];const card=$$('.tool-card').find(x=>x.dataset.toolTitle===title);if(!ex||!card)return false;let n=0;for(const [id,v] of Object.entries(ex)){const el=document.getElementById(id);if(el&&card.contains(el)){el.value=String(v);n++}}if(!n)return false;let note=card.querySelector('.tool-example-note');if(!note){note=document.createElement('p');note.className='tool-example-note';note.setAttribute('role','status');const work=card.querySelector('.tool-card-work');(work||card).prepend(note)}note.textContent='Example values from the Marine Tools guide are filled in. Press Calculate to see the result – nothing has been saved.';return true}
+function openRequestedTool(){const q=new URLSearchParams(location.search),h=new URLSearchParams((location.hash||'').replace(/^#/,''));const raw=q.get('tool')||h.get('tool');if(!raw)return false;const t=toolBySlug(raw);if(!t)return false;openTool(t.page,t.title);if((q.get('example')||h.get('example'))==='1')setTimeout(()=>fillToolExample(t.title),450);return true}
+function copyToolLink(title){const url=toolLink(title);const done=()=>toast('Link to this tool copied.');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done).catch(()=>prompt('Copy this link:',url));else prompt('Copy this link:',url)}
+window.__marineToolsToolLink=toolLink;
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-copy-tool-link]');if(b){e.preventDefault();copyToolLink(b.dataset.copyToolLink)}});
 function button(label,pageId,cls='btn primary'){return `<button class="${cls}" data-go="${pageId}">${label}</button>`}
 
 const TOOL_META={
@@ -206,7 +243,7 @@ Regards,
  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 function reportIssueLink(title){
- return `<div class="tool-feedback"><a href="${reportIssueUrl(title)}">Report a problem with this tool →</a></div>`;
+ return `<div class="tool-feedback"><button type="button" class="link-btn tool-copy-link" data-copy-tool-link="${title}">Copy link to this tool</button><a href="${reportIssueUrl(title)}">Report a problem with this tool →</a></div>`;
 }
 
 function toolUsage(title){const m=toolMeta(title);return `<div class="tool-how"><b>How to use</b><span>${m.how}</span></div>`}
@@ -1394,6 +1431,6 @@ document.addEventListener('input',onCardEdit,true);document.addEventListener('ch
 let printCleanup=null;function printCalculation(card){if(!card)return;printCleanup?.();const meta=document.createElement('p');meta.className='print-meta';meta.textContent=mainMessage('Marine Tools {0} · {1} · printed {2}',[APP_VERSION,card.dataset.toolTitle||'',new Date().toISOString().replace('T',' ').slice(0,16)+' UTC']);card.prepend(meta);const opened=[...card.querySelectorAll('details:not([open])')];opened.forEach(d=>d.open=true);const hidden=[];for(let n=card;n&&n!==document.body;n=n.parentElement)for(const s of n.parentElement?.children||[])if(s!==n&&!s.classList.contains('print-hidden')){s.classList.add('print-hidden');hidden.push(s)}card.classList.add('print-target');document.body.classList.add('print-one-card');const evs=['afterprint','focus','pointermove','keydown'];const done=()=>{if(printCleanup!==done)return;printCleanup=null;meta.remove();opened.forEach(d=>d.open=false);hidden.forEach(s=>s.classList.remove('print-hidden'));card.classList.remove('print-target');document.body.classList.remove('print-one-card');evs.forEach(t=>window.removeEventListener(t,later,true))};const later=e=>{if(e.type==='afterprint'||!matchMedia('print').matches)done()};printCleanup=done;window.addEventListener('afterprint',later,true);window.print();setTimeout(()=>{if(printCleanup===done)evs.slice(1).forEach(t=>window.addEventListener(t,later,true))},0)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-function init(){renderHome();renderedPages.add('home');bindGlobal();initUsageAnalytics();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();const requested=requestedInitialPage();if(requested&&requested!=='home')setTimeout(()=>page(requested),0)}
+function init(){renderHome();renderedPages.add('home');bindGlobal();initUsageAnalytics();syncFavoriteButtons();renderFavoriteHome();renderRecentHome();renderHistoryHome();updateHome();setTimeout(()=>{if(openRequestedTool())return;const requested=requestedInitialPage();if(requested&&requested!=='home')page(requested)},0)}
 document.addEventListener('DOMContentLoaded',init);
 })();
