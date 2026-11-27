@@ -7,11 +7,11 @@ const server=http.createServer((req,res)=>{let f=path.resolve(root,'.'+new URL(r
 let browser;
 (async()=>{
  execFileSync(process.execPath,[path.join(root,'scripts/build-glossary-hints.mjs'),'--check'],{stdio:'pipe'}); // throws if stale
- const ctxv=vm.createContext({window:{}});for(const f of ['glossary-data.js','glossary-data-more.js','glossary-data-3.js','glossary-data-4.js','glossary-data-5.js','glossary-data-6.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
+ const ctxv=vm.createContext({window:{}});for(const f of ['glossary-data.js','glossary-data-more.js','glossary-data-3.js','glossary-data-4.js','glossary-data-5.js','glossary-data-6.js','glossary-data-7.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
  const G=Object.fromEntries(ctxv.window.MT_GLOSSARY.map(t=>[t.id,t]));
  assert.ok(fs.readFileSync(path.join(root,'sw.js'),'utf8').includes("'./glossary/glossary-hints.js'"),'hints work offline');
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
- browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900}});const page=await ctx.newPage();await ctx.route('https://api.marinetools.app/**',r=>r.fulfill({status:200,contentType:'application/json',body:'{}'})); // no live API in tests (WebKit reports CORS failures as page errors)
+ browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900}});const page=await ctx.newPage();await ctx.route('https://api.marinetools.app/**',r=>{const o=r.request().headers().origin||'*';r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':o,'access-control-allow-credentials':'true','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,OPTIONS'},body:'{}'})}); // no live API in tests (WebKit reports CORS failures as page errors)
  
  const errors=[];page.on('pageerror',e=>errors.push(e.message));const close=()=>page.evaluate(()=>document.querySelector('#mtReleaseDialog[open]')?.close());
  const card='.tool-card[data-tool-title="Fuel ROB & endurance"]';

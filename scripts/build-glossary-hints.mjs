@@ -4,7 +4,7 @@
 import fs from 'node:fs'; import path from 'node:path'; import vm from 'node:vm'; import {fileURLToPath} from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ctx = vm.createContext({window: {}});
-for (const f of ['glossary-data.js', 'glossary-data-more.js', 'glossary-data-3.js', 'glossary-data-4.js', 'glossary-data-5.js', 'glossary-data-6.js']) vm.runInContext(fs.readFileSync(path.join(root, 'glossary', f), 'utf8'), ctx);
+for (const f of ['glossary-data.js', 'glossary-data-more.js', 'glossary-data-3.js', 'glossary-data-4.js', 'glossary-data-5.js', 'glossary-data-6.js', 'glossary-data-7.js']) vm.runInContext(fs.readFileSync(path.join(root, 'glossary', f), 'utf8'), ctx);
 const byId = Object.fromEntries(ctx.window.MT_GLOSSARY.map(t => [t.id, t]));
 // [glossary id, case-sensitive abbreviations, case-insensitive words (English + Norwegian UI wording)]
 const MAP = [

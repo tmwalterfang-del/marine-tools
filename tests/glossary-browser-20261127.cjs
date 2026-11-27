@@ -9,8 +9,8 @@ const slug=t=>String(t).toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').r
 let browser;
 (async()=>{
  // data integrity, without a browser
- const sb={window:{}};const ctxv=vm.createContext(sb);for(const f of ['glossary-data.js','glossary-data-more.js','glossary-data-3.js','glossary-data-4.js','glossary-data-5.js','glossary-data-6.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
- const T=sb.window.MT_GLOSSARY,C=sb.window.MT_GLOSSARY_CATS;assert.ok(T.length>=1250,'at least 1250 terms');
+ const sb={window:{}};const ctxv=vm.createContext(sb);for(const f of ['glossary-data.js','glossary-data-more.js','glossary-data-3.js','glossary-data-4.js','glossary-data-5.js','glossary-data-6.js','glossary-data-7.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
+ const T=sb.window.MT_GLOSSARY,C=sb.window.MT_GLOSSARY_CATS;assert.ok(T.length>=1500,'at least 1500 terms');
  assert.equal(new Set(T.map(t=>t.id)).size,T.length,'term ids are unique');
  assert.equal(new Set(T.map(t=>t.term.toLowerCase())).size,T.length,'term names are unique');
  for(const t of T){assert.match(t.id,/^[a-z0-9-]+$/,'id format '+t.id);assert.ok(C[t.cat],'known category for '+t.id);assert.ok(t.term&&typeof t.d==='string'&&t.d.length>20&&t.d.length<300,'term and short explanation for '+t.id)}
@@ -19,11 +19,11 @@ let browser;
  const aliases=Function('return '+src.match(/const TOOL_LINK_ALIASES=(\{[^;]*\});/)[1])();
  for(const t of T.filter(x=>x.tool)){if(t.tool.startsWith('?tool=')){const id=t.tool.slice(6);assert.ok(ids.has(aliases[id]||id),'tool link resolves for '+t.id+' ('+id+')')}else{const p=t.tool.split('#')[0].replace(/^\//,'');assert.ok(fs.existsSync(path.join(root,p))&&(fs.statSync(path.join(root,p)).isFile()||fs.existsSync(path.join(root,p,'index.html'))),'page exists for '+t.id)}}
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
- browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900}});const page=await ctx.newPage();
+ browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900}});const page=await ctx.newPage();await ctx.route('https://api.marinetools.app/**',r=>{const o=r.request().headers().origin||'*';r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':o,'access-control-allow-credentials':'true','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,OPTIONS'},body:'{}'})});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(base+'/glossary.html');await page.waitForTimeout(500);
+ await page.goto(base+'/glossary.html');await page.waitForFunction(()=>!document.getElementById('g-list').hasAttribute('aria-busy'),null,{timeout:15000});
  assert.equal(await page.locator('.g-term').count(),T.length,'all terms listed');
- assert.ok(await page.evaluate(()=>{const s=document.querySelector('script[type="application/ld+json"]');const j=s&&JSON.parse(s.textContent);return j&&j['@type']==='DefinedTermSet'&&j.hasDefinedTerm.length>=1250}),'DefinedTermSet structured data');
+ assert.ok(await page.evaluate(()=>{const s=document.querySelector('script[type="application/ld+json"]');const j=s&&JSON.parse(s.textContent);return j&&j['@type']==='DefinedTermSet'&&j.hasDefinedTerm.length>=1500}),'DefinedTermSet structured data');
  // search: abbreviations rank first, case-insensitive, words inside explanations also match
  await page.fill('#g-q','sfoc');assert.equal((await page.$$eval('.g-term',x=>x.map(e=>e.id)))[0],'sfoc','abbreviation ranks first');
  await page.fill('#g-q','LAYTIME');assert.ok((await page.$$eval('.g-term',x=>x.map(e=>e.id))).includes('laytime'),'case-insensitive search');
@@ -42,7 +42,7 @@ let browser;
  await page.goto(base+'/glossary.html#fwa');await page.waitForTimeout(500);
  assert.equal(await page.textContent('h1'),'Maritim ordliste','language remembered');assert.ok(await page.evaluate(()=>document.getElementById('fwa').classList.contains('is-target')),'deep link highlights the term');
  // 320 px
- await page.setViewportSize({width:320,height:800});await page.goto(base+'/glossary.html');await page.waitForTimeout(500);
+ await page.setViewportSize({width:320,height:800});await page.goto(base+'/glossary.html');await page.waitForFunction(()=>!document.getElementById('g-list').hasAttribute('aria-busy'),null,{timeout:15000});
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'no horizontal scroll at 320 px');
  // entry links
  await page.evaluate(()=>localStorage.setItem('mt.locale.v1',JSON.stringify('en')));await page.setViewportSize({width:1280,height:900});
