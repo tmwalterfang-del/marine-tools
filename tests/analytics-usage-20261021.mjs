@@ -16,6 +16,9 @@ const calls=[],data=await(await worker.fetch(new Request('https://api.marinetool
 check(data.usage.current.browsers===8&&data.usage.current.visits===10&&data.usage.current.calculations===7,'visitors, visits and results remain separate');
 check(data.usage.tools.find(x=>x.tool==='calc3p').activeBrowsers===3,'tool reach is unique browsers rather than result count');
 check(data.usage.sources[0].source==='linkedin'&&data.usage.referrers[0].referrer==='linkedin.com'&&data.usage.campaigns[0].campaign==='launch-2026'&&data.usage.countries[0].country==='NO'&&data.usage.platforms[0].platform==='web','acquisition and technical context are available to the dashboard');
+const fb=data.usage.feedback||[],tp=fb.find(x=>x.tool==='Three-phase power');
+check(tp&&tp.helpful===5&&tp.notHelpful===2&&tp.share===71&&tp.reasons['wrong-result']===2&&!('<script>' in tp.reasons)&&fb.length===2&&fb[0].tool==='Three-phase power','tool feedback is grouped per tool with helpful share and only known reasons');
+check(calls.some(x=>x.query.includes("blob1='tool_feedback'")&&x.query.includes('COUNT(DISTINCT blob6)')),'feedback query also counts unique browsers');
 check(calls.filter(x=>x.query.includes("blob10='usage-v1'")).every(x=>x.query.includes('COUNT(DISTINCT blob6)')),'audience queries deduplicate random browser IDs within period');
 const index=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const js=fs.readFileSync(new URL('../usage-analytics.js',import.meta.url),'utf8');

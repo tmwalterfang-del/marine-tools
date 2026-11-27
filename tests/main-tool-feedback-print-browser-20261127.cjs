@@ -19,6 +19,11 @@ let browser;
  await page.click(`${card} [data-helpful="yes"]`);assert.match(await page.textContent(`${card} .tool-helpful`),/Thanks for the feedback/,'positive feedback acknowledged');
  const other='.tool-card[data-tool-title="Tank transfer"]';await page.click(`${other} [data-helpful="no"]`);
  assert.match(await page.getAttribute(`${other} .tool-helpful a`,'href'),/^mailto:/,'negative feedback offers the report link');
+ // after "No": fixed reason choices (no free text); choosing one thanks the user and keeps the report link
+ assert.deepEqual(await page.$$eval(`${other} [data-helpful-reason]`,b=>b.map(x=>x.dataset.helpfulReason)),['not-found','wrong-result','hard-to-use','other'],'reason choices offered after No');
+ await page.click(`${other} [data-helpful-reason="wrong-result"]`);
+ assert.match(await page.textContent(`${other} .tool-helpful`),/helps us improve/,'reason acknowledged');
+ assert.match(await page.getAttribute(`${other} .tool-helpful a`,'href'),/^mailto:/,'report link kept after choosing a reason');
  assert.deepEqual(analytics,[],'no analytics request without consent');
  await page.evaluate(()=>localStorage.setItem('mt.locale.v1',JSON.stringify('nb')));await page.setViewportSize({width:320,height:800});
  await page.goto(base+'/?tool=rob');await page.waitForTimeout(1500);
