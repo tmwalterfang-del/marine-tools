@@ -28,16 +28,33 @@
   /* Related terms: other glossary terms whose name or abbreviation appears in this explanation (computed per card, cached). */
   var KEYS = null, relCache = {};
   function keysOf(t) { var k = [], m = /^([^(]+?)\s*\(([^)]+)\)/.exec(t.term); var head = m ? m[1].trim() : t.term.trim();
-    k.push(head); if (m && m[2].length > 3 && !/^(per|or|and)\b/i.test(m[2])) k.push(m[2].trim());
+    k.push(head); var p = m ? m[2].trim() : '';
+    // the bracket part is a key only when it is an abbreviation or a multi-word expansion, not a qualifier like "(engine)"
+    if (p.length > 3 && !/^(per|or|and)\b/i.test(p) && (/\s/.test(p) || /^[A-Z0-9][A-Z0-9&\/\-]{1,7}$/.test(p))) k.push(p);
     return k.filter(function (x) { return x.length >= 2 && !/^(set|list|fix|log|class|current|frame|floor|tide|draft|trim|heel|pilot|master|agent|hire|fixture|ballast|freight|rating|tug|ferry|refrigeration|boiler|condenser)$/i.test(x); }); }
+  /* Index built once: abbreviations by exact token, names (lower case, >= 5 chars) by their first word. Lookup walks the
+     words of one explanation, so cost grows with the explanation length, not with the size of the glossary. */
+  function buildKeys() {
+    KEYS = {abbr: {}, first: {}};
+    TERMS.forEach(function (x) { keysOf(x).forEach(function (k) {
+      if (/^[A-Z0-9][A-Za-z0-9&\/\-]{1,7}$/.test(k) && /[A-Z].*[A-Z]|^[A-Z]{2}/.test(k)) { if (!KEYS.abbr[k]) KEYS.abbr[k] = x.id; }
+      else if (k.length >= 5) { var lk = k.toLowerCase(), fw = lk.split(' ')[0]; (KEYS.first[fw] = KEYS.first[fw] || []).push({k: lk, id: x.id}); }
+    }); });
+  }
   function relatedFor(t) {
     if (relCache[t.id]) return relCache[t.id];
-    if (!KEYS) { KEYS = []; TERMS.forEach(function (x) { keysOf(x).forEach(function (k) { var abbr = /^[A-Z0-9][A-Za-z0-9&\/\-]{1,7}$/.test(k) && /[A-Z].*[A-Z]|^[A-Z]{2}/.test(k); KEYS.push({id: x.id, k: abbr ? k : k.toLowerCase(), abbr: abbr}); }); }); }
-    var d = ' ' + t.d.replace(/[.,;:()“”"'’]/g, ' ') + ' ', dl = d.toLowerCase(), out = [];
-    for (var i = 0; i < KEYS.length && out.length < 5; i++) { var x = KEYS[i]; if (x.id === t.id || out.indexOf(x.id) >= 0) continue;
-      if (x.abbr ? d.indexOf(' ' + x.k + ' ') >= 0 : (x.k.length >= 5 && dl.indexOf(' ' + x.k + ' ') >= 0)) out.push(x.id); }
+    if (!KEYS) buildKeys();
+    var d = ' ' + t.d.replace(/[.,;:()“”"'’]/g, ' ').replace(/\s+/g, ' ') + ' ', dl = d.toLowerCase(), words = d.trim().split(' '), out = [];
+    for (var i = 0; i < words.length && out.length < 5; i++) {
+      var w = words[i], a = KEYS.abbr[w];
+      if (a && a !== t.id && out.indexOf(a) < 0) out.push(a);
+      var c = KEYS.first[w.toLowerCase()];
+      if (c) for (var j = 0; j < c.length && out.length < 5; j++) { var x = c[j]; if (x.id !== t.id && out.indexOf(x.id) < 0 && dl.indexOf(' ' + x.k + ' ') >= 0) out.push(x.id); }
+    }
     return (relCache[t.id] = out);
   }
+  var COLL = (typeof Intl !== 'undefined' && Intl.Collator) ? new Intl.Collator('en') : null;
+  function cmpTerm(a, b) { return COLL ? COLL.compare(a.term, b.term) : (a.term < b.term ? -1 : a.term > b.term ? 1 : 0); }
   var byId = {}; TERMS.forEach(function (t) { byId[t.id] = t; });
   function card(t, u) {
     var a = el('article', 'g-term'); a.id = t.id; a.lang = 'en';
@@ -60,7 +77,8 @@
     var u = UI[lang], nq = norm(q).trim(), token = ++renderToken;
     var hits = TERMS.filter(function (t) { return (!cat || t.cat === cat) && (!nq || norm(t.term + ' ' + t.d).indexOf(nq) >= 0); });
     // exact abbreviation / term-start matches first, then alphabetical
-    hits.sort(function (a, b) { var as = nq && norm(a.term).indexOf(nq) === 0 ? 0 : 1, bs = nq && norm(b.term).indexOf(nq) === 0 ? 0 : 1; return as - bs || a.term.localeCompare(b.term, 'en'); });
+    var starts = {}; if (nq) hits.forEach(function (t) { starts[t.id] = norm(t.term).indexOf(nq) === 0 ? 0 : 1; });
+    hits.sort(function (a, b) { return (nq ? starts[a.id] - starts[b.id] : 0) || cmpTerm(a, b); });
     var list = $('g-list'); list.textContent = ''; list.setAttribute('aria-busy', 'true');
     $('g-count').textContent = hits.length ? u.count(hits.length) : u.none;
     var bar = $('g-az'); bar.textContent = ''; bar.hidden = !!nq;
