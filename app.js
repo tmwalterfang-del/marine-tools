@@ -1366,7 +1366,7 @@ async function importDataBackup(file){
  }catch{toast('Could not restore backup JSON.')}
 }
 
-function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/icon-192.png" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
+function renderSurvey(){$('#survey').innerHTML=pageTitle('Survey','Share what would make Marine Tools more useful in everyday work at sea.')+`<article class="panel survey-card"><img src="assets/logo-144.webp" alt="Marine Tools"><h2>Help shape Marine Tools</h2><p>Marine Tools is an independent project developed and maintained by one person. The short survey asks seafarers which calculations, planning aids and technical helpers are genuinely useful. It takes about 2–3 minutes and does not require your name, employer or vessel name.</p><a class="btn primary" href="${SURVEY_URL}" target="_blank" rel="noopener">Take the survey →</a></article>`}
 function renderSuggestions(){$('#suggestions').innerHTML=pageTitle('Suggestions','Suggest a new tool, improvement or report a problem.')+`<article class="panel survey-card"><div style="font-size:54px">✧</div><h2>Suggest something</h2><p>Ideas are welcome for practical calculations, planning aids, live maritime context and quick technical utilities. Click below to open a prepared email to Marine Tools.</p><a class="btn primary" href="${SUGGEST_URL}">Email a suggestion →</a><p class="helper" style="margin-top:12px">${CONTACT_EMAIL}</p></article>`}
 function renderSupport(){
  $('#support').innerHTML=pageTitle('Support Marine Tools','Voluntary support for an independently developed maritime toolbox.')+`
@@ -1386,7 +1386,7 @@ function renderContact(){
    <article class="panel">
      <div class="panel-body">
        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-         <img src="assets/icon-192.png" alt="Marine Tools" style="width:72px;height:72px;object-fit:contain">
+         <img src="assets/logo-144.webp" alt="Marine Tools" style="width:72px;height:72px;object-fit:contain">
          <div><div class="eyebrow">MARINE TOOLS</div><h2 style="margin:2px 0 0">Business information</h2></div>
        </div>
        <div class="source-box">

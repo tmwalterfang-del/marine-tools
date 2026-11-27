@@ -66,6 +66,10 @@ on:
       - '.github/workflows/students-formula-audit.yml'
       - 'regulatory/**'
       - 'regulatory.html'
+      - 'assets/logo-144.webp'
+      - 'privacy/index.html'
+      - 'professionals/index.html'
+      - 'education/one-page.html'
       - 'regulatory-links.js'
       - 'navigation-math.js'
       - 'tests/regulatory-*'
@@ -335,6 +339,7 @@ jobs:
           node tests/main-calculator-working-browser-20261117.cjs ${{ matrix.browser }}
           node tests/main-calculator-route-dateline-20261117.cjs ${{ matrix.browser }}
           node tests/main-tool-links-browser-20261127.cjs ${{ matrix.browser }}
+          node tests/main-logo-weight-20261127.cjs
           node tests/main-home-roles-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-guide-video-links-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-backup-compat-browser-20261127.cjs ${{ matrix.browser }}
