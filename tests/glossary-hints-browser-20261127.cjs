@@ -7,7 +7,7 @@ const server=http.createServer((req,res)=>{let f=path.resolve(root,'.'+new URL(r
 let browser;
 (async()=>{
  execFileSync(process.execPath,[path.join(root,'scripts/build-glossary-hints.mjs'),'--check'],{stdio:'pipe'}); // throws if stale
- const ctxv=vm.createContext({window:{}});for(const f of ['glossary-data.js','glossary-data-more.js','glossary-data-3.js','glossary-data-4.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
+ const ctxv=vm.createContext({window:{}});for(const f of ['glossary-data.js','glossary-data-more.js','glossary-data-3.js','glossary-data-4.js','glossary-data-5.js','glossary-data-6.js'])vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
  const G=Object.fromEntries(ctxv.window.MT_GLOSSARY.map(t=>[t.id,t]));
  assert.ok(fs.readFileSync(path.join(root,'sw.js'),'utf8').includes("'./glossary/glossary-hints.js'"),'hints work offline');
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
