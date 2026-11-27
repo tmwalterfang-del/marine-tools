@@ -7,7 +7,7 @@ const server=http.createServer((req,res)=>{let f=path.resolve(root,'.'+new URL(r
 let browser;
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
- browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900}});const page=await ctx.newPage();await ctx.route('https://api.marinetools.app/**',r=>{const o=r.request().headers().origin||'*';r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':o,'access-control-allow-credentials':'true','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,OPTIONS'},body:'{}'})}); // no live API in tests (WebKit reports CORS failures as page errors)
+ browser=await pw[engine].launch();const ctx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});const page=await ctx.newPage();await ctx.route('https://api.marinetools.app/**',r=>{const h=r.request().headers(),o=h.origin||'null';r.fulfill({status:r.request().method()==='OPTIONS'?204:200,contentType:'application/json',headers:{'access-control-allow-origin':o,'access-control-allow-credentials':'true','access-control-allow-headers':h['access-control-request-headers']||'content-type','access-control-allow-methods':h['access-control-request-method']||'GET,POST','vary':'Origin'},body:r.request().method()==='OPTIONS'?'':'{}'})}); // no live API in tests (WebKit reports CORS failures as page errors)
  
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const closeRelease=()=>page.evaluate(()=>document.querySelector('#mtReleaseDialog[open]')?.close()); // the What's new dialog is modal and makes the fields inert
