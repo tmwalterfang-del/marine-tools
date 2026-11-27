@@ -10,7 +10,7 @@ let browser;
 (async()=>{
  // data integrity, without a browser
  const sb={window:{}};const ctxv=vm.createContext(sb);for(const f of fs.readdirSync(path.join(root,'glossary')).filter(f=>/^glossary-data(-more|-\d+)?\.js$/.test(f)).sort((a,b)=>(a==='glossary-data.js'?0:a==='glossary-data-more.js'?1:+/-(\d+)\.js$/.exec(a)[1])-(b==='glossary-data.js'?0:b==='glossary-data-more.js'?1:+/-(\d+)\.js$/.exec(b)[1])))vm.runInContext(fs.readFileSync(path.join(root,'glossary',f),'utf8'),ctxv);
- const T=sb.window.MT_GLOSSARY,C=sb.window.MT_GLOSSARY_CATS;assert.ok(T.length>=3000,'at least 3000 terms');
+ const T=sb.window.MT_GLOSSARY,C=sb.window.MT_GLOSSARY_CATS;assert.ok(T.length>=4000,'at least 4000 terms');
  assert.equal(new Set(T.map(t=>t.id)).size,T.length,'term ids are unique'); const rank=f=>f==='glossary-data.js'?0:f==='glossary-data-more.js'?1:+/-(\d+)\.js$/.exec(f)[1];
  const tags=[...fs.readFileSync(path.join(root,'glossary.html'),'utf8').matchAll(/src="glossary\/(glossary-data[^"]*)"/g)].map(m=>m[1]);
  assert.deepEqual(tags,fs.readdirSync(path.join(root,'glossary')).filter(f=>/^glossary-data(-more|-\d+)?\.js$/.test(f)).sort((a,b)=>rank(a)-rank(b)),'every data file is loaded by glossary.html, in order');
@@ -25,7 +25,7 @@ let browser;
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/glossary.html');await page.waitForFunction(()=>!document.getElementById('g-list').hasAttribute('aria-busy'),null,{timeout:15000});
  assert.equal(await page.locator('.g-term').count(),T.length,'all terms listed');
- assert.ok(await page.evaluate(()=>{const s=document.querySelector('script[type="application/ld+json"]');const j=s&&JSON.parse(s.textContent);return j&&j['@type']==='DefinedTermSet'&&j.hasDefinedTerm.length>=3000}),'DefinedTermSet structured data');
+ assert.ok(await page.evaluate(()=>{const s=document.querySelector('script[type="application/ld+json"]');const j=s&&JSON.parse(s.textContent);return j&&j['@type']==='DefinedTermSet'&&j.hasDefinedTerm.length>=4000}),'DefinedTermSet structured data');
  // search: abbreviations rank first, case-insensitive, words inside explanations also match
  await page.fill('#g-q','sfoc');assert.equal((await page.$$eval('.g-term',x=>x.map(e=>e.id)))[0],'sfoc','abbreviation ranks first');
  await page.fill('#g-q','LAYTIME');assert.ok((await page.$$eval('.g-term',x=>x.map(e=>e.id))).includes('laytime'),'case-insensitive search');
