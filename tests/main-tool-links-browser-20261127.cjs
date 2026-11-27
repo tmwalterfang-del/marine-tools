@@ -32,7 +32,7 @@ let browser;
  assert.deepEqual(after.filter(k=>!['mt.recent.v1','mt.analytics.v1'].includes(k)&&!before.includes(k)),[],'no new stored data from opening an example');
  await page.click('#calcRob');await page.waitForTimeout(400);assert.match(await page.textContent('#resRob'),/12\.2\s*days/,'example reproduces the guide result');
  // copy-link control present on the card
- assert.equal(await page.locator('.tool-card[data-tool-title="Fuel ROB & endurance"] [data-copy-tool-link]').count(),1,'copy link control');
+ assert.equal(await page.locator('.tool-card[data-tool-title="Fuel ROB & endurance"] [data-copy-tool-link]:not([data-with-values])').count(),1,'copy link control');
  // unknown id falls back to home without errors
  await page.goto(base+'/?tool=does-not-exist');await settle();assert.ok(await page.evaluate(()=>document.getElementById('home').classList.contains('active')),'unknown tool falls back to home');
  // Norwegian notice + 320 px layout
