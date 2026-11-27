@@ -1,6 +1,12 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "Thanks. What was the problem?": "Takk. Hva var problemet?",
+  "Could not find what I needed": "Fant ikke det jeg trengte",
+  "The result looks wrong": "Resultatet ser feil ut",
+  "Hard to understand": "Vanskelig å forstå",
+  "Something else": "Noe annet",
+  "Thanks – that helps us improve this tool.": "Takk – det hjelper oss å forbedre verktøyet.",
   "Start with your job, direct tool links & lessons for teachers": "Start med jobben din, direkte verktøylenker og timer for lærere",
   "Start with your job: the home page groups the tools by task – bunkering, passage planning, the electrical watch, an ECA, stability, the shore office and teaching.": "Start med jobben din: forsiden samler verktøyene etter oppgave – bunkring, seilasplanlegging, elektrovakten, ECA, stabilitet, landkontoret og undervisning.",
   "Every calculator has its own link, and guide links can fill in the example values from the Marine Tools videos (nothing is saved).": "Hver kalkulator har sin egen lenke, og lenker fra guidene kan fylle inn eksempelverdiene fra Marine Tools-videoene (ingenting lagres).",
