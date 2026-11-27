@@ -1,6 +1,7 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "Ready-made 45-minute lessons →": "Ferdige 45-minutters timer →",
   "Print or save as PDF": "Skriv ut eller lagre som PDF",
   "Was this helpful?": "Var dette nyttig?",
   "Thanks for the feedback.": "Takk for tilbakemeldingen.",

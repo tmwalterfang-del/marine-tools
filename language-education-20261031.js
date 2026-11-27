@@ -1,6 +1,12 @@
 /* Reviewed Norwegian education catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.education={
  "strings": {
+  "FOR TEACHERS": "FOR LÆRERE",
+  "Ready-made 45-minute lessons": "Ferdige 45-minutters timer",
+  "Each lesson opens in your workspace with a timed plan, interactive models for prediction and demonstration, a practice sequence and a teacher guide with answer key. Download it as a teaching pack or export the questions for Moodle. No account needed.": "Hver time åpnes i arbeidsområdet ditt med tidsplan, interaktive modeller for prediksjon og demonstrasjon, en øvingsrekke og en lærerveiledning med fasit. Last den ned som undervisningspakke eller eksporter oppgavene til Moodle. Ingen konto nødvendig.",
+  "practice questions": "øvingsoppgaver",
+  "Open lesson →": "Åpne timen →",
+  "All 16 subjects": "Alle 16 fag",
   "16 topics · ONE WORKSPACE": "16 emner · ETT ARBEIDSOMRÅDE",
   "Find your topic.": "Finn emnet ditt.",
   "Choose a subject to explore formulas, worked examples and exercises.": "Velg et fag for å utforske formler, løste eksempler og oppgaver.",
