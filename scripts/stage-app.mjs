@@ -24,6 +24,8 @@ for(const name of names){
  fs.writeFileSync(path.join(out,name),text);
 }
 fs.cpSync(path.join(root,'assets'),path.join(out,'assets'),{recursive:true});
+// Public glossary (page + data + calculator term hints), plain files only.
+fs.mkdirSync(path.join(out,'glossary'),{recursive:true});for(const entry of fs.readdirSync(path.join(root,'glossary'),{withFileTypes:true})){if(entry.isSymbolicLink()||!entry.isFile()||!/\.(?:js|css)$/.test(entry.name))throw Error('Glossary package entry must be a plain .js/.css file: '+entry.name);fs.copyFileSync(path.join(root,'glossary',entry.name),path.join(out,'glossary',entry.name))}
 const regulatoryAllow=/\.(?:js|css|json|gz|txt|bin)$/;
 function copyRegulatory(source,destination){fs.mkdirSync(destination,{recursive:true});for(const entry of fs.readdirSync(source,{withFileTypes:true})){if(entry.isSymbolicLink())throw Error('Regulatory assets cannot be symbolic links');if(source===path.join(root,'regulatory','data')&&entry.name==='tiles')continue;const from=path.join(source,entry.name),to=path.join(destination,entry.name);if(entry.isDirectory())copyRegulatory(from,to);else if(regulatoryAllow.test(entry.name))fs.copyFileSync(from,to);}}
 copyRegulatory(path.join(root,'regulatory'),path.join(out,'regulatory'));
