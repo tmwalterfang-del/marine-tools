@@ -49,6 +49,23 @@ let browser;
  const nb=await page.evaluate(()=>{const n=document.querySelector('.tool-example-note'),b=document.querySelector('[data-with-values]');return {text:n?.textContent||'',btn:b?.textContent||'',fits:n?n.scrollWidth<=n.clientWidth+1:false,page:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1}});
  assert.match(nb.text,/delt lenke/,'notice translated');assert.match(nb.btn,/Kopier lenke med disse verdiene/,'button translated');
  assert.ok(nb.fits,'notice fits at 320 px');assert.ok(nb.page,'no horizontal page scroll at 320 px');
+ // QR code: library loaded only on demand, QR shown inside the card, fits at 320 px, closes again
+ await closeRelease();
+ assert.equal(await page.evaluate(()=>!!document.querySelector('script[src*="qrcode-generator"]')||!!window.qrcode),false,'QR library not loaded before it is needed');
+ await page.evaluate(c=>document.querySelectorAll(c+' details.tool-details').forEach(d=>d.open=true),card); // the actions sit in the card's collapsible section, as a user would open it
+ await page.click(card+' [data-qr-tool]');await page.waitForSelector(card+' ~ .tool-qr svg, '+card+' .tool-qr svg',{timeout:10000});
+ await page.waitForFunction(()=>/Skann/.test(document.querySelector('.tool-qr p')?.textContent||''),null,{timeout:5000}).catch(()=>{}); // the translator runs on DOM changes
+ const qr=await page.evaluate(()=>{const b=document.querySelector('.tool-qr');return {paths:b.querySelectorAll('svg path,svg rect').length,text:b.querySelector('p').textContent,page:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1}});
+ assert.ok(qr.paths>0,'QR code drawn');assert.match(qr.text,/Skann med mobilkameraet/,'QR help text translated');assert.ok(qr.page,'QR fits at 320 px');
+ await page.click('.tool-qr button');assert.equal(await page.locator('.tool-qr').count(),0,'QR closes');
+ // phone: "Copy link with these values" opens the share sheet with the same link
+ const mctx=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:engine!=='firefox'});const m=await mctx.newPage();
+ await m.addInitScript(()=>{window.__shared=[];Object.defineProperty(navigator,'share',{configurable:true,value:d=>{window.__shared.push(d);return Promise.resolve()}});const mm=window.matchMedia.bind(window);window.matchMedia=q=>q==='(pointer:coarse)'?{matches:true,media:q,addEventListener(){},removeEventListener(){},addListener(){},removeListener(){}}:mm(q)});
+ await m.goto(link);await m.waitForTimeout(1500);await m.evaluate(()=>document.querySelector('#mtReleaseDialog[open]')?.close());
+ await m.evaluate(c=>document.querySelectorAll(c+' details.tool-details').forEach(d=>d.open=true),card);await m.click(card+' [data-copy-tool-link][data-with-values]');await m.waitForTimeout(300);
+ const shared=await m.evaluate(()=>window.__shared);assert.equal(shared.length,1,'share sheet used on a touch device');
+ assert.equal(new URL(shared[0].url).searchParams.get('inputs'),new URL(link).searchParams.get('inputs'),'shared link carries the same values');
+ await mctx.close();
  assert.deepEqual(errors,[],'no page errors');
- console.log(`share link (${engine}): values round-trip, nothing stored or calculated, foreign/bad input ignored, nb and 320 px OK`);
+ console.log(`share link (${engine}): values round-trip, nothing stored or calculated, foreign/bad input ignored, QR on demand, phone share sheet, nb and 320 px OK`);
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{if(browser)await browser.close();server.close()});

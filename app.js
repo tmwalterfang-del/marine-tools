@@ -179,8 +179,20 @@ function fillToolInputs(title,raw){const card=toolCardByTitle(title);if(!card||!
   if(el.type==='checkbox')el.checked=v==='1';else if(el.type==='radio'){if(el.value!==v)continue;el.checked=true}else if(el.tagName==='SELECT'){if(![...el.options].some(o=>o.value===v))continue;el.value=v}else el.value=v;n++}
  if(!n)return false;toolFillNote(card,'Values from a shared link are filled in. Check them and press Calculate – nothing has been saved.');return true}
 function openRequestedTool(){const q=new URLSearchParams(location.search),h=new URLSearchParams((location.hash||'').replace(/^#/,''));const raw=q.get('tool')||h.get('tool');if(!raw)return false;const t=toolBySlug(raw);if(!t)return false;openTool(t.page,t.title);const shared=q.get('inputs')||h.get('inputs');if(shared)setTimeout(()=>fillToolInputs(t.title,shared),450);else if((q.get('example')||h.get('example'))==='1')setTimeout(()=>fillToolExample(t.title),450);return true}
-function copyToolLink(title,withValues=false){const url=withValues?toolShareLink(title):toolLink(title);const done=()=>toast(withValues?'Link with these values copied.':'Link to this tool copied.');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done).catch(()=>prompt('Copy this link:',url));else prompt('Copy this link:',url)}
+function copyToolLink(title,withValues=false){const url=withValues?toolShareLink(title):toolLink(title);
+ if(withValues&&navigator.share&&window.matchMedia&&matchMedia('(pointer:coarse)').matches){navigator.share({title:title+' – Marine Tools',url}).catch(e=>{if(!e||e.name!=='AbortError')copyToolLinkText(url,withValues)});return}
+ copyToolLinkText(url,withValues)}
+function copyToolLinkText(url,withValues){const done=()=>toast(withValues?'Link with these values copied.':'Link to this tool copied.');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done).catch(()=>prompt('Copy this link:',url));else prompt('Copy this link:',url)}
 window.__marineToolsToolLink=toolLink;window.__marineToolsShareLink=toolShareLink;
+/* QR code of the share link, to move a calculation from PC to phone. The QR library (vendor/qrcode-generator, MIT) is loaded only when asked for. */
+let qrLibPromise=null;
+function loadQrLib(){if(window.qrcode)return Promise.resolve(window.qrcode);if(!qrLibPromise)qrLibPromise=new Promise((ok,fail)=>{const s=document.createElement('script');s.src='vendor/qrcode-generator-1.4.4.js';s.onload=()=>window.qrcode?ok(window.qrcode):fail(new Error('qr'));s.onerror=()=>{qrLibPromise=null;fail(new Error('qr'))};document.head.appendChild(s)});return qrLibPromise}
+function showToolQr(title,btn){const card=toolCardByTitle(title);if(!card)return;const old=card.querySelector('.tool-qr');if(old){old.remove();return}const url=toolShareLink(title);
+ loadQrLib().then(qrcode=>{const q=qrcode(0,'M');q.addData(url);q.make();const box=document.createElement('div');box.className='tool-qr';box.setAttribute('role','group');box.setAttribute('aria-label','QR code for this calculation');
+  const fig=document.createElement('div');fig.className='tool-qr-code';fig.innerHTML=q.createSvgTag(4,2);const svg=fig.querySelector('svg');if(svg){svg.setAttribute('role','img');svg.setAttribute('aria-label','QR code');svg.removeAttribute('width');svg.removeAttribute('height')}
+  const p=document.createElement('p');p.textContent='Scan with a phone camera to open this calculation with the same values.';const close=document.createElement('button');close.type='button';close.className='link-btn';close.textContent='Close';close.addEventListener('click',()=>{box.remove();btn&&btn.focus()});
+  box.append(fig,p,close);(btn&&btn.closest('.tool-feedback')||card).after(box);close.focus()}).catch(()=>toast('The QR code could not be shown. Use “Copy link with these values” instead.'))}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-qr-tool]');if(b){e.preventDefault();showToolQr(b.dataset.qrTool,b)}});
 /* Per-tool actions: print/save one calculator as a clean page, and a one-tap "Was this helpful?" (counted only with analytics consent). */
 function toolCardActions(title){return `<div class="tool-card-actions"><button type="button" class="link-btn tool-print" data-print-tool="${title}">Print or save as PDF</button><span class="tool-helpful" data-helpful-tool="${title}"><span class="tool-helpful-q">Was this helpful?</span><button type="button" data-helpful="yes" aria-label="Yes, this was helpful">👍</button><button type="button" data-helpful="no" aria-label="No, this was not helpful">👎</button></span></div>`}
 function printEsc(v){return String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c])}
@@ -282,7 +294,7 @@ Regards,
  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 function reportIssueLink(title){
- return `<div class="tool-feedback">${watchGuideLink(title)}<button type="button" class="link-btn tool-copy-link" data-copy-tool-link="${title}">Copy link to this tool</button><button type="button" class="link-btn tool-copy-link" data-copy-tool-link="${title}" data-with-values title="The link contains the values in this calculator">Copy link with these values</button><a href="${reportIssueUrl(title)}">Report a problem with this tool →</a></div>`;
+ return `<div class="tool-feedback">${watchGuideLink(title)}<button type="button" class="link-btn tool-copy-link" data-copy-tool-link="${title}">Copy link to this tool</button><button type="button" class="link-btn tool-copy-link" data-copy-tool-link="${title}" data-with-values title="The link contains the values in this calculator">Copy link with these values</button><button type="button" class="link-btn tool-copy-link" data-qr-tool="${title}">Show QR code</button><a href="${reportIssueUrl(title)}">Report a problem with this tool →</a></div>`;
 }
 
 function toolUsage(title){const m=toolMeta(title);return `<div class="tool-how"><b>How to use</b><span>${m.how}</span></div>`}

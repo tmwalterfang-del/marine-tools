@@ -419,3 +419,5 @@ html{scroll-padding-top:78px}
 .tool-helpful button{background:transparent;border:1px solid rgba(120,191,220,.35);border-radius:999px;padding:2px 10px;cursor:pointer;font:inherit;line-height:1.4}
 .tool-helpful button:hover,.tool-helpful button:focus-visible{border-color:#f2b441}
 .tool-helpful a{color:#78bfdc}
+
+.tool-qr{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:8px 0;padding:10px;border:1px solid var(--line,#294558);border-radius:10px}.tool-qr-code{background:#fff;padding:6px;border-radius:6px;line-height:0}.tool-qr-code svg{width:164px;height:164px;display:block}.tool-qr p{margin:0;flex:1 1 180px;min-width:0}
