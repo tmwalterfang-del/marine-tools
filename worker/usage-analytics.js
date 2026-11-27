@@ -1,5 +1,5 @@
 const DATASET='events.analyticsEngine.marine_tools_usage';
-const EVENTS=new Set(['visit_started','return_visit','active_usage','tool_opened','calculation_attempt','calculation_succeeded','calculation_invalid','calculation_failed','result_copied','result_shared','result_exported','store_clicked','education_page','education_module','education_filter','education_formula','education_presentation']);
+const EVENTS=new Set(['visit_started','return_visit','active_usage','tool_opened','calculation_attempt','calculation_succeeded','calculation_invalid','calculation_failed','result_copied','result_shared','result_exported','store_clicked','education_page','education_module','education_filter','education_formula','education_presentation','tool_feedback']);
 const ORIGINS=new Set(['https://marinetools.app','https://www.marinetools.app']);
 const SOURCES=new Set(['direct','search','linkedin','facebook','reddit','instagram','x','youtube','email','qr','teaching','internal','other-campaign','other-referral']);
 const id=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v||'')?v:'';

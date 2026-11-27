@@ -1,6 +1,20 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "Print or save as PDF": "Skriv ut eller lagre som PDF",
+  "Was this helpful?": "Var dette nyttig?",
+  "Thanks for the feedback.": "Takk for tilbakemeldingen.",
+  "Thanks. What was missing?": "Takk. Hva manglet?",
+  "Tell us →": "Si fra →",
+  "Inputs": "Inndata",
+  "Result": "Resultat",
+  "Working": "Mellomregning",
+  "No result yet – press Calculate first.": "Ingen resultat ennå – trykk Beregn først.",
+  "Printing is not available in this browser.": "Utskrift er ikke tilgjengelig i denne nettleseren.",
+  "Marine Tools is a planning and calculation aid. Verify results against approved onboard procedures and vessel documentation.": "Marine Tools er et planleggings- og beregningshjelpemiddel. Kontroller resultatene mot godkjente prosedyrer om bord og fartøyets dokumentasjon.",
+  "Yes, this was helpful": "Ja, dette var nyttig",
+  "No, this was not helpful": "Nei, dette var ikke nyttig",
+  "Print preview": "Forhåndsvisning av utskrift",
   "This workspace backup has no app records. Restore it in Workspace → Data & backup.": "Denne sikkerhetskopien fra arbeidsområdet har ingen appdata. Gjenopprett den i Arbeidsområde → Data og sikkerhetskopi.",
   "Restore the app records from this workspace backup? Existing local values may be replaced. Projects and Education progress are restored in Workspace.": "Gjenopprette appdataene fra denne sikkerhetskopien? Eksisterende lokale verdier kan bli erstattet. Prosjekter og fremdrift i Education gjenopprettes i arbeidsområdet.",
   "▶ Watch the guide video": "▶ Se guidevideoen",
