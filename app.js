@@ -170,6 +170,12 @@ function fillToolExample(title){const ex=TOOL_EXAMPLES[toolSlug(title)];const ca
 function openRequestedTool(){const q=new URLSearchParams(location.search),h=new URLSearchParams((location.hash||'').replace(/^#/,''));const raw=q.get('tool')||h.get('tool');if(!raw)return false;const t=toolBySlug(raw);if(!t)return false;openTool(t.page,t.title);if((q.get('example')||h.get('example'))==='1')setTimeout(()=>fillToolExample(t.title),450);return true}
 function copyToolLink(title){const url=toolLink(title);const done=()=>toast('Link to this tool copied.');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done).catch(()=>prompt('Copy this link:',url));else prompt('Copy this link:',url)}
 window.__marineToolsToolLink=toolLink;
+/* Guide videos. Paste the public YouTube URL into GUIDE_VIDEO_URLS when a guide is published;
+   cards whose tool appears in that guide then show "Watch the guide video". Empty URL = no link. */
+const GUIDE_VIDEO_URLS={A:'',B:'',C:'',D:'',E:'',F:'',G:'',H:'',I:'',J:''};
+const TOOL_GUIDE={'fuel-rob-and-endurance':'B','tank-transfer':'B','fuel-temperature-correction':'B','fuel-blending':'B','bunkering-history-and-export':'B','bunkering-overview':'B','port-distance-and-sea-time':'C','great-circle-vs-rhumb-line':'C','current-corrected-eta':'C','set-and-drift':'C','wind-component':'C','air-draft-bridge-clearance':'C','anchor-swing-radius':'C','weather-window-finder':'J','true-apparent-wind':'J','wave-encounter-period':'J','generator-load-margin':'I','three-phase-power':'I','motor-current':'I','current-imbalance':'I','transformer-calculator':'I','battery-runtime':'I','nox-reporting-helper':'E','compass-gyro-correction':'G','speed-distance-time':'G','beaufort-converter':'G','unit-converter':'G','fwa-dwa':'D','bearing-distance-and-destination':'D','daily-consumption-and-reporting':'D'};
+function guideVideoUrl(title){const k=TOOL_GUIDE[toolSlug(title)];if(!k)return '';const u=String(((window.MT_GUIDE_VIDEO_URLS||{})[k])||GUIDE_VIDEO_URLS[k]||'');return /^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//.test(u)?u:''}
+function watchGuideLink(title){const u=guideVideoUrl(title);return u?`<a class="tool-watch" href="${esc(u)}" target="_blank" rel="noopener">▶ Watch the guide video</a>`:''}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-copy-tool-link]');if(b){e.preventDefault();copyToolLink(b.dataset.copyToolLink)}});
 function button(label,pageId,cls='btn primary'){return `<button class="${cls}" data-go="${pageId}">${label}</button>`}
 
@@ -243,7 +249,7 @@ Regards,
  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 function reportIssueLink(title){
- return `<div class="tool-feedback"><button type="button" class="link-btn tool-copy-link" data-copy-tool-link="${title}">Copy link to this tool</button><a href="${reportIssueUrl(title)}">Report a problem with this tool →</a></div>`;
+ return `<div class="tool-feedback">${watchGuideLink(title)}<button type="button" class="link-btn tool-copy-link" data-copy-tool-link="${title}">Copy link to this tool</button><a href="${reportIssueUrl(title)}">Report a problem with this tool →</a></div>`;
 }
 
 function toolUsage(title){const m=toolMeta(title);return `<div class="tool-how"><b>How to use</b><span>${m.how}</span></div>`}

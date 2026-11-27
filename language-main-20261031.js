@@ -1,6 +1,7 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "▶ Watch the guide video": "▶ Se guidevideoen",
   "START WITH YOUR JOB": "START MED JOBBEN DIN",
   "What do you need to do today?": "Hva skal du gjøre i dag?",
   "Pick a task to see the tools for it.": "Velg en oppgave for å se verktøyene for den.",

@@ -410,3 +410,5 @@ html{scroll-padding-top:78px}
 .tool-copy-link{background:none;border:0;padding:0;color:#78bfdc;font:inherit;cursor:pointer;text-align:left}
 .tool-copy-link:hover,.tool-copy-link:focus-visible{color:#a9e8ff;text-decoration:underline}
 .tool-example-note{margin:0 0 10px;padding:8px 12px;border-left:3px solid #f2b441;background:rgba(242,180,65,.10);border-radius:6px;font-size:.92em;line-height:1.4;overflow-wrap:anywhere}
+.tool-feedback a.tool-watch{color:#f2b441;font-weight:600}
+.tool-feedback a.tool-watch:hover{color:#ffd27a}
