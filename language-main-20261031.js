@@ -1,6 +1,10 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "Copy link to this tool": "Kopier lenke til verktøyet",
+  "Link to this tool copied.": "Lenke til verktøyet er kopiert.",
+  "Copy this link:": "Kopier denne lenken:",
+  "Example values from the Marine Tools guide are filled in. Press Calculate to see the result – nothing has been saved.": "Eksempelverdier fra Marine Tools-guiden er fylt inn. Trykk Beregn for å se resultatet – ingenting er lagret.",
   "Activity basis": "Aktivitetsgrunnlag",
   "Add a date and valid density.": "Legg inn dato og gyldig tetthet.",
   "Add at least one valid engine/source.": "Legg til minst én gyldig motor/kilde.",
