@@ -70,6 +70,10 @@ on:
       - 'privacy/index.html'
       - 'professionals/index.html'
       - 'education/one-page.html'
+      - 'glossary.html'
+      - 'glossary/**'
+      - 'tests/glossary-*'
+      - 'sitemap.xml'
       - 'regulatory-links.js'
       - 'navigation-math.js'
       - 'tests/regulatory-*'
@@ -341,6 +345,7 @@ jobs:
           node tests/main-tool-links-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-logo-weight-20261127.cjs
           node tests/main-share-link-browser-20261127.cjs ${{ matrix.browser }}
+          node tests/glossary-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-home-roles-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-guide-video-links-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-backup-compat-browser-20261127.cjs ${{ matrix.browser }}
