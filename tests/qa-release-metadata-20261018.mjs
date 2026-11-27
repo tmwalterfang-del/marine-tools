@@ -13,16 +13,16 @@ check('Release readable',response.status===200);
 check('Version matches actual Worker chain',release.version===api.version);
 check('Build matches actual Worker chain',release.build===api.build);
 check('Date matches actual Worker chain',release.released===api.released);
-check('Public release version',release.version==='8.11.0');
+check('Public release version',release.version==='8.12.0');
 check('App export version matches',read('app.js').includes("const APP_VERSION='"+release.version+"'"));
 check('HTML meta version matches',read('index.html').includes('name="application-version" content="'+release.version+'"'));
 check('Dialog fallback matches',read('whats-new-v861.js').includes("version:'"+release.version+"',released:'"+release.released+"',build:'"+release.build+"'"));
 check('Latest history is current',release.history[0].version===release.version&&release.history[0].date===release.released);
-check('Public release title',release.history[0].title==='Education working, seawater density & smoother loading'&&release.history[1].title==='Calculator quality & Show working');
-check('Previous public release retained',release.history[1].version==='8.10.0'&&release.history[2].version==='8.9.0'&&release.history[2].date==='2026-11-17');
+check('Public release title',release.history[0].title==="Start with your job, direct tool links & lessons for teachers"&&release.history[1].title==='Education working, seawater density & smoother loading');
+check('Previous public release retained',release.history[1].version==='8.11.0'&&release.history[2].version==='8.10.0'&&release.history[2].date==='2026-11-17');
 check('No full AIS acceptance claimed',!release.history[0].items.some(x=>/fully tested|certified|live CPA verified/i.test(x)));
 for(const file of ['release-v860.js','app.js','whats-new-v861.js'])check('Asset rotated '+file,read('index.html').includes(file+'?v='+release.build));
-check('Cache rotated',read('sw.js').includes('marine-tools-education-20261117-v8'));
+check('Cache rotated',read('sw.js').includes('marine-tools-education-20261127-v1'));
 const shell=vm.runInNewContext(read('sw.js')+'\nSHELL',{
  self:{location:{hostname:'marinetools.app'},addEventListener(){}}
 });

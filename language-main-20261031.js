@@ -1,6 +1,12 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "Start with your job, direct tool links & lessons for teachers": "Start med jobben din, direkte verktøylenker og timer for lærere",
+  "Start with your job: the home page groups the tools by task – bunkering, passage planning, the electrical watch, an ECA, stability, the shore office and teaching.": "Start med jobben din: forsiden samler verktøyene etter oppgave – bunkring, seilasplanlegging, elektrovakten, ECA, stabilitet, landkontoret og undervisning.",
+  "Every calculator has its own link, and guide links can fill in the example values from the Marine Tools videos (nothing is saved).": "Hver kalkulator har sin egen lenke, og lenker fra guidene kan fylle inn eksempelverdiene fra Marine Tools-videoene (ingenting lagres).",
+  "Print or save any calculator as a clean page with inputs, result and working – and tell us whether a tool was helpful.": "Skriv ut eller lagre en kalkulator som en ren side med inndata, resultat og mellomregning – og si fra om et verktøy var nyttig.",
+  "Education: ready-made 45-minute lessons for all 16 subjects, with plan, models, teacher guide, teaching pack and Moodle export.": "Education: ferdige 45-minutters timer for alle 16 fag, med plan, modeller, lærerveiledning, undervisningspakke og Moodle-eksport.",
+  "Backups now move both ways between the app and the workspace.": "Sikkerhetskopier kan nå flyttes begge veier mellom appen og arbeidsområdet.",
   "Ready-made 45-minute lessons →": "Ferdige 45-minutters timer →",
   "Print or save as PDF": "Skriv ut eller lagre som PDF",
   "Was this helpful?": "Var dette nyttig?",
