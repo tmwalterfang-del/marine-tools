@@ -127,3 +127,17 @@
   .home-popular-grid>button,.home-popular-grid>button:last-child:nth-child(odd){grid-column:auto}
   .home-popular-grid button,.home-more-links button{min-height:72px;padding-top:12px;padding-bottom:12px}
 }
+/* Start with your job – task/role entries */
+.home-roles-section{margin:22px 0}
+.home-roles-intro{margin:4px 0 0;color:#9fb3c4;font-size:.95em}
+.home-roles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:10px;margin-top:12px;align-items:start}
+.home-role{border:1px solid rgba(120,191,220,.22);border-radius:12px;background:rgba(13,24,36,.55);min-width:0}
+.home-role[open]{border-color:rgba(242,180,65,.55)}
+.home-role summary{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;cursor:pointer;list-style:none}
+.home-role summary::-webkit-details-marker{display:none}
+.home-role summary b{display:block;line-height:1.25}
+.home-role summary small{display:block;color:#9fb3c4;line-height:1.35;margin-top:2px;overflow-wrap:anywhere}
+.home-role-icon{font-size:1.3em;line-height:1;min-width:1.4em;text-align:center;color:#f2b441}
+.home-role-tools{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 14px}
+.home-role-tools button,.home-role-tools a{border:1px solid rgba(120,191,220,.35);background:transparent;color:#cfe8f0;border-radius:999px;padding:6px 12px;font:inherit;font-size:.9em;cursor:pointer;text-decoration:none;max-width:100%;overflow-wrap:anywhere;text-align:left}
+.home-role-tools button:hover,.home-role-tools a:hover,.home-role-tools button:focus-visible,.home-role-tools a:focus-visible{border-color:#f2b441;color:#fff}
