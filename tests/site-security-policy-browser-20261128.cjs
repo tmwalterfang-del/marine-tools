@@ -11,7 +11,8 @@ let browser;
  // Static: one shared policy with the essential hardening directives; referrer policy present.
  const csp=policy('index.html');assert.ok(csp,'index.html has a CSP meta');
  for(const f of pages){assert.equal(policy(f),csp,f+' uses the shared CSP');assert.match(fs.readFileSync(path.join(root,f),'utf8'),/<meta name="referrer" content="strict-origin-when-cross-origin"/,f+' referrer policy');}
- for(const d of ["default-src 'self'","object-src 'none'","base-uri 'self'","form-action 'self'","upgrade-insecure-requests"])assert.ok(csp.includes(d),'CSP contains '+d);
+ for(const d of ["default-src 'self'","object-src 'none'","base-uri 'self'","form-action 'self'"])assert.ok(csp.includes(d),'CSP contains '+d);
+ assert.ok(!/upgrade-insecure-requests/.test(csp),'no upgrade-insecure-requests (it breaks http://127.0.0.1 test servers in WebKit; the site is already HTTPS-only)');
  assert.ok(!/frame-ancestors|report-uri/.test(csp),'no header-only directives in the meta policy (browsers ignore them with a console error)');
 
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
