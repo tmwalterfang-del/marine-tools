@@ -3,7 +3,6 @@
 (function () {
 var R = [
 // ── Offshore, drilling and subsea ──
-['acr-bop','offshore','BOP','Blowout preventer: a stack of large valves on top of a well that can seal it if pressure gets out of control.'],
 ['acr-bha','offshore','BHA','Bottom hole assembly: the lower part of a drill string with the bit, collars and measuring tools.'],
 ['acr-modu','offshore','MODU','Mobile offshore drilling unit, such as a jack-up, semi-submersible or drillship.'],
 ['acr-tlp','offshore','TLP','Tension leg platform: a floating platform held down by vertical tendons anchored to the seabed.'],
@@ -135,7 +134,6 @@ var R = [
 ['acr-foc','fuel','FOC','Fuel oil consumption, often given per day.','?tool=rob'],
 ['acr-lsfo','fuel','LSFO','Low-sulphur fuel oil, a general name for fuels meeting a sulphur limit.'],
 ['acr-tan','machinery','TAN','Total acid number: a lube oil test showing acidity from oxidation.'],
-['acr-cst','fuel','cSt','Centistokes, the unit of kinematic viscosity for fuel and lube oil (mm²/s).'],
 ['acr-shapoli','machinery','ShaPoLi','Shaft power limitation used to comply with EEXI.'],
 ['acr-ecu','machinery','ECU','Engine control unit on electronically controlled engines.'],
 ['acr-ias','machinery','IAS','Integrated automation system for alarms, monitoring and control.'],
@@ -196,7 +194,6 @@ var R = [
 ['acr-twa','safety','TWA','Time-weighted average exposure, normally over 8 hours.'],
 ['acr-stel','safety','STEL','Short-term exposure limit, normally over 15 minutes.'],
 ['acr-idlh','safety','IDLH','Immediately dangerous to life or health: a concentration that can kill or prevent escape.'],
-['acr-h2s','safety','H₂S','Hydrogen sulphide: a toxic gas from sour crude, sewage and bilges that deadens the sense of smell.'],
 ['acr-msds','safety','MSDS','Material safety data sheet, the older name for the safety data sheet (SDS).'],
 ['acr-coswp','safety','COSWP','Code of Safe Working Practices for Merchant Seafarers.'],
 ['acr-ptw','safety','PTW','Permit to work for hazardous jobs such as hot work or enclosed space entry.'],
