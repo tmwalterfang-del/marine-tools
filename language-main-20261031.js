@@ -1,6 +1,12 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "Clearer home page and menu, 4300+ glossary terms & sharing": "Ryddigere forside og meny, over 4300 fagord og deling",
+  "Home page: more fits on the first screen, a \"Continue where you left off\" row with your recent tools, example values to try, and a section for the glossary, regulations and lessons.": "Forsiden: mer får plass på første skjermbilde, en «Fortsett der du slapp»-rad med verktøyene du brukte sist, eksempelverdier å prøve, og en egen del for ordlisten, regelverk og undervisning.",
+  "The menu is grouped into calculators, voyage & weather, and look up & learn – the glossary and regulations are now one tap away.": "Menyen er delt i kalkulatorer, reise og vær, og slå opp og lær – ordlisten og regelverket er nå ett trykk unna.",
+  "Maritime glossary with over 4300 terms and abbreviations, from BOP to XTE, and short term explanations on the calculators.": "Maritim ordliste med over 4300 fagord og forkortelser, fra BOP til XTE, og korte forklaringer av fagordene på kalkulatorene.",
+  "Share a calculation: copy a link with the values you typed, or show a QR code to open it on another phone.": "Del en beregning: kopier en lenke med verdiene du skrev inn, eller vis en QR-kode for å åpne den på en annen telefon.",
+  "Faster glossary and stronger security settings for the whole site.": "Raskere ordliste og sterkere sikkerhetsinnstillinger for hele nettstedet.",
   "Search tools or maritime terms…": "Søk etter verktøy eller fagord …",
   "Continue where you left off": "Fortsett der du slapp",
   "Distance, bearing, ETA, wind and coordinates": "Distanse, peiling, ETA, vind og koordinater",

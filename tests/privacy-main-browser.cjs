@@ -64,7 +64,7 @@ let server, browser;
       localStorage.setItem('mt.analytics.exclude', '1');
       localStorage.setItem('mt.settings', JSON.stringify({usageAnalytics: false, privacySentinel: 'keep'}));
       localStorage.setItem('mt.profile', JSON.stringify({name: 'Retained vessel'}));
-      localStorage.setItem('mt.lastSeenReleaseBuild', '20261127-v8-12-0');
+      localStorage.setItem('mt.lastSeenReleaseBuild', '20261128-v8-13-0');
     }
   });
   const page = await context.newPage();
