@@ -29,6 +29,10 @@ on:
       - 'language-systems-*'
       - 'app.js'
       - 'index.html'
+      - 'global-polish-v862.css'
+      - 'support-widget-v857.js'
+      - 'usage-analytics.js'
+      - 'scripts/stage-app.mjs'
       - 'product-v860.js'
       - 'voyage-estimate-v861.js'
       - 'voyage-planning-draft-v1.js'
@@ -349,6 +353,7 @@ jobs:
           node tests/glossary-browser-20261127.cjs ${{ matrix.browser }}
           node tests/glossary-hints-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-home-roles-browser-20261127.cjs ${{ matrix.browser }}
+          node tests/main-home-upgrade-browser-20261128.cjs ${{ matrix.browser }}
           node tests/main-guide-video-links-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-backup-compat-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-tool-feedback-print-browser-20261127.cjs ${{ matrix.browser }}

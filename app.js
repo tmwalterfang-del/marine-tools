@@ -587,7 +587,7 @@ function renderHome(){
      <p>Quick maritime calculators and technical helpers for everyday work at sea.</p>
      <div class="home-tool-search">
        <span class="search-icon">⌕</span>
-       <input id="homeToolSearch" autocomplete="off" placeholder="Search for a tool…" aria-label="Search Marine Tools">
+       <input id="homeToolSearch" autocomplete="off" placeholder="Search tools or maritime terms…" aria-label="Search Marine Tools">
        <button type="button" id="homeSearchGo" aria-label="Open first matching tool">→</button>
        <div id="homeToolResults" class="home-tool-results" hidden></div>
      </div>
@@ -596,6 +596,11 @@ function renderHome(){
    </div>
  </section>`);
  home.insertAdjacentHTML('beforeend',`
+ <section class="home-continue" id="homeContinue" aria-labelledby="home-continue-title" hidden>
+   <h2 id="home-continue-title">Continue where you left off</h2>
+   <div class="home-continue-list" id="homeContinueList"></div>
+ </section>
+
  <section class="home-primary-section" id="homePrimaryTools">
    <div class="home-section-head"><div><span class="eyebrow">CORE TOOLS</span><h2>Choose an area</h2></div><span>Fast access to the tools most useful in everyday maritime work.</span></div>
    <div class="home-category-a home-category-v8">
@@ -604,6 +609,16 @@ function renderHome(){
      <button data-go="electrical"><span class="home-cat-icon">ϟ</span><b>Electrical</b><small>Power, motors, batteries and load</small></button>
      <button data-go="vessel-calcs"><span class="home-cat-icon">⚓</span><b>Vessel Calculations</b><small>Draft, clearance and anchoring</small></button>
      <button data-go="quick"><span class="home-cat-icon">⇄</span><b>Quick Tools</b><small>Units, speed, time and everyday conversions</small></button>
+     <button data-go="navigation"><span class="home-cat-icon">△</span><b>Navigation</b><small>Distance, bearing, ETA, wind and coordinates</small></button>
+   </div>
+ </section>
+
+ <section class="home-reference-section" aria-labelledby="home-reference-title">
+   <div class="home-section-head"><div><span class="eyebrow">LOOK UP & LEARN</span><h2 id="home-reference-title">Glossary, rules and lessons</h2></div><span>Explanations, rules and teaching material that go with the calculators.</span></div>
+   <div class="home-reference-grid">
+     <a class="home-reference-card" href="glossary.html"><span class="home-reference-icon" aria-hidden="true">Aa</span><span><b>Maritime glossary</b><small>Over 4000 terms and abbreviations explained – from BOP to XTE</small></span><strong aria-hidden="true">→</strong></a>
+     <a class="home-reference-card" href="regulatory.html"><span class="home-reference-icon" aria-hidden="true">◎</span><span><b>Regulations & ECA</b><small>Check a route against emission control areas, sulphur and NOx rules</small></span><strong aria-hidden="true">→</strong></a>
+     <a class="home-reference-card" href="students/"><span class="home-reference-icon" aria-hidden="true">🎓</span><span><b>Education</b><small>Formulas, interactive models and ready-made lessons</small></span><strong aria-hidden="true">→</strong></a>
    </div>
  </section>
 
@@ -632,6 +647,7 @@ function renderHome(){
      <button data-go="electrical" data-tool-target="Three-phase power"><span>ϟ</span><b>Three-phase power</b><small>Voltage, current and power factor</small></button>
      
    </div>
+   <div class="home-examples"><span>Try with example values:</span>${HOME_EXAMPLES.map(t=>`<a href="?tool=${toolSlug(t)}&amp;example=1">${esc(t)}</a>`).join('')}</div>
  </section>
 
  <section class="home-more-section">
@@ -657,16 +673,22 @@ function renderHome(){
  const homeCustom=$('.home-custom-link a');if(homeCustom)homeCustom.href=CUSTOM_TOOL_URL;
 
  const homeSearch=$('#homeToolSearch'),results=$('#homeToolResults');
- const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=toolSearchIndex().filter(x=>searchMatch(x,q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,10);results.innerHTML=hits.length?hits.map(x=>`<button type="button" ${searchTarget(x)}><span>${x.icon}</span><span class="home-search-copy"><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}${TOOL_META[x.title]?.how?` · ${esc(TOOL_META[x.title].how)}`:''}</small></span><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>';results.hidden=false;return hits};
+ const showHomeSearch=()=>{const q=homeSearch.value.trim().toLowerCase();if(!q){results.hidden=true;results.innerHTML='';return []}const hits=toolSearchIndex().filter(x=>searchMatch(x,q)).sort((a,b)=>toolSearchScore(b,q)-toolSearchScore(a,q)).slice(0,10);results.innerHTML=(hits.length?hits.map(x=>`<button type="button" ${searchTarget(x)}><span>${x.icon}</span><span class="home-search-copy"><b>${esc(x.title)}</b><small>${esc(pageLabel(x.page))}${TOOL_META[x.title]?.how?` · ${esc(TOOL_META[x.title].how)}`:''}</small></span><strong>→</strong></button>`).join(''):'<div class="home-search-empty">No matching tool found.</div>')+homeGlossaryRow(homeSearch.value.trim());results.hidden=false;return hits};
  homeSearch.addEventListener('input',showHomeSearch);
- homeSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const hits=showHomeSearch();if(hits[0])openSearchHit(hits[0])}});
- $('#homeSearchGo').onclick=()=>{const hits=showHomeSearch();if(hits[0])openSearchHit(hits[0]);else homeSearch.focus()};
+ const openGlossary=()=>{location.href=homeGlossaryHref(homeSearch.value.trim())};
+ homeSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const hits=showHomeSearch();if(hits[0])openSearchHit(hits[0]);else if(homeSearch.value.trim())openGlossary()}});
+ $('#homeSearchGo').onclick=()=>{const hits=showHomeSearch();if(hits[0])openSearchHit(hits[0]);else if(homeSearch.value.trim())openGlossary();else homeSearch.focus()};
  $('#homeBrowse').onclick=()=>$('#homePrimaryTools').scrollIntoView({behavior:'smooth',block:'start'});
  $('#clearHistoryHome').onclick=clearHistory;
  document.addEventListener('click',e=>{if(!e.target.closest('.home-tool-search')&&results)results.hidden=true});
  updateHome();renderFavoriteHome();renderRecentHome();renderHistoryHome();
 }
-function updateHome(){renderFavoriteHome();renderRecentHome();renderHistoryHome()}
+function updateHome(){renderFavoriteHome();renderRecentHome();renderHistoryHome();renderContinueHome()}
+/* Home: example links (?tool=…&example=1 only fills the guide-video values), a glossary row in search, and a "continue" strip of recent tools (local only). */
+const HOME_EXAMPLES=['Fuel ROB & endurance','Compass / gyro correction','Generator load margin','Three-phase power','Beaufort converter','Speed · distance · time'];
+function homeGlossaryHref(q){return 'glossary.html'+(q?'?q='+encodeURIComponent(q.slice(0,60)):'')}
+function homeGlossaryRow(q){return q?`<a class="home-search-glossary" href="${esc(homeGlossaryHref(q))}"><span aria-hidden="true">Aa</span><span class="home-search-copy"><b>Search the maritime glossary</b><small data-no-translate>“${esc(q.slice(0,60))}”</small></span><strong aria-hidden="true">→</strong></a>`:''}
+function renderContinueHome(){const box=$('#homeContinue'),list=$('#homeContinueList');if(!box||!list)return;const r=recentTools().slice(0,4);box.hidden=!r.length;list.innerHTML=r.map(x=>`<button type="button" class="home-continue-item" data-go="${x.page}" data-tool-target="${esc(x.title)}"><span aria-hidden="true">↻</span>${esc(x.title)}</button>`).join('')}
 function cat(icon,title,desc,p,cls){return `<button class="category-card ${cls}" data-go="${p}"><span class="ico">${icon}</span><h3>${title}</h3><p>${desc}</p><b>→</b></button>`}
 function srow(label,value,cls=''){return `<div class="status-row ${cls}"><i></i><span>${label}</span><span class="value">${value}</span></div>`}
 function overallRisk(r){return r.some(x=>x.score===2)?'Alert':r.some(x=>x.score===1)?'Caution':'Normal'}

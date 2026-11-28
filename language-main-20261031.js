@@ -1,6 +1,20 @@
 /* Reviewed Norwegian main catalogue; canonical keys preserve calculation identities. */
 window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CATALOGUES.main={
  "strings": {
+  "Search tools or maritime terms…": "Søk etter verktøy eller fagord …",
+  "Continue where you left off": "Fortsett der du slapp",
+  "Distance, bearing, ETA, wind and coordinates": "Distanse, peiling, ETA, vind og koordinater",
+  "LOOK UP & LEARN": "SLÅ OPP OG LÆR",
+  "Glossary, rules and lessons": "Ordliste, regelverk og undervisning",
+  "Explanations, rules and teaching material that go with the calculators.": "Forklaringer, regelverk og undervisningsstoff som hører til kalkulatorene.",
+  "Maritime glossary": "Maritim ordliste",
+  "Over 4000 terms and abbreviations explained – from BOP to XTE": "Over 4000 fagord og forkortelser forklart – fra BOP til XTE",
+  "Regulations & ECA": "Regelverk og ECA",
+  "Check a route against emission control areas, sulphur and NOx rules": "Sjekk en rute mot utslippskontrollområder, svovel- og NOx-regler",
+  "Formulas, interactive models and ready-made lessons": "Formler, interaktive modeller og ferdige undervisningsopplegg",
+  "Try with example values:": "Prøv med eksempelverdier:",
+  "Search the maritime glossary": "Søk i den maritime ordlista",
+  "No matching tool found.": "Fant ingen verktøy som passer.",
   "Thanks. What was the problem?": "Takk. Hva var problemet?",
   "Could not find what I needed": "Fant ikke det jeg trengte",
   "The result looks wrong": "Resultatet ser feil ut",

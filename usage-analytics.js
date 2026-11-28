@@ -68,7 +68,7 @@ function context(){
  visit.last=now;write(sessionStorage,sessionKey,visit);
  return{visitor:browser.id,session:visit.id,source:visit.source||'direct',visitorKind:visit.returning?'returning':'new',schema:'usage-v1',referrer:visit.referrer||'',utmSource:visit.utmSource||'',utmMedium:visit.utmMedium||'',utmCampaign:visit.utmCampaign||'',landingPage:visit.landingPage||'/',os:visit.os||'other',browser:visit.browser||'other',platform:visit.platform||'web'};
 }
-function page(){return location.pathname.startsWith('/students')?'education':document.querySelector('.page.active')?.id||'home'}
+function page(){const p=location.pathname;return p.startsWith('/students')?'education':p.endsWith('/glossary.html')?'glossary':p.endsWith('/regulatory.html')?'regulatory':document.querySelector('.page.active')?.id||'home'}
 function send(event,tool='',pageId=page(),label=''){
  const meta=context();if(!meta||!navigator.onLine)return;
  fetch('https://api.marinetools.app/api/analytics/event',{method:'POST',headers:{'content-type':'text/plain;charset=UTF-8'},keepalive:true,cache:'no-store',body:JSON.stringify({event,page:pageId,tool,device:device(),version:window.__MARINE_TOOLS_RELEASE?.version||'8.9.0',label:label||document.getElementById(tool)?.closest('.tool-card')?.dataset.toolTitle||document.getElementById(tool)?.closest('.tool-card')?.querySelector('h3')?.textContent||'',...meta})}).catch(()=>{});
@@ -115,6 +115,7 @@ function observeTools(){
  new MutationObserver(scan).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});scan();
 }
 function boot(){if(page()==='education'&&window.parent!==window)return;showConsent();ensureVisit();observeTools();
+ if(['glossary','regulatory'].includes(page())){report('reference_page',page());return}
  if(page()==='education'){
   if(window.parent!==window)return;
   report('education_page',location.pathname.split('/').pop()?.replace(/\.html$/,'')||'index');

@@ -9,7 +9,7 @@ const excluded=new Set(['sw.js','analytics-v856.js','usage-analytics.js']);
 const names=fs.readdirSync(root).filter(name=>/\.(?:html|js|css)$/.test(name)&&!excluded.has(name));
 for(const name of names){
  let text=fs.readFileSync(path.join(root,name),'utf8');
- if(name==='index.html'||name==='regulatory.html'){
+ if(name==='index.html'||name==='regulatory.html'||name==='glossary.html'){
   text=text.replace(/<script[^>]*\bsrc=["'](?:usage-analytics|analytics-v856)\.js[^"']*["'][^>]*><\/script>/g,'');
   // Education is not packaged; its catalogue would resolve to education.html and throw.
   text=text.replace(/<script[^>]*\bsrc=["']students\/[^"']*["'][^>]*><\/script>/g,'');

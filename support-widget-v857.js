@@ -26,7 +26,8 @@
     const s=document.createElement('script');
     s.src=SCRIPT_SRC;s.async=true;s.dataset.name='BMC-Widget';s.dataset.cfasync='false';s.dataset.id='marinetools';
     s.dataset.description='Support Marine Tools on Buy Me a Coffee';
-    s.dataset.message='Enjoying Marine Tools? Support continued development and help keep the tools free.';
+    // The speech bubble covers content on phones, so it is only shown on wider screens; the button itself stays.
+    if(innerWidth>760)s.dataset.message='Enjoying Marine Tools? Support continued development and help keep the tools free.';
     s.dataset.color='#159fe4';s.dataset.position='Right';s.dataset.x_margin='18';s.dataset.y_margin='18';
     s.onload=wakeWidget;s.onerror=()=>{};document.body.appendChild(s);
   }
