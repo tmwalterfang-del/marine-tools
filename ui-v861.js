@@ -56,7 +56,7 @@ function setIcon(host,key,cls='mt-ui-icon'){
 }
 function sidebar(){
  document.querySelectorAll('.sidebar .nav-btn[data-page]').forEach(btn=>{const key=PAGE_ICONS[btn.dataset.page];if(key)setIcon(btn.querySelector(':scope > span:first-child'),key,'mt-nav-icon')});
- document.querySelectorAll('.sidebar .nav-mail').forEach(btn=>setIcon(btn.querySelector(':scope > span:first-child'),'custom','mt-nav-icon'));
+ document.querySelectorAll('.sidebar .nav-mail:not([href*="students"])').forEach(btn=>setIcon(btn.querySelector(':scope > span:first-child'),'custom','mt-nav-icon'));
  const wn=document.getElementById('mtWhatsNew');if(wn)setIcon(wn.querySelector(':scope > span:first-child'),'whats-new','mt-nav-icon');
 }
 function topbar(){

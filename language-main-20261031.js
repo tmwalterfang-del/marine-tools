@@ -14,6 +14,8 @@ window.MT_LOCALE_CATALOGUES=window.MT_LOCALE_CATALOGUES||{};window.MT_LOCALE_CAT
   "Formulas, interactive models and ready-made lessons": "Formler, interaktive modeller og ferdige undervisningsopplegg",
   "Try with example values:": "Prøv med eksempelverdier:",
   "Search the maritime glossary": "Søk i den maritime ordlista",
+  "Voyage & weather": "Reise og vær",
+  "Look up & learn": "Slå opp og lær",
   "No matching tool found.": "Fant ingen verktøy som passer.",
   "Thanks. What was the problem?": "Takk. Hva var problemet?",
   "Could not find what I needed": "Fant ikke det jeg trengte",

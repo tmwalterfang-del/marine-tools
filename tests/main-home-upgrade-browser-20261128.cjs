@@ -1,5 +1,6 @@
 /* Home page upgrade: six area cards, "Glossary, rules and lessons" links, example links that fill a calculator,
  * the "Continue where you left off" strip (local recent tools only), a glossary row in the home search,
+ * the grouped sidebar (glossary and regulations, settings folded, fits a 1366x768 laptop),
  * Norwegian labels, and no horizontal scroll at 320 px. */
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),pw=require('playwright');
 const root=path.resolve(__dirname,'..'),engine=process.argv[2]||'chromium';
@@ -61,6 +62,24 @@ let browser;
  await page.fill('#homeToolSearch','BOP');await page.press('#homeToolSearch','Enter');
  await page.waitForURL('**/glossary.html?q=BOP');
 
+ // Sidebar: grouped menu with glossary and regulations, settings folded, everything visible on a 1366×768 laptop.
+ await page.setViewportSize({width:1366,height:768});await page.goto(base+'/');await page.waitForTimeout(900);
+ await page.evaluate(()=>document.getElementById('mtReleaseDialog')?.close?.());
+ const sb=await page.evaluate(()=>{const g=id=>[...document.querySelectorAll('#'+id+' > .nav-btn')].map(b=>b.dataset.page||b.getAttribute('href'));const nav=document.querySelector('.sidebar .nav-list');const fold=document.getElementById('mt-info-fold');
+  return {tools:g('mt-tool-group'),voyage:g('mt-voyage-group'),learn:g('mt-learning-group'),foldOpen:fold?.open,foldItems:fold?[...fold.querySelectorAll('[data-page="profile"],[data-page="settings"],.nav-project')].length:0,fits:nav.scrollHeight<=nav.clientHeight+1,
+   eduIcon:document.querySelector('.sidebar a[href*="students"] .mt-nav-icon')?.dataset.mtIconKey||'education'}});
+ assert.deepEqual(sb.tools,['fuel','energy-log','engineering','electrical','vessel-calcs','quick'],'calculator group');
+ assert.deepEqual(sb.voyage,['voyage-estimate','navigation','weather','live-experimental'],'voyage group');
+ assert.deepEqual(sb.learn,['glossary.html','regulatory.html','/students/','workspace.html'],'look up & learn group');
+ for(const r of sb.learn){const f=path.join(root,r.replace(/^\//,'').replace(/\/$/,'/index.html'));assert.ok(fs.existsSync(f),'sidebar link exists: '+r)}
+ assert.equal(sb.foldOpen,false,'settings & information folded by default');assert.equal(sb.foldItems,3,'profile, settings and project inside the fold');
+ assert.ok(sb.fits,'whole menu fits 1366×768 without scrolling');assert.notEqual(sb.eduIcon,'custom','education has its own icon');
+ await page.locator('#mt-info-fold > summary').click();
+ assert.ok(await page.locator('#mt-info-fold [data-page="settings"]').isVisible(),'fold opens');
+ await page.locator('#mt-info-fold [data-page="settings"]').click();await page.waitForTimeout(400);
+ assert.ok(await page.evaluate(()=>document.getElementById('settings').classList.contains('active')),'settings opens from the fold');
+ await page.setViewportSize({width:1280,height:900});
+
  // Norwegian and 320 px.
  await page.goto(base+'/');await page.evaluate(()=>localStorage.setItem('mt.locale.v1',JSON.stringify('nb')));
  await page.setViewportSize({width:320,height:800});await page.goto(base+'/');await page.waitForTimeout(1300);
@@ -69,7 +88,9 @@ let browser;
  assert.match(nb.title,/Ordliste, regelverk og undervisning/,'reference title translated');
  assert.match(nb.cont,/Fortsett der du slapp/,'continue title translated');
  assert.match(nb.ph,/fagord/,'search placeholder translated');
+ const nbNav=await page.evaluate(()=>[...document.querySelectorAll('.sidebar .mt-menu-group > .nav-label')].map(x=>x.textContent.trim()));
+ assert.ok(nbNav.includes('Kalkulatorer')&&nbNav.includes('Reise og vær')&&nbNav.includes('Slå opp og lær'),'sidebar groups translated: '+nbNav.join(', '));
  assert.ok(nb.scroll,'no horizontal scroll at 320 px');
  assert.deepEqual(errors,[],'no page errors');
- console.log(`home upgrade (${engine}): 6 areas, 3 reference links, 6 examples fill without storing, continue strip, glossary search, nb + 320 px OK`);
+ console.log(`home upgrade (${engine}): 6 areas, 3 reference links, 6 examples fill without storing, continue strip, glossary search, grouped sidebar fits 1366x768, nb + 320 px OK`);
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{if(browser)await browser.close();server.close()});

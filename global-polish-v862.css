@@ -445,3 +445,37 @@ label{line-height:1.35}
   .home-reference-card{grid-template-columns:38px minmax(0,1fr) auto;padding:12px}
   .home-reference-icon{width:38px;height:38px;font-size:14px}
 }
+
+/* Sidebar 2026-11-28: compact rows so the whole menu fits a laptop screen, a folded "Settings & information",
+   readable recent tools, and a slimmer footer on phones. */
+#sidebar .nav-list{padding-top:6px!important;padding-bottom:8px!important}
+.sidebar .mt-menu-group>.nav-label[hidden]{display:none!important}
+.sidebar .nav-list .nav-btn{min-height:28px!important;padding-top:4px!important;padding-bottom:4px!important;margin:0!important}
+.sidebar .nav-list .experimental-nav{min-height:29px!important}
+.sidebar .nav-list .nav-btn>.mt-nav-icon{height:20px!important}
+.sidebar .nav-list>.nav-btn[data-page="home"]{min-height:34px!important}
+#sidebar .sidebar-bottom{flex-direction:row!important;align-items:center!important;justify-content:space-between;min-height:0!important;height:auto!important;padding:8px 12px!important;gap:10px!important}
+#sidebar .sidebar-bottom .source-dot{margin:0!important;font-size:10.5px;min-width:0;flex:1 1 auto}
+#sidebar .sidebar-bottom label{flex:0 0 auto;font-size:0!important;gap:0!important}
+#sidebar .sidebar-bottom #apiText{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sidebar .sidebar-bottom .source-dot{display:flex;align-items:center}
+#sidebar .sidebar-bottom select{min-height:36px!important;width:108px!important;max-width:none!important;font-size:13px!important}
+/* Recent tools are on the home page ("Continue where you left off"); only show them here when there is room. */
+@media(max-height:900px){.sidebar .mt-sidebar-recent{display:none!important}}
+.sidebar .mt-menu-group{margin:0}
+.sidebar .mt-menu-group>.nav-label{margin:8px 11px 2px!important}
+.sidebar .mt-info-fold{margin-top:2px}
+.sidebar .mt-info-summary{list-style:none;cursor:pointer;display:flex;align-items:center}
+.sidebar .mt-info-summary::-webkit-details-marker{display:none}
+.sidebar .mt-info-summary::after{content:"▾";margin-left:auto;color:#6f93a8;font-size:11px;transition:transform .15s ease}
+.sidebar .mt-info-fold[open]>.mt-info-summary::after{transform:rotate(180deg)}
+.sidebar .mt-info-fold .mt-sidebar-extra{margin-top:2px}
+.sidebar .mt-info-fold .mt-sidebar-quick{margin-top:0}
+.sidebar .mt-info-fold .nav-project{margin-top:6px!important;padding-top:6px!important}
+.sidebar .mt-sidebar-recent{margin-top:8px}
+.sidebar .mt-sidebar-recent .nav-btn{display:flex!important;align-items:center}
+.sidebar .mt-sidebar-recent .mt-recent-copy{flex:1 1 auto;min-width:0}
+@media(max-width:900px){
+  .sidebar .nav-list .nav-btn{min-height:40px!important}
+  #sidebar .sidebar-bottom select{min-height:40px!important;width:128px!important}
+}
