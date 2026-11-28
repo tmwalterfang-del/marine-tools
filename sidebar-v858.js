@@ -21,7 +21,11 @@ const icons={
   custom:'<path d="M12 5v14M5 12h14"/>',
   profile:'<path d="M12 3v14"/><path d="M8 7h8"/><path d="M5 13c1.2 4 3.5 6 7 6s5.8-2 7-6"/><path d="M3 13h4M17 13h4"/>',
   settings:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.13-1.35l2-1.55-2-3.46-2.46 1A7 7 0 0 0 14 5.25L13.65 3h-4L9.3 5.25a7 7 0 0 0-2.41 1.39l-2.46-1-2 3.46 2 1.55A7 7 0 0 0 4.3 12c0 .46.04.91.13 1.35l-2 1.55 2 3.46 2.46-1a7 7 0 0 0 2.41 1.39l.35 2.25h4l.35-2.25a7 7 0 0 0 2.41-1.39l2.46 1 2-3.46-2-1.55c.09-.44.13-.89.13-1.35z"/>',
-  recent:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/>'
+  recent:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/>',
+  glossary:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6"/>',
+  regulatory:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  education:'<path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/><path d="M22 9v6"/>',
+  workspace:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>'
 };
 function svg(body){return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${body}</svg>`}
 function iconSpan(key){const s=document.createElement('span');s.className='mt-nav-icon';s.innerHTML=svg(icons[key]||icons.recent);return s}
@@ -74,12 +78,23 @@ function injectExtras(project){
 function arrangeMenu(){
  const nav=document.querySelector('.sidebar .nav-list');if(!nav)return;menuObserver?.disconnect();
  const group=(id,title)=>{let section=document.getElementById(id);if(!section){section=document.createElement('section');section.id=id;section.className='mt-menu-group';const label=document.createElement('h2');label.className='nav-label';label.textContent=title;label.id=id+'-title';section.setAttribute('aria-labelledby',label.id);section.append(label);nav.append(section);}return section;};
- const tools=group('mt-tool-group','Tools'),learn=group('mt-learning-group','Learning & work'),info=group('mt-information-group','Settings & information');
- for(const id of ['fuel','energy-log','engineering','electrical','vessel-calcs','voyage-estimate','quick','weather','navigation','live-experimental']){const b=nav.querySelector('.nav-btn[data-page="'+id+'"]');if(b&&b.parentElement!==tools)tools.append(b);}
- for(const link of [...nav.querySelectorAll('a[href]')]){if(/downloads\.html|play\.google\.com/.test(link.getAttribute('href'))){link.remove();continue;}if(/students|workspace\.html/.test(link.getAttribute('href'))&&link.parentElement!==learn)learn.append(link);}
- const extra=document.getElementById('mtSidebarExtra');if(extra&&extra.parentElement!==info)info.append(extra);
- const news=document.getElementById('mtWhatsNew');if(news&&news.parentElement!==info)info.append(news);
- const project=nav.querySelector('.nav-project');if(project&&project.parentElement!==info)info.append(project);
+ /* 2026-11-28: shorter groups – calculators, voyage & weather, look up & learn (with glossary and regulations),
+    and settings & information folded so the whole menu fits a laptop screen. */
+ const tools=group('mt-tool-group','Calculators'),voyage=group('mt-voyage-group','Voyage & weather'),learn=group('mt-learning-group','Look up & learn'),info=group('mt-information-group','Settings & information');
+ const order=(host,nodes)=>{nodes=nodes.filter(Boolean);const now=[...host.children].filter(n=>nodes.includes(n));if(now.length!==nodes.length||now.some((n,i)=>n!==nodes[i]))nodes.forEach(n=>host.append(n));};
+ const page=id=>nav.querySelector('.nav-btn[data-page="'+id+'"]');
+ order(tools,['fuel','energy-log','engineering','electrical','vessel-calcs','quick'].map(page));
+ order(voyage,['voyage-estimate','navigation','weather','live-experimental'].map(page));
+ for(const link of [...nav.querySelectorAll('a[href]')]){if(/downloads\.html|play\.google\.com/.test(link.getAttribute('href')))link.remove();}
+ const navLink=(href,label,key)=>{let a=nav.querySelector('a.nav-btn[data-mt-nav="'+href+'"]');if(!a){a=document.createElement('a');a.className='nav-btn';a.href=href;a.dataset.mtNav=href;a.append(iconSpan(key),document.createTextNode(label));}return a};
+ order(learn,[navLink('glossary.html','Glossary','glossary'),navLink('regulatory.html','Regulations & ECA','regulatory'),nav.querySelector('a[href*="students"]'),nav.querySelector('a[href="workspace.html"]')]);
+ const edu=nav.querySelector('a[href*="students"]'),eduIcon=edu?.querySelector(':scope > span:first-child');if(eduIcon&&!edu.dataset.mtIcon){eduIcon.className='mt-nav-icon';eduIcon.innerHTML=svg(icons.education);edu.dataset.mtIcon='1';}
+ const label=info.querySelector('.nav-label');if(label)label.hidden=true;
+ let fold=document.getElementById('mt-info-fold');
+ if(!fold){fold=document.createElement('details');fold.id='mt-info-fold';fold.className='mt-info-fold';const s=document.createElement('summary');s.className='nav-btn mt-info-summary';s.append(iconSpan('settings'),document.createTextNode('Settings & information'));fold.append(s);}
+ const news=document.getElementById('mtWhatsNew'),extra=document.getElementById('mtSidebarExtra'),project=nav.querySelector('.nav-project');
+ order(info,[label,news,fold]);
+ order(fold,[fold.querySelector('summary'),extra,project]);
  for(const label of [...nav.children].filter(n=>n.classList.contains('nav-label')))label.remove();
  const quick=nav.querySelector('.mt-sidebar-quick .mt-sidebar-title');if(quick)quick.hidden=true;
  const recent=nav.querySelector('.mt-sidebar-recent');if(recent&&recent.parentElement!==nav)nav.append(recent);
@@ -91,7 +106,8 @@ function arrangeMenu(){
 function queueMenu(){if(menuQueued)return;menuQueued=true;setTimeout(()=>{menuQueued=false;arrangeMenu();},0);}
 function init(){
   document.querySelectorAll('.sidebar .nav-btn[data-page]').forEach(btn=>upgrade(btn,btn.dataset.page));
-  document.querySelectorAll('.sidebar .nav-mail').forEach(btn=>upgrade(btn,'custom'));
+  document.querySelectorAll('.sidebar .nav-mail').forEach(btn=>upgrade(btn,/students/.test(btn.getAttribute('href')||'')?'education':'custom'));
+  document.querySelectorAll('.sidebar a[href="workspace.html"]').forEach(a=>upgrade(a,'workspace'));
   const project=document.querySelector('.sidebar .nav-project');
   if(project){
     project.open=false;
