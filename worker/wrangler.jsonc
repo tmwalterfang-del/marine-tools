@@ -10,5 +10,6 @@
   "routes": [{"pattern": "api.marinetools.app","custom_domain": true,"enabled": true,"previews_enabled": true}],
   "triggers": {"crons": ["*/15 * * * *"]},
   "analytics_engine_datasets": [{"binding": "ANALYTICS","dataset": "marine_tools_usage"}],
-  "analytics": {"binding": "ANALYTICS_SQL"}
+  "analytics": {"binding": "ANALYTICS_SQL"},
+  "d1_databases": [{"binding": "ANALYTICS_DB","database_name": "marine-tools-analytics","database_id": "7e2a0e0d-3bb0-44a1-b77e-d48aa6337765"}]
 }
