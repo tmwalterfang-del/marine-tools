@@ -354,6 +354,7 @@ jobs:
           node tests/glossary-hints-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-home-roles-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-home-upgrade-browser-20261128.cjs ${{ matrix.browser }}
+          node tests/site-security-policy-browser-20261128.cjs ${{ matrix.browser }}
           node tests/main-guide-video-links-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-backup-compat-browser-20261127.cjs ${{ matrix.browser }}
           node tests/main-tool-feedback-print-browser-20261127.cjs ${{ matrix.browser }}
