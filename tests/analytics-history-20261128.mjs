@@ -24,12 +24,12 @@ const sql={query:async({query,params})=>{asked.push(params.start);const day=para
  return{data:[{actions:30*k,browsers:8,visits:10*k}]}}};
 
 const db=d1(),env={ANALYTICS_DB:db,ANALYTICS_SQL:sql};
-// 1) Rollup: 00:30 UTC on 28 Nov – yesterday is not rolled yet, oldest days first, at most six per run.
+// 1) Rollup: 00:30 UTC on 28 Nov – yesterday is not rolled yet, oldest days first, at most two per run.
 const t0=Date.parse('2026-11-28T00:30:00Z');
 const r1=await rollupHistory(env,t0);
-assert.equal(r1.status,'ok');assert.equal(r1.rolled.length,6,'six days per run');assert.equal(r1.rolled[0],'2026-08-31','oldest day in the 89-day window first');
+assert.equal(r1.status,'ok');assert.equal(r1.rolled.length,2,'two days per run');assert.equal(r1.rolled[0],'2026-08-31','oldest day in the 89-day window first');
 assert.ok(!r1.rolled.includes('2026-11-27'),'yesterday waits until after 01:00 UTC');
-let guard=0,last;while((last=await rollupHistory(env,t0)).rolled.length&&++guard<30);
+let guard=0,last;while((last=await rollupHistory(env,t0)).rolled.length&&++guard<60);
 assert.equal(last.remaining,0,'window filled');
 const before=db.raw.prepare('SELECT COUNT(*) AS c FROM usage_days').get().c;assert.equal(before,88,'88 days before 01:00');
 const r2=await rollupHistory(env,Date.parse('2026-11-28T02:00:00Z'));assert.deepEqual(r2.rolled,['2026-11-27'],'yesterday rolled after 01:00 UTC');
@@ -53,6 +53,13 @@ assert.ok(all.features.some(f=>f.event==='reference_page'&&f.feature==='glossary
 assert.deepEqual(all.context.version.map(v=>v.key),['8.12.0','8.13.0'],'versions listed');assert.ok(all.context.platform.some(p=>p.key==='android-app'),'app platform listed');
 assert.equal(all.months.length,4,'Aug–Nov');assert.equal(all.context.campaign[0].key,'shorts','campaigns listed');
 const bad=await historyApi(new Request('https://api.marinetools.app/admin/api/analytics-history?days=7'),env,Date.parse('2026-11-28T09:00:00Z')).then(r=>r.json());assert.equal(bad.days,'all','unknown period falls back to all time');
+
+// 3b) Failures are logged (no user data) and reported by the API instead of disappearing.
+const dbf=d1(),failing={ANALYTICS_DB:dbf,ANALYTICS_SQL:{query:async()=>{throw new Error('synthetic SQL failure')}}};
+const rf=await rollupHistory(failing,Date.parse('2026-11-28T03:00:00Z'));assert.equal(rf.status,'error');assert.equal(rf.stage,'query');
+const logged=dbf.raw.prepare('SELECT status, message FROM usage_rollup_log').all();assert.equal(logged[0].status,'query-error');assert.match(logged[0].message,/synthetic SQL failure/);
+const fapi=await historyApi(new Request('https://x/admin/api/analytics-history'),failing).then(r=>r.json());assert.equal(fapi.lastRuns[0].status,'query-error','API shows the last rollup outcome');
+assert.equal(all.lastRuns[0].status,'ok','successful runs are logged too');
 
 // 4) Not configured: clear status instead of an error.
 const nc=await historyApi(new Request('https://x/admin/api/analytics-history'),{}).then(r=>r.json());assert.equal(nc.status,'not-configured');
