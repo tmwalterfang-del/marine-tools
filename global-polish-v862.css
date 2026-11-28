@@ -457,11 +457,9 @@ label{line-height:1.35}
 #sidebar .sidebar-bottom{flex-direction:row!important;align-items:center!important;justify-content:space-between;min-height:0!important;height:auto!important;padding:8px 12px!important;gap:10px!important}
 #sidebar .sidebar-bottom .source-dot{margin:0!important;font-size:10.5px;min-width:0;flex:1 1 auto}
 #sidebar .sidebar-bottom label{flex:0 0 auto;font-size:0!important;gap:0!important}
-#sidebar .sidebar-bottom #apiText{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sidebar .sidebar-bottom #apiText{white-space:nowrap;overflow:clip;text-overflow:ellipsis}
 #sidebar .sidebar-bottom .source-dot{display:flex;align-items:center}
 #sidebar .sidebar-bottom select{min-height:36px!important;width:108px!important;max-width:none!important;font-size:13px!important}
-/* Recent tools are on the home page ("Continue where you left off"); only show them here when there is room. */
-@media(max-height:900px){.sidebar .mt-sidebar-recent{display:none!important}}
 .sidebar .mt-menu-group{margin:0}
 .sidebar .mt-menu-group>.nav-label{margin:8px 11px 2px!important}
 .sidebar .mt-info-fold{margin-top:2px}

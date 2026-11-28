@@ -66,14 +66,14 @@ let browser;
  await page.setViewportSize({width:1366,height:768});await page.goto(base+'/');await page.waitForTimeout(900);
  await page.evaluate(()=>document.getElementById('mtReleaseDialog')?.close?.());
  const sb=await page.evaluate(()=>{const g=id=>[...document.querySelectorAll('#'+id+' > .nav-btn')].map(b=>b.dataset.page||b.getAttribute('href'));const nav=document.querySelector('.sidebar .nav-list');const fold=document.getElementById('mt-info-fold');
-  return {tools:g('mt-tool-group'),voyage:g('mt-voyage-group'),learn:g('mt-learning-group'),foldOpen:fold?.open,foldItems:fold?[...fold.querySelectorAll('[data-page="profile"],[data-page="settings"],.nav-project')].length:0,fits:nav.scrollHeight<=nav.clientHeight+1,
+  return {tools:g('mt-tool-group'),voyage:g('mt-voyage-group'),learn:g('mt-learning-group'),foldOpen:fold?.open,foldItems:fold?[...fold.querySelectorAll('[data-page="profile"],[data-page="settings"],.nav-project')].length:0,fits:(()=>{const box=nav.getBoundingClientRect(),last=fold.querySelector("summary").getBoundingClientRect();return nav.scrollTop===0&&last.bottom<=box.bottom+1})(),
    eduIcon:document.querySelector('.sidebar a[href*="students"] .mt-nav-icon')?.dataset.mtIconKey||'education'}});
  assert.deepEqual(sb.tools,['fuel','energy-log','engineering','electrical','vessel-calcs','quick'],'calculator group');
  assert.deepEqual(sb.voyage,['voyage-estimate','navigation','weather','live-experimental'],'voyage group');
  assert.deepEqual(sb.learn,['glossary.html','regulatory.html','/students/','workspace.html'],'look up & learn group');
  for(const r of sb.learn){const f=path.join(root,r.replace(/^\//,'').replace(/\/$/,'/index.html'));assert.ok(fs.existsSync(f),'sidebar link exists: '+r)}
  assert.equal(sb.foldOpen,false,'settings & information folded by default');assert.equal(sb.foldItems,3,'profile, settings and project inside the fold');
- assert.ok(sb.fits,'whole menu fits 1366×768 without scrolling');assert.notEqual(sb.eduIcon,'custom','education has its own icon');
+ assert.ok(sb.fits,'whole menu (up to Settings & information) fits 1366×768 without scrolling; recent tools may follow below');assert.notEqual(sb.eduIcon,'custom','education has its own icon');
  await page.locator('#mt-info-fold > summary').click();
  assert.ok(await page.locator('#mt-info-fold [data-page="settings"]').isVisible(),'fold opens');
  await page.locator('#mt-info-fold [data-page="settings"]').click();await page.waitForTimeout(400);
