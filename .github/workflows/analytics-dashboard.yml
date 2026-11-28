@@ -52,6 +52,7 @@ jobs:
           node tests/analytics-dashboard-20261021.mjs
           node tests/analytics-usage-20261021.mjs
           node tests/analytics-store-20261122.mjs
+          node tests/analytics-history-20261128.mjs
           node tests/qa-preview-isolation-20261016.mjs
           node tests/qa-release-metadata-20261018.mjs
       - name: Share the tested deployable bundle with browser jobs

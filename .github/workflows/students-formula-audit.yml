@@ -253,6 +253,7 @@ jobs:
           node tests/students-session-tools-20261027.cjs
           node tests/analytics-dashboard-20261021.mjs
           node tests/analytics-usage-20261021.mjs
+          node tests/analytics-history-20261128.mjs
       - name: Existing whole-site regressions with simulated providers
         run: |
           node tests/navigation-smoke.mjs

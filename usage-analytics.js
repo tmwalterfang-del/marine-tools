@@ -97,6 +97,10 @@ window.MT_USAGE={enabled,context,send,record:report,consentStatus,setConsent,sho
 function report(event,tool,pageId,label){ensureVisit();send(event,tool,pageId,label);if(['calculation_succeeded','education_module'].includes(event))send('active_usage','',pageId)}
 function actionTool(target){const card=target.closest('.tool-card');return card?.querySelector('.calc-action[id],[data-usage-action][id]')?.id||''}
 document.addEventListener('mt-calculation-result',e=>{if(attempt&&attempt.card?.contains(e.target))attempt.outcome=e.detail.valid?'calculation_succeeded':'calculation_invalid'},true);
+/* New site features: one anonymous count per use (no text the user typed, no values). */
+const FEATURES=[['.home-continue-item','home-continue'],['.home-examples a','home-example'],['.home-reference-card','home-reference'],['.home-search-glossary','home-search-glossary'],['.home-role summary','home-role'],['.sidebar a[data-mt-nav]','nav-reference'],['#mt-info-fold > summary','nav-settings-fold'],['[data-qr-tool]','qr-code'],['[data-with-values]','share-link-values'],['.g-copy','glossary-copy-link'],['.g-az-l','glossary-letter'],['.g-related a','glossary-related'],['.g-open','glossary-open-tool']];
+function featureLabel(el){const href=String(el.getAttribute?.('href')||'').replace(/^\?tool=/,'').replace(/[?&#].*$/,'');return safe(el.dataset?.toolTarget||el.dataset?.qrTool||el.closest('[data-role]')?.dataset.role||el.dataset?.term||href,80)}
+document.addEventListener('click',e=>{for(const [sel,name] of FEATURES){const el=e.target.closest?.(sel);if(el){report('feature_used',name,page(),featureLabel(el));break}}},true);
 document.addEventListener('click',e=>{
  const copy=e.target.closest('.copy-result,[data-history-copy],#copyConsumption');if(copy){const tool=actionTool(copy)||safe(copy.id||'copy',80);report('result_copied',tool,page());return}
  const share=e.target.closest('.share-result');if(share){report('result_shared',actionTool(share)||'share',page());return}

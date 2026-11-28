@@ -23,12 +23,12 @@ let retried=false;const retryBinding=fixtureBinding();let attempts=0;
 const retry=await worker.fetch(req('/admin/api/analytics'),{ANALYTICS_SQL:{async query(input){if(input.query.includes('AS views')){attempts++;if(!retried){retried=true;throw Object.assign(new Error('Transient'),{retryable:true})}}return retryBinding.query(input)}}},{});
 check(retry.ok&&attempts===2,'retryable binding failure is retried once');
 
-let mode='normal',analyticsFetches=0,storeFetches=0,delayOld=null,releaseOld,dom;
+let mode='normal',analyticsFetches=0,storeFetches=0,historyFetches=0,delayOld=null,releaseOld,dom;
 const pageErrors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>pageErrors.push(e.message));
 dom=new JSDOM(await fixtureHtml(),{url:'https://dashboard.example.invalid/admin/analytics',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
  w.Response=Response;w.AbortController=AbortController;
  const timeout=w.setTimeout.bind(w);w.setTimeout=(fn,ms,...args)=>timeout(fn,ms===12000?100:ms,...args); // Accelerate only the transport deadline.
- w.fetch=async url=>{const parsed=new URL(url,w.location.href),range=parsed.searchParams.get('range');if(parsed.pathname==='/admin/api/store-analytics'){storeFetches++;return storeFixtureResponse(range)}analyticsFetches++;if(delayOld===range){delayOld=null;await new Promise(resolve=>{releaseOld=resolve})}if(mode==='client-hang')return new Promise(()=>{});if(mode==='html')return new Response('<html>Sign in</html>',{headers:{'content-type':'text/html'}});if(mode==='denied')return new Response('{}',{status:401,headers:{'content-type':'application/json'}});if(mode==='unconfigured')return new Response(JSON.stringify({error:'Unavailable',code:'ANALYTICS_NOT_CONFIGURED'}),{status:503,headers:{'content-type':'application/json'}});return fixtureResponse(mode,range)};
+ w.fetch=async url=>{const parsed=new URL(url,w.location.href),range=parsed.searchParams.get('range');if(parsed.pathname==='/admin/api/store-analytics'){storeFetches++;return storeFixtureResponse(range)}if(parsed.pathname==='/admin/api/analytics-history'){historyFetches++;return new Response(JSON.stringify({status:'not-configured'}),{headers:{'content-type':'application/json'}})}analyticsFetches++;if(delayOld===range){delayOld=null;await new Promise(resolve=>{releaseOld=resolve})}if(mode==='client-hang')return new Promise(()=>{});if(mode==='html')return new Response('<html>Sign in</html>',{headers:{'content-type':'text/html'}});if(mode==='denied')return new Response('{}',{status:401,headers:{'content-type':'application/json'}});if(mode==='unconfigured')return new Response(JSON.stringify({error:'Unavailable',code:'ANALYTICS_NOT_CONFIGURED'}),{status:503,headers:{'content-type':'application/json'}});return fixtureResponse(mode,range)};
 }});
 const w=dom.window,d=w.document;
 check(typeof w.MT_DASHBOARD_REQUEST==='function','deployable Worker initializes the browser transport without server-only helpers');
@@ -36,7 +36,8 @@ async function wait(test,label){for(let i=0;i<150;i++){if(test())return;await ne
 const text=id=>d.getElementById(id).textContent;
 async function loaded(){await wait(()=>!text('mtAnalyticsLoadState').startsWith('Loading'),'dashboard status');await new Promise(r=>setTimeout(r,180))}
 await loaded();
-check(analyticsFetches===1&&storeFetches===1&&text('sessions')==='10'&&text('v860Calc')==='7','web renderers share one analytics request while Apps uses one separate protected store request');
+check(analyticsFetches===1&&storeFetches===1&&historyFetches===1&&text('sessions')==='10'&&text('v860Calc')==='7','web renderers share one analytics request while Apps and History each use one separate protected request');
+check(/not connected/.test(text('mtHistoryState')),'History panel explains when D1 is not connected');
 check(d.body.textContent.includes('Calculation clicks')&&text('v860Offline')==='—','clicks are labelled honestly and unmeasured offline usage is not zero');
 check(text('mtRuntimeSmokeBody').includes('ERROR')&&!text('mtAnalyticsLoadState').includes('Unavailable'),'failed scheduled checks are observations, not query failures');
 check(text('searches')==='3'&&!pageErrors.length,'search panel renders without schema exceptions');
