@@ -14,6 +14,8 @@ for(const name of names){
   // Education is not packaged; its catalogue would resolve to education.html and throw.
   text=text.replace(/<script[^>]*\bsrc=["']students\/[^"']*["'][^>]*><\/script>/g,'');
   text=text.replace(/<meta name="robots"[^>]*>/,'<meta name="robots" content="noindex,nofollow">');
+  // The website's own CSP allows its CDNs and API; the offline app gets the stricter one below instead.
+  text=text.replace(/\s*<meta http-equiv="Content-Security-Policy"[^>]*>/g,'');
   text=text.replace('</head>',`<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self' data:; worker-src 'self' blob:; frame-src 'none'; object-src 'none'"><script src="app-preview.js"></script></head>`);
  }
  if(name==='app.js'){

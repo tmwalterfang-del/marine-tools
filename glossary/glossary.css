@@ -8,6 +8,8 @@
 .g-count{color:var(--muted);margin:8px 0}
 .g-list{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));margin-bottom:20px}
 .g-term{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;scroll-margin-top:16px;min-width:0}
+/* Thousands of cards: let the browser skip layout and paint for cards outside the screen (still found by Ctrl+F and anchors). */
+.g-term{content-visibility:auto;contain-intrinsic-size:auto 150px}
 .g-term.is-target{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(78,208,239,.35)}
 .g-term h2{font-size:18px;margin:0 0 2px;overflow-wrap:anywhere;padding-right:4px}
 .g-alt{margin:0 0 8px;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
