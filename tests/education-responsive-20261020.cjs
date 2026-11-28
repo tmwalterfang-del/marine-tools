@@ -44,6 +44,8 @@ async function metrics(page,label,scope){const m=await page.evaluate(()=>({clien
   await page.goto(base+'/');await page.waitForFunction(()=>typeof window.__marineToolsOpenPage==='function');
   if(await page.locator('#mtReleaseDone').isVisible().catch(()=>false))await page.locator('#mtReleaseDone').click();
   const drawer=page.getByRole('button',{name:'Open menu',exact:true}),touchDrawer=await drawer.isVisible();if(touchDrawer)await drawer.click();
+  // Since 2026-11-28 "Project & contact" sits inside the folded "Settings & information" group: open that first.
+  const fold=page.locator('#mt-info-fold > summary');if(await fold.count())await fold.click();
   const menu=page.locator('.nav-project');await menu.locator('summary').click();
   check(await page.locator('.sidebar').getByRole('link',{name:/Education/}).count()===1,'one Education entry',{scope});
   check(await menu.getByText('For Students',{exact:true}).count()===0&&await menu.getByText('For professionals',{exact:true}).count()===0,'audience split removed',{scope});
