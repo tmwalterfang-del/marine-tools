@@ -4,12 +4,14 @@
    addresses. The newest day is rolled up after 01:00 UTC so late events are included; missing days are filled in,
    oldest first, a few per cron run (the Analytics Engine window is about 90 days, so older days can no longer be added). */
 const DATASET='events.analyticsEngine.marine_tools_usage';
-const WINDOW_DAYS=89,DAYS_PER_RUN=6,ROLL_AFTER_UTC_HOUR=1;
+const WINDOW_DAYS=89,DAYS_PER_RUN=2,ROLL_AFTER_UTC_HOUR=1;
 const CONTEXT={source:'blob8',referrer:'blob12',campaign:'blob15',landing:'blob16',device:'blob4',os:'blob17',browser:'blob18',platform:'blob19',country:'blob20',version:'blob5'};
 const DIMS=['total','event','page','tool',...Object.keys(CONTEXT)];
 const SCHEMA=[
  "CREATE TABLE IF NOT EXISTS usage_daily(day TEXT NOT NULL,dim TEXT NOT NULL,key TEXT NOT NULL,label TEXT NOT NULL DEFAULT '',actions INTEGER NOT NULL DEFAULT 0,browsers INTEGER NOT NULL DEFAULT 0,visits INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,dim,key))",
- 'CREATE TABLE IF NOT EXISTS usage_days(day TEXT PRIMARY KEY,rolled_at TEXT NOT NULL,row_count INTEGER NOT NULL)'
+ 'CREATE TABLE IF NOT EXISTS usage_days(day TEXT PRIMARY KEY,rolled_at TEXT NOT NULL,row_count INTEGER NOT NULL)',
+ // Last outcomes of the rollup (no user data): makes a failing cron visible from the dashboard and D1.
+ "CREATE TABLE IF NOT EXISTS usage_rollup_log(at TEXT NOT NULL,day TEXT NOT NULL DEFAULT '',status TEXT NOT NULL,message TEXT NOT NULL DEFAULT '')"
 ];
 const n=x=>Number(x)||0;
 const dayOf=ms=>new Date(ms).toISOString().slice(0,10);
@@ -44,11 +46,12 @@ export async function rollupHistory(env,now=Date.now()){
  if(!want.length)return{status:'waiting',rolled:[]};
  const have=new Set(((await db.prepare('SELECT day FROM usage_days WHERE day >= ?').bind(want[0]).all()).results||[]).map(r=>r.day));
  const todo=want.filter(d=>!have.has(d)).slice(0,DAYS_PER_RUN),rolled=[];
+ const log=(day,status,message='')=>db.prepare('INSERT INTO usage_rollup_log(at,day,status,message) VALUES (?,?,?,?)').bind(new Date().toISOString(),day,status,text(message,300)).run().catch(()=>{});
  for(const day of todo){
-  const rows=await summariseDay(env,day);
+  let rows;try{rows=await summariseDay(env,day)}catch(e){await log(day,'query-error',e&&e.message);console.error('history rollup query failed',day,e&&e.message);return{status:'error',stage:'query',day,rolled,error:text(e&&e.message,300)}}
   const ins=db.prepare('INSERT INTO usage_daily(day,dim,key,label,actions,browsers,visits) VALUES (?,?,?,?,?,?,?)');
-  await db.batch([db.prepare('DELETE FROM usage_daily WHERE day = ?').bind(day),...rows.map(r=>ins.bind(day,r.dim,r.key,r.label,r.actions,r.browsers,r.visits)),db.prepare('INSERT OR REPLACE INTO usage_days(day,rolled_at,row_count) VALUES (?,?,?)').bind(day,new Date(now).toISOString(),rows.length)]);
-  rolled.push(day);
+  try{await db.batch([db.prepare('DELETE FROM usage_daily WHERE day = ?').bind(day),...rows.map(r=>ins.bind(day,r.dim,r.key,r.label,r.actions,r.browsers,r.visits)),db.prepare('INSERT OR REPLACE INTO usage_days(day,rolled_at,row_count) VALUES (?,?,?)').bind(day,new Date(now).toISOString(),rows.length)])}catch(e){await log(day,'store-error',e&&e.message);console.error('history rollup store failed',day,e&&e.message);return{status:'error',stage:'store',day,rolled,error:text(e&&e.message,300)}}
+  rolled.push(day);await log(day,'ok',rows.length+' rows');
  }
  return{status:'ok',rolled,remaining:want.filter(d=>!have.has(d)).length-rolled.length};
 }
@@ -65,6 +68,7 @@ export async function historyApi(request,env,now=Date.now()){
   const since=days?dayOf(now-days*86400000):'0000-00-00';
   const all=(sql,...b)=>db.prepare(sql).bind(...b).all().then(r=>r.results||[]);
   const top=(dim,limit=50)=>all('SELECT key, MAX(label) AS label, SUM(actions) AS actions, SUM(browsers) AS browserDays, SUM(visits) AS visits, COUNT(DISTINCT day) AS days FROM usage_daily WHERE dim = ? AND day >= ? GROUP BY key ORDER BY visits DESC, actions DESC LIMIT ?',dim,since,limit);
+  const lastRuns=await all('SELECT at, day, status, message FROM usage_rollup_log ORDER BY at DESC LIMIT 5');
   const [cov,timeline,events,toolRows,...ctx]=await Promise.all([
    all('SELECT MIN(day) AS first, MAX(day) AS last, COUNT(*) AS days FROM usage_days WHERE day >= ?',since),
    all("SELECT day, visits, browsers, actions FROM usage_daily WHERE dim = 'total' AND day >= ? ORDER BY day",since),
@@ -76,7 +80,7 @@ export async function historyApi(request,env,now=Date.now()){
   const features=toolRows.filter(r=>/^(feature_used|reference_page|education_page|education_module)\|/.test(r.key)).map(r=>{const [e,page,tool]=String(r.key).split('|');return{event:e,page,feature:tool,label:r.label||'',actions:n(r.actions),browserDays:n(r.browserDays)}}).sort((a,b)=>b.actions-a.actions).slice(0,100);
   const months=new Map();for(const t of timeline){const m=t.day.slice(0,7),x=months.get(m)||{month:m,visits:0,browserDays:0,days:0};x.visits+=n(t.visits);x.browserDays+=n(t.browsers);x.days++;months.set(m,x)}
   const [pages,...context]=ctx,ctxOut={};Object.keys(CONTEXT).forEach((d,i)=>{ctxOut[d]=context[i].map(r=>({key:r.key,visits:n(r.visits),browserDays:n(r.browserDays)}))});
-  return json({status:'ready',generatedAt:new Date(now).toISOString(),days:days||'all',coverage:{first:cov[0]?.first||null,last:cov[0]?.last||null,days:n(cov[0]?.days)},
+  return json({status:'ready',generatedAt:new Date(now).toISOString(),days:days||'all',lastRuns,coverage:{first:cov[0]?.first||null,last:cov[0]?.last||null,days:n(cov[0]?.days)},
    totals:{visits:timeline.reduce((s,t)=>s+n(t.visits),0),browserDays:timeline.reduce((s,t)=>s+n(t.browsers),0),calculations:n(ev('calculation_succeeded').actions),activeBrowserDays:n(ev('active_usage').browserDays),returningVisits:n(ev('return_visit').visits),copies:n(ev('result_copied').actions),shares:n(ev('result_shared').actions),exports:n(ev('result_exported').actions),features:n(ev('feature_used').actions)},
    timeline:timeline.map(t=>({day:t.day,visits:n(t.visits),browsers:n(t.browsers)})),months:[...months.values()],
    events:events.map(e=>({event:e.key,actions:n(e.actions),browserDays:n(e.browserDays)})),
